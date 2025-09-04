@@ -4,7 +4,9 @@ services:
     runtime: docker
     plan: starter
     region: oregon
-    branch: main
+    branch: agent-improvements
+    dockerfilePath: Dockerfile.render
+    dockerContext: .
     buildCommand: ""
     startCommand: ""
     healthCheckPath: /api/v1/ping
@@ -49,9 +51,17 @@ services:
         value: "360"
       - key: JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES
         value: "43200"
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: "/usr/bin/chromium-browser"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=4096"
+      - key: NPM_CONFIG_AUDIT_LEVEL
+        value: "moderate"
     disk:
       name: freia-data
       mountPath: /opt/render/project/.flowise
-      sizeGB: 1
+      sizeGB: 2
 
 databases: []

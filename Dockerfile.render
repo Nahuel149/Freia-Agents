@@ -1,10 +1,12 @@
 # Optimized Dockerfile for Render deployment
 # This Dockerfile is specifically configured for Render's platform requirements
+# Security-hardened with latest Alpine base image and security best practices
 
-FROM node:20-alpine
+# Use the latest LTS Alpine image with security patches
+FROM node:20.18-alpine3.20
 
-# Install system dependencies
-RUN apk add --update --no-cache \
+# Update package index and install system dependencies with security updates
+RUN apk update && apk upgrade && apk add --no-cache \
     libc6-compat \
     python3 \
     make \
@@ -14,7 +16,8 @@ RUN apk add --update --no-cache \
     pango-dev \
     chromium \
     curl \
-    dumb-init
+    dumb-init \
+    && rm -rf /var/cache/apk/*
 
 # Install pnpm globally
 RUN npm install -g pnpm
@@ -48,8 +51,8 @@ RUN pnpm build
 RUN pnpm prune --prod
 
 # Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S flowise -u 1001
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S flowise -u 1001 -G nodejs
 
 # Create data directory and set permissions
 RUN mkdir -p /opt/render/project/.flowise && \
@@ -58,6 +61,10 @@ RUN mkdir -p /opt/render/project/.flowise && \
 
 # Switch to non-root user
 USER flowise
+
+# Add health check for better container monitoring
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-10000}/api/v1/ping || exit 1
 
 # Expose port (Render uses PORT environment variable)
 EXPOSE 10000

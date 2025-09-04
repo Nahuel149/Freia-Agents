@@ -1,6 +1,8 @@
 # Deploying Freia (Flowise OSS) to Render
 
-This guide will help you deploy your Freia codebase to Render using the optimized configuration files.
+This guide will help you deploy your Freia codebase to Render using the optimized and security-hardened configuration files.
+
+> **Security Note**: The Dockerfile has been updated to address security vulnerabilities. See [SECURITY_DOCKER.md](./SECURITY_DOCKER.md) for detailed security information.
 
 ## Prerequisites
 
