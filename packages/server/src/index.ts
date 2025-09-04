@@ -148,11 +148,12 @@ export class App {
             }
 
             // TODO: Remove this by end of 2025
-            await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager.getPlatformType())
+            await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager ? this.identityManager.getPlatformType() : Platform.OPEN_SOURCE)
 
             logger.info('🎉 [server]: All initialization steps completed successfully!')
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
+            throw error // Re-throw to prevent config() from being called with uninitialized components
         }
     }
 
@@ -217,7 +218,7 @@ export class App {
                         verifyToken(req, res, next)
                     } else {
                         // Only check license validity for non-open-source platforms
-                        if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
+                        if (this.identityManager && this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
                             if (!this.identityManager.isLicenseValid()) {
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
@@ -254,8 +255,8 @@ export class App {
                         }
                         const subscriptionId = org.subscriptionId as string
                         const customerId = org.customerId as string
-                        const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
-                        const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
+                        const features = this.identityManager ? await this.identityManager.getFeaturesByPlan(subscriptionId) : {} as Record<string, string>
+                        const productId = this.identityManager ? await this.identityManager.getProductIdFromSubscription(subscriptionId) : ''
 
                         // @ts-ignore
                         req.user = {
@@ -282,7 +283,11 @@ export class App {
         })
 
         // this is for SSO and must be after the JWT cookie middleware
-        await this.identityManager.initializeSSO(this.app)
+        if (this.identityManager) {
+            await this.identityManager.initializeSSO(this.app)
+        } else {
+            logger.warn('⚠️ [server]: Identity Manager not initialized, skipping SSO initialization')
+        }
 
         if (process.env.ENABLE_METRICS === 'true') {
             switch (process.env.METRICS_PROVIDER) {
@@ -318,7 +323,7 @@ export class App {
             })
         })
 
-        if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && !this.identityManager.isCloud()) {
+        if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && this.identityManager && !this.identityManager.isCloud()) {
             this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
         }
 

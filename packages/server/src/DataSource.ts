@@ -13,22 +13,47 @@ import logger from './utils/logger'
 let appDataSource: DataSource
 
 export const init = async (): Promise<void> => {
+    logger.info(`[DataSource] Initializing database with type: ${process.env.DATABASE_TYPE || 'sqlite (default)'}`)
+    
     let homePath
     let flowisePath = path.join(getUserHome(), '.flowise')
     if (!fs.existsSync(flowisePath)) {
         fs.mkdirSync(flowisePath)
     }
+    
+    // Log environment variables for debugging
+    logger.info(`[DataSource] DATABASE_TYPE: ${process.env.DATABASE_TYPE || 'undefined'}`)
+    logger.info(`[DataSource] DATABASE_PATH: ${process.env.DATABASE_PATH || 'undefined'}`)
+    logger.info(`[DataSource] DATABASE_HOST: ${process.env.DATABASE_HOST || 'undefined'}`)
+    logger.info(`[DataSource] DATABASE_PORT: ${process.env.DATABASE_PORT || 'undefined'}`)
+    
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
             homePath = process.env.DATABASE_PATH ?? flowisePath
-            appDataSource = new DataSource({
-                type: 'sqlite',
-                database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: false,
-                migrationsRun: false,
-                entities: Object.values(entities),
-                migrations: sqliteMigrations
-            })
+            logger.info(`[DataSource] SQLite database path: ${homePath}`)
+            
+            // Ensure the database directory exists and is writable
+            try {
+                if (!fs.existsSync(homePath)) {
+                    fs.mkdirSync(homePath, { recursive: true })
+                    logger.info(`[DataSource] Created database directory: ${homePath}`)
+                }
+                
+                const dbFile = path.resolve(homePath, 'database.sqlite')
+                logger.info(`[DataSource] SQLite database file: ${dbFile}`)
+                
+                appDataSource = new DataSource({
+                    type: 'sqlite',
+                    database: dbFile,
+                    synchronize: false,
+                    migrationsRun: false,
+                    entities: Object.values(entities),
+                    migrations: sqliteMigrations
+                })
+            } catch (error) {
+                logger.error(`[DataSource] Failed to setup SQLite database: ${error instanceof Error ? error.message : String(error)}`)
+                throw error
+            }
             break
         case 'mysql':
             appDataSource = new DataSource({
@@ -88,15 +113,32 @@ export const init = async (): Promise<void> => {
             })
             break
         default:
+            logger.info(`[DataSource] Using default SQLite configuration (DATABASE_TYPE not set or invalid)`)
             homePath = process.env.DATABASE_PATH ?? flowisePath
-            appDataSource = new DataSource({
-                type: 'sqlite',
-                database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: false,
-                migrationsRun: false,
-                entities: Object.values(entities),
-                migrations: sqliteMigrations
-            })
+            logger.info(`[DataSource] Default SQLite database path: ${homePath}`)
+            
+            // Ensure the database directory exists and is writable
+            try {
+                if (!fs.existsSync(homePath)) {
+                    fs.mkdirSync(homePath, { recursive: true })
+                    logger.info(`[DataSource] Created default database directory: ${homePath}`)
+                }
+                
+                const dbFile = path.resolve(homePath, 'database.sqlite')
+                logger.info(`[DataSource] Default SQLite database file: ${dbFile}`)
+                
+                appDataSource = new DataSource({
+                    type: 'sqlite',
+                    database: dbFile,
+                    synchronize: false,
+                    migrationsRun: false,
+                    entities: Object.values(entities),
+                    migrations: sqliteMigrations
+                })
+            } catch (error) {
+                logger.error(`[DataSource] Failed to setup default SQLite database: ${error instanceof Error ? error.message : String(error)}`)
+                throw error
+            }
             break
     }
 }
