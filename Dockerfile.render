@@ -1,0 +1,69 @@
+# Optimized Dockerfile for Render deployment
+# This Dockerfile is specifically configured for Render's platform requirements
+
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --update --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    chromium \
+    curl \
+    dumb-init
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Set environment variables for Puppeteer and Node
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV NODE_OPTIONS=--max-old-space-size=4096
+ENV NODE_ENV=production
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy package files first for better caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages/server/package.json ./packages/server/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/components/package.json ./packages/components/
+COPY packages/api-documentation/package.json ./packages/api-documentation/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --prod=false
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN pnpm build
+
+# Remove dev dependencies to reduce image size
+RUN pnpm prune --prod
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S flowise -u 1001
+
+# Create data directory and set permissions
+RUN mkdir -p /opt/render/project/.flowise && \
+    chown -R flowise:nodejs /opt/render/project/.flowise && \
+    chown -R flowise:nodejs /usr/src/app
+
+# Switch to non-root user
+USER flowise
+
+# Expose port (Render uses PORT environment variable)
+EXPOSE 10000
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["pnpm", "start"]
