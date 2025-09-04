@@ -1,0 +1,42 @@
+{
+  "name": "flowise-postgresql-setup",
+  "version": "1.0.0",
+  "description": "PostgreSQL database setup and migration tools for Flowise application",
+  "main": "postgres-config.js",
+  "scripts": {
+    "setup": "node postgres-config.js",
+    "migrate": "node migrate-to-postgres.js",
+    "test-connection": "node -e \"require('./postgres-config').DatabaseUtils.healthCheck().then(() => process.exit(0)).catch(() => process.exit(1))\"",
+    "create-db": "psql -U postgres -h localhost -c \"CREATE DATABASE flowise;\"",
+    "setup-schema": "psql -U postgres -h localhost -d flowise -f postgresql-setup.sql",
+    "backup": "pg_dump -U postgres -h localhost flowise > backup-$(date +%Y%m%d-%H%M%S).sql",
+    "restore": "psql -U postgres -h localhost -d flowise -f"
+  },
+  "keywords": [
+    "postgresql",
+    "flowise",
+    "database",
+    "migration",
+    "setup"
+  ],
+  "author": "Flowise Team",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.9"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FlowiseAI/Flowise.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FlowiseAI/Flowise/issues"
+  },
+  "homepage": "https://flowiseai.com"
+}
