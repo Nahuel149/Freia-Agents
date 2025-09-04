@@ -1,6 +1,47 @@
-# Deploying Freia (Flowise OSS) to Render
+# Render Deployment Guide for Freia
 
-This guide will help you deploy your Freia codebase to Render using the optimized and security-hardened configuration files.
+This guide explains how to deploy Freia to Render with proper database configuration and admin user setup.
+
+## Overview
+
+The deployment has been configured to:
+1. Use SQLite database with persistent storage
+2. Automatically initialize the database with migrations
+3. Create an admin user during deployment
+4. Handle environment variables properly
+
+## Files Modified
+
+### 1. `render.yaml`
+- Added `DATABASE_TYPE: sqlite` to explicitly set database type
+- Added admin user environment variables:
+  - `ADMIN_EMAIL`: Default admin email (admin@freia.ai)
+  - `ADMIN_PASSWORD`: Default admin password (Testing123!)
+  - `ADMIN_NAME`: Default admin name (Admin)
+- Added `DEBUG` and `LOG_LEVEL` for better logging
+
+### 2. `Dockerfile.render`
+- Added startup script integration
+- Created additional directories for logs and storage
+- Set proper permissions for the startup script
+
+### 3. New Scripts Created
+
+#### `packages/server/scripts/render-startup.sh`
+Custom startup script that:
+- Sets up environment variables
+- Creates necessary directories
+- Installs dependencies and builds the app
+- Initializes database with migrations
+- Creates admin user if it doesn't exist
+- Starts the application
+
+#### `packages/server/scripts/init-admin-user.js`
+Node.js script that:
+- Connects to SQLite database
+- Checks if admin user exists
+- Creates admin user with provided credentials
+- Uses bcrypt for password hashing
 
 > **Security Note**: The Dockerfile has been updated to address security vulnerabilities. See [SECURITY_DOCKER.md](./SECURITY_DOCKER.md) for detailed security information.
 

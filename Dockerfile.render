@@ -56,8 +56,15 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # Create data directory and set permissions
 RUN mkdir -p /opt/render/project/.flowise && \
+    mkdir -p /opt/render/project/.flowise/logs && \
+    mkdir -p /opt/render/project/.flowise/storage && \
     chown -R flowise:nodejs /opt/render/project/.flowise && \
     chown -R flowise:nodejs /usr/src/app
+
+# Copy and set permissions for startup script
+COPY packages/server/scripts/render-startup.sh /usr/src/app/
+RUN chmod +x /usr/src/app/render-startup.sh && \
+    chown flowise:nodejs /usr/src/app/render-startup.sh
 
 # Switch to non-root user
 USER flowise
@@ -72,5 +79,5 @@ EXPOSE 10000
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start the application
-CMD ["pnpm", "start"]
+# Start the application with our custom startup script
+CMD ["/usr/src/app/render-startup.sh"]
