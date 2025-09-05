@@ -36,6 +36,12 @@ export class User {
     @Column({ type: 'varchar', length: 20, default: UserStatus.UNVERIFIED })
     status: string
 
+    @Column({ type: 'uuid', nullable: true })
+    activeWorkspaceId?: string | null
+    @ManyToOne(() => Workspace, (workspace) => workspace.id, { nullable: true })
+    @JoinColumn({ name: 'activeWorkspaceId' })
+    activeWorkspace?: Workspace | null
+
     @CreateDateColumn()
     createdDate?: Date
 

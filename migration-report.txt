@@ -1,0 +1,24 @@
+============================================================
+DATABASE MIGRATION REPORT
+============================================================
+Migration Date: 2025-09-05T01:22:12.335Z
+Source Database: ./database.sqlite
+Target Database: PostgreSQL
+
+MIGRATION LOG:
+----------------------------------------
+[2025-09-05T01:22:12.211Z] INFO: 🚀 Starting database migration to PostgreSQL
+[2025-09-05T01:22:12.213Z] INFO: ==================================================
+[2025-09-05T01:22:12.213Z] INFO: Step 1: Testing database connections...
+[2025-09-05T01:22:12.280Z] INFO: ✅ PostgreSQL connection successful
+[2025-09-05T01:22:12.281Z] INFO: Database version: PostgreSQL 16.10, compiled by Visual C++ build 1944, 64-bit
+[2025-09-05T01:22:12.281Z] INFO: Step 2: Creating admin user...
+[2025-09-05T01:22:12.292Z] INFO: User admin@freia.ai already exists, skipping creation
+[2025-09-05T01:22:12.292Z] INFO: Step 3: Setting up organization and workspace...
+[2025-09-05T01:22:12.333Z] INFO: ✅ Default organization and workspace setup completed
+[2025-09-05T01:22:12.334Z] INFO: Step 4: Migrating application data...
+[2025-09-05T01:22:12.335Z] INFO: No chat flows to migrate
+[2025-09-05T01:22:12.335Z] INFO: No credentials to migrate
+[2025-09-05T01:22:12.335Z] INFO: Step 5: Generating migration report...
+
+============================================================

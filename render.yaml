@@ -31,6 +31,17 @@ services:
         value: "/opt/render/project/.flowise/logs"
       - key: BLOB_STORAGE_PATH
         value: "/opt/render/project/.flowise/storage"
+      # Explicitly unset PostgreSQL variables to prevent conflicts
+      - key: DATABASE_HOST
+        value: ""
+      - key: DATABASE_PORT
+        value: ""
+      - key: DATABASE_NAME
+        value: ""
+      - key: DATABASE_USER
+        value: ""
+      - key: DATABASE_PASSWORD
+        value: ""
       - key: DEBUG
         value: "false"
       - key: LOG_LEVEL

@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS "user" (
     "tempToken" text,
     "tokenExpiry" timestamp,
     "status" varchar(20) NOT NULL DEFAULT 'UNVERIFIED',
+    "activeWorkspaceId" uuid,
     "createdDate" timestamp NOT NULL DEFAULT now(),
     "updatedDate" timestamp NOT NULL DEFAULT now(),
     "createdBy" uuid,
@@ -230,6 +231,12 @@ ALTER TABLE "organization"
 ADD CONSTRAINT "FK_organization_createdBy" FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE SET NULL,
 ADD CONSTRAINT "FK_organization_updatedBy" FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELETE SET NULL;
 
+-- User table foreign keys
+ALTER TABLE "user" 
+ADD CONSTRAINT "FK_user_activeWorkspaceId" FOREIGN KEY ("activeWorkspaceId") REFERENCES "workspace"("id") ON DELETE SET NULL,
+ADD CONSTRAINT "FK_user_createdBy" FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE SET NULL,
+ADD CONSTRAINT "FK_user_updatedBy" FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON DELETE SET NULL;
+
 -- Role table foreign keys
 ALTER TABLE "role" 
 ADD CONSTRAINT "FK_role_organizationId" FOREIGN KEY ("organizationId") REFERENCES "organization"("id") ON DELETE CASCADE,
@@ -270,6 +277,7 @@ ADD CONSTRAINT "FK_workspace_user_updatedBy" FOREIGN KEY ("updatedBy") REFERENCE
 
 CREATE INDEX IF NOT EXISTS "IDX_user_email" ON "user" ("email");
 CREATE INDEX IF NOT EXISTS "IDX_user_status" ON "user" ("status");
+CREATE INDEX IF NOT EXISTS "IDX_user_activeWorkspaceId" ON "user" ("activeWorkspaceId");
 CREATE INDEX IF NOT EXISTS "IDX_organization_user_userId" ON "organization_user" ("userId");
 CREATE INDEX IF NOT EXISTS "IDX_organization_user_organizationId" ON "organization_user" ("organizationId");
 CREATE INDEX IF NOT EXISTS "IDX_workspace_user_userId" ON "workspace_user" ("userId");
@@ -344,6 +352,11 @@ VALUES (
     (SELECT "id" FROM "user" WHERE "email" = 'admin@yourdomain.com' LIMIT 1),
     (SELECT "id" FROM "user" WHERE "email" = 'admin@yourdomain.com' LIMIT 1)
 ) ON CONFLICT DO NOTHING;
+
+-- Update admin user with activeWorkspaceId
+UPDATE "user" 
+SET "activeWorkspaceId" = (SELECT "id" FROM "workspace" WHERE "name" = 'Default Workspace' LIMIT 1)
+WHERE "email" = 'admin@yourdomain.com';
 
 -- =============================================
 -- COMPLETION MESSAGE

@@ -90,11 +90,8 @@ class DatabaseMigrator {
             
             // Create new user
             const result = await client.query(
-                `INSERT INTO "user" ("name", "email", "credential", "status", "createdBy", "updatedBy") 
-                 VALUES ($1, $2, $3, 'ACTIVE', 
-                    (SELECT "id" FROM "user" WHERE "email" = $2 LIMIT 1),
-                    (SELECT "id" FROM "user" WHERE "email" = $2 LIMIT 1)
-                 ) 
+                `INSERT INTO "user" ("name", "email", "credential", "status") 
+                 VALUES ($1, $2, $3, 'ACTIVE') 
                  ON CONFLICT ("email") DO UPDATE SET "name" = $1
                  RETURNING "id"`,
                 [name, email, password || null]
