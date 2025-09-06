@@ -33,7 +33,7 @@ export class Interaction {
     })
     type!: InteractionType
 
-    @Column({ type: 'datetime' })
+    @Column({ type: 'timestamp' })
     date!: Date
 
     @Column({ type: 'text', nullable: true })

@@ -227,7 +227,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
                             backgroundColor: (theme) => theme.palette.background.paper,
                             '&:hover': { backgroundColor: (theme) => theme.palette.action.hover }
                         }}
-                        title='Star FlowiseAI/Flowise on GitHub'
+                        title='Star FreiaAI/Freia on GitHub'
                     >
                         <IconBrandGithub size={16} />
                         <Typography variant='body2' sx={{ fontWeight: 600 }}>

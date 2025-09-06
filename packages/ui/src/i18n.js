@@ -15,6 +15,7 @@ const resources = {
           ctaCreateAccount: 'Create an account'
         },
         features: {
+          title: 'Powerful Features',
           visualChatflows: {
             title: 'Visual chatflows',
             desc: 'Design complex AI workflows with drag-and-drop nodes and connectors.'
@@ -390,7 +391,7 @@ const resources = {
       },
       apiKeys: {
         title: 'API Keys',
-        description: 'Flowise API & SDK authentication keys',
+        description: 'Freia API & SDK authentication keys',
         searchPlaceholder: 'Search API Keys',
         import: 'Import',
         createKey: 'Create Key',
@@ -514,6 +515,7 @@ const resources = {
           ctaCreateAccount: 'Crear una cuenta'
         },
         features: {
+          title: 'Características Poderosas',
           visualChatflows: {
             title: 'Chatflows visuales',
             desc: 'Diseña flujos de trabajo de IA complejos con nodos y conectores de arrastrar y soltar.'
@@ -826,7 +828,7 @@ const resources = {
       },
       apiKeys: {
         title: 'Claves API',
-        description: 'Claves de autenticación de Flowise API y SDK',
+        description: 'Claves de autenticación de Freia API y SDK',
         searchPlaceholder: 'Buscar Claves API',
         import: 'Importar',
         createKey: 'Crear Clave',

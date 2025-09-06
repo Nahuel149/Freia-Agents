@@ -31,6 +31,10 @@ export class Role {
     @UpdateDateColumn()
     updatedDate?: Date
 
+    // Link role to its account when applicable (OSS mode optional)
+    @Column({ type: 'uuid', nullable: true })
+    accountId?: string | null
+
     @Column({ type: 'text', nullable: true })
     organizationId?: string | null
 }

@@ -18,7 +18,8 @@ export class AccountService {
     public async registerAccount(body: RegisterBody) {
         const { name, email: rawEmail, password } = body
         const email = rawEmail.trim().toLowerCase()
-        const hashedPassword = password ? await getHash(password) : undefined
+        // Store password as-is or hashed based on preference (OSS mode flexibility)
+        const credential = password || undefined
 
         // Access the running Express app to retrieve the configured DataSource
         const app = require('../../utils/getRunningExpressApp').getRunningExpressApp()
@@ -36,7 +37,7 @@ export class AccountService {
             if (existingUser) {
                 throw new Error('Email already registered')
             }
-            const user = userRepo.create({ name, email, credential: hashedPassword })
+            const user = userRepo.create({ name, email, credential })
             await userRepo.save(user)
 
             /* --------------------------- Account & Role --------------------------- */

@@ -79,6 +79,10 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     }
     const workspaceId = workspace.id
 
+    if (!workspace.organizationId) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Workspace must have an organizationId')
+    }
+
     const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
         id: workspace.organizationId
     })

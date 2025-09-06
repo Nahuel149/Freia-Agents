@@ -404,43 +404,18 @@ const LandingPage = () => {
                                     }}
                                 >
                                     <Box
+                                        component="img"
+                                        src="/assets/Demo.png"
+                                        alt="Demo"
                                         sx={{
-                                            width: 80,
-                                            height: 80,
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            mb: 3,
-                                            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.3)'
-                                        }}
-                                    >
-                                        <Typography variant="h3" sx={{ color: 'white', fontWeight: 'bold' }}>
-                                            ✨
-                                        </Typography>
-                                    </Box>
-                                    <Typography 
-                                        variant="h5" 
-                                        sx={{ 
-                                            color: 'rgba(255, 255, 255, 0.9)',
-                                            fontWeight: 600,
-                                            textAlign: 'center',
+                                            width: '100%',
+                                            maxWidth: 400,
+                                            height: 'auto',
+                                            borderRadius: 2,
+                                            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)',
                                             mb: 2
                                         }}
-                                    >
-                                        Interactive Demo
-                                    </Typography>
-                                    <Typography 
-                                        variant="body1" 
-                                        sx={{ 
-                                            color: 'rgba(255, 255, 255, 0.7)',
-                                            textAlign: 'center',
-                                            lineHeight: 1.6
-                                        }}
-                                    >
-                                        Experience the power of our platform with real-time features and intuitive design
-                                    </Typography>
+                                    />
                                 </Box>
                             </Box>
                         </Grid>

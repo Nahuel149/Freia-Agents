@@ -32,9 +32,18 @@ export class AuthService {
                 throw new Error('Invalid email or password')
             }
             
-            // Verify password if provided
+            // Verify password if provided - support both hashed and plain text
             if (password && user.credential) {
-                const isValidPassword = await compareHash(password, user.credential)
+                let isValidPassword = false
+                
+                // First try bcrypt comparison for hashed passwords
+                try {
+                    isValidPassword = await compareHash(password, user.credential)
+                } catch (error) {
+                    // If bcrypt fails, try plain text comparison
+                    isValidPassword = password === user.credential
+                }
+                
                 console.log(`Password validation: ${isValidPassword}`);
                 if (!isValidPassword) {
                     throw new Error('Invalid email or password')
