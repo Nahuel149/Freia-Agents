@@ -10,7 +10,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // icons
-import { IconRobotFace, IconBrandOpenai, IconBrandAzure } from '@tabler/icons-react'
+import { IconRobotFace, IconBrandOpenai } from '@tabler/icons-react'
 
 const cards = [
     {
@@ -26,13 +26,6 @@ const cards = [
         icon: <IconBrandOpenai />,
         iconText: 'OpenAI',
         gradient: 'linear-gradient(135deg, #c9ffd85f 0%, #a0f0b567 100%)'
-    },
-    {
-        title: 'Azure Assistant (Coming Soon)',
-        description: 'Create assistant using Azure Assistant API',
-        icon: <IconBrandAzure />,
-        iconText: 'Azure',
-        gradient: 'linear-gradient(135deg, #c4e1ff57 0%, #80b7ff5a 100%)'
     }
 ]
 
@@ -66,7 +59,6 @@ const FeatureCards = () => {
     const onCardClick = (index) => {
         if (index === 0) navigate('/assistants/custom')
         if (index === 1) navigate('/assistants/openai')
-        if (index === 2) alert('Under Development')
     }
 
     return (
@@ -84,7 +76,7 @@ const FeatureCards = () => {
                     gradient={card.gradient}
                     sx={{
                         flex: 1,
-                        maxWidth: 'calc((100% - 2 * 16px) / 3)',
+                        maxWidth: 'calc((100% - 1 * 16px) / 2)',
                         height: 'auto',
                         display: 'flex',
                         flexDirection: 'column',
@@ -93,13 +85,12 @@ const FeatureCards = () => {
                         borderColor: theme.palette.grey[900] + 25,
                         borderRadius: 2,
                         color: customization.isDarkMode ? theme.palette.common.white : '#333333',
-                        cursor: index === 2 ? 'not-allowed' : 'pointer',
-                        opacity: index === 2 ? 0.6 : 1,
+                        cursor: 'pointer',
                         '&:hover': {
-                            boxShadow: index === 2 ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.1)'
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
                         }
                     }}
-                    onClick={() => index !== 2 && onCardClick(index)}
+                    onClick={() => onCardClick(index)}
                 >
                     <CardContent className='h-full relative z-10'>
                         <FeatureIcon>

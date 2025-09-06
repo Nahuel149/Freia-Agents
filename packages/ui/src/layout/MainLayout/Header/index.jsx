@@ -175,16 +175,14 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 sx={{
                     width: 228,
                     display: 'flex',
+                    alignItems: 'center',
                     [theme.breakpoints.down('md')]: {
                         width: 'auto'
                     }
                 }}
             >
-                <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
-                    <LogoSection />
-                </Box>
                 {isAuthenticated && (
-                    <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
+                    <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden', mr: 1 }}>
                         <Avatar
                             variant='rounded'
                             sx={{
@@ -205,6 +203,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
                         </Avatar>
                     </ButtonBase>
                 )}
+                <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
+                    <LogoSection />
+                </Box>
             </Box>
             {/* GitHub Star (OSS only) */}
             {false && isOpenSource && (

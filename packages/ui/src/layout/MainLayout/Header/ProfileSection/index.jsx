@@ -463,6 +463,17 @@ const ProfileSection = ({ handleLogout }) => {
                                                     }
                                                 }}
                                             >
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 1, mb: 1 }}>
+                                                    <img 
+                                                        src="/assets/Freia.png" 
+                                                        alt="Freia Logo" 
+                                                        style={{
+                                                            height: '32px',
+                                                            width: 'auto',
+                                                            objectFit: 'contain'
+                                                        }}
+                                                    />
+                                                </Box>
                                                 <PermissionListItemButton
                                                     permissionId='workspace:export'
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
@@ -488,18 +499,6 @@ const ProfileSection = ({ handleLogout }) => {
                                                     <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
                                                 </PermissionListItemButton>
                                                 <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        setOpen(false)
-                                                        setAboutDialogOpen(true)
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconInfoCircle stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Version</Typography>} />
-                                                </ListItemButton>
                                                 {isAuthenticated && !currentUser.isSSO && !isCloud && (
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}

@@ -170,6 +170,17 @@ const LandingPage = () => {
                 <Container maxWidth='lg'>
                     <Grid container spacing={6} alignItems='center'>
                         <Grid item xs={12} md={6}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                                <img 
+                                    src="/assets/Freia.png" 
+                                    alt="Freia Logo" 
+                                    style={{
+                                        height: '64px',
+                                        width: 'auto',
+                                        objectFit: 'contain'
+                                    }}
+                                />
+                            </Box>
                             <Typography variant='h2' fontWeight={800} gutterBottom>
                                 {t('landing.hero.title')}
                             </Typography>
@@ -177,7 +188,18 @@ const LandingPage = () => {
                                 {t('landing.hero.subtitle')}
                             </Typography>
                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <Button size='large' variant='contained' endIcon={<ArrowForwardIcon />} onClick={() => navigate('/signin')}>
+                                <Button 
+                                    size='large' 
+                                    variant='contained' 
+                                    endIcon={
+                                        <ArrowForwardIcon 
+                                            sx={{ 
+                                                color: customization?.isDarkMode ? '#1976d2 !important' : 'inherit' 
+                                            }} 
+                                        />
+                                    } 
+                                    onClick={() => navigate('/signin')}
+                                >
                                     {t('landing.hero.ctaGetStarted')}
                                 </Button>
                                 <Button size='large' variant='outlined' onClick={() => navigate('/register')}>
@@ -193,9 +215,24 @@ const LandingPage = () => {
                                     bgcolor: 'background.paper',
                                     boxShadow: 4,
                                     border: '1px solid',
-                                    borderColor: 'divider'
+                                    borderColor: 'divider',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden'
                                 }}
-                            />
+                            >
+                                <img 
+                                    src="/assets/Demo.png" 
+                                    alt="Freia Demo" 
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        borderRadius: '12px'
+                                    }}
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 </Container>
@@ -237,7 +274,18 @@ const LandingPage = () => {
                         <Typography variant='subtitle1' color='text.secondary' align='center' sx={{ maxWidth: 720 }}>
                             {t('landing.cta.subtitle')}
                         </Typography>
-                        <Button size='large' variant='contained' endIcon={<ArrowForwardIcon />} onClick={() => navigate('/signin')}>
+                        <Button 
+                            size='large' 
+                            variant='contained' 
+                            endIcon={
+                                <ArrowForwardIcon 
+                                    sx={{ 
+                                        color: customization?.isDarkMode ? '#1976d2 !important' : 'inherit' 
+                                    }} 
+                                />
+                            } 
+                            onClick={() => navigate('/signin')}
+                        >
                             {t('landing.cta.goToSignin')}
                         </Button>
                     </Stack>
