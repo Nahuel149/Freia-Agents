@@ -4,7 +4,7 @@ services:
     runtime: docker
     plan: starter
     region: oregon
-    branch: agent-improvements
+    branch: codebase-cleaning
     dockerfilePath: Dockerfile.render
     dockerContext: .
     buildCommand: ""
@@ -19,10 +19,20 @@ services:
         value: "10000"
       - key: HOST
         value: "0.0.0.0"
+      - key: FORCE_OSS
+        value: "true"
       - key: DATABASE_TYPE
-        value: "sqlite"
-      - key: DATABASE_PATH
-        value: "/opt/render/project/.flowise"
+        value: "postgres"
+      - key: DATABASE_HOST
+        value: "dpg-d2u0qtar433s73dresng-a.oregon-postgres.render.com"
+      - key: DATABASE_PORT
+        value: "5432"
+      - key: DATABASE_NAME
+        value: "freia_postgres"
+      - key: DATABASE_USER
+        value: "freia_postgres_user"
+      - key: DATABASE_PASSWORD
+        value: "imFxMeDUgcEzDbZqF3mR0fBunZHump0"
       - key: APIKEY_PATH
         value: "/opt/render/project/.flowise"
       - key: SECRETKEY_PATH
@@ -31,17 +41,6 @@ services:
         value: "/opt/render/project/.flowise/logs"
       - key: BLOB_STORAGE_PATH
         value: "/opt/render/project/.flowise/storage"
-      # Explicitly unset PostgreSQL variables to prevent conflicts
-      - key: DATABASE_HOST
-        value: ""
-      - key: DATABASE_PORT
-        value: ""
-      - key: DATABASE_NAME
-        value: ""
-      - key: DATABASE_USER
-        value: ""
-      - key: DATABASE_PASSWORD
-        value: ""
       - key: DEBUG
         value: "false"
       - key: LOG_LEVEL
@@ -63,9 +62,11 @@ services:
       - key: FLOWISE_FILE_SIZE_LIMIT
         value: "50mb"
       - key: JWT_AUTH_TOKEN_SECRET
-        generateValue: true
+        value: "8abff6478e0d06383deaa42f486e27c0435e89a6ff35c391c343"
       - key: JWT_REFRESH_TOKEN_SECRET
-        generateValue: true
+        value: "ca7dec4d4701ece54b03789e3f43f6ff0a4a3b8036e2ab9f8"
+      - key: FLOWISE_SECRETKEY_OVERWRITE
+        value: "8abff6478e0d06383deaa42f486e27c0435e89a6ff35c391c343"
       - key: JWT_ISSUER
         value: "FREIA_FLOWISE"
       - key: JWT_AUDIENCE
@@ -82,6 +83,24 @@ services:
         value: "--max-old-space-size=4096"
       - key: NPM_CONFIG_AUDIT_LEVEL
         value: "moderate"
+      - key: FLOWISE_USERNAME
+        value: "nahuelbalsas199@gmail.com"
+      - key: FLOWISE_PASSWORD
+        value: "Testing123!"
+      - key: RATE_LIMIT_ENABLE
+        value: "true"
+      - key: RATE_LIMIT_MAX
+        value: "1000"
+      - key: RATE_LIMIT_DURATION
+        value: "1"
+      - key: TOOL_FUNCTION_BUILTIN_DEP
+        value: "crypto,fs"
+      - key: TOOL_FUNCTION_EXTERNAL_DEP
+        value: "moment,lodash"
+      - key: EXECUTE_CHILD_PROCESS
+        value: "true"
+      - key: WASENDER_API_TOKEN
+        value: "51807b69afb0e9b4f6bd2afce35342247e3de2aa0cca18b1a6390cb80aafdd35"
     disk:
       name: freia-data
       mountPath: /opt/render/project/.flowise
