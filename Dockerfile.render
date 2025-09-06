@@ -32,7 +32,7 @@ ENV NODE_ENV=production
 WORKDIR /usr/src/app
 
 # Copy package files first for better caching
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/server/package.json ./packages/server/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/components/package.json ./packages/components/

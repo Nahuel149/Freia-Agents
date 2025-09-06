@@ -8,7 +8,7 @@
         "build": "tsc && gulp",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
-        "nuke": "rimraf dist node_modules .turbo",
+        "nuke": "rimraf dist node_modules",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage"

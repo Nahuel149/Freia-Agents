@@ -1,0 +1,110 @@
+# Render.com Configuration for Flowise with PostgreSQL
+# This file helps configure your Flowise application to use PostgreSQL on Render
+
+# Database Configuration (PostgreSQL)
+databases:
+  - name: flowise-postgres
+    databaseName: flowise
+    user: flowise_user
+    plan: starter # or free for development
+    region: oregon # choose your preferred region
+    version: "15" # PostgreSQL version
+
+# Web Service Configuration
+services:
+  - type: web
+    name: flowise-app
+    env: node
+    plan: starter # or free for development
+    region: oregon # should match database region
+    buildCommand: |
+      npm install
+      npm run build
+    startCommand: |
+      npm run start
+    envVars:
+      # Database Configuration
+      - key: DATABASE_TYPE
+        value: postgres
+      
+      # PostgreSQL Connection (will be auto-populated by Render)
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: flowise-postgres
+          property: host
+      
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: flowise-postgres
+          property: port
+      
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: flowise-postgres
+          property: database
+      
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: flowise-postgres
+          property: user
+      
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: flowise-postgres
+          property: password
+      
+      # Connection Pool Settings
+      - key: POSTGRES_MAX_CONNECTIONS
+        value: "20"
+      
+      - key: POSTGRES_IDLE_TIMEOUT
+        value: "30000"
+      
+      - key: POSTGRES_CONNECTION_TIMEOUT
+        value: "2000"
+      
+      # Application Settings
+      - key: NODE_ENV
+        value: production
+      
+      - key: PORT
+        value: "3000"
+      
+      # Security Settings (set these in Render dashboard)
+      - key: FLOWISE_USERNAME
+        sync: false # Set manually in dashboard
+      
+      - key: FLOWISE_PASSWORD
+        sync: false # Set manually in dashboard
+      
+      - key: FLOWISE_SECRETKEY_OVERWRITE
+        sync: false # Set manually in dashboard
+      
+      # Optional: File Upload Settings
+      - key: BLOB_STORAGE_PATH
+        value: "/tmp/uploads"
+      
+      # Optional: Logging
+      - key: LOG_LEVEL
+        value: "info"
+      
+      # Optional: CORS Settings
+      - key: CORS_ORIGINS
+        value: "*" # Update with your domain in production
+    
+    # Health check configuration
+    healthCheckPath: "/api/v1/ping"
+    
+    # Auto-deploy settings
+    autoDeploy: true
+    
+    # Build settings
+    buildFilter:
+      paths:
+        - packages/**
+        - package.json
+        - package-lock.json
+      ignoredPaths:
+        - README.md
+        - docs/**
+        - "*.md"

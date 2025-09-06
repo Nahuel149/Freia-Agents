@@ -26,7 +26,6 @@ cypress.config.ts
 
 # Development dependencies
 node_modules/.cache
-.turbo
 .next
 .nuxt
 .vuepress/dist
@@ -67,8 +66,7 @@ assets/Demo.png
 .editorconfig
 nodemon.json
 
-# Husky
-.husky
+
 
 # Metrics and monitoring (for development)
 metrics/
@@ -86,7 +84,6 @@ docker/
 # Build artifacts that will be rebuilt
 dist/
 build/
-.turbo/
 
 # Temporary files
 tmp/

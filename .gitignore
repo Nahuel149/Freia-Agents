@@ -35,8 +35,7 @@
 .env.production.local
 .env
 
-## turbo
-.turbo
+
 
 ## secrets
 **/*.key
