@@ -3,7 +3,7 @@ import _ from 'lodash'
 import nodesService from '../../services/nodes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-import { getWorkspaceSearchOptionsFromReq } from '../../enterprise/utils/ControllerServiceUtils'
+import { getWorkspaceSearchOptionsFromReq } from '../../oss/utils/ControllerServiceUtils'
 
 const getAllNodes = async (req: Request, res: Response, next: NextFunction) => {
     try {

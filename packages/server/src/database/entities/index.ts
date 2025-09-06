@@ -17,14 +17,15 @@ import { Evaluator } from './Evaluator'
 import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
 import { Execution } from './Execution'
-import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../enterprise/database/entities/EnterpriseEntities'
-import { User } from '../../enterprise/database/entities/user.entity'
-import { Organization } from '../../enterprise/database/entities/organization.entity'
-import { Role } from '../../enterprise/database/entities/role.entity'
-import { OrganizationUser } from '../../enterprise/database/entities/organization-user.entity'
-import { Workspace } from '../../enterprise/database/entities/workspace.entity'
-import { WorkspaceUser } from '../../enterprise/database/entities/workspace-user.entity'
-import { LoginMethod } from '../../enterprise/database/entities/login-method.entity'
+import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../oss/database/entities/EnterpriseEntities'
+import { User } from '../../oss/database/entities/user.entity'
+import { Organization } from '../../oss/database/entities/organization.entity'
+import { Role } from '../../oss/database/entities/role.entity'
+import { OrganizationUser } from '../../oss/database/entities/organization-user.entity'
+import { Workspace } from '../../oss/database/entities/workspace.entity'
+import { WorkspaceUser } from '../../oss/database/entities/workspace-user.entity'
+import { LoginMethod } from "../../oss/database/entities/login-method.entity"
+
 
 export const entities = {
     ChatFlow,

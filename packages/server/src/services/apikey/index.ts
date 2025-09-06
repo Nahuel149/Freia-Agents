@@ -6,7 +6,7 @@ import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ApiKey } from '../../database/entities/ApiKey'
 import { Not, IsNull } from 'typeorm'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
+import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
 import { v4 as uuidv4 } from 'uuid'
 
 const getAllApiKeysFromDB = async (workspaceId?: string, page: number = -1, limit: number = -1) => {

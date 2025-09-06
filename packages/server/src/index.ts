@@ -30,9 +30,9 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
-import { Workspace } from './enterprise/database/entities/workspace.entity'
-import { Organization } from './enterprise/database/entities/organization.entity'
-import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
+import { Workspace } from './oss/database/entities/workspace.entity'
+import { Organization } from './oss/database/entities/organization.entity'
+import { GeneralRole, Role } from './oss/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
 
@@ -253,8 +253,9 @@ export class App {
                         if (!org) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
-                        const subscriptionId = org.subscriptionId as string
-                        const customerId = org.customerId as string
+
+                        const subscriptionId = org.subscriptionId ?? ''
+                        const customerId = org.customerId ?? ''
                         const features = this.identityManager ? await this.identityManager.getFeaturesByPlan(subscriptionId) : {} as Record<string, string>
                         const productId = this.identityManager ? await this.identityManager.getProductIdFromSubscription(subscriptionId) : ''
 

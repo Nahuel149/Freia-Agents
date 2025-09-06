@@ -38,16 +38,6 @@ import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorTo
 import { ModifyExecutionSessionIdFieldType1748450230238 } from './1748450230238-ModifyExecutionSessionIdFieldType'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 
-import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/postgres/1720230151482-AddAuthTables'
-import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/postgres/1720230151484-AddWorkspace'
-import { AddWorkspaceShared1726654922034 } from '../../../enterprise/database/migrations/postgres/1726654922034-AddWorkspaceShared'
-import { AddWorkspaceIdToCustomTemplate1726655750383 } from '../../../enterprise/database/migrations/postgres/1726655750383-AddWorkspaceIdToCustomTemplate'
-import { AddOrganization1727798417345 } from '../../../enterprise/database/migrations/postgres/1727798417345-AddOrganization'
-import { LinkWorkspaceId1729130948686 } from '../../../enterprise/database/migrations/postgres/1729130948686-LinkWorkspaceId'
-import { LinkOrganizationId1729133111652 } from '../../../enterprise/database/migrations/postgres/1729133111652-LinkOrganizationId'
-import { AddSSOColumns1730519457880 } from '../../../enterprise/database/migrations/postgres/1730519457880-AddSSOColumns'
-import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/postgres/1734074497540-AddPersonalWorkspace'
-import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/postgres/1746862866554-ExecutionLinkWorkspaceId'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -83,20 +73,10 @@ export const postgresMigrations = [
     AddArtifactsToChatMessage1726156258465,
     AddFollowUpPrompts1726666309552,
     AddTypeToAssistant1733011290987,
-    AddAuthTables1720230151482,
-    AddWorkspace1720230151484,
-    AddWorkspaceShared1726654922034,
-    AddWorkspaceIdToCustomTemplate1726655750383,
-    AddOrganization1727798417345,
-    LinkWorkspaceId1729130948686,
-    LinkOrganizationId1729133111652,
-    AddSSOColumns1730519457880,
     AddSeqNoToDatasetRow1733752119696,
-    AddPersonalWorkspace1734074497540,
     AddExecutionEntity1738090872625,
     FixOpenSourceAssistantTable1743758056188,
     AddErrorToEvaluationRun1744964560174,
-    ExecutionLinkWorkspaceId1746862866554,
     ModifyExecutionSessionIdFieldType1748450230238,
     ModifyChatflowType1755066758601
 ]

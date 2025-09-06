@@ -35,7 +35,7 @@ export const initializeRedisClientAndStore = (): RedisStore => {
 }
 
 export const initializeDBClientAndStore: any = () => {
-    const databaseType = process.env.DATABASE_TYPE || 'sqlite'
+    const databaseType = process.env.DATABASE_TYPE || 'postgres'
     switch (databaseType) {
         case 'mysql': {
             const expressSession = require('express-session')
@@ -77,17 +77,8 @@ export const initializeDBClientAndStore: any = () => {
                 createTableIfMissing: true
             })
         }
-        case 'default':
-        case 'sqlite': {
-            const expressSession = require('express-session')
-            const sqlSession = require('connect-sqlite3')(expressSession)
-            let flowisePath = path.join(getUserHome(), '.flowise')
-            const homePath = process.env.DATABASE_PATH ?? flowisePath
-            return new sqlSession({
-                db: 'database.sqlite',
-                table: 'login_sessions',
-                dir: homePath
-            })
+        default: {
+            throw new Error(`Unsupported database type for session store: ${databaseType}`)
         }
     }
 }

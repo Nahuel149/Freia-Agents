@@ -1,9 +1,9 @@
 import { Args } from '@oclif/core'
 import { QueryRunner } from 'typeorm'
 import * as DataSource from '../DataSource'
-import { User } from '../enterprise/database/entities/user.entity'
-import { getHash } from '../enterprise/utils/encryption.util'
-import { isInvalidPassword } from '../enterprise/utils/validation.util'
+import { User } from '../oss/database/entities/user.entity'
+import { getHash } from '../oss/utils/encryption.util'
+import { isInvalidPassword } from '../oss/utils/validation.util'
 import logger from '../utils/logger'
 import { BaseCommand } from './base'
 

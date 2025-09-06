@@ -1,69 +1,68 @@
+// Test script to verify user login against PostgreSQL database
+// Usage: node test_login.js
+// Environment variables: PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE, TEST_EMAIL, TEST_PASSWORD
+
 const bcrypt = require('bcryptjs');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const os = require('os');
+const { Client } = require('pg');
 
-// Database path
-const dbPath = path.join(os.homedir(), '.flowise', 'database.sqlite');
+async function testLogin() {
+    const client = new Client({
+        host: process.env.PGHOST || 'localhost',
+        port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5432,
+        user: process.env.PGUSER || 'postgres',
+        password: process.env.PGPASSWORD || 'postgres',
+        database: process.env.PGDATABASE || 'flowise'
+    });
 
-// Test login function with the correct password
-function testLogin() {
-    const db = new sqlite3.Database(dbPath);
-    
-    const email = 'nahuelbalsas199@gmail.com';
-    const correctPassword = 'Testing123!'; // The actual password
-    
-    console.log('Testing login for:', email);
-    console.log('Testing with password:', correctPassword);
-    console.log('Database path:', dbPath);
-    
-    db.get('SELECT id, name, email, credential, status, createdDate FROM user WHERE email = ?', [email], (err, row) => {
-        if (err) {
-            console.error('Database error:', err);
-            db.close();
+    const email = process.env.TEST_EMAIL || 'user@example.com';
+    const inputPassword = process.env.TEST_PASSWORD || 'Testing123!';
+
+    console.log('🔍 Connecting to PostgreSQL...');
+    await client.connect();
+    console.log('✅ Connected');
+
+    try {
+        const res = await client.query(
+            'SELECT id, name, email, credential, status, "createdDate" FROM "user" WHERE email = $1 LIMIT 1',
+            [email]
+        );
+
+        if (res.rowCount === 0) {
+            console.log(`❌ User with email ${email} not found.`);
             return;
         }
-        
-        if (!row) {
-            console.log('❌ User not found in database');
-            db.close();
-            return;
-        }
-        
+
+        const row = res.rows[0];
         console.log('\n✅ User found:');
-        console.log('  ID:', row.id);
-        console.log('  Name:', row.name);
-        console.log('  Email:', row.email);
-        console.log('  Status:', row.status);
-        console.log('  Created:', row.createdDate);
-        
+        console.table(row);
+
         if (!row.credential) {
             console.log('❌ No credential stored for user');
-            db.close();
             return;
         }
-        
-        // Test password comparison
-        const isPasswordValid = bcrypt.compareSync(correctPassword, row.credential);
+
+        let isPasswordValid;
+        if (row.credential && row.credential.startsWith('$2')) {
+            // Stored value is a bcrypt hash
+            isPasswordValid = bcrypt.compareSync(inputPassword, row.credential);
+        } else {
+            // Stored value appears to be plaintext (development/seed)
+            isPasswordValid = inputPassword === row.credential;
+        }
         console.log('\n🔍 Password verification:');
-        console.log('  Input password:', correctPassword);
-        console.log('  Stored hash:', row.credential.substring(0, 20) + '...');
-        console.log('  Password match:', isPasswordValid ? '✅ SUCCESS!' : '❌ FAILED');
-        
+        console.log(`Password match: ${isPasswordValid ? '✅ SUCCESS!' : '❌ FAILED'}`);
+
         if (isPasswordValid) {
             console.log('\n🎉 AUTHENTICATION SUCCESSFUL!');
-            console.log('The password "Testing123!" is correct for this user.');
-            console.log('\n📋 Next steps for Render deployment:');
-            console.log('  1. Configure database environment variables');
-            console.log('  2. Set up proper database connection for production');
-            console.log('  3. Ensure database migrations run correctly');
-        } else {
-            console.log('\n❌ Password still doesn\'t match.');
-            console.log('There might be an issue with the stored hash.');
         }
-        
-        db.close();
-    });
+    } catch (err) {
+        console.error('❌ Query error:', err);
+    } finally {
+        await client.end();
+    }
 }
 
-testLogin();
+testLogin().catch(err => {
+    console.error('Unexpected error:', err);
+    process.exit(1);
+});

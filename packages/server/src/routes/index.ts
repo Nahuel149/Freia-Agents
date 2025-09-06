@@ -37,6 +37,8 @@ import openaiAssistantsFileRouter from './openai-assistants-files'
 import openaiAssistantsVectorStoreRouter from './openai-assistants-vector-store'
 import openaiRealtimeRouter from './openai-realtime'
 import pingRouter from './ping'
+import authRouter from './auth'
+import accountRouter from './account'
 import predictionRouter from './predictions'
 import promptListsRouter from './prompts-lists'
 import publicChatbotRouter from './public-chatbots'
@@ -56,16 +58,7 @@ import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
 
-import authRouter from '../enterprise/routes/auth'
-import auditRouter from '../enterprise/routes/audit'
-import userRouter from '../enterprise/routes/user.route'
-import organizationRouter from '../enterprise/routes/organization.route'
-import roleRouter from '../enterprise/routes/role.route'
-import organizationUserRoute from '../enterprise/routes/organization-user.route'
-import workspaceRouter from '../enterprise/routes/workspace.route'
-import workspaceUserRouter from '../enterprise/routes/workspace-user.route'
-import accountRouter from '../enterprise/routes/account.route'
-import loginMethodRouter from '../enterprise/routes/login-method.route'
+
 import { IdentityManager } from '../IdentityManager'
 
 const router = express.Router()
@@ -116,6 +109,8 @@ router.use('/tools', toolsRouter)
 router.use('/variables', variablesRouter)
 router.use('/vector', vectorRouter)
 router.use('/verify', verifyRouter)
+router.use('/account', accountRouter)
+router.use('/auth', authRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
 router.use('/settings', settingsRouter)
@@ -125,16 +120,7 @@ router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 
-router.use('/auth', authRouter)
-router.use('/audit', IdentityManager.checkFeatureByPlan('feat:login-activity'), auditRouter)
-router.use('/user', userRouter)
-router.use('/organization', organizationRouter)
-router.use('/role', IdentityManager.checkFeatureByPlan('feat:roles'), roleRouter)
-router.use('/organizationuser', organizationUserRoute)
-router.use('/workspace', workspaceRouter)
-router.use('/workspaceuser', workspaceUserRouter)
-router.use('/account', accountRouter)
-router.use('/loginmethod', loginMethodRouter)
+
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
 router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)
 

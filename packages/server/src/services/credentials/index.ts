@@ -6,9 +6,9 @@ import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
 import { ICredentialReturnResponse } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
-import { WorkspaceShared } from '../../enterprise/database/entities/EnterpriseEntities'
-import { WorkspaceService } from '../../enterprise/services/workspace.service'
+import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
+import { WorkspaceShared } from '../../oss/database/entities/EnterpriseEntities'
+import { WorkspaceService } from '../../oss/services/workspace.service'
 
 const createCredential = async (requestBody: any) => {
     try {

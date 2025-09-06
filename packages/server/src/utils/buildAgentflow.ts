@@ -55,7 +55,7 @@ import { utilAddChatMessage } from './addChatMesage'
 import { CachePool } from '../CachePool'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Telemetry } from './telemetry'
-import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
+import { getWorkspaceSearchOptions } from '../oss/utils/ControllerServiceUtils'
 import { UsageCacheManager } from '../UsageCacheManager'
 
 interface IWaitingNode {

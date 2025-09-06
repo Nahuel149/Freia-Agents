@@ -9,8 +9,8 @@ import { DeleteResult } from 'typeorm'
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
 import { v4 as uuidv4 } from 'uuid'
 import chatflowsService from '../chatflows'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
-import { WorkspaceService } from '../../enterprise/services/workspace.service'
+import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
+import { WorkspaceService } from '../../oss/services/workspace.service'
 
 type ITemplate = {
     badge: string
