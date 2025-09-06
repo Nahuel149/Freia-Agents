@@ -1,4 +1,4 @@
-import { Box, Button, Container, Grid, Stack, Typography, ToggleButton, ToggleButtonGroup, Switch } from '@mui/material'
+import { Box, Button, Container, Grid, Stack, Typography, ToggleButton, ToggleButtonGroup, Switch, Card, CardContent } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -8,16 +8,77 @@ import { useTheme, styled } from '@mui/material/styles'
 import { useDispatch, useSelector } from 'react-redux'
 import { SET_DARKMODE } from '@/store/actions'
 
-const Feature = ({ title, description }) => (
-    <Stack spacing={1}>
-        <Typography variant='h6' fontWeight={700}>
-            {title}
-        </Typography>
-        <Typography variant='body1' color='text.secondary'>
-            {description}
-        </Typography>
-    </Stack>
-)
+const Feature = ({ icon, title, description }) => {
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
+    
+    return (
+        <Card 
+            sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                borderRadius: '20px',
+                background: customization?.isDarkMode 
+                    ? 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)'
+                    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%)',
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${customization?.isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.3)'}`,
+                boxShadow: customization?.isDarkMode 
+                    ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    : '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: customization?.isDarkMode 
+                        ? '0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                        : '0 20px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1)'
+                }
+            }}
+        >
+            <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 4 }}>
+                <Box
+                    sx={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 3,
+                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+                    }}
+                >
+                    <Typography variant="h4" sx={{ fontSize: '2rem' }}>
+                        {icon}
+                    </Typography>
+                </Box>
+                <Typography 
+                    variant="h6" 
+                    component="h3" 
+                    sx={{ 
+                        fontWeight: 600,
+                        mb: 2,
+                        color: customization?.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
+                    }}
+                >
+                    {title}
+                </Typography>
+                <Typography 
+                    variant="body2" 
+                    sx={{ 
+                        color: customization?.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                        lineHeight: 1.6
+                    }}
+                >
+                    {description}
+                </Typography>
+            </CardContent>
+        </Card>
+    );
+};
 
 // Styled switch copied from Header to keep visual consistency
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
@@ -166,43 +227,144 @@ const LandingPage = () => {
             </Box>
 
             {/* Hero */}
-            <Box sx={{ pt: 12, pb: 8 }}>
-                <Container maxWidth='lg'>
-                    <Grid container spacing={6} alignItems='center'>
+            <Box 
+                sx={{ 
+                    pt: 16, 
+                    pb: 12,
+                    background: theme.palette.mode === 'dark' 
+                        ? 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)'
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'radial-gradient(circle at 30% 20%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255,255,255,0.05) 0%, transparent 50%)',
+                        pointerEvents: 'none'
+                    }
+                }}
+            >
+                <Container maxWidth='lg' sx={{ position: 'relative', zIndex: 1 }}>
+                    <Grid container spacing={8} alignItems='center'>
                         <Grid item xs={12} md={6}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                                <img 
-                                    src="/assets/Freia.png" 
-                                    alt="Freia Logo" 
-                                    style={{
-                                        height: '64px',
-                                        width: 'auto',
-                                        objectFit: 'contain'
+                            <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, mb: 4 }}>
+                                <Box
+                                    sx={{
+                                        p: 2,
+                                        borderRadius: '20px',
+                                        background: 'rgba(255, 255, 255, 0.1)',
+                                        backdropFilter: 'blur(20px)',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
                                     }}
-                                />
+                                >
+                                    <img 
+                                        src="/assets/Freia.png" 
+                                        alt="Freia Logo" 
+                                        style={{
+                                            height: '48px',
+                                            width: 'auto',
+                                            objectFit: 'contain'
+                                        }}
+                                    />
+                                </Box>
                             </Box>
-                            <Typography variant='h2' fontWeight={800} gutterBottom>
+                            <Typography 
+                                variant='h1' 
+                                sx={{
+                                    fontWeight: 900,
+                                    fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
+                                    lineHeight: 1.1,
+                                    background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    textAlign: { xs: 'center', md: 'left' },
+                                    mb: 3
+                                }}
+                            >
                                 {t('landing.hero.title')}
                             </Typography>
-                            <Typography variant='h6' color='text.secondary' sx={{ mb: 3 }}>
+                            <Typography 
+                                variant='h5' 
+                                sx={{ 
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    fontWeight: 400,
+                                    lineHeight: 1.6,
+                                    textAlign: { xs: 'center', md: 'left' },
+                                    mb: 5,
+                                    maxWidth: '500px'
+                                }}
+                            >
                                 {t('landing.hero.subtitle')}
                             </Typography>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ justifyContent: { xs: 'center', md: 'flex-start' } }}>
                                 <Button 
                                     size='large' 
-                                    variant='contained' 
+                                    variant='contained'
+                                    sx={{
+                                        px: 4,
+                                        py: 1.5,
+                                        borderRadius: '50px',
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
+                                        fontSize: '1.1rem',
+                                        fontWeight: 600,
+                                        textTransform: 'none',
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: '0 12px 35px rgba(102, 126, 234, 0.6)'
+                                        },
+                                        '&:active': {
+                                            transform: 'translateY(0px)'
+                                        }
+                                    }}
                                     endIcon={
-                                        <ArrowForwardIcon 
-                                            sx={{ 
-                                                color: customization?.isDarkMode ? '#1976d2 !important' : 'inherit' 
-                                            }} 
+                                        <ArrowForwardIcon
+                                            sx={{
+                                                color: 'white',
+                                                background: 'transparent',
+                                                transition: 'transform 0.3s ease'
+                                            }}
                                         />
                                     } 
                                     onClick={() => navigate('/signin')}
                                 >
                                     {t('landing.hero.ctaGetStarted')}
                                 </Button>
-                                <Button size='large' variant='outlined' onClick={() => navigate('/register')}>
+                                <Button 
+                                    size='large' 
+                                    variant='outlined' 
+                                    sx={{
+                                        px: 4,
+                                        py: 1.5,
+                                        borderRadius: '50px',
+                                        border: '2px solid rgba(255, 255, 255, 0.3)',
+                                        color: 'rgba(255, 255, 255, 0.9)',
+                                        fontSize: '1.1rem',
+                                        fontWeight: 600,
+                                        textTransform: 'none',
+                                        backdropFilter: 'blur(10px)',
+                                        background: 'rgba(255, 255, 255, 0.1)',
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        '&:hover': {
+                                            border: '2px solid rgba(255, 255, 255, 0.5)',
+                                            background: 'rgba(255, 255, 255, 0.2)',
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: '0 8px 25px rgba(255, 255, 255, 0.1)'
+                                        },
+                                        '&:active': {
+                                            transform: 'translateY(0px)'
+                                        }
+                                    }}
+                                    onClick={() => navigate('/register')}
+                                >
                                     {t('landing.hero.ctaCreateAccount')}
                                 </Button>
                             </Stack>
@@ -210,55 +372,149 @@ const LandingPage = () => {
                         <Grid item xs={12} md={6}>
                             <Box
                                 sx={{
-                                    height: 420,
-                                    borderRadius: 3,
-                                    bgcolor: 'background.paper',
-                                    boxShadow: 4,
-                                    border: '1px solid',
-                                    borderColor: 'divider',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'hidden'
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: { xs: 350, md: 450 },
+                                    borderRadius: '24px',
+                                    overflow: 'hidden',
+                                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                                    backdropFilter: 'blur(20px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    '&:hover': {
+                                        transform: 'translateY(-8px)',
+                                        boxShadow: '0 30px 60px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                                    }
                                 }}
                             >
-                                <img 
-                                    src="/assets/Demo.png" 
-                                    alt="Freia Demo" 
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        borderRadius: '12px'
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        p: 4
                                     }}
-                                />
+                                >
+                                    <Box
+                                        sx={{
+                                            width: 80,
+                                            height: 80,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            mb: 3,
+                                            boxShadow: '0 10px 25px rgba(102, 126, 234, 0.3)'
+                                        }}
+                                    >
+                                        <Typography variant="h3" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                            ✨
+                                        </Typography>
+                                    </Box>
+                                    <Typography 
+                                        variant="h5" 
+                                        sx={{ 
+                                            color: 'rgba(255, 255, 255, 0.9)',
+                                            fontWeight: 600,
+                                            textAlign: 'center',
+                                            mb: 2
+                                        }}
+                                    >
+                                        Interactive Demo
+                                    </Typography>
+                                    <Typography 
+                                        variant="body1" 
+                                        sx={{ 
+                                            color: 'rgba(255, 255, 255, 0.7)',
+                                            textAlign: 'center',
+                                            lineHeight: 1.6
+                                        }}
+                                    >
+                                        Experience the power of our platform with real-time features and intuitive design
+                                    </Typography>
+                                </Box>
                             </Box>
                         </Grid>
                     </Grid>
                 </Container>
             </Box>
 
-            {/* Feature grid */}
-            <Box sx={{ py: 8, bgcolor: 'background.default' }}>
-                <Container maxWidth='lg'>
+            {/* Features Section */}
+            <Box
+                sx={{
+                    position: 'relative',
+                    py: 10,
+                    background: customization?.isDarkMode 
+                        ? 'linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%)'
+                        : 'linear-gradient(180deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%)',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none'
+                    }
+                }}
+            >
+                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+                    <Box sx={{ textAlign: 'center', mb: 8 }}>
+                        <Typography 
+                            variant="h3" 
+                            sx={{ 
+                                fontWeight: 700,
+                                background: customization?.isDarkMode 
+                                    ? 'linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)'
+                                    : 'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                mb: 3
+                            }}
+                        >
+                            {t('landing.features.title')}
+                        </Typography>
+                        <Typography 
+                            variant="h6" 
+                            sx={{ 
+                                color: customization?.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                                maxWidth: 600,
+                                mx: 'auto',
+                                lineHeight: 1.6
+                            }}
+                        >
+                            Discover powerful features designed to transform your workflow
+                        </Typography>
+                    </Box>
                     <Grid container spacing={6}>
                         <Grid item xs={12} md={4}>
-                            <Feature title={t('landing.features.visualChatflows.title')} description={t('landing.features.visualChatflows.desc')} />
+                            <Feature icon="🔗" title={t('landing.features.visualChatflows.title')} description={t('landing.features.visualChatflows.desc')} />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <Feature title={t('landing.features.agentsTools.title')} description={t('landing.features.agentsTools.desc')} />
+                            <Feature icon="🤖" title={t('landing.features.agentsTools.title')} description={t('landing.features.agentsTools.desc')} />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <Feature title={t('landing.features.datasetsEvals.title')} description={t('landing.features.datasetsEvals.desc')} />
+                            <Feature icon="📊" title={t('landing.features.datasetsEvals.title')} description={t('landing.features.datasetsEvals.desc')} />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <Feature title={t('landing.features.vectorStores.title')} description={t('landing.features.vectorStores.desc')} />
+                            <Feature icon="🗄️" title={t('landing.features.vectorStores.title')} description={t('landing.features.vectorStores.desc')} />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <Feature title={t('landing.features.secureAuth.title')} description={t('landing.features.secureAuth.desc')} />
+                            <Feature icon="🔐" title={t('landing.features.secureAuth.title')} description={t('landing.features.secureAuth.desc')} />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <Feature title={t('landing.features.deployAnywhere.title')} description={t('landing.features.deployAnywhere.desc')} />
+                            <Feature icon="🚀" title={t('landing.features.deployAnywhere.title')} description={t('landing.features.deployAnywhere.desc')} />
                         </Grid>
                     </Grid>
                 </Container>
@@ -276,12 +532,33 @@ const LandingPage = () => {
                         </Typography>
                         <Button 
                             size='large' 
-                            variant='contained' 
+                            variant='contained'
+                            sx={{
+                                px: 4,
+                                py: 1.5,
+                                borderRadius: '50px',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
+                                fontSize: '1.1rem',
+                                fontWeight: 600,
+                                textTransform: 'none',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 12px 35px rgba(102, 126, 234, 0.6)'
+                                },
+                                '&:active': {
+                                    transform: 'translateY(0px)'
+                                }
+                            }}
                             endIcon={
-                                <ArrowForwardIcon 
-                                    sx={{ 
-                                        color: customization?.isDarkMode ? '#1976d2 !important' : 'inherit' 
-                                    }} 
+                                <ArrowForwardIcon
+                                    sx={{
+                                        color: 'white',
+                                        background: 'transparent',
+                                        transition: 'transform 0.3s ease'
+                                    }}
                                 />
                             } 
                             onClick={() => navigate('/signin')}

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Stack, useTheme, Typography, Box, Alert, Button, Divider, Icon } from '@mui/material'
+import { Stack, useTheme, Typography, Box, Alert, Button, Divider, Icon, Container, Card, CardContent } from '@mui/material'
 import { IconExclamationCircle } from '@tabler/icons-react'
 import { LoadingButton } from '@mui/lab'
 import { useTranslation } from 'react-i18next'
@@ -39,7 +39,7 @@ import GithubSSOLoginIcon from '@/assets/images/github.svg'
 
 const SignInPage = () => {
     const theme = useTheme()
-    useSelector((state) => state.customization)
+    const customization = useSelector((state) => state.customization)
     useNotifier()
     const { isEnterpriseLicensed, isCloud, isOpenSource } = useConfig()
     const { t } = useTranslation()
@@ -177,9 +177,48 @@ const SignInPage = () => {
     }
 
     return (
-        <>
-            <MainCard maxWidth='sm'>
-                <Stack flexDirection='column' sx={{ width: '480px', gap: 3 }}>
+        <Box
+            sx={{
+                minHeight: '100vh',
+                background: customization.isDarkMode
+                    ? 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)'
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                position: 'relative',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: customization.isDarkMode
+                        ? 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%)'
+                        : 'radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
+                    pointerEvents: 'none'
+                }
+            }}
+        >
+            <Container maxWidth='sm' sx={{ display: 'flex', alignItems: 'center', minHeight: '100vh', py: 4 }}>
+                <Card
+                    sx={{
+                        width: '100%',
+                        maxWidth: '480px',
+                        mx: 'auto',
+                        background: customization.isDarkMode
+                            ? 'rgba(30, 30, 46, 0.8)'
+                            : 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(20px)',
+                        border: customization.isDarkMode
+                            ? '1px solid rgba(255, 255, 255, 0.1)'
+                            : '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '24px',
+                        boxShadow: customization.isDarkMode
+                            ? '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                            : '0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                    }}
+                >
+                    <CardContent sx={{ p: 4 }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
                     {successMessage && (
                         <Alert variant='filled' severity='success' onClose={() => setSuccessMessage('')}>
                             {successMessage}
@@ -197,21 +236,62 @@ const SignInPage = () => {
                             </Button>
                         </Stack>
                     )}
-                    <Stack sx={{ gap: 1 }}>
-                        <Typography variant='h1'>{t('auth.signin.title')}</Typography>
+                    <Stack sx={{ gap: 2, textAlign: 'center', mb: 1 }}>
+                        <Typography 
+                            variant='h3' 
+                            sx={{ 
+                                fontWeight: 700,
+                                fontSize: { xs: '2rem', sm: '2.5rem' },
+                                background: customization.isDarkMode
+                                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                mb: 1
+                            }}
+                        >
+                            {t('auth.signin.title')}
+                        </Typography>
                         {isCloud && (
-                            <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                            <Typography 
+                                variant='body1' 
+                                sx={{ 
+                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                                    fontSize: '1rem'
+                                }}
+                            >
                                 {t('auth.signin.noAccount')}{' '}
-                                <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
+                                <Link 
+                                    style={{ 
+                                        color: customization.isDarkMode ? '#667eea' : '#764ba2',
+                                        textDecoration: 'none',
+                                        fontWeight: 600
+                                    }} 
+                                    to='/register'
+                                >
                                     {t('auth.signin.signUpForFree')}
                                 </Link>
                                 .
                             </Typography>
                         )}
                         {isEnterpriseLicensed && (
-                            <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                            <Typography 
+                                variant='body1' 
+                                sx={{ 
+                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                                    fontSize: '1rem'
+                                }}
+                            >
                                 {t('auth.signin.haveInvite')}{' '}
-                                <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
+                                <Link 
+                                    style={{ 
+                                        color: customization.isDarkMode ? '#667eea' : '#764ba2',
+                                        textDecoration: 'none',
+                                        fontWeight: 600
+                                    }} 
+                                    to='/register'
+                                >
                                     {t('auth.signin.signUpForAccount')}
                                 </Link>
                                 .
@@ -219,14 +299,18 @@ const SignInPage = () => {
                         )}
                     </Stack>
                     <form onSubmit={doLogin}>
-                        <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
-                            <Box sx={{ p: 0 }}>
-                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                    <Typography>
-                                        {t('auth.signin.email')}<span style={{ color: 'red' }}>&nbsp;*</span>
-                                    </Typography>
-                                    <div style={{ flexGrow: 1 }}></div>
-                                </div>
+                        <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 3 }}>
+                            <Box sx={{ mb: 1 }}>
+                                <Typography 
+                                    variant='body1' 
+                                    sx={{ 
+                                        fontWeight: 600,
+                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                                        mb: 1
+                                    }}
+                                >
+                                    {t('auth.signin.email')}<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                </Typography>
                                 <Input
                                     inputParam={usernameInput}
                                     onChange={(newValue) => setUsernameVal(newValue)}
@@ -234,17 +318,54 @@ const SignInPage = () => {
                                     showDialog={false}
                                 />
                             </Box>
-                            <Box sx={{ p: 0 }}>
-                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                    <Typography>
-                                        {t('auth.signin.password')}<span style={{ color: 'red' }}>&nbsp;*</span>
-                                    </Typography>
-                                    <div style={{ flexGrow: 1 }}></div>
-                                </div>
+                            <Box sx={{ mb: 1 }}>
+                                <Typography 
+                                    variant='body1' 
+                                    sx={{ 
+                                        fontWeight: 600,
+                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                                        mb: 1
+                                    }}
+                                >
+                                    {t('auth.signin.password')}<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                </Typography>
                                 <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
-                                <Typography variant='body2' sx={{ color: theme.palette.grey[600], mt: 1, textAlign: 'right' }}>
-                                    <Link style={{ color: theme.palette.primary.main }} to='/forgot-password'>
+                                <Typography 
+                                    variant='body2' 
+                                    sx={{ 
+                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                                        mt: 1, 
+                                        textAlign: 'right'
+                                    }}
+                                >
+                                    <Link 
+                                        style={{ 
+                                            color: customization.isDarkMode ? '#667eea' : '#764ba2',
+                                            textDecoration: 'none',
+                                            fontWeight: 600
+                                        }} 
+                                        to='/forgot-password'
+                                    >
                                         {t('auth.signin.forgotPassword')}
+                                    </Link>
+                                </Typography>
+                                <Typography 
+                                    variant='body2' 
+                                    sx={{ 
+                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                                        mt: 1, 
+                                        textAlign: 'right'
+                                    }}
+                                >
+                                    <Link 
+                                        style={{ 
+                                            color: customization.isDarkMode ? '#667eea' : '#764ba2',
+                                            textDecoration: 'none',
+                                            fontWeight: 600
+                                        }} 
+                                        to='/register'
+                                    >
+                                        Create Account
                                     </Link>
                                 </Typography>
                                 {isCloud && (
@@ -263,12 +384,43 @@ const SignInPage = () => {
                             <LoadingButton
                                 loading={loading}
                                 variant='contained'
-                                style={{ borderRadius: 12, height: 40, marginRight: 5 }}
                                 type='submit'
+                                sx={{
+                                    borderRadius: '12px',
+                                    height: '48px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                                    border: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '1rem',
+                                    textTransform: 'none',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #5a67d8 0%, #667eea 100%)',
+                                        boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
+                                        transform: 'translateY(-2px)'
+                                    },
+                                    '&:active': {
+                                        transform: 'translateY(0px)'
+                                    }
+                                }}
                             >
                                 {t('auth.signin.login')}
                             </LoadingButton>
-                            {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>{t('auth.signin.or')}</Divider>}
+                            {configuredSsoProviders && configuredSsoProviders.length > 0 && (
+                                <Divider 
+                                    sx={{ 
+                                        width: '100%',
+                                        borderColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                        '& .MuiDivider-wrapper': {
+                                            color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                                            fontWeight: 500
+                                        }
+                                    }}
+                                >
+                                    {t('auth.signin.or')}
+                                </Divider>
+                            )}
                             {configuredSsoProviders &&
                                 configuredSsoProviders.map(
                                     (ssoProvider) =>
@@ -277,13 +429,36 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
                                                         <img src={AzureSSOLoginIcon} alt={'MicrosoftSSO'} width={20} height={20} />
                                                     </Icon>
                                                 }
+                                                sx={{
+                                                    borderRadius: '12px',
+                                                    height: '48px',
+                                                    width: '100%',
+                                                    background: customization.isDarkMode
+                                                        ? 'rgba(255, 255, 255, 0.05)'
+                                                        : 'rgba(255, 255, 255, 0.8)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: customization.isDarkMode
+                                                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                                                        : '1px solid rgba(0, 0, 0, 0.1)',
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                                                    fontWeight: 500,
+                                                    textTransform: 'none',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        borderColor: customization.isDarkMode ? 'rgba(102, 126, 234, 0.5)' : 'rgba(118, 75, 162, 0.5)',
+                                                        background: customization.isDarkMode
+                                                            ? 'rgba(102, 126, 234, 0.1)'
+                                                            : 'rgba(118, 75, 162, 0.1)',
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                                                    }
+                                                }}
                                             >
                                                 {t('auth.sso.azure')}
                                             </Button>
@@ -296,13 +471,36 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
                                                         <img src={GoogleSSOLoginIcon} alt={'GoogleSSO'} width={20} height={20} />
                                                     </Icon>
                                                 }
+                                                sx={{
+                                                    borderRadius: '12px',
+                                                    height: '48px',
+                                                    width: '100%',
+                                                    background: customization.isDarkMode
+                                                        ? 'rgba(255, 255, 255, 0.05)'
+                                                        : 'rgba(255, 255, 255, 0.8)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: customization.isDarkMode
+                                                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                                                        : '1px solid rgba(0, 0, 0, 0.1)',
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                                                    fontWeight: 500,
+                                                    textTransform: 'none',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        borderColor: customization.isDarkMode ? 'rgba(102, 126, 234, 0.5)' : 'rgba(118, 75, 162, 0.5)',
+                                                        background: customization.isDarkMode
+                                                            ? 'rgba(102, 126, 234, 0.1)'
+                                                            : 'rgba(118, 75, 162, 0.1)',
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                                                    }
+                                                }}
                                             >
                                                 {t('auth.sso.google')}
                                             </Button>
@@ -315,13 +513,36 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
                                                         <img src={Auth0SSOLoginIcon} alt={'Auth0SSO'} width={20} height={20} />
                                                     </Icon>
                                                 }
+                                                sx={{
+                                                    borderRadius: '12px',
+                                                    height: '48px',
+                                                    width: '100%',
+                                                    background: customization.isDarkMode
+                                                        ? 'rgba(255, 255, 255, 0.05)'
+                                                        : 'rgba(255, 255, 255, 0.8)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: customization.isDarkMode
+                                                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                                                        : '1px solid rgba(0, 0, 0, 0.1)',
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                                                    fontWeight: 500,
+                                                    textTransform: 'none',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        borderColor: customization.isDarkMode ? 'rgba(102, 126, 234, 0.5)' : 'rgba(118, 75, 162, 0.5)',
+                                                        background: customization.isDarkMode
+                                                            ? 'rgba(102, 126, 234, 0.1)'
+                                                            : 'rgba(118, 75, 162, 0.1)',
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                                                    }
+                                                }}
                                             >
                                                 {t('auth.sso.auth0')}
                                             </Button>
@@ -334,13 +555,36 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
                                                         <img src={GithubSSOLoginIcon} alt={'GithubSSO'} width={20} height={20} />
                                                     </Icon>
                                                 }
+                                                sx={{
+                                                    borderRadius: '12px',
+                                                    height: '48px',
+                                                    width: '100%',
+                                                    background: customization.isDarkMode
+                                                        ? 'rgba(255, 255, 255, 0.05)'
+                                                        : 'rgba(255, 255, 255, 0.8)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: customization.isDarkMode
+                                                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                                                        : '1px solid rgba(0, 0, 0, 0.1)',
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                                                    fontWeight: 500,
+                                                    textTransform: 'none',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        borderColor: customization.isDarkMode ? 'rgba(102, 126, 234, 0.5)' : 'rgba(118, 75, 162, 0.5)',
+                                                        background: customization.isDarkMode
+                                                            ? 'rgba(102, 126, 234, 0.1)'
+                                                            : 'rgba(118, 75, 162, 0.1)',
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                                                    }
+                                                }}
                                             >
                                                 {t('auth.sso.github')}
                                             </Button>
@@ -349,8 +593,10 @@ const SignInPage = () => {
                         </Stack>
                     </form>
                 </Stack>
-            </MainCard>
-        </>
+                        </CardContent>
+                </Card>
+            </Container>
+        </Box>
     )
 }
 

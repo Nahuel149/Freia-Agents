@@ -30,7 +30,7 @@ import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList, IconX, IconAlertTriangle } from '@tabler/icons-react'
+import { IconPlus, IconLayoutGrid, IconList, IconX, IconAlertTriangle, IconWand } from '@tabler/icons-react'
 
 // ==============================|| AGENTS ||============================== //
 
@@ -101,6 +101,10 @@ const Agentflows = () => {
         } else {
             navigate('/agentcanvas')
         }
+    }
+
+    const openGenerator = () => {
+        navigate('/agentflows/generator')
     }
 
     const goToCanvas = (selectedAgentflow) => {
@@ -249,6 +253,15 @@ const Agentflows = () => {
                                 <IconList />
                             </ToggleButton>
                         </ToggleButtonGroup>
+                        <StyledPermissionButton
+                            permissionId={'agentflows:create'}
+                            variant='outlined'
+                            onClick={openGenerator}
+                            startIcon={<IconWand />}
+                            sx={{ borderRadius: 2, height: 40, mr: 1 }}
+                        >
+                            Generate
+                        </StyledPermissionButton>
                         <StyledPermissionButton
                             permissionId={'agentflows:create'}
                             variant='contained'

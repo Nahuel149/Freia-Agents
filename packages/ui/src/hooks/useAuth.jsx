@@ -36,6 +36,11 @@ export const useAuth = () => {
             return true
         }
 
+        // In OSS mode, all display features should be available
+        if (isOpenSource) {
+            return true
+        }
+
         // if it has display flag, but user has no features, then it should not be displayed
         if (!features || Array.isArray(features) || Object.keys(features).length === 0) {
             return false
