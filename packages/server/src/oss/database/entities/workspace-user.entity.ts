@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm'
+import { Workspace } from './workspace.entity'
 
 /**
  * Minimal WorkspaceUser entity stub for OSS mode. Only the fields referenced by OSS code paths are included.
@@ -16,6 +17,11 @@ export class WorkspaceUser {
 
     @Column({ type: 'text' })
     workspaceId!: string
+
+    // Relation to Workspace for eager loading and join queries
+    @ManyToOne(() => Workspace, (workspace) => workspace.id, { eager: true, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'workspaceId' })
+    workspace?: Workspace
 
     @Column({ type: 'text' })
     userId!: string

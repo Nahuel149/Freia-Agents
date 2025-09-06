@@ -55,16 +55,43 @@ async function createDefaultOSSUser(): Promise<LoggedInUser> {
             order: { createdDate: 'ASC' }
         })
         
-        let activeWorkspaceId = 'default-workspace'
-        let activeWorkspace = 'Default Workspace'
-        let activeOrganizationId = 'default-org'
+        let activeWorkspaceId = null;
+        let activeWorkspace = null;
+        let activeOrganizationId = null;
         
         if (firstWorkspace) {
-            activeWorkspaceId = firstWorkspace.id
-            activeWorkspace = firstWorkspace.name
-            activeOrganizationId = firstWorkspace.organizationId
+            activeWorkspaceId = firstWorkspace.id;
+            activeWorkspace = firstWorkspace.name;
+            activeOrganizationId = firstWorkspace.organizationId;
+        } else {
+            // Create default organization if none exists
+            const Organization = require('../database/entities/organization.entity').Organization;
+            const orgRepo = queryRunner.manager.getRepository(Organization);
+            let defaultOrg = await orgRepo.findOne({ where: { name: 'Default Organization' } });
+            if (!defaultOrg) {
+                defaultOrg = orgRepo.create({ name: 'Default Organization' });
+                await orgRepo.save(defaultOrg);
+            }
+            activeOrganizationId = defaultOrg.id;
+            
+            // Create default workspace
+            const Workspace = require('../database/entities/workspace.entity').Workspace;
+            const workspaceRepo = queryRunner.manager.getRepository(Workspace);
+            let defaultWorkspace = await workspaceRepo.findOne({ where: { name: 'Default Workspace', organizationId: defaultOrg.id } });
+            if (!defaultWorkspace) {
+                defaultWorkspace = workspaceRepo.create({
+                    name: 'Default Workspace',
+                    organizationId: defaultOrg.id
+                });
+                await workspaceRepo.save(defaultWorkspace);
+            }
+            activeWorkspaceId = defaultWorkspace.id;
+            activeWorkspace = defaultWorkspace.name;
         }
         
+        if (!activeWorkspaceId) {
+            throw new Error('Failed to initialize workspace');
+        }
         return {
             id: 'oss-user',
             email: 'user@localhost',

@@ -16,7 +16,8 @@ export class AccountService {
      * Registers a new account. In OSS mode we do not persist data – just mimic success flow.
      */
     public async registerAccount(body: RegisterBody) {
-        const { name, email, password } = body
+        const { name, email: rawEmail, password } = body
+        const email = rawEmail.trim().toLowerCase()
         const hashedPassword = password ? await getHash(password) : undefined
 
         // Access the running Express app to retrieve the configured DataSource
@@ -28,22 +29,25 @@ export class AccountService {
         try {
             /* ---------------------------------- User ---------------------------------- */
             const userRepo = queryRunner.manager.getRepository(require('../database/entities/user.entity').User)
-            const existingUser = await userRepo.findOne({ where: { email } })
+            const existingUser = await userRepo
+                .createQueryBuilder('user')
+                .where('LOWER(user.email) = :email', { email })
+                .getOne()
             if (existingUser) {
                 throw new Error('Email already registered')
             }
             const user = userRepo.create({ name, email, credential: hashedPassword })
             await userRepo.save(user)
 
-            /* --------------------------- Organization & Role --------------------------- */
-            const OrganizationEntity = require('../database/entities/organization.entity').Organization
-            const orgRepo = queryRunner.manager.getRepository(OrganizationEntity)
-            const organization = orgRepo.create({ name: `${name}'s Organization`, createdBy: user.id })
-            await orgRepo.save(organization)
+            /* --------------------------- Account & Role --------------------------- */
+            const AccountEntity = require('../database/entities/account.entity').Account
+            const accRepo = queryRunner.manager.getRepository(AccountEntity)
+            const account = accRepo.create({ name: `${name}'s Account`, createdBy: user.id })
+            await accRepo.save(account)
 
             const RoleEntity = require('../database/entities/role.entity').Role
             const roleRepo = queryRunner.manager.getRepository(RoleEntity)
-            const ownerRole = roleRepo.create({ name: 'owner', permissions: '[]', organizationId: organization.id })
+            const ownerRole = roleRepo.create({ name: 'owner', permissions: '[]', accountId: account.id })
             await roleRepo.save(ownerRole)
 
             /* -------------------------------- Workspace -------------------------------- */
@@ -51,7 +55,7 @@ export class AccountService {
             const workspaceRepo = queryRunner.manager.getRepository(WorkspaceEntity)
             const workspace = workspaceRepo.create({
                 name: 'Personal Workspace',
-                organizationId: organization.id,
+                accountId: account.id,
                 createdBy: user.id
             })
             await workspaceRepo.save(workspace)

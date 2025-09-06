@@ -20,24 +20,32 @@ import { Execution } from './Execution'
 // OSS mode: import all entities from OSS directory
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../oss/database/entities/EnterpriseEntities'
 import { User } from '../../oss/database/entities/user.entity'
-import { Organization } from '../../oss/database/entities/organization.entity'
+import { Account } from '../../oss/database/entities/account.entity'
 import { Role } from '../../oss/database/entities/role.entity'
 import { OrganizationUser } from '../../oss/database/entities/organization-user.entity'
 import { Workspace } from '../../oss/database/entities/workspace.entity'
 import { WorkspaceUser } from '../../oss/database/entities/workspace-user.entity'
 import { LoginMethod } from '../../oss/database/entities/login-method.entity'
+import { Contact } from '../../oss/database/entities/contact.entity'
+import { Deal } from '../../oss/database/entities/deal.entity'
+import { Interaction } from '../../oss/database/entities/interaction.entity'
+import { Task } from '../../oss/database/entities/task.entity'
 
 const additionalEntities = {
     User,
     WorkspaceUsers,
     LoginActivity,
     WorkspaceShared,
-    Organization,
+    Account,
     Role,
     OrganizationUser,
     Workspace,
     WorkspaceUser,
-    LoginMethod
+    LoginMethod,
+    Contact,
+    Deal,
+    Interaction,
+    Task
 }
 
 export const entities = {

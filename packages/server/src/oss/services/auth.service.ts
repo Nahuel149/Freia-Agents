@@ -26,6 +26,7 @@ export class AuthService {
             // Find the user by email
             const userRepo = queryRunner.manager.getRepository(require('../database/entities/user.entity').User)
             const user = await userRepo.findOne({ where: { email } })
+            console.log(`Login attempt for email: ${email}, User found: ${!!user}`);
             
             if (!user) {
                 throw new Error('Invalid email or password')
@@ -34,6 +35,7 @@ export class AuthService {
             // Verify password if provided
             if (password && user.credential) {
                 const isValidPassword = await compareHash(password, user.credential)
+                console.log(`Password validation: ${isValidPassword}`);
                 if (!isValidPassword) {
                     throw new Error('Invalid email or password')
                 }
@@ -45,6 +47,7 @@ export class AuthService {
                 where: { userId: user.id },
                 relations: ['workspace', 'workspace.organization']
             })
+            console.log(`Workspace user found: ${!!workspaceUser}`);
             
             let activeWorkspaceId = user.activeWorkspaceId
             let activeWorkspace = 'Default Workspace'
