@@ -124,7 +124,10 @@ export const getDatabaseSSLFromEnv = () => {
             ca: Buffer.from(process.env.DATABASE_SSL_KEY_BASE64, 'base64')
         }
     } else if (process.env.DATABASE_SSL === 'true') {
-        return true
+        // For cloud providers like Render, we need to allow self-signed certificates
+        return {
+            rejectUnauthorized: false
+        }
     }
     return undefined
 }

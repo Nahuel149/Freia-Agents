@@ -33,6 +33,8 @@ services:
         value: "freia_postgres_user"
       - key: DATABASE_PASSWORD
         value: "imFxMeDUgcEzDbZqF3mR0fBunZHump0"
+      - key: DATABASE_SSL
+        value: "true"
       - key: APIKEY_PATH
         value: "/opt/render/project/.flowise"
       - key: SECRETKEY_PATH
