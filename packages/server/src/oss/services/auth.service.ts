@@ -46,7 +46,7 @@ export class AuthService {
                 relations: ['workspace', 'workspace.organization']
             })
             
-            let activeWorkspaceId = user.activeWorkspaceId || 'default-workspace'
+            let activeWorkspaceId = user.activeWorkspaceId
             let activeWorkspace = 'Default Workspace'
             let activeOrganizationId = 'default-org'
             
@@ -55,6 +55,19 @@ export class AuthService {
                 activeWorkspace = workspaceUser.workspace.name
                 if (workspaceUser.workspace.organization) {
                     activeOrganizationId = workspaceUser.workspace.organization.id
+                }
+            } else {
+                // If no workspace found for user, get the first available workspace
+                const workspaceRepo = queryRunner.manager.getRepository(require('../database/entities/workspace.entity').Workspace)
+                const firstWorkspace = await workspaceRepo.findOne({
+                    order: { createdDate: 'ASC' }
+                })
+                if (firstWorkspace) {
+                    activeWorkspaceId = firstWorkspace.id
+                    activeWorkspace = firstWorkspace.name
+                    activeOrganizationId = firstWorkspace.organizationId
+                } else {
+                    throw new Error('No workspace found in the system')
                 }
             }
             

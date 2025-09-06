@@ -9,13 +9,13 @@ import { LoggedInUser } from '../Interface'
 /**
  * Simple JWT verification for OSS mode
  */
-export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.token
 
         if (!token) {
             // In OSS mode, create a default user if no token
-            req.user = createDefaultOSSUser()
+            req.user = await createDefaultOSSUser()
             return next()
         }
 
@@ -24,7 +24,7 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
         next()
     } catch (error) {
         // If token verification fails, create default user in OSS mode
-        req.user = createDefaultOSSUser()
+        req.user = await createDefaultOSSUser()
         next()
     }
 }
@@ -42,22 +42,47 @@ export const initializeJwtCookieMiddleware = () => {
 /**
  * Create a default OSS user when no authentication is present
  */
-function createDefaultOSSUser(): LoggedInUser {
-    return {
-        id: 'oss-user',
-        email: 'user@localhost',
-        name: 'OSS User',
-        roleId: 'admin',
-        activeOrganizationId: 'default-org',
-        activeOrganizationSubscriptionId: null,
-        activeOrganizationCustomerId: null,
-        activeOrganizationProductId: null,
-        isOrganizationAdmin: true,
-        activeWorkspaceId: 'default-workspace',
-        activeWorkspace: 'Default Workspace',
-        assignedWorkspaces: [],
-        isApiKeyValidated: false,
-        permissions: [],
-        features: {}
+async function createDefaultOSSUser(): Promise<LoggedInUser> {
+    // Get the first available workspace from database
+    const app = require('../../utils/getRunningExpressApp').getRunningExpressApp()
+    const dataSource = app.AppDataSource
+    const queryRunner = dataSource.createQueryRunner()
+    await queryRunner.connect()
+    
+    try {
+        const workspaceRepo = queryRunner.manager.getRepository(require('../database/entities/workspace.entity').Workspace)
+        const firstWorkspace = await workspaceRepo.findOne({
+            order: { createdDate: 'ASC' }
+        })
+        
+        let activeWorkspaceId = 'default-workspace'
+        let activeWorkspace = 'Default Workspace'
+        let activeOrganizationId = 'default-org'
+        
+        if (firstWorkspace) {
+            activeWorkspaceId = firstWorkspace.id
+            activeWorkspace = firstWorkspace.name
+            activeOrganizationId = firstWorkspace.organizationId
+        }
+        
+        return {
+            id: 'oss-user',
+            email: 'user@localhost',
+            name: 'OSS User',
+            roleId: 'admin',
+            activeOrganizationId,
+            activeOrganizationSubscriptionId: null,
+            activeOrganizationCustomerId: null,
+            activeOrganizationProductId: null,
+            isOrganizationAdmin: true,
+            activeWorkspaceId,
+            activeWorkspace,
+            assignedWorkspaces: [],
+            isApiKeyValidated: false,
+            permissions: [],
+            features: {}
+        }
+    } finally {
+        await queryRunner.release()
     }
 }
