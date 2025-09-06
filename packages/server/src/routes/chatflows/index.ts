@@ -4,7 +4,7 @@ import { checkAnyPermission, checkPermission } from '../../oss/rbac/PermissionCh
 const router = express.Router()
 
 // CREATE
-router.post('/', checkAnyPermission('chatflows:create,chatflows:update'), chatflowsController.saveChatflow)
+router.post('/', checkAnyPermission('chatflows:create,chatflows:update,agentflows:create,agentflows:update'), chatflowsController.saveChatflow)
 
 // READ
 router.get('/', checkAnyPermission('chatflows:view,chatflows:update'), chatflowsController.getAllChatflows)
@@ -12,7 +12,7 @@ router.get(['/', '/:id'], checkAnyPermission('chatflows:view,chatflows:update,ch
 router.get(['/apikey/', '/apikey/:apikey'], chatflowsController.getChatflowByApiKey)
 
 // UPDATE
-router.put(['/', '/:id'], checkAnyPermission('chatflows:create,chatflows:update'), chatflowsController.updateChatflow)
+router.put(['/', '/:id'], checkAnyPermission('chatflows:create,chatflows:update,agentflows:create,agentflows:update'), chatflowsController.updateChatflow)
 
 // DELETE
 router.delete(['/', '/:id'], checkPermission('chatflows:delete'), chatflowsController.deleteChatflow)

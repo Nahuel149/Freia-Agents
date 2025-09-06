@@ -43,8 +43,8 @@ const NavGroup = ({ item }) => {
 
         // If `display` is defined, check against cloud/enterprise conditions
         if (menu.display) {
-            const shouldsiplay = hasDisplay(menu.display)
-            return shouldsiplay
+            const shouldDisplay = hasDisplay(menu.display)
+            return shouldDisplay
         }
 
         // If `display` is not defined, display by default
@@ -52,15 +52,17 @@ const NavGroup = ({ item }) => {
     }
 
     const renderPrimaryItems = () => {
+        if (!item.children) return []
         const primaryGroup = item.children.find((child) => child.id === 'primary')
-        return primaryGroup.children
+        return primaryGroup?.children || []
     }
 
     const renderNonPrimaryGroups = () => {
+        if (!item.children) return []
         let nonprimaryGroups = item.children.filter((child) => child.id !== 'primary')
         // Display chilren based on permission and display
         nonprimaryGroups = nonprimaryGroups.map((group) => {
-            const children = group.children.filter((menu) => shouldDisplayMenu(menu))
+            const children = group.children?.filter((menu) => shouldDisplayMenu(menu)) || []
             return { ...group, children }
         })
         // Get rid of group with empty children
@@ -85,7 +87,7 @@ const NavGroup = ({ item }) => {
                 }
                 sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
             >
-                {renderPrimaryItems().map((menu) => listItems(menu))}
+                {renderPrimaryItems()?.map((menu) => listItems(menu))}
             </List>
 
             {renderNonPrimaryGroups().map((group) => {

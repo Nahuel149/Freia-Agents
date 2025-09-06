@@ -118,7 +118,7 @@ const SignInPage = () => {
         if (loginApi.data) {
             setLoading(false)
             store.dispatch(loginSuccess(loginApi.data))
-            navigate(location.state?.path || '/chatflows')
+            navigate(location.state?.path || '/agentflows')
             //navigate(0)
         }
 
@@ -128,7 +128,7 @@ const SignInPage = () => {
     useEffect(() => {
         if (ssoLoginApi.data) {
             store.dispatch(loginSuccess(ssoLoginApi.data))
-            navigate(location.state?.path || '/chatflows')
+            navigate(location.state?.path || '/agentflows')
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,10 +180,15 @@ const SignInPage = () => {
         <Box
             sx={{
                 minHeight: '100vh',
+                height: '100vh',
+                width: '100vw',
+                position: 'fixed',
+                top: 0,
+                left: 0,
                 background: customization.isDarkMode
                     ? 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)'
                     : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                position: 'relative',
+                overflow: 'auto',
                 '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -198,7 +203,7 @@ const SignInPage = () => {
                 }
             }}
         >
-            <Container maxWidth='sm' sx={{ display: 'flex', alignItems: 'center', minHeight: '100vh', py: 4 }}>
+            <Container maxWidth='sm' sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', py: 4, position: 'relative', zIndex: 1 }}>
                 <Card
                     sx={{
                         width: '100%',
