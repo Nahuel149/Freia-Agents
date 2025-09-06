@@ -9,7 +9,17 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import { getPageAndLimitParams } from '../../utils/pagination'
-import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../../enterprise/services/workspace-user.service'
+// OSS mode: workspace user functionality not available
+const WorkspaceUserErrorMessage = {
+    WORKSPACE_USER_NOT_FOUND: 'Workspace user not found'
+}
+const WorkspaceUserService = {
+    checkWorkspaceUserPermission: () => Promise.resolve(true),
+    readWorkspaceUserByUserId: async (_userId: string, _queryRunner?: QueryRunner) => {
+        // OSS mode: return empty array as workspace user functionality is not available
+        return []
+    }
+}
 import { QueryRunner } from 'typeorm'
 import { GeneralErrorMessage } from '../../utils/constants'
 
@@ -213,11 +223,11 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
         if (chatflow.isPublic) return res.status(StatusCodes.OK).json(chatflow)
         if (!req.user) return res.status(StatusCodes.UNAUTHORIZED).json({ message: GeneralErrorMessage.UNAUTHORIZED })
         queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
-        const workspaceUserService = new WorkspaceUserService()
+        const workspaceUserService = WorkspaceUserService
         const workspaceUser = await workspaceUserService.readWorkspaceUserByUserId(req.user.id, queryRunner)
         if (workspaceUser.length === 0)
             return res.status(StatusCodes.NOT_FOUND).json({ message: WorkspaceUserErrorMessage.WORKSPACE_USER_NOT_FOUND })
-        const workspaceIds = workspaceUser.map((user) => user.workspaceId)
+        const workspaceIds = workspaceUser.map((user: any) => user.workspaceId)
         if (!workspaceIds.includes(chatflow.workspaceId))
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'You are not in the workspace that owns this chatflow' })
         return res.status(StatusCodes.OK).json(chatflow)

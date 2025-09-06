@@ -38,7 +38,6 @@ import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorTo
 import { ModifyExecutionSessionIdFieldType1748450230238 } from './1748450230238-ModifyExecutionSessionIdFieldType'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 
-
 export const postgresMigrations = [
     Init1693891895163,
     ModifyChatFlow1693995626941,

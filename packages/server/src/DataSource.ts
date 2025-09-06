@@ -14,23 +14,23 @@ let appDataSource: DataSource
 
 export const init = async (): Promise<void> => {
     logger.info(`[DataSource] Initializing database with type: ${process.env.DATABASE_TYPE || 'postgres (default)'}`)
-    
-    let homePath
+
     let flowisePath = path.join(getUserHome(), '.flowise')
     if (!fs.existsSync(flowisePath)) {
         fs.mkdirSync(flowisePath)
     }
-    
+
     // Log environment variables for debugging
     logger.info(`[DataSource] DATABASE_TYPE: ${process.env.DATABASE_TYPE || 'undefined'}`)
     logger.info(`[DataSource] DATABASE_PATH: ${process.env.DATABASE_PATH || 'undefined'}`)
     logger.info(`[DataSource] DATABASE_HOST: ${process.env.DATABASE_HOST || 'undefined'}`)
     logger.info(`[DataSource] DATABASE_PORT: ${process.env.DATABASE_PORT || 'undefined'}`)
-    
+
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
-            throw new Error('SQLite support has been removed. Please set DATABASE_TYPE=postgres and configure the appropriate environment variables.');
-            break
+            throw new Error(
+                'SQLite support has been removed. Please set DATABASE_TYPE=postgres and configure the appropriate environment variables.'
+            )
         case 'mysql':
             appDataSource = new DataSource({
                 type: 'mysql',

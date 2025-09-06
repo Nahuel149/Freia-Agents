@@ -38,8 +38,6 @@ import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorTo
 import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 
-
-
 export const mariadbMigrations = [
     Init1693840429259,
     ModifyChatFlow1693997791471,

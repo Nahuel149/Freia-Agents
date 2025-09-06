@@ -36,8 +36,6 @@ import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpe
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 
-
-
 export const sqliteMigrations = [
     Init1693835579790,
     ModifyChatFlow1693920824108,

@@ -84,10 +84,14 @@ const SignInPage = () => {
     useEffect(() => {
         if (loginApi.error) {
             setLoading(false)
-            if (loginApi.error.response.status === 401 && loginApi.error.response.data.redirectUrl) {
-                window.location.href = loginApi.error.response.data.data.redirectUrl
+            const status = loginApi.error?.response?.status
+            const data = loginApi.error?.response?.data
+            if (status === 401 && data?.redirectUrl) {
+                window.location.href = data.redirectUrl
+            } else if (data?.message) {
+                setAuthError(data.message)
             } else {
-                setAuthError(loginApi.error.response.data.message)
+                setAuthError(loginApi.error.message || 'Network error, please try again later.')
             }
         }
     }, [loginApi.error])

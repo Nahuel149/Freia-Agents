@@ -39,8 +39,6 @@ import { FixErrorsColumnInEvaluationRun1746437114935 } from './1746437114935-Fix
 import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 
-
-
 export const mysqlMigrations = [
     Init1693840429259,
     ModifyChatFlow1693997791471,

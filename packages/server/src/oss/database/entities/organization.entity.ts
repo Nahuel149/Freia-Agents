@@ -4,7 +4,7 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
  * Simplified Organization entity for OSS mode. Omits billing/subscription metadata.
  */
 export enum OrganizationName {
-    DEFAULT_ORGANIZATION = 'Default Organization',
+    DEFAULT_ORGANIZATION = 'Default Organization'
 }
 
 @Entity()

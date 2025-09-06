@@ -17,6 +17,7 @@ import { Evaluator } from './Evaluator'
 import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
 import { Execution } from './Execution'
+// OSS mode: import all entities from OSS directory
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../oss/database/entities/EnterpriseEntities'
 import { User } from '../../oss/database/entities/user.entity'
 import { Organization } from '../../oss/database/entities/organization.entity'
@@ -24,8 +25,20 @@ import { Role } from '../../oss/database/entities/role.entity'
 import { OrganizationUser } from '../../oss/database/entities/organization-user.entity'
 import { Workspace } from '../../oss/database/entities/workspace.entity'
 import { WorkspaceUser } from '../../oss/database/entities/workspace-user.entity'
-import { LoginMethod } from "../../oss/database/entities/login-method.entity"
+import { LoginMethod } from '../../oss/database/entities/login-method.entity'
 
+const additionalEntities = {
+    User,
+    WorkspaceUsers,
+    LoginActivity,
+    WorkspaceShared,
+    Organization,
+    Role,
+    OrganizationUser,
+    Workspace,
+    WorkspaceUser,
+    LoginMethod
+}
 
 export const entities = {
     ChatFlow,
@@ -45,16 +58,7 @@ export const entities = {
     EvaluationRun,
     Evaluator,
     ApiKey,
-    User,
-    WorkspaceUsers,
-    LoginActivity,
-    WorkspaceShared,
     CustomTemplate,
     Execution,
-    Organization,
-    Role,
-    OrganizationUser,
-    Workspace,
-    WorkspaceUser,
-    LoginMethod
+    ...additionalEntities
 }

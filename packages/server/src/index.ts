@@ -18,11 +18,11 @@ import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 import { WHITELIST_URLS } from './utils/constants'
-import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
+import { initializeJwtCookieMiddleware, verifyToken } from './oss/middleware/auth'
 import { IdentityManager } from './IdentityManager'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { validateAPIKey } from './utils/validateKey'
-import { LoggedInUser } from './enterprise/Interface.Enterprise'
+import { LoggedInUser } from './oss/Interface'
 import { IMetricsProvider } from './Interface.Metrics'
 import { Prometheus } from './metrics/Prometheus'
 import { OpenTelemetry } from './metrics/OpenTelemetry'
@@ -148,7 +148,10 @@ export class App {
             }
 
             // TODO: Remove this by end of 2025
-            await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager ? this.identityManager.getPlatformType() : Platform.OPEN_SOURCE)
+            await migrateApiKeysFromJsonToDb(
+                this.AppDataSource,
+                this.identityManager ? this.identityManager.getPlatformType() : Platform.OPEN_SOURCE
+            )
 
             logger.info('🎉 [server]: All initialization steps completed successfully!')
         } catch (error) {
@@ -203,7 +206,7 @@ export class App {
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
 
-        await initializeJwtCookieMiddleware(this.app, this.identityManager)
+        await initializeJwtCookieMiddleware()
 
         this.app.use(async (req, res, next) => {
             // Step 1: Check if the req path contains /api/v1 regardless of case
@@ -256,8 +259,12 @@ export class App {
 
                         const subscriptionId = org.subscriptionId ?? ''
                         const customerId = org.customerId ?? ''
-                        const features = this.identityManager ? await this.identityManager.getFeaturesByPlan(subscriptionId) : {} as Record<string, string>
-                        const productId = this.identityManager ? await this.identityManager.getProductIdFromSubscription(subscriptionId) : ''
+                        const features = this.identityManager
+                            ? await this.identityManager.getFeaturesByPlan(subscriptionId)
+                            : ({} as Record<string, string>)
+                        const productId = this.identityManager
+                            ? await this.identityManager.getProductIdFromSubscription(subscriptionId)
+                            : ''
 
                         // @ts-ignore
                         req.user = {
@@ -324,7 +331,12 @@ export class App {
             })
         })
 
-        if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && this.identityManager && !this.identityManager.isCloud()) {
+        if (
+            process.env.MODE === MODE.QUEUE &&
+            process.env.ENABLE_BULLMQ_DASHBOARD === 'true' &&
+            this.identityManager &&
+            !this.identityManager.isCloud()
+        ) {
             this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
         }
 

@@ -99,6 +99,36 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                 try {
                     queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
                     await queryRunner.connect()
+                    const app = getRunningExpressApp()
+                    const platform = app.identityManager.getPlatformType()
+                    if (platform === Platform.OPEN_SOURCE) {
+                        const accountService = new AccountService()
+                        const body: any = {
+                            user: {
+                                email: email,
+                                credential: password
+                            }
+                        }
+                        const response = await accountService.login(body)
+                        const loggedInUser: LoggedInUser = {
+                            id: response.user?.id || uuidv4(),
+                            email,
+                            name: email.split('@')[0],
+                            roleId: 'admin',
+                            activeOrganizationId: undefined,
+                            activeOrganizationSubscriptionId: null,
+                            activeOrganizationCustomerId: null,
+                            activeOrganizationProductId: null,
+                            activeWorkspaceId: undefined,
+                            activeWorkspace: null,
+                            isOrganizationAdmin: true,
+                            assignedWorkspaces: [],
+                            isApiKeyValidated: true,
+                            permissions: [],
+                            features: {}
+                        }
+                        return done(null, loggedInUser, { message: 'Logged in Successfully' })
+                    }
                     const accountService = new AccountService()
                     const body: any = {
                         user: {
@@ -184,7 +214,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         // for Cloud (Horizontal) version, redirect to the signin page
         const expressApp = getRunningExpressApp()
         const platform = expressApp.identityManager.getPlatformType()
-        if (platform === Platform.CLOUD) {
+        if (platform === Platform.CLOUD || platform === Platform.OPEN_SOURCE) {
             return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/signin' })
         }
         const orgService = new OrganizationService()

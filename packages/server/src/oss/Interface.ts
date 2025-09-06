@@ -3,11 +3,14 @@
  * Only essential enums and interfaces are recreated to satisfy type checking.
  */
 export enum ErrorMessage {
-    UNKNOWN_ERROR = 'Unknown Error',
+    UNAUTHORIZED = 'Unauthorized',
+    INVALID_API_KEY = 'Unauthorized',
+    FORBIDDEN = "You don't have permission to access this resource",
+    INTERNAL_SERVER_ERROR = 'Internal Server Error'
 }
 
 export enum UserStatus {
-    ACTIVE = 'active',
+    ACTIVE = 'active'
 }
 
 export type IAssignedWorkspace = { id: string; name: string }
@@ -16,5 +19,19 @@ export type LoggedInUser = {
     id: string
     email: string
     name: string
-    activeWorkspaceId: string
+    roleId: string
+    activeOrganizationId: string | undefined
+    activeOrganizationSubscriptionId: string | null
+    activeOrganizationCustomerId: string | null
+    activeOrganizationProductId: string | null
+    isOrganizationAdmin: boolean
+    activeWorkspaceId: string | undefined
+    activeWorkspace: string | null
+    assignedWorkspaces: IAssignedWorkspace[]
+    isApiKeyValidated: boolean
+    permissions?: string[]
+    features?: Record<string, string>
+    ssoRefreshToken?: string
+    ssoToken?: string
+    ssoProvider?: string
 }

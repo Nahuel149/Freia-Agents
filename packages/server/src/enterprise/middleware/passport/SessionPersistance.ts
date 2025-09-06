@@ -1,8 +1,6 @@
 import Redis from 'ioredis'
 import { RedisStore } from 'connect-redis'
 import { getDatabaseSSLFromEnv } from '../../../DataSource'
-import path from 'path'
-import { getUserHome } from '../../../utils'
 
 let redisClient: Redis | null = null
 let redisStore: RedisStore | null = null

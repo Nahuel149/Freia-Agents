@@ -65,13 +65,13 @@ export type LoggedInUser = {
     email: string
     name: string
     roleId: string
-    activeOrganizationId: string
-    activeOrganizationSubscriptionId: string
-    activeOrganizationCustomerId: string
-    activeOrganizationProductId: string
+    activeOrganizationId: string | undefined
+    activeOrganizationSubscriptionId: string | null
+    activeOrganizationCustomerId: string | null
+    activeOrganizationProductId: string | null
     isOrganizationAdmin: boolean
-    activeWorkspaceId: string
-    activeWorkspace: string
+    activeWorkspaceId: string | undefined
+    activeWorkspace: string | null
     assignedWorkspaces: IAssignedWorkspace[]
     isApiKeyValidated: boolean
     permissions?: string[]

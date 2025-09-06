@@ -1,5 +1,3 @@
-import { Keyv } from 'keyv'
-import KeyvRedis from '@keyv/redis'
 import { Cache, createCache } from 'cache-manager'
 import { MODE } from './Interface'
 import { LICENSE_QUOTAS } from './utils/constants'
@@ -35,11 +33,11 @@ export class UsageCacheManager {
 
     private async initialize(): Promise<void> {
         if (process.env.MODE === MODE.QUEUE) {
-            let redisConfig: string | Record<string, any>
+            let _redisConfig: string | Record<string, any>
             if (process.env.REDIS_URL) {
-                redisConfig = process.env.REDIS_URL
+                _redisConfig = process.env.REDIS_URL
             } else {
-                redisConfig = {
+                _redisConfig = {
                     username: process.env.REDIS_USERNAME || undefined,
                     password: process.env.REDIS_PASSWORD || undefined,
                     socket: {
@@ -52,13 +50,8 @@ export class UsageCacheManager {
                     }
                 }
             }
-            this.cache = createCache({
-                stores: [
-                    new Keyv({
-                        store: new KeyvRedis(redisConfig)
-                    })
-                ]
-            })
+            // In OSS mode, use simple in-memory cache instead of Redis
+            this.cache = createCache()
         } else {
             this.cache = createCache()
         }

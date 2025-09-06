@@ -6,7 +6,7 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
  */
 export enum WorkspaceName {
     DEFAULT_WORKSPACE = 'Default Workspace',
-    DEFAULT_PERSONAL_WORKSPACE = 'Personal Workspace',
+    DEFAULT_PERSONAL_WORKSPACE = 'Personal Workspace'
 }
 
 @Entity()

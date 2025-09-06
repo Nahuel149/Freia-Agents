@@ -1,38 +1,36 @@
 /**
  * Copyright (c) 2023-present FlowiseAI, Inc.
  *
- * The Enterprise and Cloud versions of Flowise are licensed under the [Commercial License](https://github.com/FlowiseAI/Flowise/tree/main/packages/server/src/enterprise/LICENSE.md).
- * Unauthorized copying, modification, distribution, or use of the Enterprise and Cloud versions is strictly prohibited without a valid license agreement from FlowiseAI, Inc.
+ * This Open Source version is licensed under the Apache License, Version 2.0 (the "License")
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  *
- * The Open Source version is licensed under the Apache License, Version 2.0 (the "License")
- *
- * For information about licensing of the Enterprise and Cloud versions, please contact:
- * security@flowiseai.com
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import axios from 'axios'
 import express, { Application, NextFunction, Request, Response } from 'express'
-import * as fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
-import jwt from 'jsonwebtoken'
-import path from 'path'
 import { LoginMethodStatus } from './oss/database/entities/login-method.entity'
-import { ErrorMessage, LoggedInUser } from './enterprise/Interface.Enterprise'
-import { Permissions } from './enterprise/rbac/Permissions'
-import { LoginMethodService } from './enterprise/services/login-method.service'
-import { OrganizationService } from './enterprise/services/organization.service'
-import Auth0SSO from './enterprise/sso/Auth0SSO'
-import AzureSSO from './enterprise/sso/AzureSSO'
-import GithubSSO from './enterprise/sso/GithubSSO'
-import GoogleSSO from './enterprise/sso/GoogleSSO'
-import SSOBase from './enterprise/sso/SSOBase'
+import { ErrorMessage, LoggedInUser } from './oss/Interface'
+import { Permissions } from './oss/rbac/Permissions'
+import { LoginMethodService } from './oss/services/login-method.service'
+import { OrganizationService } from './oss/services/organization.service'
+import Auth0SSO from './oss/sso/Auth0SSO'
+import AzureSSO from './oss/sso/AzureSSO'
+import GithubSSO from './oss/sso/GithubSSO'
+import GoogleSSO from './oss/sso/GoogleSSO'
+import SSOBase from './oss/sso/SSOBase'
 import { InternalFlowiseError } from './errors/internalFlowiseError'
 import { Platform, UserPlan } from './Interface'
 import { StripeManager } from './StripeManager'
 import { UsageCacheManager } from './UsageCacheManager'
 import { GeneralErrorMessage, LICENSE_QUOTAS } from './utils/constants'
 import { getRunningExpressApp } from './utils/getRunningExpressApp'
-import { ENTERPRISE_FEATURE_FLAGS } from './utils/quotaUsage'
+// OSS mode: no enterprise feature flags needed
 import Stripe from 'stripe'
 
 const allSSOProviders = ['azure', 'google', 'auth0', 'github']
@@ -83,84 +81,13 @@ export class IdentityManager {
     }
 
     public isLicenseValid = () => {
-        return this.licenseValid
-    }
-
-    private _offlineVerifyLicense(licenseKey: string): any {
-        try {
-            const publicKey = fs.readFileSync(path.join(__dirname, '../', 'src/enterprise/license/public.pem'), 'utf8')
-            const decoded = jwt.verify(licenseKey, publicKey, {
-                algorithms: ['RS256']
-            })
-            return decoded
-        } catch (error) {
-            console.error('Error verifying license key:', error)
-            return null
-        }
+        return false // Always false in OSS mode
     }
 
     private _validateLicenseKey = async () => {
-        // Always-OSS short-circuit: when FORCE_OSS is true, ignore any license and force Open Source platform
-        if (process.env.FORCE_OSS === 'true') {
-            this.licenseValid = false
-            this.currentInstancePlatform = Platform.OPEN_SOURCE
-            return
-        }
-
-        const LICENSE_URL = process.env.LICENSE_URL
-        const FLOWISE_EE_LICENSE_KEY = process.env.FLOWISE_EE_LICENSE_KEY
-
-        // First check if license key is missing
-        if (!FLOWISE_EE_LICENSE_KEY) {
-            this.licenseValid = false
-            this.currentInstancePlatform = Platform.OPEN_SOURCE
-            return
-        }
-
-        try {
-            if (process.env.OFFLINE === 'true') {
-                const decodedLicense = this._offlineVerifyLicense(FLOWISE_EE_LICENSE_KEY)
-
-                if (!decodedLicense) {
-                    this.licenseValid = false
-                } else {
-                    const issuedAtSeconds = decodedLicense.iat
-                    if (!issuedAtSeconds) {
-                        this.licenseValid = false
-                    } else {
-                        const issuedAt = new Date(issuedAtSeconds * 1000)
-                        const expiryDurationInMonths = decodedLicense.expiryDurationInMonths || 0
-
-                        const expiryDate = new Date(issuedAt)
-                        expiryDate.setMonth(expiryDate.getMonth() + expiryDurationInMonths)
-
-                        if (new Date() > expiryDate) {
-                            this.licenseValid = false
-                        } else {
-                            this.licenseValid = true
-                        }
-                    }
-                }
-                this.currentInstancePlatform = Platform.ENTERPRISE
-            } else if (LICENSE_URL) {
-                try {
-                    const response = await axios.post(`${LICENSE_URL}/enterprise/verify`, { license: FLOWISE_EE_LICENSE_KEY })
-                    this.licenseValid = response.data?.valid
-
-                    if (!LICENSE_URL.includes('api')) this.currentInstancePlatform = Platform.ENTERPRISE
-                    else if (LICENSE_URL.includes('v1')) this.currentInstancePlatform = Platform.ENTERPRISE
-                    else if (LICENSE_URL.includes('v2')) this.currentInstancePlatform = response.data?.platform
-                    else throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
-                } catch (error) {
-                    console.error('Error verifying license key:', error)
-                    this.licenseValid = false
-                    this.currentInstancePlatform = Platform.ENTERPRISE
-                    return
-                }
-            }
-        } catch (error) {
-            this.licenseValid = false
-        }
+        // OSS mode: always set to open source platform
+        this.licenseValid = false
+        this.currentInstancePlatform = Platform.OPEN_SOURCE
     }
 
     public initializeSSO = async (app: express.Application) => {
@@ -170,7 +97,7 @@ export class IdentityManager {
             try {
                 queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
                 await queryRunner.connect()
-                let organizationId = undefined
+                let organizationId: string = 'default-org'
                 if (this.getPlatformType() === Platform.ENTERPRISE) {
                     const organizationService = new OrganizationService()
                     const organizations = await organizationService.readOrganization(queryRunner)
@@ -185,7 +112,10 @@ export class IdentityManager {
                 if (loginMethods && loginMethods.length > 0) {
                     for (let method of loginMethods) {
                         if (method.status === LoginMethodStatus.ENABLE) {
-                            method.config = JSON.parse(await loginMethodService.decryptLoginMethodConfig(method.config))
+                            if (method.config) {
+                                const configString = typeof method.config === 'string' ? method.config : JSON.stringify(method.config)
+                                method.config = JSON.parse(await loginMethodService.decryptLoginMethodConfig(configString))
+                            }
                             this.initializeSsoProvider(app, method.name, method.config)
                         }
                     }
@@ -212,7 +142,7 @@ export class IdentityManager {
             if (provider) {
                 if (providerConfig && providerConfig.configEnabled === true) {
                     provider.setSSOConfig(providerConfig)
-                    provider.initialize()
+                    provider.initialize(app)
                 } else {
                     // if false, disable the provider
                     provider.setSSOConfig(undefined)
@@ -221,26 +151,26 @@ export class IdentityManager {
         } else {
             switch (providerName) {
                 case 'azure': {
-                    const azureSSO = new AzureSSO(app, providerConfig)
-                    azureSSO.initialize()
+                    const azureSSO = new AzureSSO(providerConfig)
+                    azureSSO.initialize(app)
                     this.ssoProviders.set(providerName, azureSSO)
                     break
                 }
                 case 'google': {
-                    const googleSSO = new GoogleSSO(app, providerConfig)
-                    googleSSO.initialize()
+                    const googleSSO = new GoogleSSO(providerConfig)
+                    googleSSO.initialize(app)
                     this.ssoProviders.set(providerName, googleSSO)
                     break
                 }
                 case 'auth0': {
-                    const auth0SSO = new Auth0SSO(app, providerConfig)
-                    auth0SSO.initialize()
+                    const auth0SSO = new Auth0SSO(providerConfig)
+                    auth0SSO.initialize(app)
                     this.ssoProviders.set(providerName, auth0SSO)
                     break
                 }
                 case 'github': {
-                    const githubSSO = new GithubSSO(app, providerConfig)
-                    githubSSO.initialize()
+                    const githubSSO = new GithubSSO(providerConfig)
+                    githubSSO.initialize(app)
                     this.ssoProviders.set(providerName, githubSSO)
                     break
                 }
@@ -266,13 +196,8 @@ export class IdentityManager {
     }
 
     public async getFeaturesByPlan(subscriptionId: string, withoutCache: boolean = false) {
-        if (this.isEnterprise()) {
-            const features: Record<string, string> = {}
-            for (const feature of ENTERPRISE_FEATURE_FLAGS) {
-                features[feature] = 'true'
-            }
-            return features
-        } else if (this.isCloud()) {
+        // OSS mode: no enterprise features, return empty object
+        if (this.isCloud()) {
             if (!this.stripeManager || !subscriptionId) {
                 return {}
             }
