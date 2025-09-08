@@ -31,6 +31,9 @@ export class Account {
     @Column({ type: 'int', nullable: true })
     healthScore?: number
 
+    @Column({ type: 'varchar', nullable: true })
+    createdBy?: string
+
     @CreateDateColumn()
     createdDate?: Date
 

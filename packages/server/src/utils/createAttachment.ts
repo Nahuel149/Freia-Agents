@@ -59,19 +59,19 @@ export const createFileAttachment = async (req: Request) => {
         }
         workspaceId = workspace.id
 
-        if (!workspace.organizationId) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Workspace must have an organizationId')
+        // OSS mode: Use default organization if not present
+        orgId = 'bypass-org'
+        subscriptionId = 'bypass-subscription'
+        
+        if (workspace.organizationId) {
+            const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
+                id: workspace.organizationId
+            })
+            if (org) {
+                orgId = org.id
+                subscriptionId = org.subscriptionId as string
+            }
         }
-
-        const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
-            id: workspace.organizationId
-        })
-        if (!org) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Organization ${workspace.organizationId} not found`)
-        }
-
-        orgId = org.id
-        subscriptionId = org.subscriptionId as string
     }
 
     // Parse chatbot configuration to get file upload settings

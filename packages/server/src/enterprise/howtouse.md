@@ -1,1 +1,0 @@
-The /enterprise features are deprecated and we will not use the in our codebase.

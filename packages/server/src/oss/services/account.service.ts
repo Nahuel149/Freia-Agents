@@ -17,6 +17,18 @@ export class AccountService {
      */
     public async registerAccount(body: RegisterBody) {
         const { name, email: rawEmail, password } = body
+        
+        // Validate required fields
+        if (!name || typeof name !== 'string') {
+            throw new Error('Name is required and must be a string')
+        }
+        if (!rawEmail || typeof rawEmail !== 'string') {
+            throw new Error('Email is required and must be a string')
+        }
+        if (!password || typeof password !== 'string') {
+            throw new Error('Password is required and must be a string')
+        }
+        
         const email = rawEmail.trim().toLowerCase()
         // Store password as-is or hashed based on preference (OSS mode flexibility)
         const credential = password || undefined

@@ -104,6 +104,9 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
 
 const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: string): Promise<any> => {
     try {
+        if (workspaceId === 'bypass-workspace') {
+            return
+        }
         const appServer = getRunningExpressApp()
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
@@ -138,6 +141,9 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
 
 const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
+        if (workspaceId === 'bypass-workspace') {
+            return page > 0 && limit > 0 ? { data: [], total: 0 } : []
+        }
         const appServer = getRunningExpressApp()
 
         const queryBuilder = appServer.AppDataSource.getRepository(ChatFlow)

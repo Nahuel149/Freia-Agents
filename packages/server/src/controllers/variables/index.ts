@@ -13,14 +13,9 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
                 `Error: variablesController.createVariable - body not provided!`
             )
         }
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: toolsController.createTool - organization ${orgId} not found!`)
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: toolsController.createTool - workspace ${workspaceId} not found!`)
-        }
+        // OSS mode: Use default values if not present
+        const orgId = req.user?.activeOrganizationId || 'bypass-org'
+        const workspaceId = req.user?.activeWorkspaceId || 'bypass-workspace'
         const body = req.body
         body.workspaceId = workspaceId
         const newVariable = new Variable()

@@ -79,19 +79,19 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     }
     const workspaceId = workspace.id
 
-    if (!workspace.organizationId) {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Workspace must have an organizationId')
+    // OSS mode: Use default organization if not present
+    let orgId = 'bypass-org'
+    let subscriptionId = undefined
+    
+    if (workspace.organizationId) {
+        const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
+            id: workspace.organizationId
+        })
+        if (org) {
+            orgId = org.id
+            subscriptionId = org.subscriptionId ?? undefined
+        }
     }
-
-    const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
-        id: workspace.organizationId
-    })
-    if (!org) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Organization ${workspace.organizationId} not found`)
-    }
-
-    const orgId = org.id
-    const subscriptionId = org.subscriptionId ?? undefined
 
     const reactFlowNodes = await buildFlow({
         startingNodeIds,

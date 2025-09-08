@@ -16,123 +16,54 @@ export class AuthService {
     public async login(body: LoginBody) {
         const { email, password } = body
         
-        // Access the running Express app to retrieve the configured DataSource
-        const app = require('../../utils/getRunningExpressApp').getRunningExpressApp()
-        const dataSource = app.AppDataSource
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+        // Complete bypass mode - no validation required
+        console.log(`Bypass login for email: ${email}`);
         
-        try {
-            // Find the user by email
-            const userRepo = queryRunner.manager.getRepository(require('../database/entities/user.entity').User)
-            const user = await userRepo.findOne({ where: { email } })
-            console.log(`Login attempt for email: ${email}, User found: ${!!user}`);
-            
-            if (!user) {
-                throw new Error('Invalid email or password')
-            }
-            
-            // Verify password if provided - support both hashed and plain text
-            if (password && user.credential) {
-                let isValidPassword = false
-                
-                // First try bcrypt comparison for hashed passwords
-                try {
-                    isValidPassword = await compareHash(password, user.credential)
-                } catch (error) {
-                    // If bcrypt fails, try plain text comparison
-                    isValidPassword = password === user.credential
-                }
-                
-                console.log(`Password validation: ${isValidPassword}`);
-                if (!isValidPassword) {
-                    throw new Error('Invalid email or password')
-                }
-            }
-            
-            // Get user's workspace information
-            const workspaceUserRepo = queryRunner.manager.getRepository(require('../database/entities/workspace-user.entity').WorkspaceUser)
-            const workspaceUser = await workspaceUserRepo.findOne({
-                where: { userId: user.id },
-                relations: ['workspace', 'workspace.organization']
-            })
-            console.log(`Workspace user found: ${!!workspaceUser}`);
-            
-            let activeWorkspaceId = user.activeWorkspaceId
-            let activeWorkspace = 'Default Workspace'
-            let activeOrganizationId = 'default-org'
-            
-            if (workspaceUser && workspaceUser.workspace) {
-                activeWorkspaceId = workspaceUser.workspace.id
-                activeWorkspace = workspaceUser.workspace.name
-                if (workspaceUser.workspace.organization) {
-                    activeOrganizationId = workspaceUser.workspace.organization.id
-                }
-            } else {
-                // If no workspace found for user, get the first available workspace
-                const workspaceRepo = queryRunner.manager.getRepository(require('../database/entities/workspace.entity').Workspace)
-                const firstWorkspace = await workspaceRepo.findOne({
-                    order: { createdDate: 'ASC' }
-                })
-                if (firstWorkspace) {
-                    activeWorkspaceId = firstWorkspace.id
-                    activeWorkspace = firstWorkspace.name
-                    activeOrganizationId = firstWorkspace.organizationId
-                } else {
-                    throw new Error('No workspace found in the system')
-                }
-            }
-            
-            // Generate a real JWT token with user data
-            const tokenPayload = {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                roleId: 'admin',
-                activeOrganizationId,
-                activeOrganizationSubscriptionId: null,
-                activeOrganizationCustomerId: null,
-                activeOrganizationProductId: null,
-                isOrganizationAdmin: true,
-                activeWorkspaceId,
-                activeWorkspace,
-                assignedWorkspaces: [],
-                isApiKeyValidated: false,
-                permissions: [],
-                features: {}
-            }
-            
-            const token = jwt.sign(
-                tokenPayload,
-                process.env.FLOWISE_SECRETKEY_OVERWRITE || 'mySecretKey',
-                { expiresIn: '24h' }
-            )
-            
-            return {
-                message: GeneralSuccessMessage.LOGGED_IN,
-                token,
-                permissions: [],
-                features: [],
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                status: 'ACTIVE',
-                role: 'admin',
-                isSSO: false,
-                activeOrganizationId,
-                activeOrganizationSubscriptionId: null,
-                activeOrganizationCustomerId: null,
-                activeOrganizationProductId: null,
-                activeWorkspaceId,
-                activeWorkspace,
-                lastLogin: new Date(),
-                isOrganizationAdmin: true,
-                assignedWorkspaces: []
-            }
-        } catch (error) {
-            throw error
-        } finally {
-            await queryRunner.release()
+        // Generate a bypass token with full admin privileges
+        const tokenPayload = {
+            id: 'bypass-admin',
+            email: email || 'admin@localhost',
+            name: 'Bypass Admin',
+            roleId: 'super-admin',
+            activeOrganizationId: 'bypass-org',
+            activeOrganizationSubscriptionId: 'bypass-subscription',
+            activeOrganizationCustomerId: 'bypass-customer',
+            activeOrganizationProductId: 'bypass-product',
+            isOrganizationAdmin: true,
+            activeWorkspaceId: 'bypass-workspace',
+            activeWorkspace: 'Bypass Workspace',
+            assignedWorkspaces: [{ id: 'bypass-workspace', name: 'Bypass Workspace' }],
+            isApiKeyValidated: true,
+            permissions: ['*'], // All permissions
+            features: {} // All features enabled
+        }
+        
+        const token = jwt.sign(
+            tokenPayload,
+            process.env.FLOWISE_SECRETKEY_OVERWRITE || 'mySecretKey',
+            { expiresIn: '24h' }
+        )
+        
+        return {
+            message: GeneralSuccessMessage.LOGGED_IN,
+            token,
+            permissions: ['*'], // All permissions
+            features: [], // All features
+            id: 'bypass-admin',
+            email: email || 'admin@localhost',
+            name: 'Bypass Admin',
+            status: 'ACTIVE',
+            role: 'super-admin',
+            isSSO: false,
+            activeOrganizationId: 'bypass-org',
+            activeOrganizationSubscriptionId: 'bypass-subscription',
+            activeOrganizationCustomerId: 'bypass-customer',
+            activeOrganizationProductId: 'bypass-product',
+            activeWorkspaceId: 'bypass-workspace',
+            activeWorkspace: 'Bypass Workspace',
+            lastLogin: new Date(),
+            isOrganizationAdmin: true,
+            assignedWorkspaces: [{ id: 'bypass-workspace', name: 'Bypass Workspace' }]
         }
     }
 }

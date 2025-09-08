@@ -248,23 +248,41 @@ export class App {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
-                        // Find organization
-                        const activeOrganizationId = workspace.organizationId as string
-                        const org = await this.AppDataSource.getRepository(Organization).findOne({
-                            where: { id: activeOrganizationId }
-                        })
-                        if (!org) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        // Handle organization lookup - in OSS mode, organization might not exist
+                        let activeOrganizationId = workspace.organizationId
+                        let subscriptionId = ''
+                        let customerId = ''
+                        let productId = ''
+                        
+                        if (this.identityManager.getPlatformType() === Platform.OPEN_SOURCE) {
+                            // In OSS mode, use default values
+                            activeOrganizationId = activeOrganizationId || 'default-org'
+                            subscriptionId = 'oss-subscription'
+                            customerId = 'oss-customer'
+                            productId = 'oss-product'
+                        } else {
+                            // In enterprise mode, find the actual organization
+                            if (!activeOrganizationId) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+                            
+                            const org = await this.AppDataSource.getRepository(Organization).findOne({
+                                where: { id: activeOrganizationId }
+                            })
+                            if (!org) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+                            
+                            subscriptionId = org.subscriptionId ?? ''
+                            customerId = org.customerId ?? ''
+                            productId = this.identityManager
+                                ? await this.identityManager.getProductIdFromSubscription(subscriptionId)
+                                : ''
                         }
-
-                        const subscriptionId = org.subscriptionId ?? ''
-                        const customerId = org.customerId ?? ''
+                        
                         const features = this.identityManager
                             ? await this.identityManager.getFeaturesByPlan(subscriptionId)
                             : ({} as Record<string, string>)
-                        const productId = this.identityManager
-                            ? await this.identityManager.getProductIdFromSubscription(subscriptionId)
-                            : ''
 
                         // @ts-ignore
                         req.user = {
