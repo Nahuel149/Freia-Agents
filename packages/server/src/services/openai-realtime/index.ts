@@ -21,6 +21,7 @@ import { Variable } from '../../database/entities/Variable'
 import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
 import { Workspace } from '../../oss/database/entities/workspace.entity'
 import { Organization } from '../../oss/database/entities/organization.entity'
+import { isOssMode } from '../../utils/ossMode'
 
 const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
@@ -71,25 +72,28 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
 
     // This can be public API, so we can only get orgId from the chatflow
     const chatflowWorkspaceId = chatflow.workspaceId
-    const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
-        id: chatflowWorkspaceId
-    })
-    if (!workspace) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
-    }
-    const workspaceId = workspace.id
 
-    // OSS mode: Use default organization if not present
+    let workspaceId: string | undefined = undefined
     let orgId = 'bypass-org'
-    let subscriptionId = undefined
-    
-    if (workspace.organizationId) {
-        const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
-            id: workspace.organizationId
+    let subscriptionId: string | undefined = undefined
+
+    if (!(isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace'))) {
+        const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
+            id: chatflowWorkspaceId
         })
-        if (org) {
-            orgId = org.id
-            subscriptionId = org.subscriptionId ?? undefined
+        if (!workspace) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
+        }
+        workspaceId = workspace.id
+
+        if (workspace.organizationId) {
+            const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
+                id: workspace.organizationId
+            })
+            if (org) {
+                orgId = org.id
+                subscriptionId = org.subscriptionId ?? undefined
+            }
         }
     }
 
@@ -197,39 +201,60 @@ const executeAgentTool = async (
             toolOutput = JSON.stringify(toolOutput)
         }
 
-        let sourceDocuments = []
-        if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
-            const _splitted = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)
-            toolOutput = _splitted[0]
-            const _sourceDocuments = JSON.parse(_splitted[1].trim())
-            if (Array.isArray(_sourceDocuments)) {
-                sourceDocuments = _sourceDocuments
-            } else {
-                sourceDocuments.push(_sourceDocuments)
-            }
-        }
+        let sourceDocuments: any = []
 
-        let artifacts = []
-        if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
-            const _splitted = toolOutput.split(ARTIFACTS_PREFIX)
-            toolOutput = _splitted[0]
-            const _artifacts = JSON.parse(_splitted[1].trim())
-            if (Array.isArray(_artifacts)) {
-                artifacts = _artifacts
-            } else {
-                artifacts.push(_artifacts)
-            }
-        }
+        // parse results
+        /**
+         * eg result:
+         * test(role: "user", content: "HELLO WORLD")
+         */
+        if (typeof toolOutput === 'string') {
+            const artifactsIndex = toolOutput.indexOf(ARTIFACTS_PREFIX)
+            const toolArgsIndex = toolOutput.indexOf(TOOL_ARGS_PREFIX)
+            const sourceDocumentsIndex = toolOutput.indexOf(SOURCE_DOCUMENTS_PREFIX)
 
-        if (typeof toolOutput === 'string' && toolOutput.includes(TOOL_ARGS_PREFIX)) {
-            const _splitted = toolOutput.split(TOOL_ARGS_PREFIX)
-            toolOutput = _splitted[0]
+            let artifactsContent
+            let toolArgs
+            let realContent
+
+            if (artifactsIndex > -1) {
+                realContent = toolOutput.substring(0, artifactsIndex).trim()
+                let artifactsContentString = toolOutput.substring(artifactsIndex + ARTIFACTS_PREFIX.length)
+                if (toolArgsIndex > -1) {
+                    artifactsContentString = toolOutput.substring(artifactsIndex + ARTIFACTS_PREFIX.length, toolArgsIndex)
+                }
+                try {
+                    artifactsContent = JSON.parse(artifactsContentString)
+                } catch (err) {
+                    artifactsContent = artifactsContentString
+                }
+            }
+            if (toolArgsIndex > -1) {
+                let toolArgsString = toolOutput.substring(toolArgsIndex + TOOL_ARGS_PREFIX.length)
+                if (sourceDocumentsIndex > -1) {
+                    toolArgsString = toolOutput.substring(toolArgsIndex + TOOL_ARGS_PREFIX.length, sourceDocumentsIndex)
+                }
+                try {
+                    toolArgs = JSON.parse(toolArgsString)
+                } catch (err) {
+                    toolArgs = toolArgsString
+                }
+            }
+            if (sourceDocumentsIndex > -1) {
+                let sourceDocumentsString = toolOutput.substring(sourceDocumentsIndex + SOURCE_DOCUMENTS_PREFIX.length)
+                try {
+                    sourceDocuments = JSON.parse(sourceDocumentsString)
+                } catch (err) {
+                    sourceDocuments = sourceDocumentsString
+                }
+            }
+
+            toolOutput = realContent || toolOutput
         }
 
         return {
-            output: toolOutput,
-            sourceDocuments,
-            artifacts
+            content: toolOutput,
+            sourceDocuments
         }
     } catch (error) {
         throw new InternalFlowiseError(
