@@ -3,6 +3,7 @@ import { ChatFlow } from '../database/entities/ChatFlow'
 import { ApiKey } from '../database/entities/ApiKey'
 import { compareKeys } from './apiKey'
 import apikeyService from '../services/apikey'
+import { isOssMode } from './ossMode'
 
 /**
  * Validate flow API Key, this is needed because Prediction/Upsert API is public
@@ -23,12 +24,17 @@ export const validateFlowAPIKey = async (req: Request, chatflow: ChatFlow): Prom
         const apiKey = await apikeyService.getApiKeyById(chatFlowApiKeyId)
         if (!apiKey) return false
 
+        const apiSecret = apiKey.apiSecret
+        if (isOssMode()) {
+            // In OSS mode, ignore workspace ownership checks and only verify the secret
+            return !!apiSecret && compareKeys(apiSecret, suppliedKey)
+        }
+
         const apiKeyWorkSpaceId = apiKey.workspaceId
         if (!apiKeyWorkSpaceId) return false
 
         if (apiKeyWorkSpaceId !== chatflow.workspaceId) return false
 
-        const apiSecret = apiKey.apiSecret
         if (!apiSecret || !compareKeys(apiSecret, suppliedKey)) return false
 
         return true
@@ -53,13 +59,18 @@ export const validateAPIKey = async (req: Request): Promise<{ isValid: boolean; 
         const apiKey = await apikeyService.getApiKey(suppliedKey)
         if (!apiKey) return { isValid: false }
 
-        const apiKeyWorkSpaceId = apiKey.workspaceId
-        if (!apiKeyWorkSpaceId) return { isValid: false }
-
         const apiSecret = apiKey.apiSecret
         if (!apiSecret || !compareKeys(apiSecret, suppliedKey)) {
             return { isValid: false, apiKey, workspaceId: apiKey.workspaceId }
         }
+
+        if (isOssMode()) {
+            // In OSS mode, do not require a workspace and return a sentinel value for compatibility
+            return { isValid: true, apiKey, workspaceId: 'bypass-workspace' }
+        }
+
+        const apiKeyWorkSpaceId = apiKey.workspaceId
+        if (!apiKeyWorkSpaceId) return { isValid: false }
 
         return { isValid: true, apiKey, workspaceId: apiKey.workspaceId }
     } catch (error) {

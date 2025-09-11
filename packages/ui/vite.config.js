@@ -4,6 +4,14 @@ import { resolve } from 'path'
 import dotenv from 'dotenv'
 
 export default defineConfig(async ({ mode }) => {
+    // Ensure env variables are loaded
+    dotenv.config()
+
+    // Fallback: propagate OSS_MODE from server env to VITE_OSS_MODE so it is available in the browser
+    if (!process.env.VITE_OSS_MODE && process.env.OSS_MODE) {
+        process.env.VITE_OSS_MODE = process.env.OSS_MODE
+    }
+
     let proxy = undefined
     if (mode === 'development') {
         const serverEnv = dotenv.config({ processEnv: {}, path: '../server/.env' }).parsed
@@ -19,7 +27,6 @@ export default defineConfig(async ({ mode }) => {
         }
     }
 
-    dotenv.config()
     return {
         plugins: [react()],
         resolve: {

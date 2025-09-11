@@ -138,9 +138,18 @@ const getAllTemplates = async () => {
     }
 }
 
-const deleteCustomTemplate = async (templateId: string): Promise<DeleteResult> => {
+const deleteCustomTemplate = async (templateId: string, workspaceId: string): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
+        const template = await appServer.AppDataSource.getRepository(CustomTemplate).findOneBy({
+            id: templateId
+        })
+        if (!template) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Template with id ${templateId} not found`)
+        }
+        if (workspaceId !== 'bypass-workspace' && template.workspaceId !== workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don\'t have access to this template`)
+        }
         return await appServer.AppDataSource.getRepository(CustomTemplate).delete({ id: templateId })
     } catch (error) {
         throw new InternalFlowiseError(
@@ -175,12 +184,16 @@ const _modifyTemplates = (templates: any[]) => {
 const getAllCustomTemplates = async (workspaceId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).findBy(getWorkspaceSearchOptions(workspaceId))
+        const findOptions = getWorkspaceSearchOptions(workspaceId)
+        if (workspaceId && workspaceId === 'bypass-workspace') {
+            delete findOptions.where.workspace
+        }
+        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).findBy(findOptions)
         const dbResponse = []
         _modifyTemplates(templates)
         dbResponse.push(...templates)
         // get shared credentials
-        if (workspaceId) {
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
             const workspaceService = new WorkspaceService()
             const sharedItems = (await workspaceService.getSharedItemsForWorkspace(workspaceId, 'custom_template')) as CustomTemplate[]
             if (sharedItems && sharedItems.length) {
@@ -209,6 +222,10 @@ const saveCustomTemplate = async (body: any): Promise<any> => {
         let derivedFramework = ''
         const customTemplate = new CustomTemplate()
         Object.assign(customTemplate, body)
+
+        if ((customTemplate as any).workspaceId === 'bypass-workspace') {
+            delete (customTemplate as any).workspaceId
+        }
 
         if (body.chatflowId) {
             const chatflow = await chatflowsService.getChatflowById(body.chatflowId)

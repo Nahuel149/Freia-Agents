@@ -35,6 +35,7 @@ import { Organization } from './oss/database/entities/organization.entity'
 import { GeneralRole, Role } from './oss/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
+import { isOssMode } from './utils/ossMode'
 
 declare global {
     namespace Express {
@@ -230,6 +231,24 @@ export class App {
                         const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
                         if (!isValid) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+
+                        // In OSS mode, skip workspace/organization checks and set defaults
+                        if (isOssMode()) {
+                            // @ts-ignore
+                            req.user = {
+                                permissions: [],
+                                features: {},
+                                activeOrganizationId: 'default-org',
+                                activeOrganizationSubscriptionId: 'oss-subscription',
+                                activeOrganizationCustomerId: 'oss-customer',
+                                activeOrganizationProductId: 'oss-product',
+                                isOrganizationAdmin: true,
+                                activeWorkspaceId: apiKeyWorkSpaceId || 'bypass-workspace',
+                                activeWorkspace: 'OSS',
+                                isApiKeyValidated: true
+                            }
+                            return next()
                         }
 
                         // Find workspace

@@ -10,9 +10,14 @@ import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtil
 import { WorkspaceShared } from '../../oss/database/entities/EnterpriseEntities'
 import { WorkspaceService } from '../../oss/services/workspace.service'
 
-const createCredential = async (requestBody: any) => {
+const createCredential = async (requestBody: any, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
+        if (workspaceId === 'bypass-workspace') {
+            delete requestBody.workspaceId
+        } else {
+            requestBody.workspaceId = workspaceId
+        }
         const newCredential = await transformToCredentialEntity(requestBody)
 
         if (requestBody.id) {
@@ -51,13 +56,17 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
     try {
         const appServer = getRunningExpressApp()
         let dbResponse = []
+        const findOptions = getWorkspaceSearchOptions(workspaceId)
+        if (workspaceId === 'bypass-workspace') {
+            delete findOptions.where.workspace
+        }
         if (paramCredentialName) {
             if (Array.isArray(paramCredentialName)) {
                 for (let i = 0; i < paramCredentialName.length; i += 1) {
                     const name = paramCredentialName[i] as string
                     const searchOptions = {
                         credentialName: name,
-                        ...getWorkspaceSearchOptions(workspaceId)
+                        ...findOptions
                     }
                     const credentials = await appServer.AppDataSource.getRepository(Credential).findBy(searchOptions)
                     dbResponse.push(...credentials)
@@ -65,13 +74,13 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
             } else {
                 const searchOptions = {
                     credentialName: paramCredentialName,
-                    ...getWorkspaceSearchOptions(workspaceId)
+                    ...findOptions
                 }
                 const credentials = await appServer.AppDataSource.getRepository(Credential).findBy(searchOptions)
                 dbResponse = [...credentials]
             }
             // get shared credentials
-            if (workspaceId) {
+            if (workspaceId && workspaceId !== 'bypass-workspace') {
                 const workspaceService = new WorkspaceService()
                 const sharedItems = (await workspaceService.getSharedItemsForWorkspace(workspaceId, 'credential')) as Credential[]
                 if (sharedItems.length) {
@@ -97,13 +106,13 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
                 }
             }
         } else {
-            const credentials = await appServer.AppDataSource.getRepository(Credential).findBy(getWorkspaceSearchOptions(workspaceId))
+            const credentials = await appServer.AppDataSource.getRepository(Credential).findBy(findOptions)
             for (const credential of credentials) {
                 dbResponse.push(omit(credential, ['encryptedData']))
             }
 
             // get shared credentials
-            if (workspaceId) {
+            if (workspaceId && workspaceId !== 'bypass-workspace') {
                 const workspaceService = new WorkspaceService()
                 const sharedItems = (await workspaceService.getSharedItemsForWorkspace(workspaceId, 'credential')) as Credential[]
                 if (sharedItems.length) {
@@ -168,6 +177,9 @@ const getCredentialById = async (credentialId: string, workspaceId?: string): Pr
 const updateCredential = async (credentialId: string, requestBody: any): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
+        if (requestBody.workspaceId === 'bypass-workspace') {
+            delete requestBody.workspaceId
+        }
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
             id: credentialId
         })

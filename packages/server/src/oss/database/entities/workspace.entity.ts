@@ -20,10 +20,6 @@ export class Workspace {
     @Column({ type: 'text', nullable: true })
     description?: string | null
 
-    // Associate workspace with its account (optional in OSS mode)
-    @Column({ type: 'uuid', nullable: true })
-    accountId?: string | null
-
     // Organization support is optional in OSS mode.
     @Column({ type: 'uuid', nullable: true })
     organizationId?: string | null

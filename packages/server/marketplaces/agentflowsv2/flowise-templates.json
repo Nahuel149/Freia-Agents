@@ -1,0 +1,405 @@
+{
+  "flowiseTemplates": {
+    "mainOrchestrator": {
+      "id": "b2b-orchestrator-main",
+      "name": "B2B Sales Orchestrator",
+      "description": "Sistema principal de orquestación de agentes B2B",
+      "nodes": [
+        {
+          "id": "chatInput_0",
+          "position": { "x": 100, "y": 200 },
+          "type": "chatInput",
+          "data": {
+            "label": "Entrada del Cliente",
+            "name": "chatInput",
+            "type": "ChatInput",
+            "inputs": {},
+            "outputs": {
+              "output": "ChatInput"
+            }
+          }
+        },
+        {
+          "id": "orchestrator_0",
+          "position": { "x": 400, "y": 200 },
+          "type": "customFunction",
+          "data": {
+            "label": "Agent Orchestrator",
+            "name": "customFunction",
+            "type": "CustomFunction",
+            "inputs": {
+              "functionName": "processB2BMessage",
+              "code": "const AgentOrchestrator = require('./agent-orchestrator');\n\nasync function processB2BMessage(input, flow, nodeData) {\n    try {\n        const orchestrator = new AgentOrchestrator({\n            dbConnectionString: process.env.DB_CONNECTION_STRING,\n            maxConcurrentAgents: parseInt(process.env.MAX_CONCURRENT_AGENTS) || 5,\n            agentTimeout: parseInt(process.env.AGENT_TIMEOUT) || 30000\n        });\n        \n        await orchestrator.initialize();\n        \n        const result = await orchestrator.processCustomerMessage({\n            phoneNumber: input.phoneNumber || '+5491123456789',\n            message: input.message || input.question || input.chatInput,\n            flowState: {\n                customerType: input.customerType || 'business',\n                urgency: input.urgency || 'medium',\n                sessionId: input.sessionId\n            },\n            agentStrategy: input.strategy || 'sequential'\n        });\n        \n        return {\n            response: result.response,\n            agentsUsed: result.agentsUsed,\n            executionTime: result.executionTime,\n            followUpScheduled: result.followUpScheduled\n        };\n    } catch (error) {\n        console.error('Error en orchestrator:', error);\n        return {\n            response: 'Disculpá, tuve un problema técnico. Un representante te contactará pronto.',\n            error: error.message\n        };\n    }\n}",
+              "inputVariables": [
+                {
+                  "name": "message",
+                  "type": "string",
+                  "description": "Mensaje del cliente"
+                },
+                {
+                  "name": "phoneNumber",
+                  "type": "string",
+                  "description": "Número de teléfono del cliente"
+                },
+                {
+                  "name": "strategy",
+                  "type": "options",
+                  "options": ["sequential", "parallel", "conditional"],
+                  "default": "sequential",
+                  "description": "Estrategia de procesamiento"
+                },
+                {
+                  "name": "customerType",
+                  "type": "options",
+                  "options": ["individual", "business", "enterprise"],
+                  "default": "business",
+                  "description": "Tipo de cliente"
+                },
+                {
+                  "name": "urgency",
+                  "type": "options",
+                  "options": ["low", "medium", "high"],
+                  "default": "medium",
+                  "description": "Nivel de urgencia"
+                }
+              ]
+            },
+            "outputs": {
+              "output": "CustomFunction"
+            }
+          }
+        },
+        {
+          "id": "chatOutput_0",
+          "position": { "x": 700, "y": 200 },
+          "type": "chatOutput",
+          "data": {
+            "label": "Respuesta al Cliente",
+            "name": "chatOutput",
+            "type": "ChatOutput",
+            "inputs": {
+              "input": "ChatOutput"
+            },
+            "outputs": {}
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge_input_orchestrator",
+          "source": "chatInput_0",
+          "target": "orchestrator_0",
+          "sourceHandle": "output",
+          "targetHandle": "input"
+        },
+        {
+          "id": "edge_orchestrator_output",
+          "source": "orchestrator_0",
+          "target": "chatOutput_0",
+          "sourceHandle": "output",
+          "targetHandle": "input"
+        }
+      ]
+    },
+    "databaseConnector": {
+      "id": "b2b-database-connector",
+      "name": "B2B Database Connector",
+      "description": "Conector a base de datos PostgreSQL para sistema B2B",
+      "nodes": [
+        {
+          "id": "dbConnector_0",
+          "position": { "x": 300, "y": 150 },
+          "type": "customFunction",
+          "data": {
+            "label": "PostgreSQL B2B",
+            "name": "customFunction",
+            "type": "CustomFunction",
+            "inputs": {
+              "functionName": "queryB2BDatabase",
+              "code": "const { B2BSalesDB } = require('./database-config');\n\nasync function queryB2BDatabase(input, flow, nodeData) {\n    try {\n        const db = new B2BSalesDB(process.env.DB_CONNECTION_STRING);\n        await db.connect();\n        \n        let result;\n        \n        switch (input.operation) {\n            case 'getCustomer':\n                result = await db.getCustomerByPhone(input.phoneNumber);\n                break;\n            case 'upsertCustomer':\n                result = await db.upsertCustomer(input.customerData);\n                break;\n            case 'createSale':\n                result = await db.createSale(input.saleData);\n                break;\n            case 'scheduleFollowUp':\n                result = await db.scheduleFollowUp(input.followUpData);\n                break;\n            case 'getPendingFollowUps':\n                result = await db.getPendingFollowUps();\n                break;\n            default:\n                throw new Error('Operación no válida: ' + input.operation);\n        }\n        \n        await db.disconnect();\n        return result;\n    } catch (error) {\n        console.error('Error en base de datos:', error);\n        throw error;\n    }\n}",
+              "inputVariables": [
+                {
+                  "name": "operation",
+                  "type": "options",
+                  "options": ["getCustomer", "upsertCustomer", "createSale", "scheduleFollowUp", "getPendingFollowUps"],
+                  "description": "Operación a realizar"
+                },
+                {
+                  "name": "phoneNumber",
+                  "type": "string",
+                  "description": "Número de teléfono (para getCustomer)"
+                },
+                {
+                  "name": "customerData",
+                  "type": "json",
+                  "description": "Datos del cliente (para upsertCustomer)"
+                },
+                {
+                  "name": "saleData",
+                  "type": "json",
+                  "description": "Datos de la venta (para createSale)"
+                },
+                {
+                  "name": "followUpData",
+                  "type": "json",
+                  "description": "Datos del seguimiento (para scheduleFollowUp)"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "salesAgent": {
+      "id": "b2b-sales-agent",
+      "name": "B2B Sales Agent",
+      "description": "Agente especializado en ventas B2B",
+      "nodes": [
+        {
+          "id": "salesLLM_0",
+          "position": { "x": 300, "y": 200 },
+          "type": "chatOpenAI",
+          "data": {
+            "label": "Sales Agent LLM",
+            "name": "chatOpenAI",
+            "type": "ChatOpenAI",
+            "inputs": {
+              "modelName": "gpt-4",
+              "temperature": 0.7,
+              "maxTokens": 1000,
+              "topP": 1,
+              "frequencyPenalty": 0,
+              "presencePenalty": 0,
+              "timeout": 30000
+            }
+          }
+        },
+        {
+          "id": "salesPrompt_0",
+          "position": { "x": 100, "y": 200 },
+          "type": "promptTemplate",
+          "data": {
+            "label": "Sales Prompt",
+            "name": "promptTemplate",
+            "type": "PromptTemplate",
+            "inputs": {
+              "template": "Sos un experto agente de ventas B2B especializado en tecnología y equipamiento empresarial.\n\nTu objetivo es:\n1. Entender las necesidades específicas del cliente\n2. Ofrecer soluciones personalizadas\n3. Generar confianza y rapport\n4. Guiar hacia el cierre de venta\n\nContexto del cliente:\n- Teléfono: {phoneNumber}\n- Tipo: {customerType}\n- Urgencia: {urgency}\n- Historial: {customerHistory}\n\nMensaje del cliente: {message}\n\nResponde de manera profesional, empática y orientada a soluciones. Hacé preguntas específicas para entender mejor las necesidades.",
+              "inputVariables": ["phoneNumber", "customerType", "urgency", "customerHistory", "message"]
+            }
+          }
+        },
+        {
+          "id": "salesMemory_0",
+          "position": { "x": 300, "y": 50 },
+          "type": "bufferWindowMemory",
+          "data": {
+            "label": "Sales Memory",
+            "name": "bufferWindowMemory",
+            "type": "BufferWindowMemory",
+            "inputs": {
+              "k": 10,
+              "returnMessages": true,
+              "memoryKey": "chat_history"
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge_prompt_llm",
+          "source": "salesPrompt_0",
+          "target": "salesLLM_0",
+          "sourceHandle": "output",
+          "targetHandle": "input"
+        },
+        {
+          "id": "edge_memory_llm",
+          "source": "salesMemory_0",
+          "target": "salesLLM_0",
+          "sourceHandle": "output",
+          "targetHandle": "memory"
+        }
+      ]
+    },
+    "productSpecialist": {
+      "id": "b2b-product-specialist",
+      "name": "Product Specialist Agent",
+      "description": "Agente especializado en productos y especificaciones técnicas",
+      "nodes": [
+        {
+          "id": "productLLM_0",
+          "position": { "x": 300, "y": 200 },
+          "type": "chatOpenAI",
+          "data": {
+            "label": "Product Specialist LLM",
+            "name": "chatOpenAI",
+            "type": "ChatOpenAI",
+            "inputs": {
+              "modelName": "gpt-4",
+              "temperature": 0.3,
+              "maxTokens": 1200
+            }
+          }
+        },
+        {
+          "id": "productPrompt_0",
+          "position": { "x": 100, "y": 200 },
+          "type": "promptTemplate",
+          "data": {
+            "label": "Product Prompt",
+            "name": "promptTemplate",
+            "type": "PromptTemplate",
+            "inputs": {
+              "template": "Sos un especialista técnico en productos de tecnología empresarial.\n\nTu expertise incluye:\n- Notebooks y computadoras empresariales\n- Servidores y equipamiento de red\n- Software empresarial y licencias\n- Periféricos y accesorios\n- Soluciones de seguridad informática\n\nConsulta del cliente: {message}\n\nProporcioná información técnica detallada, especificaciones, comparaciones y recomendaciones basadas en las necesidades específicas del cliente. Sé preciso y técnico pero comprensible.",
+              "inputVariables": ["message"]
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge_product_prompt_llm",
+          "source": "productPrompt_0",
+          "target": "productLLM_0",
+          "sourceHandle": "output",
+          "targetHandle": "input"
+        }
+      ]
+    },
+    "pricingAgent": {
+      "id": "b2b-pricing-agent",
+      "name": "Pricing Specialist Agent",
+      "description": "Agente especializado en precios y cotizaciones",
+      "nodes": [
+        {
+          "id": "pricingLLM_0",
+          "position": { "x": 300, "y": 200 },
+          "type": "chatOpenAI",
+          "data": {
+            "label": "Pricing Specialist LLM",
+            "name": "chatOpenAI",
+            "type": "ChatOpenAI",
+            "inputs": {
+              "modelName": "gpt-4",
+              "temperature": 0.2,
+              "maxTokens": 800
+            }
+          }
+        },
+        {
+          "id": "pricingPrompt_0",
+          "position": { "x": 100, "y": 200 },
+          "type": "promptTemplate",
+          "data": {
+            "label": "Pricing Prompt",
+            "name": "promptTemplate",
+            "type": "PromptTemplate",
+            "inputs": {
+              "template": "Sos un especialista en precios y cotizaciones B2B.\n\nTus responsabilidades:\n- Generar cotizaciones precisas y competitivas\n- Ofrecer descuentos por volumen apropiados\n- Explicar términos de pago y financiamiento\n- Justificar el valor de los productos/servicios\n\nSolicitud de cotización: {message}\nTipo de cliente: {customerType}\nVolumen estimado: {volume}\n\nProporcioná una cotización detallada con precios, descuentos aplicables, términos de pago y valor agregado. Sé transparente y competitivo.",
+              "inputVariables": ["message", "customerType", "volume"]
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge_pricing_prompt_llm",
+          "source": "pricingPrompt_0",
+          "target": "pricingLLM_0",
+          "sourceHandle": "output",
+          "targetHandle": "input"
+        }
+      ]
+    },
+    "whatsappIntegration": {
+      "id": "b2b-whatsapp-integration",
+      "name": "WhatsApp Integration",
+      "description": "Integración con WhatsApp para envío de mensajes",
+      "nodes": [
+        {
+          "id": "whatsappWebhook_0",
+          "position": { "x": 300, "y": 200 },
+          "type": "customFunction",
+          "data": {
+            "label": "WhatsApp Sender",
+            "name": "customFunction",
+            "type": "CustomFunction",
+            "inputs": {
+              "functionName": "sendWhatsAppMessage",
+              "code": "const axios = require('axios');\n\nasync function sendWhatsAppMessage(input, flow, nodeData) {\n    try {\n        const response = await axios.post(process.env.WASENDER_API_URL + '/send-message', {\n            phone: input.phoneNumber,\n            message: input.message,\n            type: 'text'\n        }, {\n            headers: {\n                'Authorization': 'Bearer ' + process.env.WASENDER_API_KEY,\n                'Content-Type': 'application/json'\n            }\n        });\n        \n        return {\n            success: true,\n            messageId: response.data.messageId,\n            status: response.data.status\n        };\n    } catch (error) {\n        console.error('Error enviando WhatsApp:', error);\n        return {\n            success: false,\n            error: error.message\n        };\n    }\n}",
+              "inputVariables": [
+                {
+                  "name": "phoneNumber",
+                  "type": "string",
+                  "description": "Número de teléfono destino"
+                },
+                {
+                  "name": "message",
+                  "type": "string",
+                  "description": "Mensaje a enviar"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "environmentVariables": {
+    "required": [
+      "DB_CONNECTION_STRING",
+      "AGENTFLOW_API_URL",
+      "WASENDER_API_URL",
+      "WASENDER_API_KEY"
+    ],
+    "optional": [
+      "MAX_CONCURRENT_AGENTS",
+      "AGENT_TIMEOUT",
+      "LOG_LEVEL",
+      "NODE_ENV"
+    ],
+    "defaults": {
+      "MAX_CONCURRENT_AGENTS": "5",
+      "AGENT_TIMEOUT": "30000",
+      "LOG_LEVEL": "info",
+      "NODE_ENV": "development"
+    }
+  },
+  "workflowExamples": {
+    "sequentialSales": {
+      "name": "Flujo Secuencial de Ventas",
+      "description": "Proceso paso a paso: Consulta → Productos → Precios → Cierre",
+      "strategy": "sequential",
+      "agents": ["salesAgent", "productSpecialist", "pricingAgent", "closingAgent"]
+    },
+    "parallelInquiry": {
+      "name": "Consulta Paralela",
+      "description": "Múltiples especialistas trabajando simultáneamente",
+      "strategy": "parallel",
+      "agents": ["productSpecialist", "pricingAgent", "supportAgent"]
+    },
+    "conditionalSupport": {
+      "name": "Soporte Condicional",
+      "description": "Flujo dinámico basado en el tipo de consulta",
+      "strategy": "conditional",
+      "agents": ["supportAgent", "salesAgent", "technicalAgent"]
+    }
+  },
+  "importInstructions": {
+    "steps": [
+      "1. Abrí Flowise en tu navegador",
+      "2. Andá a 'Chatflows' → 'Import Chatflow'",
+      "3. Seleccioná el template que querés importar de este archivo",
+      "4. Configurá las variables de entorno necesarias",
+      "5. Conectá los nodos según el flujo deseado",
+      "6. Testea el flujo con mensajes de prueba",
+      "7. Deployá a producción cuando esté listo"
+    ],
+    "notes": [
+      "Asegurate de tener todas las dependencias instaladas (agent-orchestrator.js, database-config.js, etc.)",
+      "Configurá correctamente las variables de entorno antes de usar",
+      "Testea cada template individualmente antes de combinarlos",
+      "Usá el modo debug para troubleshooting"
+    ]
+  }
+}

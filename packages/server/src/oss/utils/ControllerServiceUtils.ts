@@ -4,9 +4,19 @@
  */
 
 import { FindOptionsWhere } from 'typeorm'
+import { isOssMode } from '../../utils/ossMode'
 
-export function getWorkspaceSearchOptions(_workspaceId?: string): FindOptionsWhere<any> {
-    // In OSS mode, we do not restrict by workspace. Return empty filter object compatible with Repository.findBy.
+/**
+ * @param {string} workspaceId
+ * @returns {FindOptionsWhere<any>}
+ */
+export function getWorkspaceSearchOptions(workspaceId?: string): FindOptionsWhere<any> {
+    // In OSS mode we ignore workspace segregation entirely
+    if (isOssMode()) return {}
+
+    if (workspaceId && workspaceId !== 'bypass-workspace') {
+        return { workspaceId }
+    }
     return {}
 }
 

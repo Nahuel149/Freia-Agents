@@ -31,9 +31,14 @@ const createEvaluator = async (req: Request, res: Response, next: NextFunction) 
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluatorService.createEvaluator - body not provided!`)
         }
-        const body = req.body
-        body.workspaceId = req.user?.activeWorkspaceId
-        const apiResponse = await evaluatorService.createEvaluator(body)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: evaluatorService.createEvaluator - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await evaluatorService.createEvaluator(req.body, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -48,7 +53,14 @@ const updateEvaluator = async (req: Request, res: Response, next: NextFunction) 
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluatorService.updateEvaluator - id not provided!`)
         }
-        const apiResponse = await evaluatorService.updateEvaluator(req.params.id, req.body)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: evaluatorService.updateEvaluator - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await evaluatorService.updateEvaluator(req.params.id, req.body, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -60,7 +72,14 @@ const deleteEvaluator = async (req: Request, res: Response, next: NextFunction) 
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluatorService.deleteEvaluator - id not provided!`)
         }
-        const apiResponse = await evaluatorService.deleteEvaluator(req.params.id)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: evaluatorService.deleteEvaluator - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await evaluatorService.deleteEvaluator(req.params.id, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

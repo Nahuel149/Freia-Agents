@@ -15,13 +15,13 @@ export class WorkspaceUser {
     @PrimaryGeneratedColumn('uuid')
     id!: string
 
-    @Column({ type: 'text' })
-    workspaceId!: string
+    @Column({ type: 'text', nullable: true })
+    workspaceId?: string | null
 
-    // Relation to Workspace for eager loading and join queries
-    @ManyToOne(() => Workspace, (workspace) => workspace.id, { eager: true, onDelete: 'CASCADE' })
+    // Relation to Workspace (optional in OSS mode)
+    @ManyToOne(() => Workspace, (workspace) => workspace.id, { eager: true, onDelete: 'CASCADE', nullable: true })
     @JoinColumn({ name: 'workspaceId' })
-    workspace?: Workspace
+    workspace?: Workspace | null
 
     @Column({ type: 'text' })
     userId!: string

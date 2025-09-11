@@ -37,6 +37,7 @@ import { getWorkspaceSearchOptions } from '../oss/utils/ControllerServiceUtils'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
 import { Workspace } from '../oss/database/entities/workspace.entity'
 import { Organization } from '../oss/database/entities/organization.entity'
+import { isOssMode } from '../utils/ossMode'
 
 export const executeUpsert = async ({
     componentNodes,
@@ -259,25 +260,27 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         // This can be public API, so we can only get orgId from the chatflow
         const chatflowWorkspaceId = chatflow.workspaceId
-        const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
-            id: chatflowWorkspaceId
-        })
-        if (!workspace) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
-        }
-        const workspaceId = workspace.id
-
-        // OSS mode: Use default organization if not present
+        let workspaceId: string | undefined = undefined
         let orgId = 'bypass-org'
-        let subscriptionId = 'bypass-subscription'
-        
-        if (workspace.organizationId) {
-            const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
-                id: workspace.organizationId
+        let subscriptionId: string | undefined = 'bypass-subscription'
+
+        if (!(isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace'))) {
+            const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
+                id: chatflowWorkspaceId
             })
-            if (org) {
-                orgId = org.id
-                subscriptionId = org.subscriptionId as string
+            if (!workspace) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
+            }
+            workspaceId = workspace.id
+
+            if (workspace.organizationId) {
+                const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
+                    id: workspace.organizationId
+                })
+                if (org) {
+                    orgId = org.id
+                    subscriptionId = org.subscriptionId as string
+                }
             }
         }
 

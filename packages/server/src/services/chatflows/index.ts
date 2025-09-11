@@ -24,9 +24,12 @@ export const enum ChatflowErrorMessage {
     INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type'
 }
 
-export function validateChatflowType(type: ChatflowType | undefined) {
-    if (!Object.values(EnumChatflowType).includes(type as EnumChatflowType))
+export function validateChatflowType(type: ChatflowType | undefined): EnumChatflowType {
+    if (!type) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_TYPE)
+    const normalizedType = (type as string).toUpperCase() as EnumChatflowType
+    if (!Object.values(EnumChatflowType).includes(normalizedType))
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_TYPE)
+    return normalizedType
 }
 
 // Check if chatflow valid for streaming
@@ -109,7 +112,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
         }
         const appServer = getRunningExpressApp()
 
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId, workspaceId })
 
         // Update document store usage
         await documentStoreService.updateDocumentStoreUsage(chatflowId, undefined, workspaceId)
@@ -141,11 +144,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
 
 const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
-        if (workspaceId === 'bypass-workspace') {
-            return page > 0 && limit > 0 ? { data: [], total: 0 } : []
-        }
         const appServer = getRunningExpressApp()
-
         const queryBuilder = appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chat_flow')
             .orderBy('chat_flow.updatedDate', 'DESC')
@@ -154,17 +153,14 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
         }
-        if (type === 'MULTIAGENT') {
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'MULTIAGENT' })
-        } else if (type === 'AGENTFLOW') {
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'AGENTFLOW' })
-        } else if (type === 'ASSISTANT') {
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'ASSISTANT' })
-        } else if (type === 'CHATFLOW') {
-            // fetch all chatflows that are not agentflow
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'CHATFLOW' })
+
+        if (type) {
+            queryBuilder.where('chat_flow.type = :type', { type })
         }
-        if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
+        }
+
         const [data, total] = await queryBuilder.getManyAndCount()
 
         if (page > 0 && limit > 0) {
@@ -244,12 +240,16 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
-const getChatflowById = async (chatflowId: string): Promise<any> => {
+const getChatflowById = async (chatflowId: string, workspaceId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-            id: chatflowId
-        })
+        const queryBuilder = appServer.AppDataSource.getRepository(ChatFlow).createQueryBuilder('chat_flow')
+        queryBuilder.where('chat_flow.id = :chatflowId', { chatflowId })
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
+        }
+
+        const dbResponse = await queryBuilder.getOne()
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
@@ -269,8 +269,14 @@ const saveChatflow = async (
     subscriptionId: string,
     usageCacheManager: UsageCacheManager
 ): Promise<any> => {
-    validateChatflowType(newChatFlow.type)
+    newChatFlow.type = validateChatflowType(newChatFlow.type)
     const appServer = getRunningExpressApp()
+
+    if (workspaceId === 'bypass-workspace') {
+        delete newChatFlow.workspaceId
+    } else {
+        newChatFlow.workspaceId = workspaceId
+    }
 
     let dbResponse: ChatFlow
     if (containsBase64File(newChatFlow)) {
@@ -324,6 +330,13 @@ const updateChatflow = async (
     subscriptionId: string
 ): Promise<any> => {
     const appServer = getRunningExpressApp()
+
+    if (workspaceId === 'bypass-workspace') {
+        delete updateChatFlow.workspaceId
+    } else {
+        updateChatFlow.workspaceId = workspaceId
+    }
+
     if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
         updateChatFlow.flowData = await updateFlowDataWithFilePaths(
             chatflow.id,
@@ -335,7 +348,7 @@ const updateChatflow = async (
         )
     }
     if (updateChatFlow.type || updateChatFlow.type === '') {
-        validateChatflowType(updateChatFlow.type)
+        updateChatFlow.type = validateChatflowType(updateChatFlow.type)
     } else {
         updateChatFlow.type = chatflow.type
     }

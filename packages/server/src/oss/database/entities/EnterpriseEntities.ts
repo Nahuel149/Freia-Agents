@@ -10,8 +10,8 @@ export class WorkspaceUsers {
     @PrimaryGeneratedColumn('uuid')
     id!: string
 
-    @Column({ type: 'text' })
-    workspaceId!: string
+    @Column({ type: 'text', nullable: true })
+    workspaceId?: string | null
 
     @Column({ type: 'text' })
     userId!: string
@@ -26,8 +26,8 @@ export class WorkspaceShared {
     @PrimaryGeneratedColumn('uuid')
     id!: string
 
-    @Column({ type: 'text' })
-    workspaceId!: string
+    @Column({ type: 'text', nullable: true })
+    workspaceId?: string | null
 
     @Column({ type: 'text' })
     sharedItemId!: string

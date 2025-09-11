@@ -9,7 +9,9 @@ const getAllEvaluators = async (workspaceId?: string, page: number = -1, limit: 
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(Evaluator).createQueryBuilder('ev').orderBy('ev.updatedDate', 'DESC')
-        if (workspaceId) queryBuilder.andWhere('ev.workspaceId = :workspaceId', { workspaceId })
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            queryBuilder.andWhere('ev.workspaceId = :workspaceId', { workspaceId })
+        }
         if (page > 0 && limit > 0) {
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
@@ -31,12 +33,14 @@ const getAllEvaluators = async (workspaceId?: string, page: number = -1, limit: 
     }
 }
 
-const getEvaluator = async (id: string) => {
+const getEvaluator = async (id: string, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const evaluator = await appServer.AppDataSource.getRepository(Evaluator).findOneBy({
-            id: id
-        })
+        const criteria: any = { id }
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            criteria.workspaceId = workspaceId
+        }
+        const evaluator = await appServer.AppDataSource.getRepository(Evaluator).findOneBy(criteria)
         if (!evaluator) throw new Error(`Evaluator ${id} not found`)
         return EvaluatorDTO.fromEntity(evaluator)
     } catch (error) {
@@ -48,9 +52,14 @@ const getEvaluator = async (id: string) => {
 }
 
 // Create new Evaluator
-const createEvaluator = async (body: any) => {
+const createEvaluator = async (body: any, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
+        if (workspaceId === 'bypass-workspace') {
+            delete body.workspaceId
+        } else {
+            body.workspaceId = workspaceId
+        }
         const newDs = EvaluatorDTO.toEntity(body)
 
         const evaluator = appServer.AppDataSource.getRepository(Evaluator).create(newDs)
@@ -65,12 +74,14 @@ const createEvaluator = async (body: any) => {
 }
 
 // Update Evaluator
-const updateEvaluator = async (id: string, body: any) => {
+const updateEvaluator = async (id: string, body: any, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const evaluator = await appServer.AppDataSource.getRepository(Evaluator).findOneBy({
-            id: id
-        })
+        const criteria: any = { id }
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            criteria.workspaceId = workspaceId
+        }
+        const evaluator = await appServer.AppDataSource.getRepository(Evaluator).findOneBy(criteria)
 
         if (!evaluator) throw new Error(`Evaluator ${id} not found`)
 
@@ -88,10 +99,14 @@ const updateEvaluator = async (id: string, body: any) => {
 }
 
 // Delete Evaluator via id
-const deleteEvaluator = async (id: string) => {
+const deleteEvaluator = async (id: string, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
-        return await appServer.AppDataSource.getRepository(Evaluator).delete({ id: id })
+        const criteria: any = { id }
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            criteria.workspaceId = workspaceId
+        }
+        return await appServer.AppDataSource.getRepository(Evaluator).delete(criteria)
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

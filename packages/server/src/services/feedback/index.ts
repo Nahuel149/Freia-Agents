@@ -12,10 +12,11 @@ const getAllChatMessageFeedback = async (
     chatId: string | undefined,
     sortOrder: string | undefined,
     startDate: string | undefined,
-    endDate: string | undefined
+    endDate: string | undefined,
+    workspaceId: string | undefined
 ) => {
     try {
-        const dbResponse = await utilGetChatMessageFeedback(chatflowid, chatId, sortOrder, startDate, endDate)
+        const dbResponse = await utilGetChatMessageFeedback(chatflowid, chatId, sortOrder, startDate, endDate, workspaceId)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

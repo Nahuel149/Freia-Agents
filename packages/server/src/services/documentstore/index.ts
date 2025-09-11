@@ -15,7 +15,7 @@ import {
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, omit } from 'lodash'
 import * as path from 'path'
-import { DataSource, In } from 'typeorm'
+import { DataSource, FindOptionsWhere, In } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import {
     addLoaderSource,
@@ -55,9 +55,15 @@ import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { Telemetry } from '../../utils/telemetry'
 import nodesService from '../nodes'
 
-const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: string) => {
+const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: string, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
+
+        if (workspaceId === 'bypass-workspace') {
+            delete newDocumentStore.workspaceId
+        } else {
+            newDocumentStore.workspaceId = workspaceId
+        }
 
         const documentStore = appServer.AppDataSource.getRepository(DocumentStore).create(newDocumentStore)
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(documentStore)
@@ -88,7 +94,7 @@ const getAllDocumentStores = async (workspaceId?: string, page: number = -1, lim
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
         }
-        if (workspaceId) queryBuilder.andWhere('doc_store.workspaceId = :workspaceId', { workspaceId })
+        if (workspaceId && workspaceId !== 'bypass-workspace') queryBuilder.andWhere('doc_store.workspaceId = :workspaceId', { workspaceId })
 
         const [data, total] = await queryBuilder.getManyAndCount()
 
@@ -120,9 +126,11 @@ const deleteLoaderFromDocumentStore = async (
     try {
         const appServer = getRunningExpressApp()
 
-        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
-            id: storeId
-        })
+        const criteria: FindOptionsWhere<DocumentStore> = { id: storeId }
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            criteria.workspaceId = workspaceId
+        }
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy(criteria)
         if (!entity) {
             throw new InternalFlowiseError(
                 StatusCodes.NOT_FOUND,
@@ -172,7 +180,7 @@ const deleteLoaderFromDocumentStore = async (
     }
 }
 
-const getDocumentStoreById = async (storeId: string) => {
+const getDocumentStoreById = async (storeId: string, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -505,6 +513,9 @@ const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkI
 const updateDocumentStore = async (documentStore: DocumentStore, updatedDocumentStore: DocumentStore) => {
     try {
         const appServer = getRunningExpressApp()
+        if (updatedDocumentStore.workspaceId === 'bypass-workspace') {
+            delete updatedDocumentStore.workspaceId
+        }
         const tmpUpdatedDocumentStore = appServer.AppDataSource.getRepository(DocumentStore).merge(documentStore, updatedDocumentStore)
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(tmpUpdatedDocumentStore)
         return dbResponse

@@ -20,7 +20,7 @@ import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import nodesService from '../nodes'
 
-const createAssistant = async (requestBody: any, orgId: string): Promise<Assistant> => {
+const createAssistant = async (requestBody: any, orgId: string, workspaceId?: string): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
@@ -135,7 +135,13 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error creating new assistant - ${getErrorMessage(error)}`)
         }
         const newAssistant = new Assistant()
-        Object.assign(newAssistant, requestBody)
+        const body = requestBody
+        if (workspaceId === 'bypass-workspace') {
+            delete body.workspaceId
+        } else {
+            body.workspaceId = workspaceId
+        }
+        Object.assign(newAssistant, body)
 
         const assistant = appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
@@ -296,6 +302,9 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
 
         if (assistant.type === 'CUSTOM') {
             const body = requestBody
+            if (body.workspaceId && body.workspaceId === 'bypass-workspace') {
+                delete body.workspaceId
+            }
             const updateAssistant = new Assistant()
             Object.assign(updateAssistant, body)
 
@@ -307,6 +316,9 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
         try {
             const openAIAssistantId = JSON.parse(assistant.details)?.id
             const body = requestBody
+            if (body.workspaceId && body.workspaceId === 'bypass-workspace') {
+                delete body.workspaceId
+            }
             const assistantDetails = JSON.parse(body.details)
             const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
                 id: body.credential

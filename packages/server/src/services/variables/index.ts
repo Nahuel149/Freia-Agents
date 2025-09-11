@@ -8,11 +8,16 @@ import { QueryRunner } from 'typeorm'
 import { validate } from 'uuid'
 import { Platform } from '../../Interface'
 
-const createVariable = async (newVariable: Variable, orgId: string) => {
+const createVariable = async (newVariable: Variable, orgId: string, workspaceId?: string) => {
     const appServer = getRunningExpressApp()
     if (appServer.identityManager.getPlatformType() === Platform.CLOUD && newVariable.type === 'runtime')
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Cloud platform does not support runtime variables!')
     try {
+        if (workspaceId === 'bypass-workspace') {
+            delete newVariable.workspaceId
+        } else {
+            newVariable.workspaceId = workspaceId
+        }
         const variable = await appServer.AppDataSource.getRepository(Variable).create(newVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(variable)
         await appServer.telemetry.sendTelemetry(
@@ -56,10 +61,9 @@ const getAllVariables = async (workspaceId?: string, page: number = -1, limit: n
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
         }
-        if (workspaceId) queryBuilder.andWhere('variable.workspaceId = :workspaceId', { workspaceId })
 
-        if (appServer.identityManager.getPlatformType() === Platform.CLOUD) {
-            queryBuilder.andWhere('variable.type != :type', { type: 'runtime' })
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            queryBuilder.andWhere('variable.workspaceId = :workspaceId', { workspaceId })
         }
 
         const [data, total] = await queryBuilder.getManyAndCount()
@@ -77,12 +81,18 @@ const getAllVariables = async (workspaceId?: string, page: number = -1, limit: n
     }
 }
 
-const getVariableById = async (variableId: string) => {
+const getVariableById = async (variableId: string, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
-            id: variableId
-        })
+        const queryBuilder = appServer.AppDataSource.getRepository(Variable)
+            .createQueryBuilder('variable')
+            .where('variable.id = :variableId', { variableId })
+
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            queryBuilder.andWhere('variable.workspaceId = :workspaceId', { workspaceId })
+        }
+
+        const dbResponse = await queryBuilder.getOne()
 
         if (appServer.identityManager.getPlatformType() === Platform.CLOUD && dbResponse?.type === 'runtime') {
             throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Cloud platform does not support runtime variables!')
@@ -97,11 +107,16 @@ const getVariableById = async (variableId: string) => {
     }
 }
 
-const updateVariable = async (variable: Variable, updatedVariable: Variable) => {
+const updateVariable = async (variable: Variable, updatedVariable: Variable, workspaceId?: string) => {
     const appServer = getRunningExpressApp()
     if (appServer.identityManager.getPlatformType() === Platform.CLOUD && updatedVariable.type === 'runtime')
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Cloud platform does not support runtime variables!')
     try {
+        if (workspaceId === 'bypass-workspace') {
+            delete updatedVariable.workspaceId
+        } else {
+            updatedVariable.workspaceId = workspaceId
+        }
         const tmpUpdatedVariable = await appServer.AppDataSource.getRepository(Variable).merge(variable, updatedVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
         return dbResponse
@@ -116,6 +131,9 @@ const updateVariable = async (variable: Variable, updatedVariable: Variable) => 
 const importVariables = async (newVariables: Partial<Variable>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
         for (const data of newVariables) {
+            if ((data as any).workspaceId === 'bypass-workspace') {
+                delete (data as any).workspaceId
+            }
             if (data.id && !validate(data.id)) {
                 throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: importVariables - invalid id!`)
             }

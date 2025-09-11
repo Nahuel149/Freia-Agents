@@ -68,7 +68,6 @@ export class AccountService {
             const workspaceRepo = queryRunner.manager.getRepository(WorkspaceEntity)
             const workspace = workspaceRepo.create({
                 name: 'Personal Workspace',
-                accountId: account.id,
                 createdBy: user.id
             })
             await workspaceRepo.save(workspace)

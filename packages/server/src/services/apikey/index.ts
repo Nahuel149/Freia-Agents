@@ -16,7 +16,7 @@ const getAllApiKeysFromDB = async (workspaceId?: string, page: number = -1, limi
         queryBuilder.skip((page - 1) * limit)
         queryBuilder.take(limit)
     }
-    if (workspaceId) queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
+    if (workspaceId && workspaceId !== 'bypass-workspace') queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
     const [data, total] = await queryBuilder.getManyAndCount()
     const keysWithChatflows = await addChatflowsCount(data)
 
@@ -56,12 +56,14 @@ const getApiKey = async (apiKey: string) => {
     }
 }
 
-const getApiKeyById = async (apiKeyId: string) => {
+const getApiKeyById = async (apiKeyId: string, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-            id: apiKeyId
-        })
+        const findCriteria: any = { id: apiKeyId }
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            findCriteria.workspaceId = workspaceId
+        }
+        const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy(findCriteria)
         if (!currentKey) {
             return undefined
         }
@@ -81,7 +83,11 @@ const createApiKey = async (keyName: string, workspaceId?: string) => {
         newKey.apiKey = apiKey
         newKey.apiSecret = apiSecret
         newKey.keyName = keyName
-        newKey.workspaceId = workspaceId
+        if (workspaceId && workspaceId === 'bypass-workspace') {
+            delete newKey.workspaceId
+        } else {
+            newKey.workspaceId = workspaceId
+        }
         const key = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
         await appServer.AppDataSource.getRepository(ApiKey).save(key)
         return await getAllApiKeysFromDB(workspaceId)
@@ -94,11 +100,13 @@ const createApiKey = async (keyName: string, workspaceId?: string) => {
 const updateApiKey = async (id: string, keyName: string, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-            id: id
-        })
+        const findCriteria: any = { id }
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            findCriteria.workspaceId = workspaceId
+        }
+        const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy(findCriteria)
         if (!currentKey) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${currentKey} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${id} not found`)
         }
         currentKey.keyName = keyName
         await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
@@ -111,7 +119,11 @@ const updateApiKey = async (id: string, keyName: string, workspaceId?: string) =
 const deleteApiKey = async (id: string, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ApiKey).delete({ id, workspaceId })
+        const deleteCriteria: any = { id }
+        if (workspaceId && workspaceId !== 'bypass-workspace') {
+            deleteCriteria.workspaceId = workspaceId
+        }
+        const dbResponse = await appServer.AppDataSource.getRepository(ApiKey).delete(deleteCriteria)
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${id} not found`)
         }
@@ -125,6 +137,9 @@ const importKeys = async (body: any) => {
     try {
         const jsonFile = body.jsonFile
         const workspaceId = body.workspaceId
+        if (workspaceId === 'bypass-workspace') {
+            delete body.workspaceId
+        }
         const splitDataURI = jsonFile.split(',')
         if (splitDataURI[0] !== 'data:application/json;base64') {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid dataURI`)

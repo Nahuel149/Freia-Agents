@@ -15,7 +15,7 @@ const createTool = async (req: Request, res: Response, next: NextFunction) => {
         const body = req.body
         body.workspaceId = workspaceId
 
-        const apiResponse = await toolsService.createTool(body, orgId)
+        const apiResponse = await toolsService.createTool(body, orgId, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

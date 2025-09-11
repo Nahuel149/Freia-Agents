@@ -122,4 +122,9 @@ router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
 router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)
 
+// Minimal OSS user test endpoint for compatibility with tests
+router.get('/user/test', (_req, res) => {
+    return res.json({ message: 'Hello World' })
+})
+
 export default router

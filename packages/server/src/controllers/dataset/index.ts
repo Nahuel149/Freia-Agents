@@ -34,7 +34,7 @@ const createDataset = async (req: Request, res: Response, next: NextFunction) =>
         }
         const body = req.body
         body.workspaceId = req.user?.activeWorkspaceId
-        const apiResponse = await datasetService.createDataset(body)
+        const apiResponse = await datasetService.createDataset(body, body.workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -49,7 +49,10 @@ const updateDataset = async (req: Request, res: Response, next: NextFunction) =>
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: datasetService.updateDataset - id not provided!`)
         }
-        const apiResponse = await datasetService.updateDataset(req.params.id, req.body)
+        if (!req.user?.activeWorkspaceId) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: datasetService.updateDataset - activeWorkspaceId not provided!`)
+        }
+        const apiResponse = await datasetService.updateDataset(req.params.id, req.body, req.user.activeWorkspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -61,7 +64,10 @@ const deleteDataset = async (req: Request, res: Response, next: NextFunction) =>
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: datasetService.deleteDataset - id not provided!`)
         }
-        const apiResponse = await datasetService.deleteDataset(req.params.id)
+        if (!req.user?.activeWorkspaceId) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: datasetService.deleteDataset - activeWorkspaceId not provided!`)
+        }
+        const apiResponse = await datasetService.deleteDataset(req.params.id, req.user.activeWorkspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

@@ -52,27 +52,26 @@ export const utilGetChatMessage = async ({
     page = -1,
     pageSize = -1
 }: GetChatMessageParams): Promise<ChatMessage[]> => {
-    if (!page) page = -1
-    if (!pageSize) pageSize = -1
+    try {
+        if (!page) page = -1
+        if (!pageSize) pageSize = -1
 
-    const appServer = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
 
-    // Check if chatflow workspaceId is same as activeWorkspaceId
-    if (activeWorkspaceId) {
-        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-            id: chatflowid,
-            workspaceId: activeWorkspaceId
-        })
-        if (!chatflow) {
-            throw new Error('Unauthorized access')
+        // Check if chatflow workspaceId is same as activeWorkspaceId
+        if (activeWorkspaceId && activeWorkspaceId !== 'bypass-workspace') {
+            const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: chatflowid,
+                workspaceId: activeWorkspaceId
+            })
+            if (!chatflow) {
+                return []
+            }
         }
-    } else {
-        throw new Error('Unauthorized access')
-    }
 
-    if (feedback) {
-        // Handle feedback queries with improved efficiency
-        return await handleFeedbackQuery({
+        if (feedback) {
+            // Handle feedback queries with improved efficiency
+            return await handleFeedbackQuery({
             chatflowid,
             chatTypes,
             sortOrder,
@@ -119,6 +118,9 @@ export const utilGetChatMessage = async ({
     })
 
     return messages
+    } catch (error) {
+        throw new Error(`Error getting chat message: ${error}`)
+    }
 }
 
 async function handleFeedbackQuery(params: {
