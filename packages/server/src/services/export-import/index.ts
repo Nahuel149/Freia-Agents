@@ -93,33 +93,33 @@ const FileDefaultName = 'ExportData.json'
 const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
         let AgentFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
-            exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT', activeWorkspaceId) : []
+            exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT') : []
         AgentFlow = 'data' in AgentFlow ? AgentFlow.data : AgentFlow
 
         let AgentFlowV2: ChatFlow[] | { data: ChatFlow[]; total: number } =
-            exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW', activeWorkspaceId) : []
+            exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW') : []
         AgentFlowV2 = 'data' in AgentFlowV2 ? AgentFlowV2.data : AgentFlowV2
 
         let AssistantCustom: Assistant[] =
-            exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM', activeWorkspaceId) : []
+            exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM') : []
 
         let AssistantFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
-            exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT', activeWorkspaceId) : []
+            exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT') : []
         AssistantFlow = 'data' in AssistantFlow ? AssistantFlow.data : AssistantFlow
 
         let AssistantOpenAI: Assistant[] =
-            exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI', activeWorkspaceId) : []
+            exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI') : []
 
         let AssistantAzure: Assistant[] =
-            exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE', activeWorkspaceId) : []
+            exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE') : []
 
         let ChatFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
-            exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId) : []
+            exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW') : []
         ChatFlow = 'data' in ChatFlow ? ChatFlow.data : ChatFlow
 
         let allChatflow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.chat_message === true || exportInput.chat_feedback === true
-                ? await chatflowService.getAllChatflows(undefined, activeWorkspaceId)
+                ? await chatflowService.getAllChatflows()
                 : []
         allChatflow = 'data' in allChatflow ? allChatflow.data : allChatflow
         const chatflowIds = allChatflow.map((chatflow) => chatflow.id)
@@ -149,11 +149,11 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
 
         let Tool: Tool[] | { data: Tool[]; total: number } =
-            exportInput.tool === true ? await toolsService.getAllTools(activeWorkspaceId) : []
+            exportInput.tool === true ? await toolsService.getAllTools() : []
         Tool = 'data' in Tool ? Tool.data : Tool
 
         let Variable: Variable[] | { data: Variable[]; total: number } =
-            exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
+            exportInput.variable === true ? await variableService.getAllVariables() : []
         Variable = 'data' in Variable ? Variable.data : Variable
 
         return {

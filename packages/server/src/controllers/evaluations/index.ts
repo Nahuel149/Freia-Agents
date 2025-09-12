@@ -31,7 +31,7 @@ const createEvaluation = async (req: Request, res: Response, next: NextFunction)
 
         const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
         const baseURL = `${httpProtocol}://${req.get('host')}`
-        const apiResponse = await evaluationsService.createEvaluation(body, baseURL, orgId, workspaceId)
+        const apiResponse = await evaluationsService.createEvaluation(body, baseURL, orgId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -56,7 +56,7 @@ const runAgain = async (req: Request, res: Response, next: NextFunction) => {
         }
         const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
         const baseURL = `${httpProtocol}://${req.get('host')}`
-        const apiResponse = await evaluationsService.runAgain(req.params.id, baseURL, orgId, workspaceId)
+        const apiResponse = await evaluationsService.runAgain(req.params.id, baseURL, orgId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

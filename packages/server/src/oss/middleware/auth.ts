@@ -34,6 +34,7 @@ function createBypassUser(): LoggedInUser {
         email: 'admin@localhost',
         name: 'Bypass Admin',
         roleId: 'super-admin',
+        orgId: 'bypass-org',
         activeOrganizationId: 'bypass-org',
         activeOrganizationSubscriptionId: null,
         activeOrganizationCustomerId: null,

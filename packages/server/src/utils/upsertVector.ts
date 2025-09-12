@@ -260,9 +260,9 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         // This can be public API, so we can only get orgId from the chatflow
         const chatflowWorkspaceId = chatflow.workspaceId
-        let workspaceId: string | undefined = undefined
+        let workspaceId: string = 'bypass-workspace'
         let orgId = 'bypass-org'
-        let subscriptionId: string | undefined = 'bypass-subscription'
+        let subscriptionId: string = 'bypass-subscription'
 
         if (!(isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace'))) {
             const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({

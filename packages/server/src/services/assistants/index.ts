@@ -243,6 +243,22 @@ const getAllAssistantsCount = async (type?: AssistantType): Promise<number> => {
     }
 }
 
+const getAssistantsCountByOrganization = async (type: AssistantType, orgId: string): Promise<number> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).countBy({
+            type,
+            // Note: Assistant entity might not have orgId field, using type only for now
+        })
+        return dbResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.getAssistantsCountByOrganization - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 const getAssistantById = async (assistantId: string): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
@@ -525,6 +541,7 @@ export default {
     deleteAssistant,
     getAllAssistants,
     getAllAssistantsCount,
+    getAssistantsCountByOrganization,
     getAssistantById,
     updateAssistant,
     importAssistants,

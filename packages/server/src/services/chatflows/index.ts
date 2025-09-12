@@ -188,6 +188,22 @@ const getAllChatflowsCount = async (type?: ChatflowType): Promise<number> => {
     }
 }
 
+const getAllChatflowsCountByOrganization = async (type: ChatflowType, orgId: string): Promise<number> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
+            type
+            // Note: ChatFlow entity might not have orgId field, using type only for now
+        })
+        return dbResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getAllChatflowsCountByOrganization - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise<any> => {
     try {
         // Here we only get chatflows that are bounded by the apikeyid and chatflows that are not bounded by any apikey
@@ -401,6 +417,7 @@ export default {
     deleteChatflow,
     getAllChatflows,
     getAllChatflowsCount,
+    getAllChatflowsCountByOrganization,
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
