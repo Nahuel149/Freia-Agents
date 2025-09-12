@@ -10,6 +10,10 @@ import { In } from 'typeorm'
 
 import csv from 'csv-parser'
 
+interface DatasetWithRowCount extends Dataset {
+    rowCount: number
+}
+
 const getAllDatasets = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
@@ -24,14 +28,15 @@ const getAllDatasets = async (workspaceId?: string, page: number = -1, limit: nu
 
         const [data, total] = await queryBuilder.getManyAndCount()
 
-        const returnObj: Dataset[] = []
+        const returnObj: DatasetWithRowCount[] = []
 
         // TODO: This is a hack to get the row count for each dataset. Need to find a better way to do this
         for (const dataset of data) {
-            ;(dataset as any).rowCount = await appServer.AppDataSource.getRepository(DatasetRow).count({
+            const newDatasetWithRowCount = dataset as DatasetWithRowCount
+            newDatasetWithRowCount.rowCount = await appServer.AppDataSource.getRepository(DatasetRow).count({
                 where: { datasetId: dataset.id }
             })
-            returnObj.push(dataset)
+            returnObj.push(newDatasetWithRowCount)
         }
         if (page > 0 && limit > 0) {
             return { total, data: returnObj }
@@ -39,10 +44,7 @@ const getAllDatasets = async (workspaceId?: string, page: number = -1, limit: nu
             return returnObj
         }
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: datasetService.getAllDatasets - ${getErrorMessage(error)}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: datasetService.getAllDatasets - ${getErrorMessage(error)}`)
     }
 }
 
@@ -61,9 +63,9 @@ const getDataset = async (id: string, page: number = -1, limit: number = -1) => 
         let [data, total] = await queryBuilder.getManyAndCount()
         // special case for sequence numbers == -1 (this happens when the update script is run and all rows are set to -1)
         // check if there are any sequence numbers == -1, if so set them to the max sequence number + 1
-        const missingSequenceNumbers = data.filter((item) => item.sequenceNo === -1)
+        const missingSequenceNumbers = data.filter((item: DatasetRow) => item.sequenceNo === -1)
         if (missingSequenceNumbers.length > 0) {
-            const maxSequenceNumber = data.reduce((prev, current) => (prev.sequenceNo > current.sequenceNo ? prev : current))
+            const maxSequenceNumber = data.reduce((prev: DatasetRow, current: DatasetRow) => (prev.sequenceNo > current.sequenceNo ? prev : current))
             let sequenceNo = maxSequenceNumber.sequenceNo + 1
             for (const zeroSequenceNumber of missingSequenceNumbers) {
                 zeroSequenceNumber.sequenceNo = sequenceNo++
@@ -94,7 +96,7 @@ const getDataset = async (id: string, page: number = -1, limit: number = -1) => 
 const reorderDatasetRow = async (datasetId: string, rows: any[]) => {
     try {
         const appServer = getRunningExpressApp()
-        await appServer.AppDataSource.transaction(async (entityManager) => {
+        await appServer.AppDataSource.transaction(async (entityManager: any) => {
             // rows are an array of { id: string, sequenceNo: number }
             // update the sequence numbers in the DB
             for (const row of rows) {
@@ -343,7 +345,7 @@ const updateDatasetRow = async (id: string, body: any) => {
 const deleteDatasetRow = async (id: string) => {
     try {
         const appServer = getRunningExpressApp()
-        return await appServer.AppDataSource.transaction(async (entityManager) => {
+        return await appServer.AppDataSource.transaction(async (entityManager: any) => {
             const item = await entityManager.getRepository(DatasetRow).findOneBy({
                 id: id
             })
@@ -372,9 +374,9 @@ const patchDeleteRows = async (ids: string[] = []) => {
         })
         const dbResponse = await appServer.AppDataSource.getRepository(DatasetRow).delete(ids)
 
-        const datasetIds = [...new Set(datasetItemsToBeDeleted.map((item) => item.datasetId))]
+        const datasetIds = [...new Set(datasetItemsToBeDeleted.map((item: DatasetRow) => item.datasetId))]
         for (const datasetId of datasetIds) {
-            await changeUpdateOnDataset(datasetId)
+            await changeUpdateOnDataset(datasetId as string)
         }
         return dbResponse
     } catch (error) {

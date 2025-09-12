@@ -205,7 +205,7 @@ const getUsedChatflowNames = async (entity: DocumentStore) => {
     try {
         const appServer = getRunningExpressApp()
         if (entity.whereUsed) {
-            const whereUsed = JSON.parse(entity.whereUsed)
+            const whereUsed: string[] = JSON.parse(entity.whereUsed)
             const updatedWhereUsed: IDocumentStoreWhereUsed[] = []
             for (let i = 0; i < whereUsed.length; i++) {
                 const associatedChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
@@ -1086,7 +1086,7 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
         // find all entities that have the chatId in their whereUsed
         const entities = await appServer.AppDataSource.getRepository(DocumentStore).findBy(getWorkspaceSearchOptions(workspaceId))
         entities.map(async (entity: DocumentStore) => {
-            const whereUsed = JSON.parse(entity.whereUsed)
+            const whereUsed: string[] = JSON.parse(entity.whereUsed)
             const found = whereUsed.find((w: string) => w === chatId)
             if (found) {
                 if (!storeId) {
@@ -2092,12 +2092,12 @@ const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: I
         }
 
         // sort the chunks by chunkNo
-        chunks.sort((a, b) => a.chunkNo - b.chunkNo)
+        chunks.sort((a: DocumentStoreFileChunk, b: DocumentStoreFileChunk) => a.chunkNo - b.chunkNo)
 
         // get the first 4 chunks
         const chunksPageContent = chunks
             .slice(0, 4)
-            .map((chunk) => {
+            .map((chunk: DocumentStoreFileChunk) => {
                 return chunk.pageContent
             })
             .join('\n')
@@ -2157,7 +2157,7 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
     const loaderLabel = appServer.nodesPool.componentNodes[loaderName].label
 
     const loaderInputs =
-        appServer.nodesPool.componentNodes[loaderName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+        appServer.nodesPool.componentNodes[loaderName].inputs?.filter((input: any) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
     nodes.push({
         label: loaderLabel,
         nodeId: `${loaderName}_0`,
@@ -2168,7 +2168,7 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
     if (splitterName) {
         const splitterLabel = appServer.nodesPool.componentNodes[splitterName].label
         const splitterInputs =
-            appServer.nodesPool.componentNodes[splitterName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+            appServer.nodesPool.componentNodes[splitterName].inputs?.filter((input: any) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
         nodes.push({
             label: splitterLabel,
             nodeId: `${splitterName}_0`,
@@ -2180,7 +2180,7 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
         const vectorStoreName = JSON.parse(entity.vectorStoreConfig || '{}').name
         const vectorStoreLabel = appServer.nodesPool.componentNodes[vectorStoreName].label
         const vectorStoreInputs =
-            appServer.nodesPool.componentNodes[vectorStoreName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+            appServer.nodesPool.componentNodes[vectorStoreName].inputs?.filter((input: any) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
         nodes.push({
             label: vectorStoreLabel,
             nodeId: `${vectorStoreName}_0`,
@@ -2192,7 +2192,7 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
         const embeddingName = JSON.parse(entity.embeddingConfig || '{}').name
         const embeddingLabel = appServer.nodesPool.componentNodes[embeddingName].label
         const embeddingInputs =
-            appServer.nodesPool.componentNodes[embeddingName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+            appServer.nodesPool.componentNodes[embeddingName].inputs?.filter((input: any) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
         nodes.push({
             label: embeddingLabel,
             nodeId: `${embeddingName}_0`,
@@ -2204,7 +2204,7 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
         const recordManagerName = JSON.parse(entity.recordManagerConfig || '{}').name
         const recordManagerLabel = appServer.nodesPool.componentNodes[recordManagerName].label
         const recordManagerInputs =
-            appServer.nodesPool.componentNodes[recordManagerName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+            appServer.nodesPool.componentNodes[recordManagerName].inputs?.filter((input: any) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
         nodes.push({
             label: recordManagerLabel,
             nodeId: `${recordManagerName}_0`,
@@ -2233,7 +2233,7 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
                     name: inputParam.name,
                     type: inputParam.options
                         ? inputParam.options
-                              ?.map((option) => {
+                              ?.map((option: any) => {
                                   return option.name
                               })
                               .join(', ')

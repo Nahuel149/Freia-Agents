@@ -20,6 +20,28 @@ import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
 import { Assistant } from '../../database/entities/Assistant'
 
+interface INestedMetric {
+    model: string
+    provider: string
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
+    cost_values: {
+        input_cost: number
+        output_cost: number
+        total_cost: number
+    }
+    totalCost?: string
+    promptCost?: string
+    completionCost?: string
+}
+
+interface IEvaluationName {
+    name: string
+    count: string
+    latestRunDate: Date
+}
+
 const runAgain = async (id: string, baseURL: string, orgId: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -198,7 +220,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                                         nested_metric['completionCost'] = formatCost(nested_metric.cost_values.output_cost)
                                     }
                                 }
-                                nested_metrics = nested_metrics.filter((metric: any) => {
+                                nested_metrics = nested_metrics.filter((metric: INestedMetric) => {
                                     return metric.model && metric.provider
                                 })
                             }
@@ -215,9 +237,9 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                                     })
                                     metricsObjFromRun.nested_metrics = nested_metrics
                                 }
-                                metrics.map((metric: any) => {
+                                metrics.map((metric: ICommonObject | string) => {
                                     if (metric) {
-                                        const json = typeof metric === 'object' ? metric : JSON.parse(metric)
+                                        const json: ICommonObject = typeof metric === 'object' ? metric : JSON.parse(metric)
                                         Object.getOwnPropertyNames(json).map((key) => {
                                             metricsObjFromRun[key] = json[key]
                                         })
@@ -285,7 +307,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                     }
                     appServer.AppDataSource.getRepository(Evaluation)
                         .findOneBy({ id: newEvaluation.id })
-                        .then((evaluation) => {
+                        .then((evaluation: Evaluation | null) => {
                             if (evaluation) {
                                 evaluation.status = allRowsSuccessful ? EvaluationStatus.COMPLETED : EvaluationStatus.ERROR
                                 evaluation.average_metrics = JSON.stringify({
@@ -301,7 +323,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                     //update the evaluation with status as error
                     appServer.AppDataSource.getRepository(Evaluation)
                         .findOneBy({ id: newEvaluation.id })
-                        .then((evaluation) => {
+                        .then((evaluation: Evaluation | null) => {
                             if (evaluation) {
                                 evaluation.status = EvaluationStatus.ERROR
                                 appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
@@ -314,7 +336,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                 console.error('Error running evaluations:', getErrorMessage(error))
                 appServer.AppDataSource.getRepository(Evaluation)
                     .findOneBy({ id: newEvaluation.id })
-                    .then((evaluation) => {
+                    .then((evaluation: Evaluation | null) => {
                         if (evaluation) {
                             evaluation.status = EvaluationStatus.ERROR
                             evaluation.average_metrics = JSON.stringify({
@@ -323,7 +345,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                             appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
                         }
                     })
-                    .catch((dbError) => {
+                    .catch((dbError: any) => {
                         console.error('Error updating evaluation status:', getErrorMessage(dbError))
                     })
             })
@@ -349,7 +371,7 @@ const getAllEvaluations = async (workspaceId?: string, page: number = -1, limit:
             countQuery.where('ev.workspaceId = :workspaceId', { workspaceId: workspaceId })
         }
 
-        const totalResult = await countQuery.getRawOne()
+        const totalResult: { count: string } | undefined = await countQuery.getRawOne()
         const total = totalResult ? parseInt(totalResult.count) : 0
 
         // Then get the distinct evaluation names with their counts and latest run date
@@ -368,12 +390,12 @@ const getAllEvaluations = async (workspaceId?: string, page: number = -1, limit:
             namesQueryBuilder.take(limit)
         }
 
-        const evaluationNames = await namesQueryBuilder.getRawMany()
+        const evaluationNames: IEvaluationName[] = await namesQueryBuilder.getRawMany()
         // Get all evaluations for all names at once in a single query
         const returnResults: IEvaluationResult[] = []
 
         if (evaluationNames.length > 0) {
-            const names = evaluationNames.map((item) => item.name)
+            const names = evaluationNames.map((item: IEvaluationName) => item.name)
             // Fetch all evaluations for these names in a single query
             const allEvaluationsQuery = appServer.AppDataSource.getRepository(Evaluation)
                 .createQueryBuilder('ev')
@@ -398,12 +420,14 @@ const getAllEvaluations = async (workspaceId?: string, page: number = -1, limit:
 
             // Process each name's evaluations
             for (const item of evaluationNames) {
-                const evaluationsForName = evaluationsByName.get(item.name) || []
-                for (let i = 0; i < evaluationsForName.length; i++) {
-                    const evaluation = evaluationsForName[i] as IEvaluationResult
-                    evaluation.latestEval = i === 0
-                    evaluation.version = parseInt(item.count) - i
-                    returnResults.push(evaluation)
+                const evaluations = evaluationsByName.get(item.name)
+                if (evaluations && evaluations.length > 0) {
+                    const latestEvaluation = evaluations[0] // Get the latest evaluation
+                    returnResults.push({
+                        ...latestEvaluation,
+                        latestEval: true,
+                        version: 1
+                    })
                 }
             }
         }
@@ -596,7 +620,7 @@ const getVersions = async (id: string) => {
             }
         })
         const returnResults: { id: string; runDate: Date; version: number }[] = []
-        versions.map((version, index) => {
+        versions.map((version: Evaluation, index: number) => {
             returnResults.push({
                 id: version.id,
                 runDate: version.runDate,
