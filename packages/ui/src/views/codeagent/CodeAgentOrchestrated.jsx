@@ -46,7 +46,6 @@ import CodeAgentDialog from './CodeAgentDialog'
 // API
 import codeAgentApi from '@/api/codeAgent'
 import codeAgentOrchestrationApi from '@/api/codeAgentOrchestration'
-import codeagentApi from '@/api/codeagent'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -213,7 +212,7 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
             
             // Use document-enhanced processing if documents are selected
              if (selectedDocuments) {
-                 response = await codeagentApi.processWithDocuments({
+                 response = await codeAgentApi.processWithDocuments({
                     prompt: orchestrationPrompt,
                     language: selectedLanguage,
                     framework: selectedFramework || undefined,

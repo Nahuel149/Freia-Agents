@@ -29,20 +29,8 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
 
-        // Resolve orgId with OSS guard
-        const chatflowWorkspaceId = chatflow.workspaceId
-        let orgId: string
-        if (isOssMode() || !chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace') {
-            orgId = 'bypass-org'
-        } else {
-            const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
-                id: chatflowWorkspaceId
-            })
-            if (!workspace) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
-            }
-            orgId = workspace.organizationId as string
-        }
+        // Use bypass-org for OSS mode
+        const orgId = 'bypass-org'
 
         // Set Content-Disposition header - force attachment for download
         if (download) {

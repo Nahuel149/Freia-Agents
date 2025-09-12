@@ -14,7 +14,7 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
             )
         }
         const body = req.body
-        const orgId = req.user?.orgId || ''
+        const orgId = 'bypass-org' // OSS mode: No org restrictions
         const newVariable = new Variable()
         Object.assign(newVariable, body)
         const apiResponse = await variablesService.createVariable(newVariable, orgId)

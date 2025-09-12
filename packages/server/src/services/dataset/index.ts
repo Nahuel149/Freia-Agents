@@ -14,16 +14,13 @@ interface DatasetWithRowCount extends Dataset {
     rowCount: number
 }
 
-const getAllDatasets = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllDatasets = async (page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(Dataset).createQueryBuilder('ds').orderBy('ds.updatedDate', 'DESC')
         if (page > 0 && limit > 0) {
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
-        }
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
-            queryBuilder.andWhere('ds.workspaceId = :workspaceId', { workspaceId })
         }
 
         const [data, total] = await queryBuilder.getManyAndCount()
@@ -199,14 +196,10 @@ const _csvToDatasetRows = async (datasetId: string, csvString: string, firstRowH
 }
 
 // Create new dataset
-const createDataset = async (body: any, workspaceId: string) => {
+const createDataset = async (body: any) => {
     try {
         const appServer = getRunningExpressApp()
-        if (workspaceId === 'bypass-workspace') {
-            delete body.workspaceId
-        } else {
-            body.workspaceId = workspaceId
-        }
+        delete body.workspaceId
         const newDs = new Dataset()
         Object.assign(newDs, body)
         const dataset = appServer.AppDataSource.getRepository(Dataset).create(newDs)
@@ -221,7 +214,7 @@ const createDataset = async (body: any, workspaceId: string) => {
 }
 
 // Update dataset
-const updateDataset = async (id: string, body: any, workspaceId: string) => {
+const updateDataset = async (id: string, body: any) => {
     try {
         const appServer = getRunningExpressApp()
         const dataset = await appServer.AppDataSource.getRepository(Dataset).findOneBy({
@@ -229,11 +222,7 @@ const updateDataset = async (id: string, body: any, workspaceId: string) => {
         })
         if (!dataset) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Dataset ${id} not found`)
 
-        if (workspaceId === 'bypass-workspace') {
-            delete body.workspaceId
-        } else {
-            body.workspaceId = workspaceId
-        }
+        delete body.workspaceId
 
         const updateDataset = new Dataset()
         Object.assign(updateDataset, body)
@@ -246,14 +235,10 @@ const updateDataset = async (id: string, body: any, workspaceId: string) => {
 }
 
 // Delete dataset via id
-const deleteDataset = async (id: string, workspaceId: string) => {
+const deleteDataset = async (id: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const criteria: FindOptionsWhere<Dataset> = { id: id }
-        if (workspaceId !== 'bypass-workspace') {
-            criteria.workspaceId = workspaceId
-        }
-        const result = await appServer.AppDataSource.getRepository(Dataset).delete(criteria)
+        const result = await appServer.AppDataSource.getRepository(Dataset).delete({ id })
 
         // delete all rows for this dataset
         await appServer.AppDataSource.getRepository(DatasetRow).delete({ datasetId: id })

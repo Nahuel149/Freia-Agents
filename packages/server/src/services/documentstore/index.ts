@@ -55,15 +55,12 @@ import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { Telemetry } from '../../utils/telemetry'
 import nodesService from '../nodes'
 
-const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: string, workspaceId: string) => {
+const createDocumentStore = async (newDocumentStore: DocumentStore) => {
     try {
         const appServer = getRunningExpressApp()
 
-        if (workspaceId === 'bypass-workspace') {
-            delete newDocumentStore.workspaceId
-        } else {
-            newDocumentStore.workspaceId = workspaceId
-        }
+        // Remove workspace/org fields for OSS mode
+        delete newDocumentStore.workspaceId
 
         const documentStore = appServer.AppDataSource.getRepository(DocumentStore).create(newDocumentStore)
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(documentStore)
@@ -71,8 +68,7 @@ const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: strin
             'document_store_created',
             {
                 version: await getAppVersion()
-            },
-            orgId
+            }
         )
         return dbResponse
     } catch (error) {
@@ -83,7 +79,7 @@ const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: strin
     }
 }
 
-const getAllDocumentStores = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllDocumentStores = async (page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(DocumentStore)
@@ -94,7 +90,7 @@ const getAllDocumentStores = async (workspaceId?: string, page: number = -1, lim
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
         }
-        if (workspaceId && workspaceId !== 'bypass-workspace') queryBuilder.andWhere('doc_store.workspaceId = :workspaceId', { workspaceId })
+        // OSS mode: all users have access to all document stores
 
         const [data, total] = await queryBuilder.getManyAndCount()
 
@@ -119,17 +115,12 @@ const getAllDocumentFileChunksByDocumentStoreIds = async (documentStoreIds: stri
 const deleteLoaderFromDocumentStore = async (
     storeId: string,
     docId: string,
-    orgId: string,
-    workspaceId: string,
     usageCacheManager: UsageCacheManager
 ) => {
     try {
         const appServer = getRunningExpressApp()
 
         const criteria: FindOptionsWhere<DocumentStore> = { id: storeId }
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
-            criteria.workspaceId = workspaceId
-        }
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy(criteria)
         if (!entity) {
             throw new InternalFlowiseError(
@@ -138,11 +129,7 @@ const deleteLoaderFromDocumentStore = async (
             )
         }
 
-        if (workspaceId) {
-            if (entity?.workspaceId !== workspaceId) {
-                throw new Error('Unauthorized access')
-            }
-        }
+        // OSS mode: no workspace restrictions, all users have access
 
         const existingLoaders = JSON.parse(entity.loaders)
         const found = existingLoaders.find((loader: IDocumentStoreLoader) => loader.id === docId)
@@ -151,8 +138,8 @@ const deleteLoaderFromDocumentStore = async (
                 for (const file of found.files) {
                     if (file.name) {
                         try {
-                            const { totalSize } = await removeSpecificFileFromStorage(orgId, DOCUMENT_STORE_BASE_FOLDER, storeId, file.name)
-                            await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
+                            const { totalSize } = await removeSpecificFileFromStorage('oss-mode', DOCUMENT_STORE_BASE_FOLDER, storeId, file.name)
+                            await updateStorageUsage('oss-mode', 'bypass-subscription', totalSize, usageCacheManager)
                         } catch (error) {
                             console.error(error)
                         }
@@ -180,7 +167,7 @@ const deleteLoaderFromDocumentStore = async (
     }
 }
 
-const getDocumentStoreById = async (storeId: string, workspaceId?: string) => {
+const getDocumentStoreById = async (storeId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -311,7 +298,7 @@ const getDocumentStoreFileChunks = async (appDataSource: DataSource, storeId: st
     }
 }
 
-const deleteDocumentStore = async (storeId: string, orgId: string, workspaceId: string, usageCacheManager: UsageCacheManager) => {
+const deleteDocumentStore = async (storeId: string, usageCacheManager: UsageCacheManager) => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -327,15 +314,11 @@ const deleteDocumentStore = async (storeId: string, orgId: string, workspaceId: 
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
         }
 
-        if (workspaceId) {
-            if (entity?.workspaceId !== workspaceId) {
-                throw new Error('Unauthorized access')
-            }
-        }
+        // OSS mode: All registered users have full access to all document stores
 
         try {
-            const { totalSize } = await removeFilesFromStorage(orgId, DOCUMENT_STORE_BASE_FOLDER, entity.id)
-            await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
+            const { totalSize } = await removeFilesFromStorage('oss-mode', DOCUMENT_STORE_BASE_FOLDER, entity.id)
+            await updateStorageUsage('oss-mode', 'bypass-subscription', totalSize, usageCacheManager)
         } catch (error) {
             logger.error(`[server]: Error deleting file storage for documentStore ${storeId}`)
         }
@@ -653,8 +636,6 @@ const _normalizeFilePaths = async (
 
 const previewChunksMiddleware = async (
     data: IDocumentStoreLoaderForPreview,
-    orgId: string,
-    workspaceId: string,
     subscriptionId: string,
     usageCacheManager: UsageCacheManager
 ) => {
@@ -669,15 +650,15 @@ const previewChunksMiddleware = async (
             usageCacheManager,
             data,
             isPreviewOnly: true,
-            orgId,
-            workspaceId,
+            orgId: 'oss-mode', // OSS mode - no org restrictions
+            workspaceId: 'oss-mode', // OSS mode - no workspace restrictions
             subscriptionId
         }
 
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
+            logger.debug(`[server]: [oss-mode]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -850,8 +831,6 @@ export const processLoader = async ({
 const processLoaderMiddleware = async (
     data: IDocumentStoreLoaderForPreview,
     docLoaderId: string,
-    orgId: string,
-    workspaceId: string,
     subscriptionId: string,
     usageCacheManager: UsageCacheManager,
     isInternalRequest = false
@@ -861,6 +840,10 @@ const processLoaderMiddleware = async (
         const appDataSource = appServer.AppDataSource
         const componentNodes = appServer.nodesPool.componentNodes
         const telemetry = appServer.telemetry
+
+        // OSS mode - no organization/workspace restrictions
+        const orgId = 'oss-mode'
+        const workspaceId = 'oss-mode'
 
         const executeData: IExecuteProcessLoader = {
             appDataSource,
@@ -878,7 +861,7 @@ const processLoaderMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
+            logger.debug(`[server]: [oss-mode]: Job added to queue: ${job.id}`)
 
             if (isInternalRequest) {
                 return {
@@ -1241,8 +1224,6 @@ export const insertIntoVectorStore = async ({
 const insertIntoVectorStoreMiddleware = async (
     data: ICommonObject,
     isStrictSave = true,
-    orgId: string,
-    workspaceId: string,
     subscriptionId: string,
     usageCacheManager: UsageCacheManager
 ) => {
@@ -1251,6 +1232,10 @@ const insertIntoVectorStoreMiddleware = async (
         const appDataSource = appServer.AppDataSource
         const componentNodes = appServer.nodesPool.componentNodes
         const telemetry = appServer.telemetry
+
+        // OSS mode - no organization/workspace restrictions
+        const orgId = 'oss-mode'
+        const workspaceId = 'oss-mode'
 
         const executeData: IExecuteVectorStoreInsert = {
             appDataSource,
@@ -1268,7 +1253,7 @@ const insertIntoVectorStoreMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
+            logger.debug(`[server]: [oss-mode]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -1955,8 +1940,6 @@ const upsertDocStoreMiddleware = async (
     storeId: string,
     data: IDocumentStoreUpsertData,
     files: Express.Multer.File[] = [],
-    orgId: string,
-    workspaceId: string,
     subscriptionId: string,
     usageCacheManager: UsageCacheManager
 ) => {
@@ -1964,6 +1947,10 @@ const upsertDocStoreMiddleware = async (
     const componentNodes = appServer.nodesPool.componentNodes
     const appDataSource = appServer.AppDataSource
     const telemetry = appServer.telemetry
+
+    // OSS mode - no organization/workspace restrictions
+    const orgId = 'oss-mode'
+    const workspaceId = 'oss-mode'
 
     try {
         const executeData: IExecuteDocStoreUpsert = {
@@ -1983,7 +1970,7 @@ const upsertDocStoreMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
+            logger.debug(`[server]: [oss-mode]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -2006,8 +1993,6 @@ const upsertDocStoreMiddleware = async (
 const refreshDocStoreMiddleware = async (
     storeId: string,
     data: IDocumentStoreRefreshData,
-    orgId: string,
-    workspaceId: string,
     subscriptionId: string,
     usageCacheManager: UsageCacheManager
 ) => {
@@ -2015,6 +2000,10 @@ const refreshDocStoreMiddleware = async (
     const componentNodes = appServer.nodesPool.componentNodes
     const appDataSource = appServer.AppDataSource
     const telemetry = appServer.telemetry
+
+    // OSS mode - no organization/workspace restrictions
+    const orgId = 'oss-mode'
+    const workspaceId = 'oss-mode'
 
     try {
         let totalItems: IDocumentStoreUpsertData[] = []
@@ -2025,11 +2014,7 @@ const refreshDocStoreMiddleware = async (
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
             }
 
-            if (workspaceId) {
-                if (entity?.workspaceId !== workspaceId) {
-                    throw new Error('Unauthorized access')
-                }
-            }
+            // OSS mode - no workspace authorization needed
 
             const loaders = JSON.parse(entity.loaders)
             totalItems = loaders.map((ldr: IDocumentStoreLoader) => {
@@ -2058,7 +2043,7 @@ const refreshDocStoreMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
+            logger.debug(`[server]: [oss-mode]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)

@@ -15,8 +15,8 @@ const createAssistant = async (req: Request, res: Response, next: NextFunction) 
             )
         }
         const body = req.body
-        const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
-        const orgId = req.user?.orgId || ''
+        const subscriptionId = 'bypass-subscription' // OSS mode: No subscription restrictions
+        const orgId = 'bypass-org' // OSS mode: No org restrictions
 
         const existingAssistantCount = await assistantsService.getAllAssistantsCount(body.type)
         const newAssistantCount = 1

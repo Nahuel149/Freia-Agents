@@ -56,6 +56,9 @@ export class IdentityManager {
         await this._validateLicenseKey()
         this.permissions = new Permissions()
         if (process.env.STRIPE_SECRET_KEY && process.env.FORCE_OSS !== 'true') {
+            if (!process.env.STRIPE_SECRET_KEY.trim()) {
+                throw new Error('STRIPE_SECRET_KEY environment variable is empty')
+            }
             this.stripeManager = await StripeManager.getInstance()
         }
     }

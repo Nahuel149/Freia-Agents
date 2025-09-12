@@ -19,9 +19,8 @@ const checkFlowValidation = async (flowId: string, workspaceId?: string): Promis
 
         const componentNodes = appServer.nodesPool.componentNodes
 
-        // Create query conditions with workspace filtering if provided
+        // OSS mode: ignore workspace filtering
         const whereCondition: any = { id: flowId }
-        if (workspaceId) whereCondition.workspaceId = workspaceId
 
         const flow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
             where: whereCondition

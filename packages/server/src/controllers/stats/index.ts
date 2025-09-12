@@ -52,8 +52,7 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
             endDate,
             '',
             true,
-            feedbackTypeFilters,
-            req.user?.activeWorkspaceId
+            feedbackTypeFilters
         )
         return res.json(apiResponse)
     } catch (error) {

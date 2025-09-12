@@ -238,20 +238,16 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
-const getChatflowById = async (chatflowId: string, workspaceId?: string): Promise<any> => {
+const getChatflowById = async (chatflowId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const queryBuilder = appServer.AppDataSource.getRepository(ChatFlow).createQueryBuilder('chat_flow')
-        queryBuilder.where('chat_flow.id = :chatflowId', { chatflowId })
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
-            queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
-        }
-
-        const dbResponse = await queryBuilder.getOne()
-        if (!dbResponse) {
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowId
+        })
+        if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
-        return dbResponse
+        return chatflow
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -262,19 +258,13 @@ const getChatflowById = async (chatflowId: string, workspaceId?: string): Promis
 
 const saveChatflow = async (
     newChatFlow: ChatFlow,
-    orgId: string,
-    workspaceId: string,
-    subscriptionId: string,
-    usageCacheManager: UsageCacheManager
+    usageCacheManager?: UsageCacheManager
 ): Promise<any> => {
     newChatFlow.type = validateChatflowType(newChatFlow.type)
     const appServer = getRunningExpressApp()
 
-    if (workspaceId === 'bypass-workspace') {
-        delete newChatFlow.workspaceId
-    } else {
-        newChatFlow.workspaceId = workspaceId
-    }
+    // Remove workspace restrictions - always delete workspaceId for free access
+    delete newChatFlow.workspaceId
 
     let dbResponse: ChatFlow
     if (containsBase64File(newChatFlow)) {
@@ -288,15 +278,17 @@ const saveChatflow = async (
         const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
         // step 2 - convert base64 to file paths and update the chatflow
+        // In OSS mode, create a dummy cache manager if none provided
+        const cacheManager = usageCacheManager || new UsageCacheManager()
         step1Results.flowData = await updateFlowDataWithFilePaths(
             step1Results.id,
             incomingFlowData,
-            orgId,
-            workspaceId,
-            subscriptionId,
-            usageCacheManager
+            'bypass-org',
+            'bypass-workspace',
+            'bypass-subscription',
+            cacheManager
         )
-        await _checkAndUpdateDocumentStoreUsage(step1Results, newChatFlow.workspaceId)
+        await _checkAndUpdateDocumentStoreUsage(step1Results)
         dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
     } else {
         const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
@@ -309,7 +301,7 @@ const saveChatflow = async (
             chatflowId: dbResponse.id,
             flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges)
         },
-        orgId
+        'bypass-org'
     )
 
     appServer.metricsProvider?.incrementCounter(
@@ -323,26 +315,23 @@ const saveChatflow = async (
 const updateChatflow = async (
     chatflow: ChatFlow,
     updateChatFlow: ChatFlow,
-    orgId: string,
-    workspaceId: string,
-    subscriptionId: string
-): Promise<any> => {
+    usageCacheManager?: UsageCacheManager
+): Promise<ChatFlow> => {
     const appServer = getRunningExpressApp()
 
-    if (workspaceId === 'bypass-workspace') {
-        delete updateChatFlow.workspaceId
-    } else {
-        updateChatFlow.workspaceId = workspaceId
-    }
+    // Remove workspace restrictions - always delete workspaceId for free access
+    delete updateChatFlow.workspaceId
 
     if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
+        // In OSS mode, create a dummy cache manager if none provided
+        const cacheManager = usageCacheManager || new UsageCacheManager()
         updateChatFlow.flowData = await updateFlowDataWithFilePaths(
             chatflow.id,
             updateChatFlow.flowData,
-            orgId,
-            workspaceId,
-            subscriptionId,
-            appServer.usageCacheManager
+            'bypass-org',
+            'bypass-workspace',
+            'bypass-subscription',
+            cacheManager
         )
     }
     if (updateChatFlow.type) {
@@ -351,7 +340,7 @@ const updateChatflow = async (
         updateChatFlow.type = chatflow.type
     }
     const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
-    await _checkAndUpdateDocumentStoreUsage(newDbChatflow, chatflow.workspaceId)
+    await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
     const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
 
     return dbResponse
@@ -388,15 +377,15 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
     }
 }
 
-const _checkAndUpdateDocumentStoreUsage = async (chatflow: ChatFlow, workspaceId?: string) => {
+const _checkAndUpdateDocumentStoreUsage = async (chatflow: ChatFlow) => {
     const parsedFlowData: IReactFlowObject = JSON.parse(chatflow.flowData)
     const nodes = parsedFlowData.nodes
     // from the nodes array find if there is a node with name == documentStore)
     const node = nodes.length > 0 && nodes.find((node) => node.data.name === 'documentStore')
     if (!node || !node.data || !node.data.inputs || node.data.inputs['selectedStore'] === undefined) {
-        await documentStoreService.updateDocumentStoreUsage(chatflow.id, undefined, workspaceId)
+        await documentStoreService.updateDocumentStoreUsage(chatflow.id, undefined)
     } else {
-        await documentStoreService.updateDocumentStoreUsage(chatflow.id, node.data.inputs['selectedStore'], workspaceId)
+        await documentStoreService.updateDocumentStoreUsage(chatflow.id, node.data.inputs['selectedStore'])
     }
 }
 

@@ -1912,13 +1912,73 @@ export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
 }
 
 export const getUploadPath = (): string => {
-    return process.env.BLOB_STORAGE_PATH
-        ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads')
-        : path.join(getUserHome(), '.flowise', 'uploads')
+    let uploadPath: string
+    
+    if (process.env.BLOB_STORAGE_PATH) {
+        // Validate and sanitize the BLOB_STORAGE_PATH
+        const sanitizedPath = path.resolve(process.env.BLOB_STORAGE_PATH)
+        uploadPath = path.join(sanitizedPath, 'uploads')
+    } else {
+        uploadPath = path.join(getUserHome(), '.flowise', 'uploads')
+    }
+    
+    // Ensure the upload directory exists and is secure
+    try {
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true, mode: 0o755 })
+        }
+        
+        // Verify the path is within expected boundaries (prevent path traversal)
+        const resolvedPath = path.resolve(uploadPath)
+        const expectedBasePath = process.env.BLOB_STORAGE_PATH 
+            ? path.resolve(process.env.BLOB_STORAGE_PATH)
+            : path.resolve(getUserHome(), '.flowise')
+            
+        if (!resolvedPath.startsWith(expectedBasePath)) {
+            throw new Error('Upload path is outside of allowed directory')
+        }
+        
+        return resolvedPath
+    } catch (error) {
+        logger.error('Error setting up upload path:', error)
+        throw new Error('Failed to create secure upload directory')
+    }
 }
 
 export function generateId() {
     return uuidv4()
+}
+
+// Security configuration for file uploads
+const ALLOWED_FILE_TYPES = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'text/plain', 'text/csv', 'text/markdown',
+    'application/pdf', 'application/json',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+]
+
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '10485760') // 10MB default
+
+const validateFile = (req: any, file: any, cb: any) => {
+    // Check file type
+    if (!ALLOWED_FILE_TYPES.includes(file.mimetype)) {
+        return cb(new Error(`File type ${file.mimetype} is not allowed. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`), false)
+    }
+    
+    // Check for path traversal in filename
+    if (file.originalname.includes('..') || file.originalname.includes('/') || file.originalname.includes('\\')) {
+        return cb(new Error('Invalid filename: path traversal detected'), false)
+    }
+    
+    // Additional filename validation
+    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '')
+    if (sanitizedName !== file.originalname) {
+        return cb(new Error('Invalid filename: contains illegal characters'), false)
+    }
+    
+    cb(null, true)
 }
 
 export const getMulterStorage = () => {
@@ -1938,7 +1998,12 @@ export const getMulterStorage = () => {
                 key: function (req, file, cb) {
                     cb(null, `${generateId()}`)
                 }
-            })
+            }),
+            fileFilter: validateFile,
+            limits: {
+                fileSize: MAX_FILE_SIZE,
+                files: 10 // Maximum 10 files per request
+            }
         })
         return upload
     } else if (storageType === 'gcs') {
@@ -1949,10 +2014,22 @@ export const getMulterStorage = () => {
                 keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
                 uniformBucketLevelAccess: Boolean(process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS) ?? true,
                 destination: `uploads/${generateId()}`
-            })
+            }),
+            fileFilter: validateFile,
+            limits: {
+                fileSize: MAX_FILE_SIZE,
+                files: 10 // Maximum 10 files per request
+            }
         })
     } else {
-        return multer({ dest: getUploadPath() })
+        return multer({ 
+            dest: getUploadPath(),
+            fileFilter: validateFile,
+            limits: {
+                fileSize: MAX_FILE_SIZE,
+                files: 10 // Maximum 10 files per request
+            }
+        })
     }
 }
 

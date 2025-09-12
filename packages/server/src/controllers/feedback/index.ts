@@ -17,20 +17,13 @@ const getAllChatMessageFeedback = async (req: Request, res: Response, next: Next
         const sortOrder = req.query?.order as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: feedbackController.getAllChatMessageFeedback - workspace not found!`
-            )
-        }
         const apiResponse = await feedbackService.getAllChatMessageFeedback(
             chatflowid,
             chatId,
             sortOrder,
             startDate,
             endDate,
-            workspaceId
+            'bypass-workspace' // OSS mode: bypass workspace validation
         )
         return res.json(apiResponse)
     } catch (error) {

@@ -8,18 +8,12 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const getAllFiles = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const activeOrganizationId = req.user?.activeOrganizationId
-        if (!activeOrganizationId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: filesController.getAllFiles - organization ${activeOrganizationId} not found!`
-            )
-        }
-        const apiResponse = await getFilesListFromStorage(activeOrganizationId)
+        const orgId = 'bypass-org'
+        const apiResponse = await getFilesListFromStorage(orgId)
         const filesList = apiResponse.map((file: any) => ({
             ...file,
             // replace org id because we don't want to expose it
-            path: file.path.replace(getStoragePath(), '').replace(`${path.sep}${activeOrganizationId}${path.sep}`, '')
+            path: file.path.replace(getStoragePath(), '').replace(`${path.sep}${orgId}${path.sep}`, '')
         }))
         return res.json(filesList)
     } catch (error) {
@@ -29,24 +23,11 @@ const getAllFiles = async (req: Request, res: Response, next: NextFunction) => {
 
 const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const activeOrganizationId = req.user?.activeOrganizationId
-        if (!activeOrganizationId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: filesController.deleteFile - organization ${activeOrganizationId} not found!`
-            )
-        }
-        const activeWorkspaceId = req.user?.activeWorkspaceId
-        if (!activeWorkspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: filesController.deleteFile - workspace ${activeWorkspaceId} not found!`
-            )
-        }
+        const orgId = 'bypass-org'
         const filePath = req.query.path as string
         const paths = filePath.split(path.sep).filter((path) => path !== '')
-        const { totalSize } = await removeSpecificFileFromStorage(activeOrganizationId, ...paths)
-        await updateStorageUsage(activeOrganizationId, activeWorkspaceId, totalSize, getRunningExpressApp().usageCacheManager)
+        const { totalSize } = await removeSpecificFileFromStorage(orgId, ...paths)
+        // Skip storage usage tracking in OSS mode
         return res.json({ message: 'file_deleted' })
     } catch (error) {
         next(error)

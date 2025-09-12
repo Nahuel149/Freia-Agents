@@ -12,14 +12,7 @@ const getAllLeadsForChatflow = async (req: Request, res: Response, next: NextFun
             )
         }
         const chatflowid = req.params.id
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: leadsController.getAllLeadsForChatflow - workspace not found!`
-            )
-        }
-        const apiResponse = await leadsService.getAllLeads(chatflowid, workspaceId)
+        const apiResponse = await leadsService.getAllLeads(chatflowid, 'bypass-workspace') // OSS mode
         return res.json(apiResponse)
     } catch (error) {
         next(error)

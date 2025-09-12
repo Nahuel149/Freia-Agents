@@ -68,8 +68,6 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
-        const orgId = req.user?.orgId
-
         const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType, page, limit)
         return res.json(apiResponse)
     } catch (error) {
@@ -114,23 +112,13 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.saveChatflow - body not provided!`)
         }
-        const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
-        const orgId = req.user?.orgId || ''
-        const workspaceId = req.user?.activeWorkspaceId || ''
-        const isPublic = req.body.isPublic
         const body = req.body
 
-        const existingChatflowCount = await chatflowsService.getAllChatflowsCount(body.type)
-        const newChatflowCount = 1
-        await checkUsageLimit('flows', subscriptionId, getRunningExpressApp().usageCacheManager, existingChatflowCount + newChatflowCount)
-
+        // Remove usage limits for free access
         const newChatFlow = new ChatFlow()
         Object.assign(newChatFlow, body)
         const apiResponse = await chatflowsService.saveChatflow(
             newChatFlow,
-            orgId,
-            workspaceId,
-            subscriptionId,
             getRunningExpressApp().usageCacheManager
         )
 
@@ -149,14 +137,11 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (!chatflow) {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
-        const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
-        const orgId = req.user?.orgId || ''
-        const isPublic = req.body.isPublic
         const body = req.body
         const updateChatFlow = new ChatFlow()
         Object.assign(updateChatFlow, body)
 
-        const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow, orgId, subscriptionId, isPublic)
+        const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow, getRunningExpressApp().usageCacheManager)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -174,16 +159,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
         }
         const chatflow = await chatflowsService.getChatflowById(req.params.id)
         if (!chatflow) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Chatflow not found' })
-        if (chatflow.isPublic) return res.status(StatusCodes.OK).json(chatflow)
-        if (!req.user) return res.status(StatusCodes.UNAUTHORIZED).json({ message: GeneralErrorMessage.UNAUTHORIZED })
-        queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
-        const workspaceUserService = WorkspaceUserService
-        const workspaceUser = await workspaceUserService.readWorkspaceUserByUserId(req.user.id, queryRunner)
-        if (workspaceUser.length === 0)
-            return res.status(StatusCodes.NOT_FOUND).json({ message: WorkspaceUserErrorMessage.WORKSPACE_USER_NOT_FOUND })
-        const workspaceIds = workspaceUser.map((user: any) => user.workspaceId)
-        if (!workspaceIds.includes(chatflow.workspaceId))
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'You are not in the workspace that owns this chatflow' })
+        // OSS mode: allow access to all chatflows
         return res.status(StatusCodes.OK).json(chatflow)
     } catch (error) {
         next(error)

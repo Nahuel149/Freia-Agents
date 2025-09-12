@@ -222,7 +222,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
                             appServer.nodesPool.componentNodes,
                             chatId,
                             appServer.AppDataSource,
-                            req.user?.orgId || '',
+                            'bypass-org', // OSS mode: No org restrictions
                             sessionId,
                             memoryType,
                             isClearFromViewMessageDialog
@@ -247,7 +247,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
                     appServer.nodesPool.componentNodes,
                     chatId,
                     appServer.AppDataSource,
-                    req.user?.orgId || '',
+                    'bypass-org', // OSS mode: No org restrictions
                     sessionId,
                     memoryType,
                     isClearFromViewMessageDialog

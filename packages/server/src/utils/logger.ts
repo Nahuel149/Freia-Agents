@@ -74,9 +74,16 @@ if (process.env.STORAGE_TYPE === 's3') {
 }
 
 if (process.env.STORAGE_TYPE === 'gcs') {
+    const projectId = process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID
+    const keyFilename = process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL
+    
+    if (!projectId || projectId.trim() === '' || !keyFilename || keyFilename.trim() === '') {
+        throw new Error('GCS storage configuration is missing: GOOGLE_CLOUD_STORAGE_PROJ_ID and GOOGLE_CLOUD_STORAGE_CREDENTIAL are required')
+    }
+    
     const config = {
-        projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
-        keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
+        projectId: projectId,
+        keyFilename: keyFilename,
         defaultCallback: (err: any) => {
             if (err) {
                 console.error('Error logging to GCS: ' + err)

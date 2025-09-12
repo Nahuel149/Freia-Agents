@@ -2,12 +2,17 @@ const { Client } = require('pg');
 
 async function updateCredential() {
   const client = new Client({
-    host: 'localhost',
-    port: 5432,
-    user: 'postgres',
-    password: 'FreIA.2806',
-    database: 'flowise'
+    host: process.env.DATABASE_HOST || 'localhost',
+    port: parseInt(process.env.DATABASE_PORT || '5432', 10),
+    user: process.env.DATABASE_USER || 'postgres',
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME || 'flowise'
   });
+
+  if (!process.env.DATABASE_PASSWORD) {
+    console.error('Error: DATABASE_PASSWORD environment variable is required');
+    process.exit(1);
+  }
 
   try {
     await client.connect();

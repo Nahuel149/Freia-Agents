@@ -19,13 +19,18 @@ export class StripeManager {
 
     private async initialize() {
         if (!this.stripe && process.env.STRIPE_SECRET_KEY) {
+            if (!process.env.STRIPE_SECRET_KEY.trim()) {
+                throw new Error('STRIPE_SECRET_KEY environment variable is empty')
+            }
             this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
         }
         this.cacheManager = await UsageCacheManager.getInstance()
     }
 
     public getStripe() {
-        if (!this.stripe) throw new Error('Stripe is not initialized')
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized. Please ensure STRIPE_SECRET_KEY environment variable is set.')
+        }
         return this.stripe
     }
 
