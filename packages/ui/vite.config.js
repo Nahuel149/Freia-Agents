@@ -32,6 +32,9 @@ export default defineConfig(async ({ mode }) => {
         resolve: {
             alias: {
                 '@': resolve(__dirname, 'src'),
+                // Explicit alias to handle case sensitivity issues in Linux builds
+                '@/api/codeAgent': resolve(__dirname, 'src/api/codeAgent.js'),
+                '@/api/codeAgentOrchestration': resolve(__dirname, 'src/api/codeAgentOrchestration.js'),
                 '@codemirror/state': resolve(__dirname, '../../node_modules/@codemirror/state'),
                 '@codemirror/view': resolve(__dirname, '../../node_modules/@codemirror/view'),
                 '@codemirror/language': resolve(__dirname, '../../node_modules/@codemirror/language'),
@@ -42,7 +45,10 @@ export default defineConfig(async ({ mode }) => {
                 '@uiw/codemirror-theme-sublime': resolve(__dirname, '../../node_modules/@uiw/codemirror-theme-sublime'),
                 '@lezer/common': resolve(__dirname, '../../node_modules/@lezer/common'),
                 '@lezer/highlight': resolve(__dirname, '../../node_modules/@lezer/highlight')
-            }
+            },
+            // Ensure case-sensitive module resolution for Linux builds
+            extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+            preserveSymlinks: false
         },
         root: resolve(__dirname),
         build: {
