@@ -66,7 +66,7 @@ export const validateAPIKey = async (req: Request): Promise<{ isValid: boolean; 
 
         if (isOssMode()) {
             // In OSS mode, do not require a workspace and return a sentinel value for compatibility
-            return { isValid: true, apiKey, workspaceId: 'bypass-workspace' }
+            return { isValid: true, apiKey, workspaceId: 'oss-mode' }
         }
 
         const apiKeyWorkSpaceId = apiKey.workspaceId

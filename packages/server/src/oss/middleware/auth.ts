@@ -30,19 +30,19 @@ export const initializeJwtCookieMiddleware = () => {
  */
 function createBypassUser(): LoggedInUser {
     return {
-        id: 'bypass-admin',
+        id: 'oss-admin',
         email: 'admin@localhost',
-        name: 'Bypass Admin',
+        name: 'OSS Admin',
         roleId: 'super-admin',
-        orgId: 'bypass-org',
-        activeOrganizationId: 'bypass-org',
+        orgId: 'oss-mode',
+        activeOrganizationId: 'oss-mode',
         activeOrganizationSubscriptionId: null,
         activeOrganizationCustomerId: null,
         activeOrganizationProductId: null,
         isOrganizationAdmin: true,
-        activeWorkspaceId: 'bypass-workspace',
-        activeWorkspace: 'Bypass Workspace',
-        assignedWorkspaces: [{ id: 'bypass-workspace', name: 'Bypass Workspace' }],
+        activeWorkspaceId: 'oss-mode',
+        activeWorkspace: 'OSS Mode',
+        assignedWorkspaces: [{ id: 'oss-mode', name: 'OSS Mode' }],
         isApiKeyValidated: true,
         permissions: ['*'], // All permissions
         features: {} // All features enabled

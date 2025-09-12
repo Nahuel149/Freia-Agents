@@ -9,7 +9,7 @@ const getAllEvaluators = async (workspaceId?: string, page: number = -1, limit: 
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(Evaluator).createQueryBuilder('ev').orderBy('ev.updatedDate', 'DESC')
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
+        if (workspaceId && workspaceId !== 'oss-mode') {
             queryBuilder.andWhere('ev.workspaceId = :workspaceId', { workspaceId })
         }
         if (page > 0 && limit > 0) {
@@ -37,7 +37,7 @@ const getEvaluator = async (id: string, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
         const criteria: any = { id }
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
+        if (workspaceId && workspaceId !== 'oss-mode') {
             criteria.workspaceId = workspaceId
         }
         const evaluator = await appServer.AppDataSource.getRepository(Evaluator).findOneBy(criteria)
@@ -55,7 +55,7 @@ const getEvaluator = async (id: string, workspaceId?: string) => {
 const createEvaluator = async (body: any, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
-        if (workspaceId === 'bypass-workspace') {
+        if (workspaceId === 'oss-mode') {
             delete body.workspaceId
         } else {
             body.workspaceId = workspaceId
@@ -78,7 +78,7 @@ const updateEvaluator = async (id: string, body: any, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const criteria: any = { id }
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
+        if (workspaceId && workspaceId !== 'oss-mode') {
             criteria.workspaceId = workspaceId
         }
         const evaluator = await appServer.AppDataSource.getRepository(Evaluator).findOneBy(criteria)
@@ -103,7 +103,7 @@ const deleteEvaluator = async (id: string, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const criteria: any = { id }
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
+        if (workspaceId && workspaceId !== 'oss-mode') {
             criteria.workspaceId = workspaceId
         }
         return await appServer.AppDataSource.getRepository(Evaluator).delete(criteria)

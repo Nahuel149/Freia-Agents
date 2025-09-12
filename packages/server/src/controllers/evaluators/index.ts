@@ -7,7 +7,7 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 const getAllEvaluators = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
-        const apiResponse = await evaluatorService.getAllEvaluators('bypass-workspace', page, limit)
+        const apiResponse = await evaluatorService.getAllEvaluators('oss-mode', page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -19,7 +19,7 @@ const getEvaluator = async (req: Request, res: Response, next: NextFunction) => 
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluatorService.getEvaluator - id not provided!`)
         }
-        const apiResponse = await evaluatorService.getEvaluator(req.params.id, 'bypass-workspace')
+        const apiResponse = await evaluatorService.getEvaluator(req.params.id, 'oss-mode')
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -31,7 +31,7 @@ const createEvaluator = async (req: Request, res: Response, next: NextFunction) 
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluatorService.createEvaluator - body not provided!`)
         }
-        const apiResponse = await evaluatorService.createEvaluator(req.body, 'bypass-workspace') // OSS mode
+        const apiResponse = await evaluatorService.createEvaluator(req.body, 'oss-mode') // OSS mode
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -46,7 +46,7 @@ const updateEvaluator = async (req: Request, res: Response, next: NextFunction) 
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluatorService.updateEvaluator - id not provided!`)
         }
-        const apiResponse = await evaluatorService.updateEvaluator(req.params.id, req.body, 'bypass-workspace') // OSS mode
+        const apiResponse = await evaluatorService.updateEvaluator(req.params.id, req.body, 'oss-mode') // OSS mode
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -58,7 +58,7 @@ const deleteEvaluator = async (req: Request, res: Response, next: NextFunction) 
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluatorService.deleteEvaluator - id not provided!`)
         }
-        const apiResponse = await evaluatorService.deleteEvaluator(req.params.id, 'bypass-workspace')
+        const apiResponse = await evaluatorService.deleteEvaluator(req.params.id, 'oss-mode')
         return res.json(apiResponse)
     } catch (error) {
         next(error)

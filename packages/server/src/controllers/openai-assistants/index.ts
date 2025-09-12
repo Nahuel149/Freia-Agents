@@ -67,8 +67,8 @@ const getFileFromAssistant = async (req: Request, res: Response, next: NextFunct
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
 
-        // Use bypass-org for OSS mode
-        const orgId = 'bypass-org'
+        // Use oss-mode for OSS mode
+        const orgId = 'oss-mode'
 
         res.setHeader('Content-Disposition', contentDisposition(fileName))
         const fileStream = await streamStorageFile(chatflowId, chatId, fileName, orgId)

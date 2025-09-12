@@ -10,7 +10,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 export const utilAddChatMessage = async (chatMessage: Partial<IChatMessage>, appDataSource?: DataSource): Promise<ChatMessage> => {
     const dataSource = appDataSource ?? getRunningExpressApp().AppDataSource
     const newChatMessage = new ChatMessage()
-    if ((chatMessage as any).workspaceId && (chatMessage as any).workspaceId === 'bypass-workspace') {
+    if ((chatMessage as any).workspaceId && (chatMessage as any).workspaceId === 'oss-mode') {
     delete (chatMessage as any).workspaceId
 }
     Object.assign(newChatMessage, chatMessage)

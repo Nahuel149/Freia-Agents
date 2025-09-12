@@ -16,7 +16,7 @@ const getAllLeads = async (chatflowid: string, workspaceId: string) => {
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow with id ${chatflowid} not found`)
         }
-        if (workspaceId !== 'bypass-workspace' && chatflow.workspaceId !== workspaceId) {
+        if (workspaceId !== 'oss-mode' && chatflow.workspaceId !== workspaceId) {
             throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don\'t have access to this chatflow`)
         }
         const dbResponse = await appServer.AppDataSource.getRepository(Lead).find({

@@ -27,7 +27,7 @@ const getExecutionById = async (executionId: string, workspaceId?: string): Prom
 
         const query: any = { id: executionId }
         // Add workspace filtering if provided
-        if (workspaceId && workspaceId !== 'bypass-workspace') query.workspaceId = workspaceId
+        if (workspaceId && workspaceId !== 'oss-mode') query.workspaceId = workspaceId
 
         const res = await executionRepository.findOne({ where: query })
         if (!res) {
@@ -80,7 +80,7 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
         if (agentflowId) queryBuilder.andWhere('execution.agentflowId = :agentflowId', { agentflowId })
         if (sessionId) queryBuilder.andWhere('execution.sessionId = :sessionId', { sessionId })
         if (state) queryBuilder.andWhere('execution.state = :state', { state })
-        if (workspaceId && workspaceId !== 'bypass-workspace')
+        if (workspaceId && workspaceId !== 'oss-mode')
             queryBuilder.andWhere('execution.workspaceId = :workspaceId', { workspaceId })
 
         // Date range conditions
@@ -109,7 +109,7 @@ const updateExecution = async (executionId: string, data: Partial<Execution>, wo
 
         const query: any = { id: executionId }
         // Add workspace filtering if provided
-        if (workspaceId && workspaceId !== 'bypass-workspace') query.workspaceId = workspaceId
+        if (workspaceId && workspaceId !== 'oss-mode') query.workspaceId = workspaceId
 
         const execution = await appServer.AppDataSource.getRepository(Execution).findOneBy(query)
         if (!execution) {
@@ -141,7 +141,7 @@ const deleteExecutions = async (executionIds: string[], workspaceId?: string): P
 
         // Create the where condition with workspace filtering if provided
         const whereCondition: any = { id: In(executionIds) }
-        if (workspaceId && workspaceId !== 'bypass-workspace') whereCondition.workspaceId = workspaceId
+        if (workspaceId && workspaceId !== 'oss-mode') whereCondition.workspaceId = workspaceId
 
         // Delete executions where id is in the provided array and belongs to the workspace
         const result = await executionRepository.delete(whereCondition)

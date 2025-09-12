@@ -10,7 +10,7 @@ const getSingleFlowConfig = async (chatflowId: string, workspaceId: string): Pro
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await chatflowsService.getChatflowById(chatflowId)
-        if (workspaceId !== 'bypass-workspace' && chatflow.workspaceId !== workspaceId) {
+        if (workspaceId !== 'oss-mode' && chatflow.workspaceId !== workspaceId) {
             throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don\'t have access to this chatflow`)
         }
         if (!chatflow) {

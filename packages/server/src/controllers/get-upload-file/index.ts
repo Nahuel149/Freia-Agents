@@ -29,8 +29,8 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
 
-        // Use bypass-org for OSS mode
-        const orgId = 'bypass-org'
+        // Use oss-mode for OSS mode
+        const orgId = 'oss-mode'
 
         // Set Content-Disposition header - force attachment for download
         if (download) {

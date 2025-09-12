@@ -59,7 +59,7 @@ export const utilGetChatMessage = async ({
         const appServer = getRunningExpressApp()
 
         // Check if chatflow workspaceId is same as activeWorkspaceId
-        if (activeWorkspaceId && activeWorkspaceId !== 'bypass-workspace') {
+        if (activeWorkspaceId && activeWorkspaceId !== 'oss-mode') {
             const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: chatflowid,
                 workspaceId: activeWorkspaceId

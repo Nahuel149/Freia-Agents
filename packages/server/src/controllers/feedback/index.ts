@@ -23,7 +23,7 @@ const getAllChatMessageFeedback = async (req: Request, res: Response, next: Next
             sortOrder,
             startDate,
             endDate,
-            'bypass-workspace' // OSS mode: bypass workspace validation
+            'oss-mode' // OSS mode: bypass workspace validation
         )
         return res.json(apiResponse)
     } catch (error) {

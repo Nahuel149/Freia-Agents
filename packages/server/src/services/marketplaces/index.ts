@@ -145,7 +145,7 @@ const deleteCustomTemplate = async (templateId: string, workspaceId: string): Pr
         if (!template) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Template with id ${templateId} not found`)
         }
-        if (workspaceId !== 'bypass-workspace' && template.workspaceId !== workspaceId) {
+        if (workspaceId !== 'oss-mode' && template.workspaceId !== workspaceId) {
             throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don\'t have access to this template`)
         }
         return await appServer.AppDataSource.getRepository(CustomTemplate).delete({ id: templateId })
@@ -187,7 +187,7 @@ const getAllCustomTemplates = async (workspaceId?: string): Promise<any> => {
         _modifyTemplates(templates)
         dbResponse.push(...templates)
         // get shared credentials
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
+        if (workspaceId && workspaceId !== 'oss-mode') {
             /*
             const workspaceService = new WorkspaceService()
             const sharedItems = (await workspaceService.getSharedItemsForWorkspace(workspaceId, 'custom_template')) as CustomTemplate[]
@@ -214,7 +214,7 @@ const saveCustomTemplate = async (body: any): Promise<any> => {
         const customTemplate = new CustomTemplate()
         Object.assign(customTemplate, body)
 
-        if ((customTemplate as any).workspaceId === 'bypass-workspace') {
+        if ((customTemplate as any).workspaceId === 'oss-mode') {
             delete (customTemplate as any).workspaceId
         }
 

@@ -11,7 +11,7 @@ const getSingleFlowConfig = async (req: Request, res: Response, next: NextFuncti
                 `Error: flowConfigsController.getSingleFlowConfig - id not provided!`
             )
         }
-        const apiResponse = await flowConfigsService.getSingleFlowConfig(req.params.id, 'bypass-workspace')
+        const apiResponse = await flowConfigsService.getSingleFlowConfig(req.params.id, 'oss-mode')
         return res.json(apiResponse)
     } catch (error) {
         next(error)

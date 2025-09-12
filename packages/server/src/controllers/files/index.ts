@@ -8,7 +8,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const getAllFiles = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const orgId = 'bypass-org'
+        const orgId = 'oss-mode'
         const apiResponse = await getFilesListFromStorage(orgId)
         const filesList = apiResponse.map((file: any) => ({
             ...file,
@@ -23,7 +23,7 @@ const getAllFiles = async (req: Request, res: Response, next: NextFunction) => {
 
 const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const orgId = 'bypass-org'
+        const orgId = 'oss-mode'
         const filePath = req.query.path as string
         const paths = filePath.split(path.sep).filter((path) => path !== '')
         const { totalSize } = await removeSpecificFileFromStorage(orgId, ...paths)

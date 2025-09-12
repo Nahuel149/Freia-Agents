@@ -19,20 +19,20 @@ export class AuthService {
         // Complete bypass mode - no validation required
         console.log(`Bypass login for email: ${email}`);
         
-        // Generate a bypass token with full admin privileges
+        // Generate OSS token with full admin privileges
         const tokenPayload = {
-            id: 'bypass-admin',
+            id: 'oss-admin',
             email: email || 'admin@localhost',
-            name: 'Bypass Admin',
+            name: 'OSS Admin',
             roleId: 'super-admin',
-            activeOrganizationId: 'bypass-org',
-            activeOrganizationSubscriptionId: 'bypass-subscription',
-            activeOrganizationCustomerId: 'bypass-customer',
-            activeOrganizationProductId: 'bypass-product',
+            activeOrganizationId: 'oss-mode',
+            activeOrganizationSubscriptionId: null,
+            activeOrganizationCustomerId: null,
+            activeOrganizationProductId: null,
             isOrganizationAdmin: true,
-            activeWorkspaceId: 'bypass-workspace',
-            activeWorkspace: 'Bypass Workspace',
-            assignedWorkspaces: [{ id: 'bypass-workspace', name: 'Bypass Workspace' }],
+            activeWorkspaceId: 'oss-mode',
+            activeWorkspace: 'OSS Mode',
+            assignedWorkspaces: [{ id: 'oss-mode', name: 'OSS Mode' }],
             isApiKeyValidated: true,
             permissions: ['*'], // All permissions
             features: {} // All features enabled
@@ -49,21 +49,21 @@ export class AuthService {
             token,
             permissions: ['*'], // All permissions
             features: [], // All features
-            id: 'bypass-admin',
+            id: 'oss-admin',
             email: email || 'admin@localhost',
-            name: 'Bypass Admin',
+            name: 'OSS Admin',
             status: 'ACTIVE',
             role: 'super-admin',
             isSSO: false,
-            activeOrganizationId: 'bypass-org',
-            activeOrganizationSubscriptionId: 'bypass-subscription',
-            activeOrganizationCustomerId: 'bypass-customer',
-            activeOrganizationProductId: 'bypass-product',
-            activeWorkspaceId: 'bypass-workspace',
-            activeWorkspace: 'Bypass Workspace',
+            activeOrganizationId: 'oss-mode',
+            activeOrganizationSubscriptionId: null,
+            activeOrganizationCustomerId: null,
+            activeOrganizationProductId: null,
+            activeWorkspaceId: 'oss-mode',
+            activeWorkspace: 'OSS Mode',
             lastLogin: new Date(),
             isOrganizationAdmin: true,
-            assignedWorkspaces: [{ id: 'bypass-workspace', name: 'Bypass Workspace' }]
+            assignedWorkspaces: [{ id: 'oss-mode', name: 'OSS Mode' }]
         }
     }
 }

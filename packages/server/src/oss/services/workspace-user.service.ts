@@ -47,7 +47,7 @@ export class WorkspaceUserService {
             ...user,
             workspace: {
                 ...user.workspace,
-                organizationId: 'bypass-org' // Default org ID for OSS mode
+                organizationId: 'oss-mode' // Default org ID for OSS mode
             },
             isOrgOwner: true // In OSS mode, all users are considered org owners
         }))

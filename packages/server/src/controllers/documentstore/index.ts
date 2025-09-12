@@ -223,7 +223,7 @@ const processLoader = async (req: Request, res: Response, next: NextFunction) =>
         const apiResponse = await documentStoreService.processLoaderMiddleware(
             body,
             docLoaderId,
-            'bypass-subscription',
+            'oss-mode',
             getRunningExpressApp().usageCacheManager,
             isInternalRequest
         )
@@ -324,7 +324,7 @@ const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunc
         const apiResponse = await documentStoreService.insertIntoVectorStoreMiddleware(
             body,
             false,
-            'bypass-subscription',
+            'oss-mode',
             getRunningExpressApp().usageCacheManager
         )
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {

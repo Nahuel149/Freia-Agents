@@ -10,7 +10,7 @@ const createTool = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.createTool - body not provided!`)
         }
         const body = req.body
-        const orgId = 'bypass-org' // OSS mode: No org restrictions
+        const orgId = 'oss-mode' // OSS mode: No org restrictions
 
         const apiResponse = await toolsService.createTool(body, orgId)
         return res.json(apiResponse)

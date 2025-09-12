@@ -938,11 +938,11 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         // This can be public API, so we can only get orgId from the chatflow
         const chatflowWorkspaceId = chatflow.workspaceId
 
-        let workspaceId: string = 'bypass-workspace'
-        let orgId = 'bypass-org'
-        let subscriptionId: string = 'bypass-subscription'
+        let workspaceId: string = 'oss-mode'
+        let orgId = 'oss-mode'
+        let subscriptionId: string = 'oss-mode'
 
-        if (!(isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace'))) {
+        if (!(isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'oss-mode'))) {
             const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
                 id: chatflowWorkspaceId
             })

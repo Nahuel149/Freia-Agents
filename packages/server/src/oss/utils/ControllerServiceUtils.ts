@@ -14,7 +14,7 @@ export function getWorkspaceSearchOptions(workspaceId?: string): FindOptionsWher
     // In OSS mode we ignore workspace segregation entirely
     if (isOssMode()) return {}
 
-    if (workspaceId && workspaceId !== 'bypass-workspace') {
+    if (workspaceId && workspaceId !== 'oss-mode') {
         return { workspaceId }
     }
     return {}

@@ -74,10 +74,10 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     const chatflowWorkspaceId = chatflow.workspaceId
 
     let workspaceId: string | undefined = undefined
-    let orgId = 'bypass-org'
+    let orgId = 'oss-mode'
     let subscriptionId: string | undefined = undefined
 
-    if (!(isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace'))) {
+    if (!(isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'oss-mode'))) {
         const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
             id: chatflowWorkspaceId
         })

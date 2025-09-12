@@ -45,19 +45,19 @@ export const createFileAttachment = async (req: Request) => {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
 
-    let orgId = 'bypass-org' // OSS mode: No org restrictions
-    let workspaceId = 'bypass-workspace' // OSS mode: No workspace restrictions
-    let subscriptionId = 'bypass-subscription' // OSS mode: No subscription restrictions
+    let orgId = 'oss-mode' // OSS mode: No org restrictions
+    let workspaceId = 'oss-mode' // OSS mode: No workspace restrictions
+    let subscriptionId = 'oss-mode' // OSS mode: No subscription restrictions
 
     // This is one of the WHITELIST_URLS, API can be public and there might be no req.user
     if (!orgId || !workspaceId) {
         const chatflowWorkspaceId = chatflow.workspaceId
 
-        // In OSS mode, allow missing workspace and use bypass defaults
-        if (isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace')) {
-            workspaceId = 'bypass-workspace'
-            orgId = 'bypass-org'
-            subscriptionId = 'bypass-subscription'
+        // In OSS mode, allow missing workspace and use OSS defaults
+        if (isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'oss-mode')) {
+            workspaceId = 'oss-mode'
+            orgId = 'oss-mode'
+            subscriptionId = 'oss-mode'
         } else {
             const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
                 id: chatflowWorkspaceId
@@ -68,8 +68,8 @@ export const createFileAttachment = async (req: Request) => {
             workspaceId = workspace.id
 
             // OSS mode default org/subscription; override if workspace has org
-            orgId = 'bypass-org'
-            subscriptionId = 'bypass-subscription'
+            orgId = 'oss-mode'
+            subscriptionId = 'oss-mode'
 
             if (workspace.organizationId) {
                 const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
@@ -77,7 +77,7 @@ export const createFileAttachment = async (req: Request) => {
                 })
                 if (org) {
                     orgId = org.id
-                    subscriptionId = (org.subscriptionId as string) || 'bypass-subscription'
+                    subscriptionId = (org.subscriptionId as string) || 'oss-mode'
                 }
             }
         }

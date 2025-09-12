@@ -29,7 +29,7 @@ export const utilGetChatMessageFeedback = async (
         chatId,
         createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
     }
-    if (workspaceId && workspaceId !== 'bypass-workspace') {
+    if (workspaceId && workspaceId !== 'oss-mode') {
         where.workspaceId = workspaceId
     }
 

@@ -139,7 +139,7 @@ const deleteLoaderFromDocumentStore = async (
                     if (file.name) {
                         try {
                             const { totalSize } = await removeSpecificFileFromStorage('oss-mode', DOCUMENT_STORE_BASE_FOLDER, storeId, file.name)
-                            await updateStorageUsage('oss-mode', 'bypass-subscription', totalSize, usageCacheManager)
+                            await updateStorageUsage('oss-mode', 'oss-mode', totalSize, usageCacheManager)
                         } catch (error) {
                             console.error(error)
                         }
@@ -318,7 +318,7 @@ const deleteDocumentStore = async (storeId: string, usageCacheManager: UsageCach
 
         try {
             const { totalSize } = await removeFilesFromStorage('oss-mode', DOCUMENT_STORE_BASE_FOLDER, entity.id)
-            await updateStorageUsage('oss-mode', 'bypass-subscription', totalSize, usageCacheManager)
+            await updateStorageUsage('oss-mode', 'oss-mode', totalSize, usageCacheManager)
         } catch (error) {
             logger.error(`[server]: Error deleting file storage for documentStore ${storeId}`)
         }
@@ -496,7 +496,7 @@ const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkI
 const updateDocumentStore = async (documentStore: DocumentStore, updatedDocumentStore: DocumentStore) => {
     try {
         const appServer = getRunningExpressApp()
-        if (updatedDocumentStore.workspaceId === 'bypass-workspace') {
+        if (updatedDocumentStore.workspaceId === 'oss-mode') {
             delete updatedDocumentStore.workspaceId
         }
         const tmpUpdatedDocumentStore = appServer.AppDataSource.getRepository(DocumentStore).merge(documentStore, updatedDocumentStore)

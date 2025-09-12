@@ -12,7 +12,7 @@ const getAllLeadsForChatflow = async (req: Request, res: Response, next: NextFun
             )
         }
         const chatflowid = req.params.id
-        const apiResponse = await leadsService.getAllLeads(chatflowid, 'bypass-workspace') // OSS mode
+        const apiResponse = await leadsService.getAllLeads(chatflowid, 'oss-mode') // OSS mode
         return res.json(apiResponse)
     } catch (error) {
         next(error)

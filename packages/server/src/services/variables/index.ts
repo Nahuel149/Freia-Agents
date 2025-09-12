@@ -113,7 +113,7 @@ const updateVariable = async (variable: Variable, updatedVariable: Variable) => 
 const importVariables = async (newVariables: Partial<Variable>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
         for (const data of newVariables) {
-            if ((data as any).workspaceId === 'bypass-workspace') {
+            if ((data as any).workspaceId === 'oss-mode') {
                 delete (data as any).workspaceId
             }
             if (data.id && !validate(data.id)) {

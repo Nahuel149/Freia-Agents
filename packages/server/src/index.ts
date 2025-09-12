@@ -240,12 +240,12 @@ export class App {
                             req.user = {
                                 permissions: [],
                                 features: {},
-                                activeOrganizationId: 'default-org',
-                                activeOrganizationSubscriptionId: 'oss-subscription',
-                                activeOrganizationCustomerId: 'oss-customer',
-                                activeOrganizationProductId: 'oss-product',
+                                activeOrganizationId: 'oss-mode',
+                                activeOrganizationSubscriptionId: null,
+                                activeOrganizationCustomerId: null,
+                                activeOrganizationProductId: null,
                                 isOrganizationAdmin: true,
-                                activeWorkspaceId: apiKeyWorkSpaceId || 'bypass-workspace',
+                                activeWorkspaceId: apiKeyWorkSpaceId || 'oss-mode',
                                 activeWorkspace: 'OSS',
                                 isApiKeyValidated: true
                             }

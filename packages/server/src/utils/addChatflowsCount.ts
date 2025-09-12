@@ -20,7 +20,7 @@ export const addChatflowsCount = async (keys: any[]) => {
                     .where('cf.apikeyid = :apikeyid', { apikeyid: key.id })
 
                 // In OSS mode or when workspaceId is not provided/bypassed, skip workspace filtering
-                if (!isOssMode() && key.workspaceId && key.workspaceId !== 'bypass-workspace') {
+                if (!isOssMode() && key.workspaceId && key.workspaceId !== 'oss-mode') {
                     qb.andWhere('cf.workspaceId = :workspaceId', { workspaceId: key.workspaceId })
                 }
 

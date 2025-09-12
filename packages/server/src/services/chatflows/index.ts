@@ -283,9 +283,9 @@ const saveChatflow = async (
         step1Results.flowData = await updateFlowDataWithFilePaths(
             step1Results.id,
             incomingFlowData,
-            'bypass-org',
-            'bypass-workspace',
-            'bypass-subscription',
+            'oss-mode',
+            'oss-mode',
+            'oss-mode',
             cacheManager
         )
         await _checkAndUpdateDocumentStoreUsage(step1Results)
@@ -301,7 +301,7 @@ const saveChatflow = async (
             chatflowId: dbResponse.id,
             flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges)
         },
-        'bypass-org'
+        'oss-mode'
     )
 
     appServer.metricsProvider?.incrementCounter(
@@ -328,9 +328,9 @@ const updateChatflow = async (
         updateChatFlow.flowData = await updateFlowDataWithFilePaths(
             chatflow.id,
             updateChatFlow.flowData,
-            'bypass-org',
-            'bypass-workspace',
-            'bypass-subscription',
+            'oss-mode',
+            'oss-mode',
+            'oss-mode',
             cacheManager
         )
     }

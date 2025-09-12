@@ -21,7 +21,7 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
                 `Error: marketplacesService.deleteCustomTemplate - id not provided!`
             )
         }
-        const apiResponse = await marketplacesService.deleteCustomTemplate(req.params.id, 'bypass-workspace')
+        const apiResponse = await marketplacesService.deleteCustomTemplate(req.params.id, 'oss-mode')
         return res.json(apiResponse)
     } catch (error) {
         next(error)
