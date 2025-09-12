@@ -9,8 +9,6 @@ import { DeleteResult } from 'typeorm'
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
 import { v4 as uuidv4 } from 'uuid'
 import chatflowsService from '../chatflows'
-import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
-import { WorkspaceService } from '../../oss/services/workspace.service'
 
 type ITemplate = {
     badge: string
@@ -184,27 +182,20 @@ const _modifyTemplates = (templates: any[]) => {
 const getAllCustomTemplates = async (workspaceId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const findOptions = getWorkspaceSearchOptions(workspaceId)
-        if (workspaceId && workspaceId === 'bypass-workspace') {
-            delete findOptions.where.workspace
-        }
-        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).findBy(findOptions)
+        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find()
         const dbResponse = []
         _modifyTemplates(templates)
         dbResponse.push(...templates)
         // get shared credentials
         if (workspaceId && workspaceId !== 'bypass-workspace') {
+            /*
             const workspaceService = new WorkspaceService()
             const sharedItems = (await workspaceService.getSharedItemsForWorkspace(workspaceId, 'custom_template')) as CustomTemplate[]
             if (sharedItems && sharedItems.length) {
                 _modifyTemplates(sharedItems)
-                // add shared = true flag to all shared items, to differentiate them in the UI
-                sharedItems.forEach((sharedItem) => {
-                    // @ts-ignore
-                    sharedItem.shared = true
-                    dbResponse.push(sharedItem)
-                })
+                dbResponse.push(...sharedItems)
             }
+            */
         }
         return dbResponse
     } catch (error) {

@@ -388,7 +388,11 @@ export class App {
         this.app.use('/', express.static(uiBuildPath))
 
         // All other requests not handled will return React app
-        this.app.use((req: Request, res: Response) => {
+        this.app.use((req: Request, res: Response, next) => {
+            // Don't serve React app for API routes
+            if (req.path.startsWith('/api')) {
+                return next()
+            }
             res.sendFile(uiHtmlPath)
         })
 

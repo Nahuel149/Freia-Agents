@@ -55,7 +55,6 @@ import { utilAddChatMessage } from './addChatMessage'
 import { CachePool } from '../CachePool'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Telemetry } from './telemetry'
-import { getWorkspaceSearchOptions } from '../oss/utils/ControllerServiceUtils'
 import { UsageCacheManager } from '../UsageCacheManager'
 
 interface IWaitingNode {
@@ -871,7 +870,7 @@ const executeNode = async ({
         }
 
         // Get available variables and resolve them
-        const availableVariables = await appDataSource.getRepository(Variable).findBy(getWorkspaceSearchOptions(workspaceId))
+        const availableVariables = await appDataSource.getRepository(Variable).find()
 
         // Prepare flow config
         let updatedState = cloneDeep(agentflowRuntime.state)

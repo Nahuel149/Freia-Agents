@@ -12,8 +12,7 @@ const createCredential = async (req: Request, res: Response, next: NextFunction)
             )
         }
         const body = req.body
-        body.workspaceId = req.user?.activeWorkspaceId
-        const apiResponse = await credentialsService.createCredential(body, body.workspaceId)
+        const apiResponse = await credentialsService.createCredential(body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -37,7 +36,7 @@ const deleteCredentials = async (req: Request, res: Response, next: NextFunction
 
 const getAllCredentials = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName, req.user?.activeWorkspaceId)
+        const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName as string)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -52,7 +51,7 @@ const getCredentialById = async (req: Request, res: Response, next: NextFunction
                 `Error: credentialsController.getCredentialById - id not provided!`
             )
         }
-        const apiResponse = await credentialsService.getCredentialById(req.params.id, req.user?.activeWorkspaceId)
+        const apiResponse = await credentialsService.getCredentialById(req.params.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

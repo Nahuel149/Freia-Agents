@@ -9,7 +9,7 @@
       "data": {
         "id": "startAgentflow_0",
         "label": "Start",
-        "version": 1.1,
+        "version": 2,
         "name": "startAgentflow",
         "type": "Start",
         "color": "#7EE787",
@@ -184,7 +184,7 @@
       "data": {
         "id": "agentAgentflow_0",
         "label": "Agente de Ventas B2B",
-        "version": 1,
+        "version": 2,
         "name": "agentAgentflow",
         "type": "Agent",
         "color": "#4DD0E1",
@@ -297,7 +297,7 @@
       "data": {
         "id": "conditionAgentAgentflow_0",
         "label": "Price Acceptance?",
-        "version": 1,
+        "version": 2,
         "name": "conditionAgentAgentflow",
         "type": "ConditionAgent",
         "color": "#ff8fab",
@@ -404,7 +404,7 @@
       "data": {
         "id": "agentAgentflow_1",
         "label": "Cierre / Pago y Entrega",
-        "version": 1,
+        "version": 2,
         "name": "agentAgentflow",
         "type": "Agent",
         "color": "#4DD0E1",
@@ -445,7 +445,7 @@
       "data": {
         "id": "agentAgentflow_2",
         "label": "Negociación de Precio",
-        "version": 1,
+        "version": 2,
         "name": "agentAgentflow",
         "type": "Agent",
         "color": "#4DD0E1",
@@ -486,7 +486,7 @@
       "data": {
         "id": "agentAgentflow_3",
         "label": "Info Técnica / Alternativas",
-        "version": 1,
+        "version": 2,
         "name": "agentAgentflow",
         "type": "Agent",
         "color": "#4DD0E1",
@@ -526,7 +526,7 @@
       "data": {
         "id": "toolAgentflow_0",
         "label": "Send WhatsApp (Wasender)",
-        "version": 1.1,
+        "version": 2,
         "name": "toolAgentflow",
         "type": "Tool",
         "color": "#d4a373",

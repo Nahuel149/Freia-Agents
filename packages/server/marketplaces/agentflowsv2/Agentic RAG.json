@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -209,7 +209,7 @@
             "data": {
                 "id": "conditionAgentAgentflow_0",
                 "label": "Check if query valid",
-                "version": 1,
+                "version": 2,
                 "name": "conditionAgentAgentflow",
                 "type": "ConditionAgent",
                 "color": "#ff8fab",
@@ -343,7 +343,7 @@
             "data": {
                 "id": "llmAgentflow_0",
                 "label": "Generate Query",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",
@@ -675,7 +675,7 @@
             "data": {
                 "id": "llmAgentflow_1",
                 "label": "General Answer",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",
@@ -997,9 +997,9 @@
             "data": {
                 "id": "retrieverAgentflow_0",
                 "label": "Retriever Vector DB",
-                "version": 1,
-                "name": "retrieverAgentflow",
-                "type": "Retriever",
+                "version": 2,
+                 "name": "retrieverAgentflow",
+                 "type": "Retriever",
                 "color": "#b8bedd",
                 "baseClasses": ["Retriever"],
                 "category": "Agent Flows",
@@ -1116,7 +1116,7 @@
             "data": {
                 "id": "conditionAgentAgentflow_1",
                 "label": "Check if docs relevant",
-                "version": 1,
+                "version": 2,
                 "name": "conditionAgentAgentflow",
                 "type": "ConditionAgent",
                 "color": "#ff8fab",
@@ -1250,9 +1250,9 @@
             "data": {
                 "id": "llmAgentflow_2",
                 "label": "Generate Response",
-                "version": 1,
-                "name": "llmAgentflow",
-                "type": "LLM",
+                "version": 2,
+                 "name": "llmAgentflow",
+                 "type": "LLM",
                 "color": "#64B5F6",
                 "baseClasses": ["LLM"],
                 "category": "Agent Flows",
@@ -1572,9 +1572,9 @@
             "data": {
                 "id": "llmAgentflow_3",
                 "label": "Regenerate Question",
-                "version": 1,
-                "name": "llmAgentflow",
-                "type": "LLM",
+                "version": 2,
+                 "name": "llmAgentflow",
+                 "type": "LLM",
                 "color": "#64B5F6",
                 "baseClasses": ["LLM"],
                 "category": "Agent Flows",
@@ -1904,7 +1904,7 @@
             "data": {
                 "id": "loopAgentflow_0",
                 "label": "Loop back to Retriever",
-                "version": 1,
+                "version": 2,
                 "name": "loopAgentflow",
                 "type": "Loop",
                 "color": "#FFA07A",
@@ -1959,7 +1959,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",
@@ -2011,7 +2011,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_1",
                 "label": "Sticky Note (1)",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",

@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -209,7 +209,7 @@
             "data": {
                 "id": "agentAgentflow_0",
                 "label": "Requests Agent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -615,7 +615,7 @@
             "data": {
                 "id": "agentAgentflow_1",
                 "label": "OpenAPI Agent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -972,7 +972,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",
@@ -1024,7 +1024,7 @@
             "data": {
                 "id": "httpAgentflow_0",
                 "label": "Send HTTP Request",
-                "version": 1.1,
+                "version": 2,
                 "name": "httpAgentflow",
                 "type": "HTTP",
                 "color": "#FF7F7F",

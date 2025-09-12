@@ -57,6 +57,7 @@ import nvidiaNimRouter from './nvidia-nim'
 import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
+import dashboardRouter from './dashboard'
 
 import { IdentityManager } from '../IdentityManager'
 
@@ -118,6 +119,7 @@ router.use('/nvidia-nim', nvidiaNimRouter)
 router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
+router.use('/dashboard', dashboardRouter)
 
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
 router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)

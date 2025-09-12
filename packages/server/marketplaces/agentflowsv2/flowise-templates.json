@@ -1,405 +1,549 @@
 {
-  "flowiseTemplates": {
-    "mainOrchestrator": {
-      "id": "b2b-orchestrator-main",
-      "name": "B2B Sales Orchestrator",
-      "description": "Sistema principal de orquestación de agentes B2B",
-      "nodes": [
-        {
-          "id": "chatInput_0",
-          "position": { "x": 100, "y": 200 },
-          "type": "chatInput",
-          "data": {
-            "label": "Entrada del Cliente",
-            "name": "chatInput",
-            "type": "ChatInput",
-            "inputs": {},
-            "outputs": {
-              "output": "ChatInput"
-            }
+  "description": "B2B Sales System - AgentFlow Templates v2",
+  "badge": "NEW",
+  "useCases": [
+    "B2B Sales Automation",
+    "Customer Relationship Management",
+    "Multi-Agent Orchestration",
+    "Database Integration",
+    "WhatsApp Business Integration"
+  ],
+  "framework": ["LangChain", "AgentFlow v2"],
+  "nodes": [
+    {
+      "id": "startAgentflow_0",
+      "type": "agentFlow",
+      "position": { "x": 100, "y": 300 },
+      "data": {
+        "id": "startAgentflow_0",
+        "label": "Start",
+        "version": 2,
+        "name": "startAgentflow",
+        "type": "Start",
+        "baseClasses": ["Start"],
+        "category": "Agent Flows",
+        "description": "Inicio del flujo B2B Sales",
+        "inputParams": [
+          {
+            "label": "Start Input Type",
+            "name": "startInputType",
+            "type": "options",
+            "options": [
+              { "label": "Chat Input", "name": "chatInput" },
+              { "label": "Form Input", "name": "formInput" }
+            ],
+            "default": "chatInput"
+          },
+          {
+            "label": "Form Title",
+            "name": "formTitle",
+            "type": "string",
+            "default": "B2B Sales Assistant",
+            "additionalParams": true
+          },
+          {
+            "label": "Form Input Types",
+            "name": "formInputTypes",
+            "type": "json",
+            "default": "[{\"type\":\"text\",\"label\":\"Mensaje\",\"name\":\"message\",\"required\":true},{\"type\":\"text\",\"label\":\"Teléfono\",\"name\":\"phoneNumber\",\"required\":false}]",
+            "additionalParams": true
+          },
+          {
+            "label": "Start Ephemeral Memory",
+            "name": "startEphemeralMemory",
+            "type": "boolean",
+            "default": false,
+            "additionalParams": true
+          },
+          {
+            "label": "Start State",
+            "name": "startState",
+            "type": "json",
+            "default": "{\"customerType\":\"business\",\"urgency\":\"medium\",\"strategy\":\"sequential\"}",
+            "additionalParams": true
           }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "startInputType": "chatInput",
+          "formTitle": "B2B Sales Assistant",
+          "formInputTypes": "[{\"type\":\"text\",\"label\":\"Mensaje\",\"name\":\"message\",\"required\":true},{\"type\":\"text\",\"label\":\"Teléfono\",\"name\":\"phoneNumber\",\"required\":false}]",
+          "startEphemeralMemory": false,
+          "startState": "{\"customerType\":\"business\",\"urgency\":\"medium\",\"strategy\":\"sequential\"}"
         },
-        {
-          "id": "orchestrator_0",
-          "position": { "x": 400, "y": 200 },
-          "type": "customFunction",
-          "data": {
-            "label": "Agent Orchestrator",
-            "name": "customFunction",
-            "type": "CustomFunction",
-            "inputs": {
-              "functionName": "processB2BMessage",
-              "code": "const AgentOrchestrator = require('./agent-orchestrator');\n\nasync function processB2BMessage(input, flow, nodeData) {\n    try {\n        const orchestrator = new AgentOrchestrator({\n            dbConnectionString: process.env.DB_CONNECTION_STRING,\n            maxConcurrentAgents: parseInt(process.env.MAX_CONCURRENT_AGENTS) || 5,\n            agentTimeout: parseInt(process.env.AGENT_TIMEOUT) || 30000\n        });\n        \n        await orchestrator.initialize();\n        \n        const result = await orchestrator.processCustomerMessage({\n            phoneNumber: input.phoneNumber || '+5491123456789',\n            message: input.message || input.question || input.chatInput,\n            flowState: {\n                customerType: input.customerType || 'business',\n                urgency: input.urgency || 'medium',\n                sessionId: input.sessionId\n            },\n            agentStrategy: input.strategy || 'sequential'\n        });\n        \n        return {\n            response: result.response,\n            agentsUsed: result.agentsUsed,\n            executionTime: result.executionTime,\n            followUpScheduled: result.followUpScheduled\n        };\n    } catch (error) {\n        console.error('Error en orchestrator:', error);\n        return {\n            response: 'Disculpá, tuve un problema técnico. Un representante te contactará pronto.',\n            error: error.message\n        };\n    }\n}",
-              "inputVariables": [
-                {
-                  "name": "message",
-                  "type": "string",
-                  "description": "Mensaje del cliente"
-                },
-                {
-                  "name": "phoneNumber",
-                  "type": "string",
-                  "description": "Número de teléfono del cliente"
-                },
-                {
-                  "name": "strategy",
-                  "type": "options",
-                  "options": ["sequential", "parallel", "conditional"],
-                  "default": "sequential",
-                  "description": "Estrategia de procesamiento"
-                },
-                {
-                  "name": "customerType",
-                  "type": "options",
-                  "options": ["individual", "business", "enterprise"],
-                  "default": "business",
-                  "description": "Tipo de cliente"
-                },
-                {
-                  "name": "urgency",
-                  "type": "options",
-                  "options": ["low", "medium", "high"],
-                  "default": "medium",
-                  "description": "Nivel de urgencia"
-                }
-              ]
-            },
-            "outputs": {
-              "output": "CustomFunction"
-            }
+        "outputAnchors": [
+          {
+            "id": "startAgentflow_0-output-startAgentflow-AgentFlow|Start",
+            "name": "startAgentflow",
+            "label": "Start",
+            "description": "Start node for AgentFlow",
+            "type": "AgentFlow | Start"
           }
-        },
-        {
-          "id": "chatOutput_0",
-          "position": { "x": 700, "y": 200 },
-          "type": "chatOutput",
-          "data": {
-            "label": "Respuesta al Cliente",
-            "name": "chatOutput",
-            "type": "ChatOutput",
-            "inputs": {
-              "input": "ChatOutput"
-            },
-            "outputs": {}
-          }
-        }
-      ],
-      "edges": [
-        {
-          "id": "edge_input_orchestrator",
-          "source": "chatInput_0",
-          "target": "orchestrator_0",
-          "sourceHandle": "output",
-          "targetHandle": "input"
-        },
-        {
-          "id": "edge_orchestrator_output",
-          "source": "orchestrator_0",
-          "target": "chatOutput_0",
-          "sourceHandle": "output",
-          "targetHandle": "input"
-        }
-      ]
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 143,
+      "selected": false,
+      "positionAbsolute": { "x": 100, "y": 300 },
+      "dragging": false
     },
-    "databaseConnector": {
-      "id": "b2b-database-connector",
-      "name": "B2B Database Connector",
-      "description": "Conector a base de datos PostgreSQL para sistema B2B",
-      "nodes": [
-        {
-          "id": "dbConnector_0",
-          "position": { "x": 300, "y": 150 },
-          "type": "customFunction",
-          "data": {
-            "label": "PostgreSQL B2B",
-            "name": "customFunction",
-            "type": "CustomFunction",
-            "inputs": {
-              "functionName": "queryB2BDatabase",
-              "code": "const { B2BSalesDB } = require('./database-config');\n\nasync function queryB2BDatabase(input, flow, nodeData) {\n    try {\n        const db = new B2BSalesDB(process.env.DB_CONNECTION_STRING);\n        await db.connect();\n        \n        let result;\n        \n        switch (input.operation) {\n            case 'getCustomer':\n                result = await db.getCustomerByPhone(input.phoneNumber);\n                break;\n            case 'upsertCustomer':\n                result = await db.upsertCustomer(input.customerData);\n                break;\n            case 'createSale':\n                result = await db.createSale(input.saleData);\n                break;\n            case 'scheduleFollowUp':\n                result = await db.scheduleFollowUp(input.followUpData);\n                break;\n            case 'getPendingFollowUps':\n                result = await db.getPendingFollowUps();\n                break;\n            default:\n                throw new Error('Operación no válida: ' + input.operation);\n        }\n        \n        await db.disconnect();\n        return result;\n    } catch (error) {\n        console.error('Error en base de datos:', error);\n        throw error;\n    }\n}",
-              "inputVariables": [
-                {
-                  "name": "operation",
-                  "type": "options",
-                  "options": ["getCustomer", "upsertCustomer", "createSale", "scheduleFollowUp", "getPendingFollowUps"],
-                  "description": "Operación a realizar"
-                },
-                {
-                  "name": "phoneNumber",
-                  "type": "string",
-                  "description": "Número de teléfono (para getCustomer)"
-                },
-                {
-                  "name": "customerData",
-                  "type": "json",
-                  "description": "Datos del cliente (para upsertCustomer)"
-                },
-                {
-                  "name": "saleData",
-                  "type": "json",
-                  "description": "Datos de la venta (para createSale)"
-                },
-                {
-                  "name": "followUpData",
-                  "type": "json",
-                  "description": "Datos del seguimiento (para scheduleFollowUp)"
-                }
-              ]
-            }
+    {
+      "id": "agentAgentflow_0",
+      "type": "agentFlow",
+      "position": { "x": 400, "y": 200 },
+      "data": {
+        "id": "agentAgentflow_0",
+        "label": "B2B Sales Orchestrator",
+        "version": 2,
+        "name": "agentAgentflow",
+        "type": "Agent",
+        "color": "#4DD0E1",
+        "baseClasses": ["Agent"],
+        "category": "Agent Flows",
+        "description": "Orquestador principal del sistema B2B Sales",
+        "inputParams": [
+          {
+            "label": "Agent Name",
+            "name": "agentName",
+            "type": "string",
+            "default": "B2B Sales Orchestrator"
+          },
+          {
+            "label": "Agent Description",
+            "name": "agentDescription",
+            "type": "string",
+            "rows": 3,
+            "default": "Sistema principal de orquestación de agentes B2B especializado en ventas, productos, precios y seguimiento de clientes."
+          },
+          {
+            "label": "System Message",
+            "name": "systemMessage",
+            "type": "string",
+            "rows": 4,
+            "default": "Sos el orquestador principal de un sistema de ventas B2B. Tu trabajo es coordinar múltiples agentes especializados para brindar la mejor experiencia al cliente. Analizá cada consulta y determiná qué agentes necesitás activar y en qué orden."
+          },
+          {
+            "label": "Max Iterations",
+            "name": "maxIterations",
+            "type": "number",
+            "default": 10
+          },
+          {
+            "label": "Agent Strategy",
+            "name": "agentStrategy",
+            "type": "options",
+            "options": [
+              { "label": "Sequential", "name": "sequential" },
+              { "label": "Parallel", "name": "parallel" },
+              { "label": "Conditional", "name": "conditional" }
+            ],
+            "default": "sequential"
           }
-        }
-      ]
+        ],
+        "inputAnchors": [
+          {
+            "label": "Agent Flow",
+            "name": "agentflow",
+            "type": "AgentFlow",
+            "id": "agentAgentflow_0-input-agentflow-AgentFlow"
+          }
+        ],
+        "inputs": {
+          "agentName": "B2B Sales Orchestrator",
+          "agentDescription": "Sistema principal de orquestación de agentes B2B especializado en ventas, productos, precios y seguimiento de clientes.",
+          "systemMessage": "Sos el orquestador principal de un sistema de ventas B2B. Tu trabajo es coordinar múltiples agentes especializados para brindar la mejor experiencia al cliente. Analizá cada consulta y determiná qué agentes necesitás activar y en qué orden.",
+          "maxIterations": 10,
+          "agentStrategy": "sequential",
+          "agentflow": "{{startAgentflow_0.data.instance}}"
+        },
+        "outputAnchors": [
+          {
+            "id": "agentAgentflow_0-output-agentAgentflow-AgentFlow|Agent",
+            "name": "agentAgentflow",
+            "label": "Agent",
+            "description": "Agent node for AgentFlow",
+            "type": "AgentFlow | Agent"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 434,
+      "selected": false,
+      "positionAbsolute": { "x": 500, "y": 200 },
+      "dragging": false
     },
-    "salesAgent": {
-      "id": "b2b-sales-agent",
-      "name": "B2B Sales Agent",
-      "description": "Agente especializado en ventas B2B",
-      "nodes": [
-        {
-          "id": "salesLLM_0",
-          "position": { "x": 300, "y": 200 },
-          "type": "chatOpenAI",
-          "data": {
-            "label": "Sales Agent LLM",
-            "name": "chatOpenAI",
-            "type": "ChatOpenAI",
-            "inputs": {
-              "modelName": "gpt-4",
-              "temperature": 0.7,
-              "maxTokens": 1000,
-              "topP": 1,
-              "frequencyPenalty": 0,
-              "presencePenalty": 0,
-              "timeout": 30000
-            }
+    {
+      "id": "agentAgentflow_1",
+      "type": "agentFlow",
+      "position": { "x": 800, "y": 100 },
+      "data": {
+        "id": "agentAgentflow_1",
+        "label": "Sales Agent",
+        "version": 2,
+        "name": "agentAgentflow",
+        "type": "Agent",
+        "color": "#4DD0E1",
+        "baseClasses": ["Agent"],
+        "category": "Agent Flows",
+        "description": "Agente especializado en ventas B2B y relación con clientes",
+        "inputParams": [
+          {
+            "label": "Agent Name",
+            "name": "agentName",
+            "type": "string",
+            "default": "Sales Agent"
+          },
+          {
+            "label": "Agent Description",
+            "name": "agentDescription",
+            "type": "string",
+            "rows": 3,
+            "default": "Experto en ventas B2B, generación de leads, calificación de prospectos y cierre de ventas."
+          },
+          {
+            "label": "System Message",
+            "name": "systemMessage",
+            "type": "string",
+            "rows": 4,
+            "default": "Sos un experto agente de ventas B2B. Tu objetivo es entender las necesidades del cliente, generar confianza, ofrecer soluciones personalizadas y guiar hacia el cierre de venta. Hacé preguntas específicas para calificar al prospecto."
+          },
+          {
+            "label": "Max Iterations",
+            "name": "maxIterations",
+            "type": "number",
+            "default": 5
           }
-        },
-        {
-          "id": "salesPrompt_0",
-          "position": { "x": 100, "y": 200 },
-          "type": "promptTemplate",
-          "data": {
-            "label": "Sales Prompt",
-            "name": "promptTemplate",
-            "type": "PromptTemplate",
-            "inputs": {
-              "template": "Sos un experto agente de ventas B2B especializado en tecnología y equipamiento empresarial.\n\nTu objetivo es:\n1. Entender las necesidades específicas del cliente\n2. Ofrecer soluciones personalizadas\n3. Generar confianza y rapport\n4. Guiar hacia el cierre de venta\n\nContexto del cliente:\n- Teléfono: {phoneNumber}\n- Tipo: {customerType}\n- Urgencia: {urgency}\n- Historial: {customerHistory}\n\nMensaje del cliente: {message}\n\nResponde de manera profesional, empática y orientada a soluciones. Hacé preguntas específicas para entender mejor las necesidades.",
-              "inputVariables": ["phoneNumber", "customerType", "urgency", "customerHistory", "message"]
-            }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Agent Flow",
+            "name": "agentflow",
+            "type": "AgentFlow",
+            "id": "agentAgentflow_1-input-agentflow-AgentFlow"
           }
+        ],
+        "inputs": {
+          "agentName": "Sales Agent",
+          "agentDescription": "Experto en ventas B2B, generación de leads, calificación de prospectos y cierre de ventas.",
+          "systemMessage": "Sos un experto agente de ventas B2B. Tu objetivo es entender las necesidades del cliente, generar confianza, ofrecer soluciones personalizadas y guiar hacia el cierre de venta. Hacé preguntas específicas para calificar al prospecto.",
+          "maxIterations": 5,
+          "agentflow": "{{agentAgentflow_0.data.instance}}"
         },
-        {
-          "id": "salesMemory_0",
-          "position": { "x": 300, "y": 50 },
-          "type": "bufferWindowMemory",
-          "data": {
-            "label": "Sales Memory",
-            "name": "bufferWindowMemory",
-            "type": "BufferWindowMemory",
-            "inputs": {
-              "k": 10,
-              "returnMessages": true,
-              "memoryKey": "chat_history"
-            }
+        "outputAnchors": [
+          {
+            "id": "agentAgentflow_1-output-agentAgentflow-AgentFlow|Agent",
+            "name": "agentAgentflow",
+            "label": "Agent",
+            "description": "Agent node for AgentFlow",
+            "type": "AgentFlow | Agent"
           }
-        }
-      ],
-      "edges": [
-        {
-          "id": "edge_prompt_llm",
-          "source": "salesPrompt_0",
-          "target": "salesLLM_0",
-          "sourceHandle": "output",
-          "targetHandle": "input"
-        },
-        {
-          "id": "edge_memory_llm",
-          "source": "salesMemory_0",
-          "target": "salesLLM_0",
-          "sourceHandle": "output",
-          "targetHandle": "memory"
-        }
-      ]
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 434,
+      "selected": false,
+      "positionAbsolute": { "x": 900, "y": 100 },
+      "dragging": false
     },
-    "productSpecialist": {
-      "id": "b2b-product-specialist",
-      "name": "Product Specialist Agent",
-      "description": "Agente especializado en productos y especificaciones técnicas",
-      "nodes": [
-        {
-          "id": "productLLM_0",
-          "position": { "x": 300, "y": 200 },
-          "type": "chatOpenAI",
-          "data": {
-            "label": "Product Specialist LLM",
-            "name": "chatOpenAI",
-            "type": "ChatOpenAI",
-            "inputs": {
-              "modelName": "gpt-4",
-              "temperature": 0.3,
-              "maxTokens": 1200
-            }
+    {
+      "id": "agentAgentflow_2",
+      "type": "agentFlow",
+      "position": { "x": 1200, "y": 300 },
+      "data": {
+        "id": "agentAgentflow_2",
+        "label": "Product Specialist",
+        "version": 2,
+        "name": "agentAgentflow",
+        "type": "Agent",
+        "color": "#4DD0E1",
+        "baseClasses": ["Agent"],
+        "category": "Agent Flows",
+        "description": "Especialista en productos y especificaciones técnicas",
+        "inputParams": [
+          {
+            "label": "Agent Name",
+            "name": "agentName",
+            "type": "string",
+            "default": "Product Specialist"
+          },
+          {
+            "label": "Agent Description",
+            "name": "agentDescription",
+            "type": "string",
+            "rows": 3,
+            "default": "Especialista técnico en productos de tecnología empresarial, especificaciones y comparaciones."
+          },
+          {
+            "label": "System Message",
+            "name": "systemMessage",
+            "type": "string",
+            "rows": 4,
+            "default": "Sos un especialista técnico en productos de tecnología empresarial. Proporcioná información detallada sobre especificaciones, comparaciones y recomendaciones basadas en las necesidades del cliente."
+          },
+          {
+            "label": "Max Iterations",
+            "name": "maxIterations",
+            "type": "number",
+            "default": 5
           }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Agent Flow",
+            "name": "agentflow",
+            "type": "AgentFlow",
+            "id": "agentAgentflow_2-input-agentflow-AgentFlow"
+          }
+        ],
+        "inputs": {
+          "agentName": "Product Specialist",
+          "agentDescription": "Especialista técnico en productos de tecnología empresarial, especificaciones y comparaciones.",
+          "systemMessage": "Sos un especialista técnico en productos de tecnología empresarial. Proporcioná información detallada sobre especificaciones, comparaciones y recomendaciones basadas en las necesidades del cliente.",
+          "maxIterations": 5,
+          "agentflow": "{{agentAgentflow_1.data.instance}}"
         },
-        {
-          "id": "productPrompt_0",
-          "position": { "x": 100, "y": 200 },
-          "type": "promptTemplate",
-          "data": {
-            "label": "Product Prompt",
-            "name": "promptTemplate",
-            "type": "PromptTemplate",
-            "inputs": {
-              "template": "Sos un especialista técnico en productos de tecnología empresarial.\n\nTu expertise incluye:\n- Notebooks y computadoras empresariales\n- Servidores y equipamiento de red\n- Software empresarial y licencias\n- Periféricos y accesorios\n- Soluciones de seguridad informática\n\nConsulta del cliente: {message}\n\nProporcioná información técnica detallada, especificaciones, comparaciones y recomendaciones basadas en las necesidades específicas del cliente. Sé preciso y técnico pero comprensible.",
-              "inputVariables": ["message"]
-            }
+        "outputAnchors": [
+          {
+            "id": "agentAgentflow_2-output-agentAgentflow-AgentFlow|Agent",
+            "name": "agentAgentflow",
+            "label": "Agent",
+            "description": "Agent node for AgentFlow",
+            "type": "AgentFlow | Agent"
           }
-        }
-      ],
-      "edges": [
-        {
-          "id": "edge_product_prompt_llm",
-          "source": "productPrompt_0",
-          "target": "productLLM_0",
-          "sourceHandle": "output",
-          "targetHandle": "input"
-        }
-      ]
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 434,
+      "selected": false,
+      "positionAbsolute": { "x": 900, "y": 600 },
+      "dragging": false
     },
-    "pricingAgent": {
-      "id": "b2b-pricing-agent",
-      "name": "Pricing Specialist Agent",
-      "description": "Agente especializado en precios y cotizaciones",
-      "nodes": [
-        {
-          "id": "pricingLLM_0",
-          "position": { "x": 300, "y": 200 },
-          "type": "chatOpenAI",
-          "data": {
-            "label": "Pricing Specialist LLM",
-            "name": "chatOpenAI",
-            "type": "ChatOpenAI",
-            "inputs": {
-              "modelName": "gpt-4",
-              "temperature": 0.2,
-              "maxTokens": 800
-            }
+    {
+      "id": "agentAgentflow_3",
+      "type": "agentFlow",
+      "position": { "x": 1600, "y": 400 },
+      "data": {
+        "id": "agentAgentflow_3",
+        "label": "Pricing Agent",
+        "version": 2,
+        "name": "agentAgentflow",
+        "type": "Agent",
+        "color": "#4DD0E1",
+        "baseClasses": ["Agent"],
+        "category": "Agent Flows",
+        "description": "Especialista en precios, cotizaciones y negociación",
+        "inputParams": [
+          {
+            "label": "Agent Name",
+            "name": "agentName",
+            "type": "string",
+            "default": "Pricing Agent"
+          },
+          {
+            "label": "Agent Description",
+            "name": "agentDescription",
+            "type": "string",
+            "rows": 3,
+            "default": "Especialista en precios, cotizaciones, descuentos y términos de pago para clientes B2B."
+          },
+          {
+            "label": "System Message",
+            "name": "systemMessage",
+            "type": "string",
+            "rows": 4,
+            "default": "Sos un especialista en precios y cotizaciones B2B. Generá cotizaciones precisas, ofrecé descuentos apropiados y explicá términos de pago. Sé transparente y competitivo."
+          },
+          {
+            "label": "Max Iterations",
+            "name": "maxIterations",
+            "type": "number",
+            "default": 5
           }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Agent Flow",
+            "name": "agentflow",
+            "type": "AgentFlow",
+            "id": "agentAgentflow_3-input-agentflow-AgentFlow"
+          }
+        ],
+        "inputs": {
+          "agentName": "Pricing Agent",
+          "agentDescription": "Especialista en precios, cotizaciones, descuentos y términos de pago para clientes B2B.",
+          "systemMessage": "Sos un especialista en precios y cotizaciones B2B. Generá cotizaciones precisas, ofrecé descuentos apropiados y explicá términos de pago. Sé transparente y competitivo.",
+          "maxIterations": 5,
+          "agentflow": "{{agentAgentflow_2.data.instance}}"
         },
-        {
-          "id": "pricingPrompt_0",
-          "position": { "x": 100, "y": 200 },
-          "type": "promptTemplate",
-          "data": {
-            "label": "Pricing Prompt",
-            "name": "promptTemplate",
-            "type": "PromptTemplate",
-            "inputs": {
-              "template": "Sos un especialista en precios y cotizaciones B2B.\n\nTus responsabilidades:\n- Generar cotizaciones precisas y competitivas\n- Ofrecer descuentos por volumen apropiados\n- Explicar términos de pago y financiamiento\n- Justificar el valor de los productos/servicios\n\nSolicitud de cotización: {message}\nTipo de cliente: {customerType}\nVolumen estimado: {volume}\n\nProporcioná una cotización detallada con precios, descuentos aplicables, términos de pago y valor agregado. Sé transparente y competitivo.",
-              "inputVariables": ["message", "customerType", "volume"]
-            }
+        "outputAnchors": [
+          {
+            "id": "agentAgentflow_3-output-agentAgentflow-AgentFlow|Agent",
+            "name": "agentAgentflow",
+            "label": "Agent",
+            "description": "Agent node for AgentFlow",
+            "type": "AgentFlow | Agent"
           }
-        }
-      ],
-      "edges": [
-        {
-          "id": "edge_pricing_prompt_llm",
-          "source": "pricingPrompt_0",
-          "target": "pricingLLM_0",
-          "sourceHandle": "output",
-          "targetHandle": "input"
-        }
-      ]
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 434,
+      "selected": false,
+      "positionAbsolute": { "x": 1300, "y": 350 },
+      "dragging": false
     },
-    "whatsappIntegration": {
-      "id": "b2b-whatsapp-integration",
-      "name": "WhatsApp Integration",
-      "description": "Integración con WhatsApp para envío de mensajes",
-      "nodes": [
-        {
-          "id": "whatsappWebhook_0",
-          "position": { "x": 300, "y": 200 },
-          "type": "customFunction",
-          "data": {
-            "label": "WhatsApp Sender",
-            "name": "customFunction",
-            "type": "CustomFunction",
-            "inputs": {
-              "functionName": "sendWhatsAppMessage",
-              "code": "const axios = require('axios');\n\nasync function sendWhatsAppMessage(input, flow, nodeData) {\n    try {\n        const response = await axios.post(process.env.WASENDER_API_URL + '/send-message', {\n            phone: input.phoneNumber,\n            message: input.message,\n            type: 'text'\n        }, {\n            headers: {\n                'Authorization': 'Bearer ' + process.env.WASENDER_API_KEY,\n                'Content-Type': 'application/json'\n            }\n        });\n        \n        return {\n            success: true,\n            messageId: response.data.messageId,\n            status: response.data.status\n        };\n    } catch (error) {\n        console.error('Error enviando WhatsApp:', error);\n        return {\n            success: false,\n            error: error.message\n        };\n    }\n}",
-              "inputVariables": [
-                {
-                  "name": "phoneNumber",
-                  "type": "string",
-                  "description": "Número de teléfono destino"
-                },
-                {
-                  "name": "message",
-                  "type": "string",
-                  "description": "Mensaje a enviar"
-                }
-              ]
-            }
+    {
+      "id": "toolAgentflow_0",
+      "type": "agentFlow",
+      "position": { "x": 2000, "y": 300 },
+      "data": {
+        "id": "toolAgentflow_0",
+        "label": "Database Connector",
+        "version": 2,
+        "name": "toolAgentflow",
+        "type": "Tool",
+        "color": "#FF9800",
+        "baseClasses": ["Tool"],
+        "category": "Agent Flows",
+        "description": "Conector a base de datos PostgreSQL para operaciones B2B",
+        "inputParams": [
+          {
+            "label": "Tool Name",
+            "name": "toolName",
+            "type": "string",
+            "default": "database_connector"
+          },
+          {
+            "label": "Tool Description",
+            "name": "toolDescription",
+            "type": "string",
+            "rows": 3,
+            "default": "Conecta con la base de datos PostgreSQL para operaciones de clientes, ventas y seguimientos."
+          },
+          {
+            "label": "Tool Code",
+            "name": "toolCode",
+            "type": "code",
+            "default": "// Database Connector Tool\nconst { Pool } = require('pg');\n\nclass DatabaseConnector {\n  constructor() {\n    this.pool = new Pool({\n      connectionString: process.env.POSTGRES_CONNECTION\n    });\n  }\n\n  async execute(operation, data) {\n    const client = await this.pool.connect();\n    try {\n      switch(operation) {\n        case 'getCustomer':\n          return await this.getCustomer(client, data.phoneNumber);\n        case 'upsertCustomer':\n          return await this.upsertCustomer(client, data);\n        case 'createSale':\n          return await this.createSale(client, data);\n        case 'scheduleFollowUp':\n          return await this.scheduleFollowUp(client, data);\n        default:\n          throw new Error('Operación no válida');\n      }\n    } finally {\n      client.release();\n    }\n  }\n\n  async getCustomer(client, phoneNumber) {\n    const result = await client.query(\n      'SELECT * FROM customers WHERE phone_number = $1',\n      [phoneNumber]\n    );\n    return result.rows[0] || null;\n  }\n\n  async upsertCustomer(client, customerData) {\n    const query = `\n      INSERT INTO customers (phone_number, company_name, contact_name, email, industry)\n      VALUES ($1, $2, $3, $4, $5)\n      ON CONFLICT (phone_number) DO UPDATE SET\n        company_name = EXCLUDED.company_name,\n        contact_name = EXCLUDED.contact_name,\n        email = EXCLUDED.email,\n        industry = EXCLUDED.industry,\n        updated_at = CURRENT_TIMESTAMP\n      RETURNING *\n    `;\n    const result = await client.query(query, [\n      customerData.phoneNumber,\n      customerData.companyName,\n      customerData.contactName,\n      customerData.email,\n      customerData.industry\n    ]);\n    return result.rows[0];\n  }\n}\n\nmodule.exports = DatabaseConnector;"
           }
-        }
-      ]
+        ],
+        "inputAnchors": [
+          {
+            "label": "Agent Flow",
+            "name": "agentflow",
+            "type": "AgentFlow",
+            "id": "toolAgentflow_0-input-agentflow-AgentFlow"
+          }
+        ],
+        "inputs": {
+          "toolName": "database_connector",
+          "toolDescription": "Conecta con la base de datos PostgreSQL para operaciones de clientes, ventas y seguimientos.",
+          "toolCode": "// Database Connector Tool\nconst { Pool } = require('pg');\n\nclass DatabaseConnector {\n  constructor() {\n    this.pool = new Pool({\n      connectionString: process.env.POSTGRES_CONNECTION\n    });\n  }\n\n  async execute(operation, data) {\n    const client = await this.pool.connect();\n    try {\n      switch(operation) {\n        case 'getCustomer':\n          return await this.getCustomer(client, data.phoneNumber);\n        case 'upsertCustomer':\n          return await this.upsertCustomer(client, data);\n        case 'createSale':\n          return await this.createSale(client, data);\n        case 'scheduleFollowUp':\n          return await this.scheduleFollowUp(client, data);\n        default:\n          throw new Error('Operación no válida');\n      }\n    } finally {\n      client.release();\n    }\n  }\n\n  async getCustomer(client, phoneNumber) {\n    const result = await client.query(\n      'SELECT * FROM customers WHERE phone_number = $1',\n      [phoneNumber]\n    );\n    return result.rows[0] || null;\n  }\n\n  async upsertCustomer(client, customerData) {\n    const query = `\n      INSERT INTO customers (phone_number, company_name, contact_name, email, industry)\n      VALUES ($1, $2, $3, $4, $5)\n      ON CONFLICT (phone_number) DO UPDATE SET\n        company_name = EXCLUDED.company_name,\n        contact_name = EXCLUDED.contact_name,\n        email = EXCLUDED.email,\n        industry = EXCLUDED.industry,\n        updated_at = CURRENT_TIMESTAMP\n      RETURNING *\n    `;\n    const result = await client.query(query, [\n      customerData.phoneNumber,\n      customerData.companyName,\n      customerData.contactName,\n      customerData.email,\n      customerData.industry\n    ]);\n    return result.rows[0];\n  }\n}\n\nmodule.exports = DatabaseConnector;",
+          "agentflow": "{{agentAgentflow_3.data.instance}}"
+        },
+        "outputAnchors": [
+          {
+            "id": "toolAgentflow_0-output-toolAgentflow-AgentFlow|Tool",
+            "name": "toolAgentflow",
+            "label": "Tool",
+            "description": "Tool node for AgentFlow",
+            "type": "AgentFlow | Tool"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 434,
+      "selected": false,
+      "positionAbsolute": { "x": 1700, "y": 350 },
+      "dragging": false
     }
-  },
-  "environmentVariables": {
-    "required": [
-      "DB_CONNECTION_STRING",
-      "AGENTFLOW_API_URL",
-      "WASENDER_API_URL",
-      "WASENDER_API_KEY"
-    ],
-    "optional": [
-      "MAX_CONCURRENT_AGENTS",
-      "AGENT_TIMEOUT",
-      "LOG_LEVEL",
-      "NODE_ENV"
-    ],
-    "defaults": {
-      "MAX_CONCURRENT_AGENTS": "5",
-      "AGENT_TIMEOUT": "30000",
-      "LOG_LEVEL": "info",
-      "NODE_ENV": "development"
-    }
-  },
-  "workflowExamples": {
-    "sequentialSales": {
-      "name": "Flujo Secuencial de Ventas",
-      "description": "Proceso paso a paso: Consulta → Productos → Precios → Cierre",
-      "strategy": "sequential",
-      "agents": ["salesAgent", "productSpecialist", "pricingAgent", "closingAgent"]
+  ],
+  "edges": [
+    {
+      "source": "startAgentflow_0",
+      "sourceHandle": "startAgentflow_0-output-startAgentflow-AgentFlow|Start",
+      "target": "agentAgentflow_0",
+      "targetHandle": "agentAgentflow_0-input-agentflow-AgentFlow",
+      "data": {
+        "colors": {
+          "source": "#4DD0E1",
+          "target": "#4DD0E1"
+        },
+        "isHumanInput": false
+      },
+      "type": "agentFlow",
+      "id": "startAgentflow_0-agentAgentflow_0"
     },
-    "parallelInquiry": {
-      "name": "Consulta Paralela",
-      "description": "Múltiples especialistas trabajando simultáneamente",
-      "strategy": "parallel",
-      "agents": ["productSpecialist", "pricingAgent", "supportAgent"]
+    {
+      "source": "agentAgentflow_0",
+      "sourceHandle": "agentAgentflow_0-output-agentAgentflow-AgentFlow|Agent",
+      "target": "agentAgentflow_1",
+      "targetHandle": "agentAgentflow_1-input-agentflow-AgentFlow",
+      "data": {
+        "colors": {
+          "source": "#4DD0E1",
+          "target": "#4DD0E1"
+        },
+        "isHumanInput": false
+      },
+      "type": "agentFlow",
+      "id": "agentAgentflow_0-agentAgentflow_1"
     },
-    "conditionalSupport": {
-      "name": "Soporte Condicional",
-      "description": "Flujo dinámico basado en el tipo de consulta",
-      "strategy": "conditional",
-      "agents": ["supportAgent", "salesAgent", "technicalAgent"]
+    {
+      "source": "agentAgentflow_1",
+      "sourceHandle": "agentAgentflow_1-output-agentAgentflow-AgentFlow|Agent",
+      "target": "agentAgentflow_2",
+      "targetHandle": "agentAgentflow_2-input-agentflow-AgentFlow",
+      "data": {
+        "colors": {
+          "source": "#4DD0E1",
+          "target": "#4DD0E1"
+        },
+        "isHumanInput": false
+      },
+      "type": "agentFlow",
+      "id": "agentAgentflow_1-agentAgentflow_2"
+    },
+    {
+      "source": "agentAgentflow_2",
+      "sourceHandle": "agentAgentflow_2-output-agentAgentflow-AgentFlow|Agent",
+      "target": "agentAgentflow_3",
+      "targetHandle": "agentAgentflow_3-input-agentflow-AgentFlow",
+      "data": {
+        "colors": {
+          "source": "#4DD0E1",
+          "target": "#4DD0E1"
+        },
+        "isHumanInput": false
+      },
+      "type": "agentFlow",
+      "id": "agentAgentflow_2-agentAgentflow_3"
+    },
+    {
+      "source": "agentAgentflow_3",
+      "sourceHandle": "agentAgentflow_3-output-agentAgentflow-AgentFlow|Agent",
+      "target": "toolAgentflow_0",
+      "targetHandle": "toolAgentflow_0-input-agentflow-AgentFlow",
+      "data": {
+        "colors": {
+          "source": "#4DD0E1",
+          "target": "#FF9800"
+        },
+        "isHumanInput": false
+      },
+      "type": "agentFlow",
+      "id": "agentAgentflow_3-toolAgentflow_0"
     }
-  },
-  "importInstructions": {
-    "steps": [
-      "1. Abrí Flowise en tu navegador",
-      "2. Andá a 'Chatflows' → 'Import Chatflow'",
-      "3. Seleccioná el template que querés importar de este archivo",
-      "4. Configurá las variables de entorno necesarias",
-      "5. Conectá los nodos según el flujo deseado",
-      "6. Testea el flujo con mensajes de prueba",
-      "7. Deployá a producción cuando esté listo"
-    ],
-    "notes": [
-      "Asegurate de tener todas las dependencias instaladas (agent-orchestrator.js, database-config.js, etc.)",
-      "Configurá correctamente las variables de entorno antes de usar",
-      "Testea cada template individualmente antes de combinarlos",
-      "Usá el modo debug para troubleshooting"
-    ]
-  }
+  ]
 }

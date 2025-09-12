@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -209,7 +209,7 @@
             "data": {
                 "id": "agentAgentflow_0",
                 "label": "QnA",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -566,7 +566,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",

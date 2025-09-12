@@ -6,16 +6,13 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 
 const createTool = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.body) {
+        if (typeof req.body === 'undefined') {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.createTool - body not provided!`)
         }
-        // OSS mode: Use default values if not present
-        const orgId = req.user?.activeOrganizationId || 'bypass-org'
-        const workspaceId = req.user?.activeWorkspaceId || 'bypass-workspace'
         const body = req.body
-        body.workspaceId = workspaceId
+        const orgId = req.user?.orgId || ''
 
-        const apiResponse = await toolsService.createTool(body, orgId, workspaceId)
+        const apiResponse = await toolsService.createTool(body, orgId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -37,7 +34,7 @@ const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
 const getAllTools = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
-        const apiResponse = await toolsService.getAllTools(req.user?.activeWorkspaceId, page, limit)
+        const apiResponse = await toolsService.getAllTools(page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

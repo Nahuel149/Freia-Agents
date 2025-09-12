@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -214,7 +214,7 @@
             "data": {
                 "id": "customFunctionAgentflow_0",
                 "label": "Get DB Schema",
-                "version": 1,
+                "version": 2,
                 "name": "customFunctionAgentflow",
                 "type": "CustomFunction",
                 "color": "#E4B7FF",
@@ -316,7 +316,7 @@
             "data": {
                 "id": "llmAgentflow_0",
                 "label": "Generate SQL Query",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",
@@ -649,7 +649,7 @@
             "data": {
                 "id": "conditionAgentAgentflow_0",
                 "label": "Check SQL Query",
-                "version": 1,
+                "version": 2,
                 "name": "conditionAgentAgentflow",
                 "type": "ConditionAgent",
                 "color": "#ff8fab",
@@ -783,7 +783,7 @@
             "data": {
                 "id": "loopAgentflow_0",
                 "label": "Regenerate Query",
-                "version": 1,
+                "version": 2,
                 "name": "loopAgentflow",
                 "type": "Loop",
                 "color": "#FFA07A",
@@ -838,7 +838,7 @@
             "data": {
                 "id": "customFunctionAgentflow_1",
                 "label": "Run SQL Query",
-                "version": 1,
+                "version": 2,
                 "name": "customFunctionAgentflow",
                 "type": "CustomFunction",
                 "color": "#E4B7FF",
@@ -945,7 +945,7 @@
             "data": {
                 "id": "llmAgentflow_1",
                 "label": "Return Response",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",
@@ -1263,7 +1263,7 @@
             "data": {
                 "id": "conditionAgentAgentflow_1",
                 "label": "Check Result",
-                "version": 1,
+                "version": 2,
                 "name": "conditionAgentAgentflow",
                 "type": "ConditionAgent",
                 "color": "#ff8fab",
@@ -1389,7 +1389,7 @@
             "data": {
                 "id": "loopAgentflow_1",
                 "label": "Recheck SQL Query",
-                "version": 1,
+                "version": 2,
                 "name": "loopAgentflow",
                 "type": "Loop",
                 "color": "#FFA07A",
@@ -1445,7 +1445,7 @@
             "data": {
                 "id": "llmAgentflow_2",
                 "label": "Regenerate SQL Query",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",
@@ -1778,7 +1778,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",
@@ -1830,7 +1830,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_1",
                 "label": "Sticky Note (1)",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",
@@ -1882,7 +1882,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_2",
                 "label": "Sticky Note (1) (2)",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",

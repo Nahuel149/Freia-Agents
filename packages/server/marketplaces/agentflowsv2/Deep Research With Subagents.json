@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -220,7 +220,7 @@
             "data": {
                 "id": "llmAgentflow_0",
                 "label": "Planner",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",
@@ -556,7 +556,7 @@
             "data": {
                 "id": "iterationAgentflow_0",
                 "label": "Spawn SubAgents",
-                "version": 1,
+                "version": 2,
                 "name": "iterationAgentflow",
                 "type": "Iteration",
                 "color": "#9C89B8",
@@ -608,7 +608,7 @@
             "data": {
                 "id": "agentAgentflow_0",
                 "label": "SubAgent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -989,7 +989,7 @@
             "data": {
                 "id": "agentAgentflow_1",
                 "label": "Writer Agent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -1342,7 +1342,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",
@@ -1394,7 +1394,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_1",
                 "label": "Sticky Note (1)",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",
@@ -1446,7 +1446,7 @@
             "data": {
                 "id": "conditionAgentAgentflow_0",
                 "label": "More SubAgents?",
-                "version": 1.1,
+                "version": 2,
                 "name": "conditionAgentAgentflow",
                 "type": "ConditionAgent",
                 "color": "#ff8fab",
@@ -1601,7 +1601,7 @@
             "data": {
                 "id": "loopAgentflow_0",
                 "label": "Back to Planner",
-                "version": 1,
+                "version": 2,
                 "name": "loopAgentflow",
                 "type": "Loop",
                 "color": "#FFA07A",
@@ -1656,7 +1656,7 @@
             "data": {
                 "id": "directReplyAgentflow_0",
                 "label": "Generate Report",
-                "version": 1,
+                "version": 2,
                 "name": "directReplyAgentflow",
                 "type": "DirectReply",
                 "color": "#4DDBBB",
@@ -1702,7 +1702,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_3",
                 "label": "Sticky Note (3)",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",

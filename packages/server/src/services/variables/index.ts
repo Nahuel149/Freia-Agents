@@ -8,16 +8,11 @@ import { QueryRunner } from 'typeorm'
 import { validate } from 'uuid'
 import { Platform } from '../../Interface'
 
-const createVariable = async (newVariable: Variable, orgId: string, workspaceId?: string) => {
+const createVariable = async (newVariable: Variable, orgId: string) => {
     const appServer = getRunningExpressApp()
     if (appServer.identityManager.getPlatformType() === Platform.CLOUD && newVariable.type === 'runtime')
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Cloud platform does not support runtime variables!')
     try {
-        if (workspaceId === 'bypass-workspace') {
-            delete newVariable.workspaceId
-        } else {
-            newVariable.workspaceId = workspaceId
-        }
         const variable = await appServer.AppDataSource.getRepository(Variable).create(newVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(variable)
         await appServer.telemetry.sendTelemetry(
@@ -50,7 +45,7 @@ const deleteVariable = async (variableId: string): Promise<any> => {
     }
 }
 
-const getAllVariables = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllVariables = async (page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(Variable)
@@ -60,10 +55,6 @@ const getAllVariables = async (workspaceId?: string, page: number = -1, limit: n
         if (page > 0 && limit > 0) {
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
-        }
-
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
-            queryBuilder.andWhere('variable.workspaceId = :workspaceId', { workspaceId })
         }
 
         const [data, total] = await queryBuilder.getManyAndCount()
@@ -81,16 +72,12 @@ const getAllVariables = async (workspaceId?: string, page: number = -1, limit: n
     }
 }
 
-const getVariableById = async (variableId: string, workspaceId?: string) => {
+const getVariableById = async (variableId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(Variable)
             .createQueryBuilder('variable')
             .where('variable.id = :variableId', { variableId })
-
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
-            queryBuilder.andWhere('variable.workspaceId = :workspaceId', { workspaceId })
-        }
 
         const dbResponse = await queryBuilder.getOne()
 
@@ -107,16 +94,11 @@ const getVariableById = async (variableId: string, workspaceId?: string) => {
     }
 }
 
-const updateVariable = async (variable: Variable, updatedVariable: Variable, workspaceId?: string) => {
+const updateVariable = async (variable: Variable, updatedVariable: Variable) => {
     const appServer = getRunningExpressApp()
     if (appServer.identityManager.getPlatformType() === Platform.CLOUD && updatedVariable.type === 'runtime')
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Cloud platform does not support runtime variables!')
     try {
-        if (workspaceId === 'bypass-workspace') {
-            delete updatedVariable.workspaceId
-        } else {
-            updatedVariable.workspaceId = workspaceId
-        }
         const tmpUpdatedVariable = await appServer.AppDataSource.getRepository(Variable).merge(variable, updatedVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
         return dbResponse

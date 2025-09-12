@@ -17,27 +17,11 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
             )
         }
 
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: documentStoreController.createDocumentStore - organizationId not provided!`
-            )
-        }
-
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: documentStoreController.createDocumentStore - workspaceId not provided!`
-            )
-        }
-
         const body = req.body
-        body.workspaceId = workspaceId
+        const orgId = req.user?.orgId || ''
 
         const docStore = DocumentStoreDTO.toEntity(body)
-        const apiResponse = await documentStoreService.createDocumentStore(docStore, orgId, workspaceId)
+        const apiResponse = await documentStoreService.createDocumentStore(docStore, orgId, '')
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -47,8 +31,10 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
 const getAllDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
+        const orgId = req.user?.orgId || ''
 
-        const apiResponse: any = await documentStoreService.getAllDocumentStores(req.user?.activeWorkspaceId, page, limit)
+        const workspaceId = req.user?.activeWorkspaceId || ''
+        const apiResponse: any = await documentStoreService.getAllDocumentStores(workspaceId, page, limit)
         if (apiResponse?.total >= 0) {
             return res.json({
                 total: apiResponse.total,
@@ -66,6 +52,7 @@ const deleteLoaderFromDocumentStore = async (req: Request, res: Response, next: 
     try {
         const storeId = req.params.id
         const loaderId = req.params.loaderId
+        const workspaceId = req.user?.activeWorkspaceId || ''
 
         if (!storeId || !loaderId) {
             throw new InternalFlowiseError(
@@ -74,21 +61,7 @@ const deleteLoaderFromDocumentStore = async (req: Request, res: Response, next: 
             )
         }
 
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: documentStoreController.createDocumentStore - organizationId not provided!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: documentStoreController.createDocumentStore - workspaceId not provided!`
-            )
-        }
-
+        const orgId = req.user?.orgId || ''
         const apiResponse = await documentStoreService.deleteLoaderFromDocumentStore(
             storeId,
             loaderId,

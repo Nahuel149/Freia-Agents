@@ -31,8 +31,7 @@ export const getAuthStrategy = (options: any): Strategy => {
             if (!meta) {
                 return done(null, false, 'Unauthorized.')
             }
-            const ids = meta.split(':')
-            if (ids.length !== 2 || req.user.id !== ids[0]) {
+            if (req.user.id !== meta) {
                 return done(null, false, 'Unauthorized.')
             }
             done(null, req.user)

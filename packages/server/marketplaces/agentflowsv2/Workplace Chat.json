@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -204,7 +204,7 @@
             "data": {
                 "id": "llmAgentflow_0",
                 "label": "General Agent",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",
@@ -526,7 +526,7 @@
             "data": {
                 "id": "toolAgentflow_0",
                 "label": "Post to Slack",
-                "version": 1.1,
+                "version": 2,
                 "name": "toolAgentflow",
                 "type": "Tool",
                 "color": "#d4a373",
@@ -645,7 +645,7 @@
             "data": {
                 "id": "directReplyAgentflow_0",
                 "label": "Direct Reply To Chat",
-                "version": 1,
+                "version": 2,
                 "name": "directReplyAgentflow",
                 "type": "DirectReply",
                 "color": "#4DDBBB",
@@ -691,7 +691,7 @@
             "data": {
                 "id": "toolAgentflow_1",
                 "label": "Post to Teams",
-                "version": 1.1,
+                "version": 2,
                 "name": "toolAgentflow",
                 "type": "Tool",
                 "color": "#d4a373",

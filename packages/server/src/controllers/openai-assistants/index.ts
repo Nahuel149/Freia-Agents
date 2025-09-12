@@ -8,6 +8,7 @@ import { streamStorageFile } from 'flowise-components'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Workspace } from '../../oss/database/entities/workspace.entity'
+import { isOssMode } from '../../utils/ossMode'
 
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {
@@ -66,13 +67,20 @@ const getFileFromAssistant = async (req: Request, res: Response, next: NextFunct
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
         const chatflowWorkspaceId = chatflow.workspaceId
-        const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
-            id: chatflowWorkspaceId
-        })
-        if (!workspace) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
+
+        // Resolve orgId with OSS guard
+        let orgId: string
+        if (isOssMode() || !chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace') {
+            orgId = 'bypass-org'
+        } else {
+            const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
+                id: chatflowWorkspaceId
+            })
+            if (!workspace) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
+            }
+            orgId = workspace.organizationId as string
         }
-        const orgId = workspace.organizationId as string
 
         res.setHeader('Content-Disposition', contentDisposition(fileName))
         const fileStream = await streamStorageFile(chatflowId, chatId, fileName, orgId)

@@ -3,6 +3,7 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { UsageCacheManager } from '../UsageCacheManager'
 import { LICENSE_QUOTAS } from './constants'
 import logger from './logger'
+import { isOssMode } from './ossMode'
 
 type UsageType = 'flows' | 'users'
 export const ENTERPRISE_FEATURE_FLAGS = [
@@ -21,6 +22,13 @@ export const ENTERPRISE_FEATURE_FLAGS = [
 
 export const getCurrentUsage = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
     try {
+        // In OSS mode, there are no enforced quotas
+        if (isOssMode()) {
+            return {
+                predictions: { usage: 0, limit: -1 },
+                storage: { usage: 0, limit: -1 }
+            }
+        }
         if (!usageCacheManager || !subscriptionId || !orgId) return
 
         const currentStorageUsage = (await usageCacheManager.get(`storage:${orgId}`)) || 0
@@ -53,6 +61,9 @@ export const checkUsageLimit = async (
     usageCacheManager: UsageCacheManager,
     currentUsage: number
 ) => {
+    // In OSS mode, skip usage limits entirely
+    if (isOssMode()) return
+
     if (!usageCacheManager || !subscriptionId) return
 
     const quotas = await usageCacheManager.getQuotas(subscriptionId)
@@ -81,6 +92,9 @@ export const updatePredictionsUsage = async (
     _: string = '',
     usageCacheManager?: UsageCacheManager
 ) => {
+    // In OSS mode, skip updating predictions usage
+    if (isOssMode()) return
+
     if (!usageCacheManager) return
 
     const quotas = await usageCacheManager.getQuotas(subscriptionId)
@@ -126,6 +140,11 @@ export const updatePredictionsUsage = async (
 }
 
 export const checkPredictions = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
+    // In OSS mode, no prediction limits
+    if (isOssMode()) {
+        return { usage: 0, limit: -1 }
+    }
+
     if (!usageCacheManager || !subscriptionId) return
 
     const currentPredictions: number = (await usageCacheManager.get(`predictions:${orgId}`)) || 0
@@ -146,11 +165,16 @@ export const checkPredictions = async (orgId: string, subscriptionId: string, us
 
 // Storage does not renew per month nor do we store the total size in database, so we just store the total size in cache
 export const updateStorageUsage = (orgId: string, _: string = '', totalSize: number, usageCacheManager?: UsageCacheManager) => {
+    // In OSS mode, skip storage usage updates
+    if (isOssMode()) return
     if (!usageCacheManager) return
     usageCacheManager.set(`storage:${orgId}`, totalSize)
 }
 
 export const checkStorage = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
+    // In OSS mode, skip storage checks
+    if (isOssMode()) return
+
     if (!usageCacheManager || !subscriptionId) return
 
     let currentStorageUsage = 0

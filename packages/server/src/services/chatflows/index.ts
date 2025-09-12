@@ -8,8 +8,7 @@ import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
-import { Workspace } from '../../oss/database/entities/workspace.entity'
-import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
+import { isOssMode } from '../../utils/ossMode'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
@@ -105,17 +104,14 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
     }
 }
 
-const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: string): Promise<any> => {
+const deleteChatflow = async (chatflowId: string): Promise<any> => {
     try {
-        if (workspaceId === 'bypass-workspace') {
-            return
-        }
         const appServer = getRunningExpressApp()
 
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId, workspaceId })
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
 
         // Update document store usage
-        await documentStoreService.updateDocumentStoreUsage(chatflowId, undefined, workspaceId)
+        await documentStoreService.updateDocumentStoreUsage(chatflowId, undefined)
 
         // Delete all chat messages
         await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
@@ -128,8 +124,8 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
 
         try {
             // Delete all uploads corresponding to this chatflow
-            const { totalSize } = await removeFolderFromStorage(orgId, chatflowId)
-            await updateStorageUsage(orgId, workspaceId, totalSize, appServer.usageCacheManager)
+            const { totalSize } = await removeFolderFromStorage(chatflowId)
+            await updateStorageUsage('', '', totalSize, appServer.usageCacheManager)
         } catch (e) {
             logger.error(`[server]: Error deleting file storage for chatflow ${chatflowId}`)
         }
@@ -142,7 +138,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
     }
 }
 
-const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllChatflows = async (type?: ChatflowType, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(ChatFlow)
@@ -156,9 +152,6 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
 
         if (type) {
             queryBuilder.where('chat_flow.type = :type', { type })
-        }
-        if (workspaceId && workspaceId !== 'bypass-workspace') {
-            queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
         }
 
         const [data, total] = await queryBuilder.getManyAndCount()
@@ -176,37 +169,16 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
     }
 }
 
-async function getAllChatflowsCountByOrganization(type: ChatflowType, organizationId: string): Promise<number> {
-    try {
-        const appServer = getRunningExpressApp()
-
-        const workspaces = await appServer.AppDataSource.getRepository(Workspace).findBy({ organizationId })
-        const workspaceIds = workspaces.map((workspace) => workspace.id)
-        const chatflowsCount = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
-            type,
-            workspaceId: In(workspaceIds)
-        })
-
-        return chatflowsCount
-    } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatflowsService.getAllChatflowsCountByOrganization - ${getErrorMessage(error)}`
-        )
-    }
-}
-
-const getAllChatflowsCount = async (type?: ChatflowType, workspaceId?: string): Promise<number> => {
+const getAllChatflowsCount = async (type?: ChatflowType): Promise<number> => {
     try {
         const appServer = getRunningExpressApp()
         if (type) {
             const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
-                type,
-                ...getWorkspaceSearchOptions(workspaceId)
+                type
             })
             return dbResponse
         }
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy(getWorkspaceSearchOptions(workspaceId))
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).count()
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -434,6 +406,5 @@ export default {
     saveChatflow,
     updateChatflow,
     getSinglePublicChatbotConfig,
-    checkIfChatflowHasChanged,
-    getAllChatflowsCountByOrganization
+    checkIfChatflowHasChanged
 }

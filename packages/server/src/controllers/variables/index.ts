@@ -13,11 +13,8 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
                 `Error: variablesController.createVariable - body not provided!`
             )
         }
-        // OSS mode: Use default values if not present
-        const orgId = req.user?.activeOrganizationId || 'bypass-org'
-        const workspaceId = req.user?.activeWorkspaceId || 'bypass-workspace'
         const body = req.body
-        body.workspaceId = workspaceId
+        const orgId = req.user?.orgId || ''
         const newVariable = new Variable()
         Object.assign(newVariable, body)
         const apiResponse = await variablesService.createVariable(newVariable, orgId)
@@ -42,7 +39,7 @@ const deleteVariable = async (req: Request, res: Response, next: NextFunction) =
 const getAllVariables = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
-        const apiResponse = await variablesService.getAllVariables(req.user?.activeWorkspaceId, page, limit)
+        const apiResponse = await variablesService.getAllVariables(page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

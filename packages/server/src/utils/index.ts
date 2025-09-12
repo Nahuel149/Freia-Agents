@@ -2067,3 +2067,5 @@ export const validateHistorySchema = (history: any[]): boolean => {
         return true
     })
 }
+
+export { getRunningExpressApp } from './getRunningExpressApp'

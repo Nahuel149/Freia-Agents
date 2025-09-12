@@ -116,11 +116,11 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                     workspaceUser.lastLogin = new Date().toISOString()
                     workspaceUser.updatedBy = workspaceUser.userId
                     const organizationUserService = new OrganizationUserService()
-                    const { organizationUser } = await organizationUserService.readOrganizationUserByWorkspaceIdUserId(
-                        workspaceUser.workspaceId,
+                    const organizationUsers = await organizationUserService.readOrganizationUserByUserId(
                         workspaceUser.userId,
                         queryRunner
                     )
+                    const organizationUser = organizationUsers[0]
                     if (!organizationUser)
                         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
                     organizationUser.status = OrganizationUserStatus.ACTIVE
@@ -157,13 +157,14 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                         email: response.user.email,
                         name: response.user?.name,
                         roleId: workspaceUser.roleId,
+                        orgId: organization.id,
                         activeOrganizationId: organization.id,
                         activeOrganizationSubscriptionId: subscriptionId,
                         activeOrganizationCustomerId: customerId,
                         activeOrganizationProductId: productId,
                         isOrganizationAdmin: workspaceUser.roleId === ownerRole.id,
                         activeWorkspaceId: workspaceUser.workspaceId,
-                        activeWorkspace: workspaceUser.workspace.name,
+                        activeWorkspace: workspaceUser.workspaceId,
                         assignedWorkspaces,
                         isApiKeyValidated: true,
                         permissions: [...JSON.parse(role.permissions)],
@@ -378,8 +379,8 @@ export const generateJwtRefreshToken = (user: any) => {
 }
 
 const _generateJwtToken = (user: Partial<LoggedInUser>, expiryInMinutes: number, secret: string) => {
-    const encryptedUserInfo = encryptToken(user?.id + ':' + user?.activeWorkspaceId)
-    return sign({ id: user?.id, username: user?.name, meta: encryptedUserInfo }, secret!, {
+    const encryptedUserInfo = encryptToken(user?.id)
+    return sign({ id: user?.id, username: user?.name || '', meta: encryptedUserInfo }, secret || 'fallback_secret', {
         expiresIn: expiryInMinutes + 'm', // Expiry in minutes
         notBefore: '0', // Cannot use before now, can be configured to be deferred.
         algorithm: 'HS256', // HMAC using SHA-256 hash algorithm

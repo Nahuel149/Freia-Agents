@@ -84,48 +84,20 @@ export const migrateApiKeysFromJsonToDb = async (appDataSource: DataSource, plat
         const keys = await getAPIKeys()
         if (keys.length > 0) {
             try {
-                // Get all available workspaces
-                const workspaces = await appDataSource.getRepository(Workspace).find()
+                // In OSS mode, ignore workspaces entirely and migrate keys globally
+                if (platformType === Platform.OPEN_SOURCE) {
+                    for (const key of keys) {
+                        const existingKey = await appDataSource.getRepository(ApiKey).findOneBy({
+                            apiKey: key.apiKey
+                        })
 
-                for (const key of keys) {
-                    const existingKey = await appDataSource.getRepository(ApiKey).findOneBy({
-                        apiKey: key.apiKey
-                    })
-
-                    // Only add if key doesn't already exist in DB
-                    if (!existingKey) {
-                        // Create a new API key for each workspace
-                        if (workspaces.length > 0) {
-                            for (const workspace of workspaces) {
-                                const newKey = new ApiKey()
-                                newKey.id = uuidv4()
-                                newKey.apiKey = key.apiKey
-                                newKey.apiSecret = key.apiSecret
-                                newKey.keyName = key.keyName
-                                newKey.workspaceId = workspace.id
-
-                                const keyEntity = appDataSource.getRepository(ApiKey).create(newKey)
-                                await appDataSource.getRepository(ApiKey).save(keyEntity)
-
-                                const chatflows = await appDataSource.getRepository(ChatFlow).findBy({
-                                    apikeyid: key.id,
-                                    workspaceId: workspace.id
-                                })
-
-                                for (const chatflow of chatflows) {
-                                    chatflow.apikeyid = newKey.id
-                                    await appDataSource.getRepository(ChatFlow).save(chatflow)
-                                }
-
-                                await addChatflowsCount(chatflows)
-                            }
-                        } else {
-                            // If no workspaces exist, create the key without a workspace ID and later will be updated by setNullWorkspaceId
+                        if (!existingKey) {
                             const newKey = new ApiKey()
                             newKey.id = uuidv4()
                             newKey.apiKey = key.apiKey
                             newKey.apiSecret = key.apiSecret
                             newKey.keyName = key.keyName
+                            // No workspaceId in OSS mode
 
                             const keyEntity = appDataSource.getRepository(ApiKey).create(newKey)
                             await appDataSource.getRepository(ApiKey).save(keyEntity)
@@ -138,8 +110,65 @@ export const migrateApiKeysFromJsonToDb = async (appDataSource: DataSource, plat
                                 chatflow.apikeyid = newKey.id
                                 await appDataSource.getRepository(ChatFlow).save(chatflow)
                             }
+                            // Removed addChatflowsCount(chatflows)
+                        }
+                    }
+                } else {
+                    // Non-OSS: maintain workspace-scoped keys
+                    const workspaces = await appDataSource.getRepository(Workspace).find()
 
-                            await addChatflowsCount(chatflows)
+                    for (const key of keys) {
+                        const existingKey = await appDataSource.getRepository(ApiKey).findOneBy({
+                            apiKey: key.apiKey
+                        })
+
+                        // Only add if key doesn't already exist in DB
+                        if (!existingKey) {
+                            // Create a new API key for each workspace
+                            if (workspaces.length > 0) {
+                                for (const workspace of workspaces) {
+                                    const newKey = new ApiKey()
+                                    newKey.id = uuidv4()
+                                    newKey.apiKey = key.apiKey
+                                    newKey.apiSecret = key.apiSecret
+                                    newKey.keyName = key.keyName
+                                    newKey.workspaceId = workspace.id
+
+                                    const keyEntity = appDataSource.getRepository(ApiKey).create(newKey)
+                                    await appDataSource.getRepository(ApiKey).save(keyEntity)
+
+                                    const chatflows = await appDataSource.getRepository(ChatFlow).findBy({
+                                        apikeyid: key.id,
+                                        workspaceId: workspace.id
+                                    })
+
+                                    for (const chatflow of chatflows) {
+                                        chatflow.apikeyid = newKey.id
+                                        await appDataSource.getRepository(ChatFlow).save(chatflow)
+                                    }
+                                    // Removed addChatflowsCount(chatflows)
+                                }
+                            } else {
+                                // If no workspaces exist, create the key without a workspace ID and later will be updated by setNullWorkspaceId
+                                const newKey = new ApiKey()
+                                newKey.id = uuidv4()
+                                newKey.apiKey = key.apiKey
+                                newKey.apiSecret = key.apiSecret
+                                newKey.keyName = key.keyName
+
+                                const keyEntity = appDataSource.getRepository(ApiKey).create(newKey)
+                                await appDataSource.getRepository(ApiKey).save(keyEntity)
+
+                                const chatflows = await appDataSource.getRepository(ChatFlow).findBy({
+                                    apikeyid: key.id
+                                })
+
+                                for (const chatflow of chatflows) {
+                                    chatflow.apikeyid = newKey.id
+                                    await appDataSource.getRepository(ChatFlow).save(chatflow)
+                                }
+                                // Removed addChatflowsCount(chatflows)
+                            }
                         }
                     }
                 }

@@ -9,6 +9,9 @@ import { RequireAuth } from '@/routes/RequireAuth'
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
 
+// dashboard routing
+const Dashboard = Loadable(lazy(() => import('@/views/dashboard')))
+
 // agents routing
 const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 const AgentflowGenerator = Loadable(lazy(() => import('@/views/agentflows/AgentflowGenerator')))
@@ -90,6 +93,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'chatflows:view'}>
                     <Chatflows />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/dashboard',
+            element: (
+                <RequireAuth permission={'dashboard:view'}>
+                    <Dashboard />
                 </RequireAuth>
             )
         },

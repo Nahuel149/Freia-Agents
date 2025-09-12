@@ -18,6 +18,7 @@ import { Workspace } from '../oss/database/entities/workspace.entity'
 import { Organization } from '../oss/database/entities/organization.entity'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { isOssMode } from './ossMode'
 
 /**
  * Create attachment
@@ -51,25 +52,33 @@ export const createFileAttachment = async (req: Request) => {
     // This is one of the WHITELIST_URLS, API can be public and there might be no req.user
     if (!orgId || !workspaceId) {
         const chatflowWorkspaceId = chatflow.workspaceId
-        const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
-            id: chatflowWorkspaceId
-        })
-        if (!workspace) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
-        }
-        workspaceId = workspace.id
 
-        // OSS mode: Use default organization if not present
-        orgId = 'bypass-org'
-        subscriptionId = 'bypass-subscription'
-        
-        if (workspace.organizationId) {
-            const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
-                id: workspace.organizationId
+        // In OSS mode, allow missing workspace and use bypass defaults
+        if (isOssMode() && (!chatflowWorkspaceId || chatflowWorkspaceId === 'bypass-workspace')) {
+            workspaceId = 'bypass-workspace'
+            orgId = 'bypass-org'
+            subscriptionId = 'bypass-subscription'
+        } else {
+            const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
+                id: chatflowWorkspaceId
             })
-            if (org) {
-                orgId = org.id
-                subscriptionId = org.subscriptionId as string
+            if (!workspace) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
+            }
+            workspaceId = workspace.id
+
+            // OSS mode default org/subscription; override if workspace has org
+            orgId = 'bypass-org'
+            subscriptionId = 'bypass-subscription'
+
+            if (workspace.organizationId) {
+                const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
+                    id: workspace.organizationId
+                })
+                if (org) {
+                    orgId = org.id
+                    subscriptionId = (org.subscriptionId as string) || 'bypass-subscription'
+                }
             }
         }
     }

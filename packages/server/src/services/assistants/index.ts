@@ -6,8 +6,7 @@ import { DeleteResult, In, QueryRunner } from 'typeorm'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
 import { DocumentStore } from '../../database/entities/DocumentStore'
-import { Workspace } from '../../oss/database/entities/workspace.entity'
-import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
+import { isOssMode } from '../../utils/ossMode'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { AssistantType } from '../../Interface'
@@ -20,7 +19,7 @@ import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import nodesService from '../nodes'
 
-const createAssistant = async (requestBody: any, orgId: string, workspaceId?: string): Promise<Assistant> => {
+const createAssistant = async (requestBody: any, orgId: string): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
@@ -136,11 +135,6 @@ const createAssistant = async (requestBody: any, orgId: string, workspaceId?: st
         }
         const newAssistant = new Assistant()
         const body = requestBody
-        if (workspaceId === 'bypass-workspace') {
-            delete body.workspaceId
-        } else {
-            body.workspaceId = workspaceId
-        }
         Object.assign(newAssistant, body)
 
         const assistant = appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
@@ -211,37 +205,16 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
     }
 }
 
-async function getAssistantsCountByOrganization(type: AssistantType, organizationId: string): Promise<number> {
-    try {
-        const appServer = getRunningExpressApp()
-
-        const workspaces = await appServer.AppDataSource.getRepository(Workspace).findBy({ organizationId })
-        const workspaceIds = workspaces.map((workspace) => workspace.id)
-        const assistantsCount = await appServer.AppDataSource.getRepository(Assistant).countBy({
-            type,
-            workspaceId: In(workspaceIds)
-        })
-
-        return assistantsCount
-    } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: assistantsService.getAssistantsCountByOrganization - ${getErrorMessage(error)}`
-        )
-    }
-}
-
-const getAllAssistants = async (type?: AssistantType, workspaceId?: string): Promise<Assistant[]> => {
+const getAllAssistants = async (type?: AssistantType): Promise<Assistant[]> => {
     try {
         const appServer = getRunningExpressApp()
         if (type) {
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).findBy({
-                type,
-                ...getWorkspaceSearchOptions(workspaceId)
+                type
             })
             return dbResponse
         }
-        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).findBy(getWorkspaceSearchOptions(workspaceId))
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).find()
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -251,17 +224,16 @@ const getAllAssistants = async (type?: AssistantType, workspaceId?: string): Pro
     }
 }
 
-const getAllAssistantsCount = async (type?: AssistantType, workspaceId?: string): Promise<number> => {
+const getAllAssistantsCount = async (type?: AssistantType): Promise<number> => {
     try {
         const appServer = getRunningExpressApp()
         if (type) {
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).countBy({
-                type,
-                ...getWorkspaceSearchOptions(workspaceId)
+                type
             })
             return dbResponse
         }
-        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).countBy(getWorkspaceSearchOptions(workspaceId))
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).count()
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -302,9 +274,6 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
 
         if (assistant.type === 'CUSTOM') {
             const body = requestBody
-            if (body.workspaceId && body.workspaceId === 'bypass-workspace') {
-                delete body.workspaceId
-            }
             const updateAssistant = new Assistant()
             Object.assign(updateAssistant, body)
 
@@ -316,9 +285,6 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
         try {
             const openAIAssistantId = JSON.parse(assistant.details)?.id
             const body = requestBody
-            if (body.workspaceId && body.workspaceId === 'bypass-workspace') {
-                delete body.workspaceId
-            }
             const assistantDetails = JSON.parse(body.details)
             const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
                 id: body.credential
@@ -406,7 +372,6 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
 const importAssistants = async (
     newAssistants: Partial<Assistant>[],
     orgId: string,
-    _: string,
     subscriptionId: string,
     queryRunner?: QueryRunner
 ): Promise<any> => {
@@ -473,10 +438,10 @@ const getChatModels = async (): Promise<any> => {
     }
 }
 
-const getDocumentStores = async (activeWorkspaceId?: string): Promise<any> => {
+const getDocumentStores = async (): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const stores = await appServer.AppDataSource.getRepository(DocumentStore).findBy(getWorkspaceSearchOptions(activeWorkspaceId))
+        const stores = await appServer.AppDataSource.getRepository(DocumentStore).find()
         const returnData = []
         for (const store of stores) {
             if (store.status === 'UPSERTED') {
@@ -566,6 +531,5 @@ export default {
     getChatModels,
     getDocumentStores,
     getTools,
-    generateAssistantInstruction,
-    getAssistantsCountByOrganization
+    generateAssistantInstruction
 }

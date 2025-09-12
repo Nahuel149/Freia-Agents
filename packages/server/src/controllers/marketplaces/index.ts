@@ -21,10 +21,7 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
                 `Error: marketplacesService.deleteCustomTemplate - id not provided!`
             )
         }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `Error: activeWorkspaceId not provided!`)
-        }
+        const workspaceId = req.user?.activeWorkspaceId || ''
         const apiResponse = await marketplacesService.deleteCustomTemplate(req.params.id, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
@@ -34,7 +31,7 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
 
 const getAllCustomTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await marketplacesService.getAllCustomTemplates(req.user?.activeWorkspaceId)
+        const apiResponse = await marketplacesService.getAllCustomTemplates()
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -50,7 +47,6 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
             )
         }
         const body = req.body
-        body.workspaceId = req.user?.activeWorkspaceId
         const apiResponse = await marketplacesService.saveCustomTemplate(body)
         return res.json(apiResponse)
     } catch (error) {

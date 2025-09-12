@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -224,7 +224,7 @@
             "data": {
                 "id": "agentAgentflow_0",
                 "label": "Email Reply Agent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -587,7 +587,7 @@
             "data": {
                 "id": "humanInputAgentflow_0",
                 "label": "Human Input 0",
-                "version": 1,
+                "version": 2,
                 "name": "humanInputAgentflow",
                 "type": "HumanInput",
                 "color": "#6E6EFD",
@@ -724,7 +724,7 @@
             "data": {
                 "id": "loopAgentflow_0",
                 "label": "Loop back to Agent",
-                "version": 1,
+                "version": 2,
                 "name": "loopAgentflow",
                 "type": "Loop",
                 "color": "#FFA07A",
@@ -779,7 +779,7 @@
             "data": {
                 "id": "toolAgentflow_0",
                 "label": "Send Email",
-                "version": 1.1,
+"version": 2,
                 "name": "toolAgentflow",
                 "type": "Tool",
                 "color": "#d4a373",
@@ -904,7 +904,7 @@
             "data": {
                 "id": "llmAgentflow_0",
                 "label": "Email Subject & Body",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",

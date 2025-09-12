@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -213,7 +213,7 @@
             "data": {
                 "id": "conditionAgentflow_0",
                 "label": "Check next worker",
-                "version": 1,
+                "version": 2,
                 "name": "conditionAgentflow",
                 "type": "Condition",
                 "color": "#FFB938",
@@ -501,7 +501,7 @@
             "data": {
                 "id": "agentAgentflow_1",
                 "label": "Software Engineer",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -851,9 +851,9 @@
             "data": {
                 "id": "agentAgentflow_2",
                 "label": "Code Reviewer",
-                "version": 1,
-                "name": "agentAgentflow",
-                "type": "Agent",
+                "version": 2,
+                 "name": "agentAgentflow",
+                 "type": "Agent",
                 "color": "#4DD0E1",
                 "baseClasses": ["Agent"],
                 "category": "Agent Flows",
@@ -1201,8 +1201,8 @@
             "data": {
                 "id": "agentAgentflow_3",
                 "label": "Generate Final Answer",
-                "version": 1,
-                "name": "agentAgentflow",
+                "version": 2,
+                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
                 "baseClasses": ["Agent"],
@@ -1541,7 +1541,7 @@
             "data": {
                 "id": "loopAgentflow_0",
                 "label": "Loop to Supervisor",
-                "version": 1,
+                "version": 2,
                 "name": "loopAgentflow",
                 "type": "Loop",
                 "color": "#FFA07A",
@@ -1596,7 +1596,7 @@
             "data": {
                 "id": "loopAgentflow_1",
                 "label": "Loop to Supervisor",
-                "version": 1,
+                "version": 2,
                 "name": "loopAgentflow",
                 "type": "Loop",
                 "color": "#FFA07A",
@@ -1651,7 +1651,7 @@
             "data": {
                 "id": "llmAgentflow_0",
                 "label": "Supervisor",
-                "version": 1,
+                "version": 2,
                 "name": "llmAgentflow",
                 "type": "LLM",
                 "color": "#64B5F6",

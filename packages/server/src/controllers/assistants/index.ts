@@ -15,27 +15,13 @@ const createAssistant = async (req: Request, res: Response, next: NextFunction) 
             )
         }
         const body = req.body
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: assistantsController.createAssistant - organization ${orgId} not found!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: assistantsController.createAssistant - workspace ${workspaceId} not found!`
-            )
-        }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
+        const orgId = req.user?.orgId || ''
 
-        const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization(body.type, orgId)
+        const existingAssistantCount = await assistantsService.getAllAssistantsCount(body.type)
         const newAssistantCount = 1
         await checkUsageLimit('flows', subscriptionId, getRunningExpressApp().usageCacheManager, existingAssistantCount + newAssistantCount)
 
-        body.workspaceId = workspaceId
         const apiResponse = await assistantsService.createAssistant(body, orgId)
 
         return res.json(apiResponse)
@@ -62,7 +48,7 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
 const getAllAssistants = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const type = req.query.type as AssistantType
-        const apiResponse = await assistantsService.getAllAssistants(type, req.user?.activeWorkspaceId)
+        const apiResponse = await assistantsService.getAllAssistants(type)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -116,7 +102,7 @@ const getChatModels = async (req: Request, res: Response, next: NextFunction) =>
 
 const getDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await assistantsService.getDocumentStores(req.user?.activeWorkspaceId)
+        const apiResponse = await assistantsService.getDocumentStores()
         return res.json(apiResponse)
     } catch (error) {
         next(error)

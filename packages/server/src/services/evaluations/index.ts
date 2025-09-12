@@ -13,7 +13,6 @@ import { ApiKey } from '../../database/entities/ApiKey'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { getAppVersion } from '../../utils'
 import { FindOptionsWhere, In } from 'typeorm'
-import { getWorkspaceSearchOptions } from '../../oss/utils/ControllerServiceUtils'
 import { v4 as uuidv4 } from 'uuid'
 import { calculateCost, formatCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
@@ -21,13 +20,10 @@ import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
 import { Assistant } from '../../database/entities/Assistant'
 
-const runAgain = async (id: string, baseURL: string, orgId: string, workspaceId: string) => {
+const runAgain = async (id: string, baseURL: string, orgId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const criteria: FindOptionsWhere<Evaluation> = { id }
-        if (workspaceId !== 'bypass-workspace') {
-            criteria.workspaceId = workspaceId
-        }
         const evaluation = await appServer.AppDataSource.getRepository(Evaluation).findOneBy(criteria)
         if (!evaluation) throw new Error(`Evaluation ${id} not found`)
         const additionalConfig = evaluation.additionalConfig ? JSON.parse(evaluation.additionalConfig) : {}
@@ -57,19 +53,15 @@ const runAgain = async (id: string, baseURL: string, orgId: string, workspaceId:
             }
         }
         data.version = true
-        return await createEvaluation(data, baseURL, orgId, workspaceId)
+        return await createEvaluation(data, baseURL, orgId)
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: EvalsService.runAgain - ${getErrorMessage(error)}`)
     }
 }
 
-const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: string, workspaceId: string) => {
+const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: string) => {
     try {
-        if (workspaceId === 'bypass-workspace') {
-            delete body.workspaceId
-        } else {
-            body.workspaceId = workspaceId
-        }
+        delete body.workspaceId
         const appServer = getRunningExpressApp()
         const newEval = new Evaluation()
         Object.assign(newEval, body)

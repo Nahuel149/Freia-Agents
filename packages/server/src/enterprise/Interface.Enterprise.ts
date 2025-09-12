@@ -65,6 +65,7 @@ export type LoggedInUser = {
     email: string
     name: string
     roleId: string
+    orgId: string
     activeOrganizationId: string
     activeOrganizationSubscriptionId: string
     activeOrganizationCustomerId: string

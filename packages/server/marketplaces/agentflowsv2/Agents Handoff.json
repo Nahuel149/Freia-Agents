@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1.1,
+                "version": 2,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -204,7 +204,7 @@
             "data": {
                 "id": "conditionAgentAgentflow_0",
                 "label": "Detect User Intention",
-                "version": 1,
+                "version": 2,
                 "name": "conditionAgentAgentflow",
                 "type": "ConditionAgent",
                 "color": "#ff8fab",
@@ -348,7 +348,7 @@
             "data": {
                 "id": "agentAgentflow_0",
                 "label": "Refund Agent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -692,7 +692,7 @@
             "data": {
                 "id": "agentAgentflow_1",
                 "label": "Sales Agent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -1042,7 +1042,7 @@
             "data": {
                 "id": "agentAgentflow_2",
                 "label": "General Agent",
-                "version": 1,
+                "version": 2,
                 "name": "agentAgentflow",
                 "type": "Agent",
                 "color": "#4DD0E1",
@@ -1379,7 +1379,7 @@
             "data": {
                 "id": "stickyNoteAgentflow_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNoteAgentflow",
                 "type": "StickyNote",
                 "color": "#fee440",

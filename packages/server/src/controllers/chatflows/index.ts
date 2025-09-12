@@ -58,21 +58,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.deleteChatflow - id not provided!`)
         }
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.deleteChatflow - organization ${orgId} not found!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.deleteChatflow - workspace ${workspaceId} not found!`
-            )
-        }
-        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, orgId, workspaceId)
+        const apiResponse = await chatflowsService.deleteChatflow(req.params.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -82,13 +68,9 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
+        const orgId = req.user?.orgId
 
-        const apiResponse = await chatflowsService.getAllChatflows(
-            req.query?.type as ChatflowType,
-            req.user?.activeWorkspaceId,
-            page,
-            limit
-        )
+        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -132,30 +114,18 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.saveChatflow - body not provided!`)
         }
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - organization ${orgId} not found!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - workspace ${workspaceId} not found!`
-            )
-        }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
+        const orgId = req.user?.orgId || ''
+        const workspaceId = req.user?.activeWorkspaceId || ''
+        const isPublic = req.body.isPublic
         const body = req.body
 
-        const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization(body.type, orgId)
+        const existingChatflowCount = await chatflowsService.getAllChatflowsCount(body.type)
         const newChatflowCount = 1
         await checkUsageLimit('flows', subscriptionId, getRunningExpressApp().usageCacheManager, existingChatflowCount + newChatflowCount)
 
         const newChatFlow = new ChatFlow()
         Object.assign(newChatFlow, body)
-        newChatFlow.workspaceId = workspaceId
         const apiResponse = await chatflowsService.saveChatflow(
             newChatFlow,
             orgId,
@@ -179,30 +149,14 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (!chatflow) {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - organization ${orgId} not found!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - workspace ${workspaceId} not found!`
-            )
-        }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
+        const orgId = req.user?.orgId || ''
+        const isPublic = req.body.isPublic
         const body = req.body
         const updateChatFlow = new ChatFlow()
         Object.assign(updateChatFlow, body)
 
-        updateChatFlow.id = chatflow.id
-        const rateLimiterManager = RateLimiterManager.getInstance()
-        await rateLimiterManager.updateRateLimiter(updateChatFlow)
-
-        const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow, orgId, workspaceId, subscriptionId)
+        const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow, orgId, subscriptionId, isPublic)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

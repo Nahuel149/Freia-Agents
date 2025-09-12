@@ -20,6 +20,7 @@ export type LoggedInUser = {
     email: string
     name: string
     roleId: string
+    orgId: string
     activeOrganizationId: string | undefined
     activeOrganizationSubscriptionId: string | null
     activeOrganizationCustomerId: string | null
