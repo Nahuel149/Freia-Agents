@@ -19,8 +19,7 @@ import {
      ListItem,
      ListItemAvatar,
      ListItemText,
-     Divider,
-     Chip
+     Divider
  } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -33,6 +32,7 @@ import ErrorBoundary from '@/ErrorBoundary'
 // Hooks
 import { useTranslation } from 'react-i18next'
 import { useError } from '@/store/context/ErrorContext'
+import client from '@/api/client'
 
 // icons
 import {
@@ -107,11 +107,8 @@ const Dashboard = () => {
             setLoading(true)
             try {
                 // Fetch dashboard metrics from API
-                const response = await fetch('/api/v1/dashboard')
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
-                }
-                const apiData = await response.json()
+                const response = await client.get('/dashboard')
+                const apiData = response.data
                 
                 // Map API data to dashboard state with fallbacks for missing data
                 setDashboardData({

@@ -7,7 +7,9 @@ const ErrorBoundary = ({ error }) => {
     const theme = useTheme()
 
     const copyToClipboard = () => {
-        const errorMessage = `Status: ${error.response.status}\n${error.response.data.message}`
+        const status = error?.response?.status || error?.status || 'Unknown'
+        const message = error?.response?.data?.message || error?.message || 'Unknown error'
+        const errorMessage = `Status: ${status}\n${message}`
         navigator.clipboard.writeText(errorMessage)
     }
 
@@ -28,9 +30,9 @@ const ErrorBoundary = ({ error }) => {
                             <IconCopy />
                         </IconButton>
                         <pre style={{ margin: 0, overflowWrap: 'break-word', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
-                            <code>{`Status: ${error.response.status}`}</code>
+                            <code>{`Status: ${error?.response?.status || error?.status || 'Unknown'}`}</code>
                             <br />
-                            <code>{error.response?.data?.message}</code>
+                            <code>{error?.response?.data?.message || error?.message || 'Unknown error'}</code>
                         </pre>
                     </Box>
                 </Card>

@@ -4,72 +4,37 @@ import { StyledButton, StyledToggleButton } from '@/ui-component/button/StyledBu
 import { Button, IconButton, ListItemButton, MenuItem, Tab } from '@mui/material'
 
 export const StyledPermissionButton = ({ permissionId, display, ...props }) => {
-    const { hasPermission, hasDisplay } = useAuth()
-
-    if (!hasPermission(permissionId) || !hasDisplay(display)) {
-        return null
-    }
-
+    // OSS mode: Always show buttons without permission checks
     return <StyledButton {...props} />
 }
 
 export const StyledPermissionToggleButton = ({ permissionId, display, ...props }) => {
-    const { hasPermission, hasDisplay } = useAuth()
-
-    if (!hasPermission(permissionId) || !hasDisplay(display)) {
-        return null
-    }
-
+    // OSS mode: Always show buttons without permission checks
     return <StyledToggleButton {...props} />
 }
 
 export const PermissionIconButton = ({ permissionId, display, ...props }) => {
-    const { hasPermission, hasDisplay } = useAuth()
-
-    if (!hasPermission(permissionId) || !hasDisplay(display)) {
-        return null
-    }
-
+    // OSS mode: Always show buttons without permission checks
     return <IconButton {...props} />
 }
 
 export const PermissionButton = ({ permissionId, display, ...props }) => {
-    const { hasPermission, hasDisplay } = useAuth()
-
-    if (!hasPermission(permissionId) || !hasDisplay(display)) {
-        return null
-    }
-
+    // OSS mode: Always show buttons without permission checks
     return <Button {...props} />
 }
 
 export const PermissionTab = ({ permissionId, display, ...props }) => {
-    const { hasPermission, hasDisplay } = useAuth()
-
-    if (!hasPermission(permissionId) || !hasDisplay(display)) {
-        return null
-    }
-
+    // OSS mode: Always show tabs without permission checks
     return <Tab {...props} />
 }
 
 export const PermissionMenuItem = ({ permissionId, display, ...props }) => {
-    const { hasPermission, hasDisplay } = useAuth()
-
-    if (!hasPermission(permissionId) || !hasDisplay(display)) {
-        return null
-    }
-
+    // OSS mode: Always show menu items without permission checks
     return <MenuItem {...props} />
 }
 
 export const PermissionListItemButton = ({ permissionId, display, ...props }) => {
-    const { hasPermission, hasDisplay } = useAuth()
-
-    if (!hasPermission(permissionId) || !hasDisplay(display)) {
-        return null
-    }
-
+    // OSS mode: Always show list item buttons without permission checks
     return <ListItemButton {...props} />
 }
 

@@ -33,7 +33,7 @@ const getAllUpsertHistory = async (
                 date: sortOrder === 'DESC' ? 'DESC' : 'ASC'
             }
         })
-        upsertHistory = upsertHistory.map((hist) => {
+        upsertHistory = upsertHistory.map((hist: { result: string; flowData: string }) => {
             return {
                 ...hist,
                 result: hist.result ? JSON.parse(hist.result) : {},

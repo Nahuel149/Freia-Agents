@@ -3,10 +3,9 @@ import { DashboardService } from '../../services/dashboard'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
-const dashboardService = new DashboardService()
-
 const getDashboardMetrics = async (req: Request, res: Response) => {
     try {
+        const dashboardService = new DashboardService()
         const metrics = await dashboardService.getDashboardMetrics()
         return res.json(metrics)
     } catch (error) {
@@ -19,6 +18,7 @@ const getDashboardMetrics = async (req: Request, res: Response) => {
 
 const getCustomerStats = async (req: Request, res: Response) => {
     try {
+        const dashboardService = new DashboardService()
         const stats = await dashboardService.getCustomerStats()
         return res.json(stats)
     } catch (error) {
@@ -31,6 +31,7 @@ const getCustomerStats = async (req: Request, res: Response) => {
 
 const getSalesStats = async (req: Request, res: Response) => {
     try {
+        const dashboardService = new DashboardService()
         const stats = await dashboardService.getSalesStats()
         return res.json(stats)
     } catch (error) {

@@ -991,7 +991,7 @@ export const getVariableValue = async (
         variablePaths.forEach((path) => {
             let variableValue: object | string = variableDict[path]
             // Replace all occurrence
-            if (typeof variableValue === 'object') {
+            if (typeof variableValue === 'object' && variableValue !== null) {
                 // Just get the id of variableValue object if it is agentflow node, to avoid circular JSON error
                 if (Object.prototype.hasOwnProperty.call(variableValue, 'predecessorAgents')) {
                     const nodeId = variableValue['id']

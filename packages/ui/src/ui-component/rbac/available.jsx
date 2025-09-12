@@ -2,10 +2,8 @@ import PropTypes from 'prop-types'
 import { useAuth } from '@/hooks/useAuth'
 
 export const Available = ({ permission, children }) => {
-    const { hasPermission } = useAuth()
-    if (hasPermission(permission)) {
-        return children
-    }
+    // OSS mode: Always show children without permission checks
+    return children
 }
 
 Available.propTypes = {

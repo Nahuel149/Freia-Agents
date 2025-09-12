@@ -1,6 +1,9 @@
-import * as Server from '../index'
+let Server: any = null
 
 export const getRunningExpressApp = function () {
+    if (!Server) {
+        Server = require('../index')
+    }
     const runningExpressInstance = Server.getInstance()
     if (
         typeof runningExpressInstance === 'undefined' ||

@@ -589,8 +589,8 @@ export const executeFlow = async ({
                     appDataSource,
                     databaseEntities
                 })
-                if (generatedFollowUpPrompts?.questions) {
-                    apiMessage.followUpPrompts = JSON.stringify(generatedFollowUpPrompts.questions)
+                if (generatedFollowUpPrompts && (generatedFollowUpPrompts as any).questions) {
+                    apiMessage.followUpPrompts = JSON.stringify((generatedFollowUpPrompts as any).questions)
                 }
             }
             const chatMessage = await utilAddChatMessage(apiMessage, appDataSource)
@@ -794,8 +794,8 @@ export const executeFlow = async ({
                 appDataSource,
                 databaseEntities
             })
-            if (followUpPrompts?.questions) {
-                apiMessage.followUpPrompts = JSON.stringify(followUpPrompts.questions)
+            if (followUpPrompts && (followUpPrompts as any).questions) {
+                apiMessage.followUpPrompts = JSON.stringify((followUpPrompts as any).questions)
             }
         }
 
@@ -856,7 +856,8 @@ const checkIfStreamValid = async (
 
     let isStreamValid = false
     for (const endingNode of endingNodes) {
-        const endingNodeData = endingNode.data || {} // Ensure endingNodeData is never undefined
+        const endingNodeData: INodeData = endingNode.data
+        if (!endingNodeData) continue
 
         const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 

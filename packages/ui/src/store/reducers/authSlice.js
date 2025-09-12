@@ -33,36 +33,16 @@ const authSlice = createSlice({
             state.isGlobal = false
             AuthUtils.removeCurrentUser()
         },
-        workspaceSwitchSuccess: (state, action) => {
-            AuthUtils.updateStateAndLocalStorage(state, action.payload)
-        },
-        upgradePlanSuccess: (state, action) => {
-            AuthUtils.updateStateAndLocalStorage(state, action.payload)
-        },
+        // OSS Mode: Workspace switching and plan upgrades removed
         userProfileUpdated: (state, action) => {
             const user = AuthUtils.extractUser(action.payload)
             state.user.name = user.name
             state.user.email = user.email
             AuthUtils.updateCurrentUser(state.user)
         },
-        workspaceNameUpdated: (state, action) => {
-            const updatedWorkspace = action.payload
-            // find the matching assignedWorkspace and update it
-            const assignedWorkspaces = state.user.assignedWorkspaces.map((workspace) => {
-                if (workspace.id === updatedWorkspace.id) {
-                    return {
-                        ...workspace,
-                        name: updatedWorkspace.name
-                    }
-                }
-                return workspace
-            })
-            state.user.assignedWorkspaces = assignedWorkspaces
-            AuthUtils.updateCurrentUser(state.user)
-        }
+        // OSS Mode: Workspace name updates removed
     }
 })
 
-export const { loginSuccess, logoutSuccess, workspaceSwitchSuccess, upgradePlanSuccess, userProfileUpdated, workspaceNameUpdated } =
-    authSlice.actions
+export const { loginSuccess, logoutSuccess, userProfileUpdated } = authSlice.actions
 export default authSlice.reducer

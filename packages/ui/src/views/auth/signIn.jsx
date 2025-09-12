@@ -41,7 +41,8 @@ const SignInPage = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     useNotifier()
-    const { isEnterpriseLicensed, isCloud, isOpenSource } = useConfig()
+    // OSS mode: Enterprise license checks removed
+    const { isCloud, isOpenSource } = useConfig()
     const { t } = useTranslation()
 
     const usernameInput = {
@@ -280,28 +281,7 @@ const SignInPage = () => {
                                 .
                             </Typography>
                         )}
-                        {isEnterpriseLicensed && (
-                            <Typography 
-                                variant='body1' 
-                                sx={{ 
-                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
-                                    fontSize: '1rem'
-                                }}
-                            >
-                                {t('auth.signin.haveInvite')}{' '}
-                                <Link 
-                                    style={{ 
-                                        color: customization.isDarkMode ? '#667eea' : '#764ba2',
-                                        textDecoration: 'none',
-                                        fontWeight: 600
-                                    }} 
-                                    to='/register'
-                                >
-                                    {t('auth.signin.signUpForAccount')}
-                                </Link>
-                                .
-                            </Typography>
-                        )}
+                        {/* OSS mode: Enterprise license invitation UI removed */}
                     </Stack>
                     <form onSubmit={doLogin}>
                         <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 3 }}>

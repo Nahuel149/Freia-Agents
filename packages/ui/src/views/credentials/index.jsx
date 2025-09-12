@@ -49,7 +49,7 @@ import keySVG from '@/assets/images/key.svg'
 import { baseURL } from '@/store/constant'
 import { SET_COMPONENT_CREDENTIALS } from '@/store/actions'
 import { useError } from '@/store/context/ErrorContext'
-import ShareWithWorkspaceDialog from '@/ui-component/dialog/ShareWithWorkspaceDialog'
+// OSS mode: ShareWithWorkspaceDialog removed
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -451,14 +451,7 @@ const Credentials = () => {
                     setError={setError}
                 ></AddEditCredentialDialog>
             )}
-            {showShareCredentialDialog && (
-                <ShareWithWorkspaceDialog
-                    show={showShareCredentialDialog}
-                    dialogProps={shareCredentialDialogProps}
-                    onCancel={() => setShowShareCredentialDialog(false)}
-                    setError={setError}
-                ></ShareWithWorkspaceDialog>
-            )}
+            {/* OSS mode: ShareWithWorkspaceDialog removed */}
             <ConfirmDialog />
         </>
     )

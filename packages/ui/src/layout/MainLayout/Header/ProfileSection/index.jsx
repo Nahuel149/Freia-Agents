@@ -474,8 +474,8 @@ const ProfileSection = ({ handleLogout }) => {
                                                         }}
                                                     />
                                                 </Box>
-                                                <PermissionListItemButton
-                                                    permissionId='workspace:export'
+                                                {/* OSS mode: workspace export/import permissions removed */}
+                                                <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
                                                         setExportDialogOpen(true)
@@ -485,9 +485,8 @@ const ProfileSection = ({ handleLogout }) => {
                                                         <IconFileExport stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>Export</Typography>} />
-                                                </PermissionListItemButton>
-                                                <PermissionListItemButton
-                                                    permissionId='workspace:import'
+                                                </ListItemButton>
+                                                <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
                                                         importAll()
@@ -497,7 +496,7 @@ const ProfileSection = ({ handleLogout }) => {
                                                         <IconFileUpload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
-                                                </PermissionListItemButton>
+                                                </ListItemButton>
                                                 <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
                                                 {isAuthenticated && !currentUser.isSSO && !isCloud && (
                                                     <ListItemButton

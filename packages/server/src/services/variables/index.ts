@@ -139,7 +139,7 @@ const importVariables = async (newVariables: Partial<Variable>[], queryRunner?: 
         })
 
         const selectResponse = await repository.createQueryBuilder('v').select('v.id').where(`v.id IN ${ids}`).getMany()
-        const foundIds = selectResponse.map((response) => {
+        const foundIds = selectResponse.map((response: { id: string }) => {
             return response.id
         })
 

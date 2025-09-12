@@ -1,8 +1,7 @@
 import client from '@/api/client'
 
-// TODO: use this endpoint but without the org id because org id will be null
-const getLoginMethods = (organizationId) => client.get(`/loginmethod?organizationId=${organizationId}`)
-// TODO: don't use this endpoint.
+// OSS Mode: Use default login methods without organization context
+const getLoginMethods = () => client.get(`/loginmethod/default`)
 const getDefaultLoginMethods = () => client.get(`/loginmethod/default`)
 const updateLoginMethods = (body) => client.put(`/loginmethod`, body)
 

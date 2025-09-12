@@ -130,7 +130,8 @@ const DocumentStoreDetails = () => {
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const { hasAssignedWorkspace } = useAuth()
+    // OSS mode: Workspace assignment checks removed
+    const { } = useAuth()
     useNotifier()
     const { confirm } = useConfirm()
     const { t } = useTranslation()
@@ -408,10 +409,7 @@ const DocumentStoreDetails = () => {
     useEffect(() => {
         if (getSpecificDocumentStore.data) {
             const workspaceId = getSpecificDocumentStore.data.workspaceId
-            if (!hasAssignedWorkspace(workspaceId)) {
-                navigate('/unauthorized')
-                return
-            }
+            // OSS mode: Workspace assignment check removed
             setDocumentStore(getSpecificDocumentStore.data)
         }
 

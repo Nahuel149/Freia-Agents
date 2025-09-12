@@ -3,11 +3,18 @@
  */
 
 import { QueryRunner } from 'typeorm'
+import { DataSource, FindOptionsWhere, In, Repository } from 'typeorm'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
+import { Workspace } from '../database/entities/workspace.entity'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
-export const enum WorkspaceUserErrorMessage {
+export enum WorkspaceUserErrorMessage {
     WORKSPACE_USER_NOT_FOUND = 'Workspace User Not Found'
+}
+
+export interface IWorkspaceUserWithOrg extends WorkspaceUser {
+    workspace: Workspace & { organizationId: string }
+    isOrgOwner: boolean
 }
 
 export class WorkspaceUserService {
@@ -22,13 +29,13 @@ export class WorkspaceUserService {
      * Read workspace users by user ID (OSS version)
      * Returns workspace users without organization references
      */
-    public async readWorkspaceUserByUserId(userId: string | undefined, queryRunner?: QueryRunner) {
+    public async readWorkspaceUserByUserId(userId: string | undefined, queryRunner?: QueryRunner): Promise<IWorkspaceUserWithOrg[]> {
         if (!userId) {
             return []
         }
 
         const manager = queryRunner ? queryRunner.manager : this.dataSource.manager
-        
+
         const workspaceUsers = await manager
             .createQueryBuilder(WorkspaceUser, 'workspaceUser')
             .innerJoinAndSelect('workspaceUser.workspace', 'workspace')
@@ -36,7 +43,7 @@ export class WorkspaceUserService {
             .getMany()
 
         // Return workspace users with default organization ID for compatibility
-        return workspaceUsers.map((user) => ({
+        return workspaceUsers.map((user: WorkspaceUser) => ({
             ...user,
             workspace: {
                 ...user.workspace,

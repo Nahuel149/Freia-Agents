@@ -43,7 +43,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { PermissionTab } from '@/ui-component/button/RBACButtons'
 import { Available } from '@/ui-component/rbac/available'
-import ShareWithWorkspaceDialog from '@/ui-component/dialog/ShareWithWorkspaceDialog'
+// OSS mode: ShareWithWorkspaceDialog removed
 
 // API
 import marketplacesApi from '@/api/marketplaces'
@@ -944,14 +944,7 @@ const Marketplace = () => {
                 onConfirm={() => setShowToolDialog(false)}
                 onUseTemplate={(tool) => onUseTemplate(tool)}
             ></ToolDialog>
-            {showShareTemplateDialog && (
-                <ShareWithWorkspaceDialog
-                    show={showShareTemplateDialog}
-                    dialogProps={shareTemplateDialogProps}
-                    onCancel={() => setShowShareTemplateDialog(false)}
-                    setError={setError}
-                ></ShareWithWorkspaceDialog>
-            )}
+            {/* OSS mode: ShareWithWorkspaceDialog removed */}
             <ConfirmDialog />
         </>
     )

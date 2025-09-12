@@ -29,7 +29,8 @@ const checkFeatureFlag = (features, display, children) => {
 
 export const RequireAuth = ({ permission, display, children }) => {
     const location = useLocation()
-    const { isCloud, isOpenSource, isEnterpriseLicensed } = useConfig()
+    // OSS mode: Enterprise license checks removed
+    const { isCloud, isOpenSource } = useConfig()
     const { hasPermission } = useAuth()
     const isGlobal = useSelector((state) => state.auth.isGlobal)
     const currentUser = useSelector((state) => state.auth.user)
@@ -45,7 +46,7 @@ export const RequireAuth = ({ permission, display, children }) => {
     // Step 2: Deployment Type Specific Logic
     // Open Source: Allow access to core features including agentflows
     if (isOpenSource) {
-        // Allow access to features without display property
+        // Allow access to features without display property (includes dashboard)
         if (!display) return children
         
         // Allow access to core OSS features even with display property
@@ -57,8 +58,8 @@ export const RequireAuth = ({ permission, display, children }) => {
         return <Navigate to='/unauthorized' replace />
     }
 
-    // Cloud & Enterprise: Check both permissions and feature flags
-    if (isCloud || isEnterpriseLicensed) {
+    // OSS mode: Enterprise license checks removed - Cloud only
+    if (isCloud) {
         // Allow access to basic features (no display property)
         if (!display) return children
 
@@ -67,10 +68,7 @@ export const RequireAuth = ({ permission, display, children }) => {
             return <Navigate to='/unauthorized' replace state={{ path: location.pathname }} />
         }
 
-        // Organization admins bypass permission checks
-        if (isGlobal) {
-            return checkFeatureFlag(features, display, children)
-        }
+        // OSS mode: Simplified permission checks without organization concepts
 
         // Check user permissions and feature flags
         if (!permission || hasPermission(permission)) {

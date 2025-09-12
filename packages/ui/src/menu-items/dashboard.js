@@ -24,7 +24,8 @@ import {
     IconFileDatabase,
     IconShieldLock,
     IconListCheck,
-    IconDashboard
+    IconDashboard,
+    IconCode
 } from '@tabler/icons-react'
 
 // constant
@@ -53,7 +54,8 @@ const icons = {
     IconFileDatabase,
     IconShieldLock,
     IconListCheck,
-    IconDashboard
+    IconDashboard,
+    IconCode
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -85,6 +87,15 @@ const dashboard = {
                     icon: icons.IconHierarchy,
                     breadcrumbs: true,
                     permission: 'chatflows:view'
+                },
+                {
+                    id: 'codeagent',
+                    title: 'CodeAgent',
+                    type: 'item',
+                    url: '/codeagent',
+                    icon: icons.IconCode,
+                    breadcrumbs: true,
+                    permission: 'codeagent:view'
                 },
                 {
                     id: 'dashboard',
@@ -211,63 +222,6 @@ const dashboard = {
                     breadcrumbs: true,
                     display: 'feat:evaluations',
                     permission: 'evaluations:view'
-                }
-            ]
-        },
-        {
-            id: 'management',
-            title: 'User & Workspace Management',
-            type: 'group',
-            children: [
-                {
-                    id: 'sso',
-                    title: 'SSO Config',
-                    type: 'item',
-                    url: '/sso-config',
-                    icon: icons.IconShieldLock,
-                    breadcrumbs: true,
-                    display: 'feat:sso-config',
-                    permission: 'sso:manage'
-                },
-                {
-                    id: 'roles',
-                    title: 'Roles',
-                    type: 'item',
-                    url: '/roles',
-                    icon: icons.IconLockCheck,
-                    breadcrumbs: true,
-                    display: 'feat:roles',
-                    permission: 'roles:manage'
-                },
-                {
-                    id: 'users',
-                    title: 'Users',
-                    type: 'item',
-                    url: '/users',
-                    icon: icons.IconUsers,
-                    breadcrumbs: true,
-                    display: 'feat:users',
-                    permission: 'users:manage'
-                },
-                {
-                    id: 'workspaces',
-                    title: 'Workspaces',
-                    type: 'item',
-                    url: '/workspaces',
-                    icon: icons.IconStack2,
-                    breadcrumbs: true,
-                    display: 'feat:workspaces',
-                    permission: 'workspace:view'
-                },
-                {
-                    id: 'login-activity',
-                    title: 'Login Activity',
-                    type: 'item',
-                    url: '/login-activity',
-                    icon: icons.IconClipboardList,
-                    breadcrumbs: true,
-                    display: 'feat:login-activity',
-                    permission: 'loginActivity:view'
                 }
             ]
         },

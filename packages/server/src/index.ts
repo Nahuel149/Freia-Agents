@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
-import cookieParser from 'cookie-parser'
+const cookieParser = require('cookie-parser')
 import { DataSource, IsNull } from 'typeorm'
 import { MODE, Platform } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
@@ -67,7 +67,7 @@ export class App {
     cachePool: CachePool
     telemetry: Telemetry
     rateLimiterManager: RateLimiterManager
-    AppDataSource: DataSource = getDataSource()
+    AppDataSource: DataSource
     sseStreamer: SSEStreamer
     identityManager: IdentityManager
     metricsProvider: IMetricsProvider
@@ -82,6 +82,7 @@ export class App {
     async initDatabase() {
         // Initialize database
         try {
+            this.AppDataSource = getDataSource()
             await this.AppDataSource.initialize()
             logger.info('📦 [server]: Data Source initialized successfully')
 

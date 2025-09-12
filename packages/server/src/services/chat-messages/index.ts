@@ -146,7 +146,7 @@ const removeChatMessagesByMessageIds = async (
 
         // Get messages before deletion to check for executionId
         const messages = await appServer.AppDataSource.getRepository(ChatMessage).findByIds(messageIds)
-        const executionIds = messages.map((msg) => msg.executionId).filter(Boolean)
+        const executionIds = messages.map((msg: ChatMessage) => msg.executionId).filter(Boolean)
 
         for (const [composite_key] of chatIdMap) {
             const [chatId] = composite_key.split('_')

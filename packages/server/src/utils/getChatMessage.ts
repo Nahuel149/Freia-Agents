@@ -208,7 +208,7 @@ async function handleFeedbackQuery(params: {
         }
 
         // Get all messages for these sessions
-        const sessionIdList = sessionIds.map((s) => s.sessionId)
+        const sessionIdList = sessionIds.map((s: { sessionId: string }) => s.sessionId)
         return await getMessagesWithFeedback(
             {
                 ...params,

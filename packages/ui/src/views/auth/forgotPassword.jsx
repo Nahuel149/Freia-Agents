@@ -38,7 +38,7 @@ const ForgotPasswordPage = () => {
         placeholder: 'user@company.com'
     }
     const [usernameVal, setUsernameVal] = useState('')
-    const { isEnterpriseLicensed } = useConfig()
+    // OSS mode: Enterprise license checks removed
 
     const [isLoading, setLoading] = useState(false)
     const [responseMsg, setResponseMsg] = useState(undefined)
@@ -201,18 +201,7 @@ const ForgotPasswordPage = () => {
                                             value={usernameVal}
                                             showDialog={false}
                                         />
-                                        {isEnterpriseLicensed && (
-                                            <Typography 
-                                                variant='caption' 
-                                                sx={{ 
-                                                    mt: 0.5,
-                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
-                                                    fontStyle: 'italic'
-                                                }}
-                                            >
-                                                If you forgot the email you used for signing up, please contact your administrator.
-                                            </Typography>
-                                        )}
+                                        {/* OSS mode: Enterprise license admin contact message removed */}
                                     </Box>
                                     <StyledButton
                                         variant='contained'

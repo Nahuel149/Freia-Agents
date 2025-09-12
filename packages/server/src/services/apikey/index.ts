@@ -172,7 +172,7 @@ const importKeys = async (body: any, workspaceId?: string) => {
         if (body.importMode === 'errorIfExist') {
             // if importMode is errorIfExist, check for existing keys and raise error before any modification to the DB
             for (const key of keys) {
-                const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
+                const keyNameExists = allApiKeys.find((k: ApiKey) => k.keyName === key.keyName)
                 if (keyNameExists) {
                     throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Key with name ${key.keyName} already exists`)
                 }
@@ -180,9 +180,9 @@ const importKeys = async (body: any, workspaceId?: string) => {
         }
         // iterate through the keys and add them to the database
         for (const key of keys) {
-            const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
+            const keyNameExists = allApiKeys.find((k: ApiKey) => k.keyName === key.keyName)
             if (keyNameExists) {
-                const keyIndex = allApiKeys.findIndex((k) => k.keyName === key.keyName)
+                const keyIndex = allApiKeys.findIndex((k: ApiKey) => k.keyName === key.keyName)
                 switch (body.importMode) {
                     case 'overwriteIfExist':
                     case 'replaceAll': {

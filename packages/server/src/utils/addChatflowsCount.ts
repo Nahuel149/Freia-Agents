@@ -26,7 +26,7 @@ export const addChatflowsCount = async (keys: any[]) => {
 
                 const chatflows = await qb.getMany()
                 key.chatflows = chatflows.length
-                key.chatFlows = chatflows.map((cf) => ({
+                key.chatFlows = chatflows.map((cf: { name: string; category: string; updatedDate: Date }) => ({
                     flowName: cf.name,
                     category: cf.category,
                     updatedDate: cf.updatedDate

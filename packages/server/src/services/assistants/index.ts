@@ -416,7 +416,7 @@ const importAssistants = async (
             .select('assistant.id')
             .where(`assistant.id IN ${ids}`)
             .getMany()
-        const foundIds = selectResponse.map((response) => {
+        const foundIds = selectResponse.map((response: { id: string }) => {
             return response.id
         })
 
@@ -486,7 +486,7 @@ const getTools = async (): Promise<any> => {
         // filter out those tools that input params type are not in the list
         const filteredTools = [...tools, ...mcpTools].filter((tool) => {
             const inputs = tool.inputs || []
-            return inputs.every((input) => INPUT_PARAMS_TYPE.includes(input.type))
+            return inputs.every((input: { type: string }) => INPUT_PARAMS_TYPE.includes(input.type))
         })
         return filteredTools
     } catch (error) {

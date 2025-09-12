@@ -16,6 +16,10 @@ const Dashboard = Loadable(lazy(() => import('@/views/dashboard')))
 const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 const AgentflowGenerator = Loadable(lazy(() => import('@/views/agentflows/AgentflowGenerator')))
 
+// codeagent routing
+const CodeAgent = Loadable(lazy(() => import('@/views/codeagent')))
+const CodeAgentExecution = Loadable(lazy(() => import('@/views/codeagent/CodeAgentExecution')))
+
 // marketplaces routing
 const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
 
@@ -65,14 +69,7 @@ const Logs = Loadable(lazy(() => import('@/views/serverlogs')))
 // executions routing
 const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
 
-// enterprise features
-const UsersPage = Loadable(lazy(() => import('@/views/users')))
-const RolesPage = Loadable(lazy(() => import('@/views/roles')))
-const LoginActivityPage = Loadable(lazy(() => import('@/views/auth/loginActivity')))
-const Workspaces = Loadable(lazy(() => import('@/views/workspace')))
-const WorkspaceDetails = Loadable(lazy(() => import('@/views/workspace/WorkspaceUsers')))
-const SSOConfig = Loadable(lazy(() => import('@/views/auth/ssoConfig')))
-const SSOSuccess = Loadable(lazy(() => import('@/views/auth/ssoSuccess')))
+// OSS mode - enterprise features removed
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -101,6 +98,22 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'dashboard:view'}>
                     <Dashboard />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/codeagent',
+            element: (
+                <RequireAuth permission={'codeagent:view'}>
+                    <CodeAgent />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/codeagent/:id/execute',
+            element: (
+                <RequireAuth permission={'codeagent:view'}>
+                    <CodeAgentExecution />
                 </RequireAuth>
             )
         },
@@ -321,61 +334,10 @@ const MainRoutes = {
             )
         },
         {
-            path: '/users',
-            element: (
-                <RequireAuth permission={'users:manage'} display={'feat:users'}>
-                    <UsersPage />
-                </RequireAuth>
-            )
-        },
-        {
             path: '/user-profile',
             element: <UserProfile />
-        },
-        {
-            path: '/roles',
-            element: (
-                <RequireAuth permission={'roles:manage'} display={'feat:roles'}>
-                    <RolesPage />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/login-activity',
-            element: (
-                <RequireAuth permission={'loginActivity:view'} display={'feat:login-activity'}>
-                    <LoginActivityPage />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/workspaces',
-            element: (
-                <RequireAuth permission={'workspace:view'} display={'feat:workspaces'}>
-                    <Workspaces />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/workspace-users/:id',
-            element: (
-                <RequireAuth permission={'workspace:view'} display={'feat:workspaces'}>
-                    <WorkspaceDetails />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/sso-config',
-            element: (
-                <RequireAuth permission={'sso:manage'} display={'feat:sso-config'}>
-                    <SSOConfig />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/sso-success',
-            element: <SSOSuccess />
         }
+        // OSS mode - enterprise routes removed (users, roles, login-activity, workspaces, sso)
     ]
 }
 

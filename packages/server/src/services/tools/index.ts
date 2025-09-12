@@ -127,7 +127,7 @@ const importTools = async (newTools: Partial<Tool>[], queryRunner?: QueryRunner)
         })
 
         const selectResponse = await repository.createQueryBuilder('t').select('t.id').where(`t.id IN ${ids}`).getMany()
-        const foundIds = selectResponse.map((response) => {
+        const foundIds = selectResponse.map((response: { id: string }) => {
             return response.id
         })
 

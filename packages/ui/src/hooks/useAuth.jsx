@@ -20,16 +20,7 @@ export const useAuth = () => {
         return false
     }
 
-    const hasAssignedWorkspace = (workspaceId) => {
-        if (isOpenSource || isGlobal) {
-            return true
-        }
-        const activeWorkspaceId = currentUser?.activeWorkspaceId || ''
-        if (workspaceId === activeWorkspaceId) {
-            return true
-        }
-        return false
-    }
+    // OSS mode: Workspace assignment checks removed
 
     const hasDisplay = (display) => {
         if (!display) {
@@ -55,5 +46,5 @@ export const useAuth = () => {
         return false
     }
 
-    return { hasPermission, hasAssignedWorkspace, hasDisplay }
+    return { hasPermission, hasDisplay }
 }

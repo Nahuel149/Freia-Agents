@@ -57,7 +57,8 @@ const ShowStoredChunks = () => {
     const theme = useTheme()
     const { confirm } = useConfirm()
     const { error } = useError()
-    const { hasAssignedWorkspace } = useAuth()
+    // OSS mode: Workspace assignment checks removed
+    const { } = useAuth()
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -202,10 +203,7 @@ const ShowStoredChunks = () => {
         if (getChunksApi.data) {
             const data = getChunksApi.data
             const workspaceId = data.workspaceId
-            if (!hasAssignedWorkspace(workspaceId)) {
-                navigate('/unauthorized')
-                return
-            }
+            // OSS mode: Workspace assignment check removed
             setTotalChunks(data.count)
             setDocumentChunks(data.chunks)
             setLoading(false)

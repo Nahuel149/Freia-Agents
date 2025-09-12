@@ -33,6 +33,7 @@ const clearAllCookies = () => {
 }
 
 const extractUser = (payload) => {
+    // OSS Mode: Simplified user object without organization/workspace concepts
     const user = {
         id: payload.id,
         email: payload.email,
@@ -40,15 +41,7 @@ const extractUser = (payload) => {
         status: payload.status,
         role: payload.role,
         isSSO: payload.isSSO,
-        activeOrganizationId: payload.activeOrganizationId,
-        activeOrganizationSubscriptionId: payload.activeOrganizationSubscriptionId,
-        activeOrganizationCustomerId: payload.activeOrganizationCustomerId,
-        activeOrganizationProductId: payload.activeOrganizationProductId,
-        activeWorkspaceId: payload.activeWorkspaceId,
-        activeWorkspace: payload.activeWorkspace,
         lastLogin: payload.lastLogin,
-        isOrganizationAdmin: payload.isOrganizationAdmin,
-        assignedWorkspaces: payload.assignedWorkspaces,
         permissions: payload.permissions
     }
     return user
@@ -61,7 +54,8 @@ const updateStateAndLocalStorage = (state, payload) => {
     state.permissions = payload.permissions
     state.features = payload.features
     state.isAuthenticated = true
-    state.isGlobal = user.isOrganizationAdmin
+    // OSS Mode: isGlobal set to false (no organization admin concept)
+    state.isGlobal = false
     localStorage.setItem('isAuthenticated', 'true')
     localStorage.setItem('isGlobal', state.isGlobal)
     localStorage.setItem('isSSO', state.user.isSSO)

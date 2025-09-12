@@ -64,7 +64,8 @@ const LoaderConfigPreviewChunks = () => {
     const navigate = useNavigate()
     const theme = useTheme()
     const { error } = useError()
-    const { hasAssignedWorkspace } = useAuth()
+    // OSS mode: Workspace assignment checks removed
+    const { } = useAuth()
 
     const getNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
@@ -363,10 +364,7 @@ const LoaderConfigPreviewChunks = () => {
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
             const workspaceId = getSpecificDocumentStoreApi.data.workspaceId
-            if (!hasAssignedWorkspace(workspaceId)) {
-                navigate('/unauthorized')
-                return
-            }
+            // OSS mode: Workspace assignment check removed
             if (getSpecificDocumentStoreApi.data?.loaders.length > 0) {
                 const loader = getSpecificDocumentStoreApi.data.loaders.find((loader) => loader.id === docLoaderNodeName)
                 if (loader) {

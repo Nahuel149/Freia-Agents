@@ -49,7 +49,8 @@ const steps = ['Embeddings', 'Vector Store', 'Record Manager']
 const VectorStoreConfigure = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const { hasAssignedWorkspace } = useAuth()
+    // OSS mode: Workspace assignment checks removed
+    const { } = useAuth()
     useNotifier()
     const { error, setError } = useError()
     const customization = useSelector((state) => state.customization)
@@ -406,10 +407,7 @@ const VectorStoreConfigure = () => {
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
             const docStore = getSpecificDocumentStoreApi.data
-            if (!hasAssignedWorkspace(docStore.workspaceId)) {
-                navigate('/unauthorized')
-                return
-            }
+            // OSS mode: Workspace assignment check removed
             setDocumentStore(docStore)
             if (docStore.embeddingConfig) {
                 getEmbeddingNodeDetailsApi.request(docStore.embeddingConfig.name)

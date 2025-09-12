@@ -11,9 +11,9 @@ import { useTheme, styled, darken } from '@mui/material/styles'
 // project imports
 import LogoSection from '../LogoSection'
 import ProfileSection from './ProfileSection'
-import WorkspaceSwitcher from '@/layout/MainLayout/Header/WorkspaceSwitcher'
-import OrgWorkspaceBreadcrumbs from '@/layout/MainLayout/Header/OrgWorkspaceBreadcrumbs'
-import PricingDialog from '@/ui-component/subscription/PricingDialog'
+// OSS mode: WorkspaceSwitcher removed
+// OSS mode: OrgWorkspaceBreadcrumbs removed
+// OSS mode: PricingDialog removed
 
 // assets
 import { IconMenu2, IconX, IconSparkles, IconBrandGithub } from '@tabler/icons-react'
@@ -93,7 +93,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
     const [isDark, setIsDark] = useState(customization.isDarkMode)
     const dispatch = useDispatch()
-    const { isEnterpriseLicensed, isCloud, isOpenSource } = useConfig()
+    // OSS mode: Enterprise license checks removed
+    const { isCloud, isOpenSource } = useConfig()
     const currentUser = useSelector((state) => state.auth.user)
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
     const [isPricingOpen, setIsPricingOpen] = useState(false)
@@ -258,47 +259,10 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 </Box>
             )}
             <Box sx={{ flexGrow: 1 }} />
-            {isEnterpriseLicensed && isAuthenticated && <WorkspaceSwitcher />}
-            {isCloud && isAuthenticated && <OrgWorkspaceBreadcrumbs />}
-            {isCloud && currentUser?.isOrganizationAdmin && (
-                <Button
-                    variant='contained'
-                    sx={{
-                        mr: 1,
-                        ml: 2,
-                        borderRadius: 15,
-                        background: (theme) =>
-                            `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
-                        color: (theme) => theme.palette.secondary.contrastText,
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                            background: (theme) =>
-                                `linear-gradient(90deg, ${darken(theme.palette.primary.main, 0.1)} 10%, ${darken(
-                                    theme.palette.secondary.main,
-                                    0.1
-                                )} 100%)`,
-                            boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-                        }
-                    }}
-                    onClick={() => setIsPricingOpen(true)}
-                    startIcon={<IconSparkles size={20} />}
-                >
-                    Upgrade
-                </Button>
-            )}
-            {isPricingOpen && isCloud && (
-                <PricingDialog
-                    open={isPricingOpen}
-                    onClose={(planUpdated) => {
-                        setIsPricingOpen(false)
-                        if (planUpdated) {
-                            navigate('/')
-                            navigate(0)
-                        }
-                    }}
-                />
-            )}
+            {/* OSS mode: WorkspaceSwitcher removed */}
+            {/* OSS mode: OrgWorkspaceBreadcrumbs removed */}
+            {/* OSS mode: Organization admin upgrade button removed */}
+            {/* OSS mode: PricingDialog removed */}
             <ToggleButtonGroup
                 sx={{
                     borderRadius: '12px',

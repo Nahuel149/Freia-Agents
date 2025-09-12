@@ -1,19 +1,19 @@
 {
-  "description": "B2B Sales System - AgentFlow Templates v2",
-  "badge": "NEW",
+  "description": "B2B Sales Agents Demo - Complete Sales Flow with Conditional Logic",
+  "badge": "DEMO",
   "useCases": [
-    "B2B Sales Automation",
-    "Customer Relationship Management",
-    "Multi-Agent Orchestration",
-    "Database Integration",
-    "WhatsApp Business Integration"
+    "B2B Sales",
+    "Price Negotiation",
+    "Customer Service",
+    "WhatsApp Integration"
   ],
-  "framework": ["LangChain", "AgentFlow v2"],
+  "framework": "Flowise",
+  "type": "agentflow",
   "nodes": [
     {
       "id": "startAgentflow_0",
       "type": "agentFlow",
-      "position": { "x": 100, "y": 300 },
+      "position": { "x": -200, "y": 60 },
       "data": {
         "id": "startAgentflow_0",
         "label": "Start",
@@ -22,7 +22,7 @@
         "type": "Start",
         "baseClasses": ["Start"],
         "category": "Agent Flows",
-        "description": "Inicio del flujo B2B Sales",
+        "description": "Start node for B2B sales agent flow",
         "inputParams": [
           {
             "label": "Start Input Type",
@@ -69,7 +69,7 @@
           "formTitle": "B2B Sales Assistant",
           "formInputTypes": "[{\"type\":\"text\",\"label\":\"Mensaje\",\"name\":\"message\",\"required\":true},{\"type\":\"text\",\"label\":\"Teléfono\",\"name\":\"phoneNumber\",\"required\":false}]",
           "startEphemeralMemory": false,
-          "startState": "{\"customerType\":\"business\",\"urgency\":\"medium\",\"strategy\":\"sequential\"}"
+          "startState": "{\"customerType\":\"business\",\"urgency\":\"medium\",\"strategy\":\"sequential\",\"inventory\":{\"notebooks\":{\"HP Pavilion 15\":{\"price\":850000,\"stock\":5,\"specs\":\"Intel i5, 8GB RAM, 256GB SSD\"},\"Lenovo ThinkPad E14\":{\"price\":920000,\"stock\":3,\"specs\":\"AMD Ryzen 5, 16GB RAM, 512GB SSD\"},\"Dell Inspiron 15\":{\"price\":780000,\"stock\":0,\"specs\":\"Intel i3, 8GB RAM, 1TB HDD\"}}},\"salesManual\":\"Política de descuentos: 1) Compras >$500k: 5% descuento. 2) Clientes recurrentes: 8% adicional. 3) Volumen >3 unidades: 10% descuento. 4) Máximo descuento combinado: 20%. Formas de pago: Efectivo, transferencia, tarjeta (recargo 10%). Envío: CABA gratis >$300k, interior $15k.\",\"negotiationMaxAttempts\":3,\"currency\":\"ARS\",\"storeAddress\":\"Av. Corrientes 1234, CABA\",\"senderPhoneNumber\":\"+5491123456789\",\"receiverPhoneNumber\":\"+5491198765432\"}"
         },
         "outputAnchors": [
           {
@@ -86,60 +86,152 @@
       "width": 300,
       "height": 143,
       "selected": false,
-      "positionAbsolute": { "x": 100, "y": 300 },
+      "positionAbsolute": { "x": -200, "y": 60 },
       "dragging": false
     },
     {
-      "id": "agentAgentflow_0",
+      "id": "conditionAgentAgentflow_0",
       "type": "agentFlow",
-      "position": { "x": 400, "y": 200 },
+      "position": { "x": 220, "y": 20 },
       "data": {
-        "id": "agentAgentflow_0",
-        "label": "B2B Sales Orchestrator",
+        "id": "conditionAgentAgentflow_0",
+        "label": "Price Acceptance?",
         "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
+        "name": "conditionAgentAgentflow",
+        "type": "Condition Agent",
+        "color": "#ff8fab",
+        "baseClasses": ["Condition Agent"],
         "category": "Agent Flows",
-        "description": "Orquestador principal del sistema B2B Sales",
+        "description": "Determines next step based on customer response to pricing",
         "inputParams": [
           {
-            "label": "Agent Name",
-            "name": "agentName",
-            "type": "string",
-            "default": "B2B Sales Orchestrator"
+            "label": "Model",
+            "name": "conditionAgentModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true,
+            "id": "conditionAgentAgentflow_0-input-conditionAgentModel-asyncOptions",
+            "display": true
           },
           {
-            "label": "Agent Description",
-            "name": "agentDescription",
-            "type": "string",
-            "rows": 3,
-            "default": "Sistema principal de orquestación de agentes B2B especializado en ventas, productos, precios y seguimiento de clientes."
-          },
-          {
-            "label": "System Message",
-            "name": "systemMessage",
+            "label": "Instructions",
+            "name": "conditionAgentInstructions",
             "type": "string",
             "rows": 4,
-            "default": "Sos el orquestador principal de un sistema de ventas B2B. Tu trabajo es coordinar múltiples agentes especializados para brindar la mejor experiencia al cliente. Analizá cada consulta y determiná qué agentes necesitás activar y en qué orden."
+            "acceptVariable": true,
+            "id": "conditionAgentAgentflow_0-input-conditionAgentInstructions-string",
+            "display": true
           },
           {
-            "label": "Max Iterations",
-            "name": "maxIterations",
-            "type": "number",
-            "default": 10
+            "label": "Input",
+            "name": "conditionAgentInput",
+            "type": "string",
+            "acceptVariable": true,
+            "id": "conditionAgentAgentflow_0-input-conditionAgentInput-string",
+            "display": true
           },
           {
-            "label": "Agent Strategy",
-            "name": "agentStrategy",
-            "type": "options",
-            "options": [
-              { "label": "Sequential", "name": "sequential" },
-              { "label": "Parallel", "name": "parallel" },
-              { "label": "Conditional", "name": "conditional" }
+            "label": "Scenarios",
+            "name": "conditionAgentScenarios",
+            "type": "array",
+            "array": [
+              {
+                "label": "Scenario",
+                "name": "scenario",
+                "type": "string"
+              }
             ],
-            "default": "sequential"
+            "id": "conditionAgentAgentflow_0-input-conditionAgentScenarios-array",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "conditionAgentModel": "chatOpenAI",
+          "conditionAgentInstructions": "Determiná uno de los escenarios a partir del último intercambio: 0) Precio aceptado / listo para cerrar; 1) Precio caro / pide descuento; 2) Necesita más información técnica o no hay stock. Usá contexto de $flow.state.inventory si hace falta.",
+          "conditionAgentInput": "{{ question }}",
+          "conditionAgentScenarios": [
+            { "scenario": "Precio aceptado / listo para cerrar" },
+            { "scenario": "Precio caro / pide descuento" },
+            { "scenario": "Necesita más información técnica o no hay stock" }
+          ]
+        },
+        "outputAnchors": [
+          { "id": "conditionAgentAgentflow_0-output-0", "label": "Condition Agent", "name": "conditionAgentAgentflow" },
+          { "id": "conditionAgentAgentflow_0-output-1", "label": "Condition Agent", "name": "conditionAgentAgentflow" },
+          { "id": "conditionAgentAgentflow_0-output-2", "label": "Condition Agent", "name": "conditionAgentAgentflow" }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 280,
+      "height": 80,
+      "positionAbsolute": { "x": 220, "y": 20 },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "toolAgentflow_1",
+      "type": "agentFlow",
+      "position": { "x": 500, "y": 200 },
+      "data": {
+        "id": "toolAgentflow_1",
+        "label": "Agente de Ventas B2B (Tool)",
+        "version": 2,
+        "name": "toolAgentflow",
+        "type": "Tool",
+        "color": "#d4a373",
+        "baseClasses": ["Tool"],
+        "category": "Agent Flows",
+        "description": "Agente principal de ventas B2B como herramienta con acceso a inventario y manual de ventas",
+        "inputParams": [
+          {
+            "label": "Tool",
+            "name": "toolAgentflowSelectedTool",
+            "type": "asyncOptions",
+            "loadMethod": "listTools",
+            "loadConfig": true,
+            "id": "toolAgentflow_1-input-toolAgentflowSelectedTool-asyncOptions",
+            "display": true
+          },
+          {
+            "label": "Tool Input Arguments",
+            "name": "toolInputArgs",
+            "type": "array",
+            "acceptVariable": true,
+            "refresh": true,
+            "array": [
+              {
+                "label": "Input Argument Name",
+                "name": "inputArgName",
+                "type": "asyncOptions",
+                "loadMethod": "listToolInputArgs",
+                "refresh": true
+              },
+              {
+                "label": "Input Argument Value",
+                "name": "inputArgValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ],
+            "show": { "toolAgentflowSelectedTool": ".+" },
+            "id": "toolAgentflow_1-input-toolInputArgs-array",
+            "display": true
+          },
+          {
+            "label": "Update Flow State",
+            "name": "toolUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true },
+              { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true }
+            ],
+            "id": "toolAgentflow_1-input-toolUpdateState-array",
+            "display": true
           }
         ],
         "inputAnchors": [
@@ -147,24 +239,40 @@
             "label": "Agent Flow",
             "name": "agentflow",
             "type": "AgentFlow",
-            "id": "agentAgentflow_0-input-agentflow-AgentFlow"
+            "id": "toolAgentflow_1-input-agentflow-AgentFlow"
           }
         ],
         "inputs": {
-          "agentName": "B2B Sales Orchestrator",
-          "agentDescription": "Sistema principal de orquestación de agentes B2B especializado en ventas, productos, precios y seguimiento de clientes.",
-          "systemMessage": "Sos el orquestador principal de un sistema de ventas B2B. Tu trabajo es coordinar múltiples agentes especializados para brindar la mejor experiencia al cliente. Analizá cada consulta y determiná qué agentes necesitás activar y en qué orden.",
-          "maxIterations": 10,
-          "agentStrategy": "sequential",
+          "toolAgentflowSelectedTool": "b2bSalesAgent",
+          "toolInputArgs": [
+            {
+              "inputArgName": "name",
+              "inputArgValue": "B2B Sales Orchestrator"
+            },
+            {
+              "inputArgName": "description",
+              "inputArgValue": "Sistema principal de orquestación de agentes B2B especializado en ventas, productos, precios y seguimiento de clientes."
+            },
+            {
+              "inputArgName": "systemMessage",
+              "inputArgValue": "Sos un vendedor B2B especializado en notebooks y equipos tecnológicos. Tu objetivo es vender productos del inventario disponible en $flow.state.inventory.\n\n**Proceso de venta:**\n1. Saludá cordialmente y preguntá qué necesita\n2. Consultá el inventario disponible y recomendá productos según sus necesidades\n3. Mencioná precios, especificaciones y stock disponible\n4. Aplicá la política de descuentos de $flow.state.salesManual cuando corresponda\n5. Intentá cerrar la venta o avanzar en el proceso\n\n**Tono**: Profesional pero amigable, típico argentino. Usá 'vos' en lugar de 'tú'.\n**Información clave**: Tenés acceso al inventario completo y manual de ventas en el estado del flujo."
+            }
+          ],
+          "toolUpdateState": [
+            {
+              "key": "currentAgent",
+              "value": "sales_agent"
+            }
+          ],
           "agentflow": "{{startAgentflow_0.data.instance}}"
         },
         "outputAnchors": [
           {
-            "id": "agentAgentflow_0-output-agentAgentflow-AgentFlow|Agent",
-            "name": "agentAgentflow",
-            "label": "Agent",
-            "description": "Agent node for AgentFlow",
-            "type": "AgentFlow | Agent"
+            "id": "toolAgentflow_1-output-toolAgentflow-AgentFlow|Tool",
+            "name": "toolAgentflow",
+            "label": "Tool",
+            "description": "Tool node for AgentFlow",
+            "type": "AgentFlow | Tool"
           }
         ],
         "outputs": {},
@@ -177,45 +285,67 @@
       "dragging": false
     },
     {
-      "id": "agentAgentflow_1",
+      "id": "toolAgentflow_2",
       "type": "agentFlow",
-      "position": { "x": 800, "y": 100 },
+      "position": { "x": 900, "y": 100 },
       "data": {
-        "id": "agentAgentflow_1",
-        "label": "Sales Agent",
+        "id": "toolAgentflow_2",
+        "label": "Cierre / Pago y Entrega (Tool)",
         "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
+        "name": "toolAgentflow",
+        "type": "Tool",
+        "color": "#d4a373",
+        "baseClasses": ["Tool"],
         "category": "Agent Flows",
-        "description": "Agente especializado en ventas B2B y relación con clientes",
+        "description": "Cierra venta, confirma pago y entrega, actualiza estado como herramienta",
         "inputParams": [
           {
-            "label": "Agent Name",
-            "name": "agentName",
-            "type": "string",
-            "default": "Sales Agent"
+            "label": "Tool",
+            "name": "toolAgentflowSelectedTool",
+            "type": "asyncOptions",
+            "loadMethod": "listTools",
+            "loadConfig": true,
+            "id": "toolAgentflow_2-input-toolAgentflowSelectedTool-asyncOptions",
+            "display": true
           },
           {
-            "label": "Agent Description",
-            "name": "agentDescription",
-            "type": "string",
-            "rows": 3,
-            "default": "Experto en ventas B2B, generación de leads, calificación de prospectos y cierre de ventas."
+            "label": "Tool Input Arguments",
+            "name": "toolInputArgs",
+            "type": "array",
+            "acceptVariable": true,
+            "refresh": true,
+            "array": [
+              {
+                "label": "Input Argument Name",
+                "name": "inputArgName",
+                "type": "asyncOptions",
+                "loadMethod": "listToolInputArgs",
+                "refresh": true
+              },
+              {
+                "label": "Input Argument Value",
+                "name": "inputArgValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ],
+            "show": { "toolAgentflowSelectedTool": ".+" },
+            "id": "toolAgentflow_2-input-toolInputArgs-array",
+            "display": true
           },
           {
-            "label": "System Message",
-            "name": "systemMessage",
-            "type": "string",
-            "rows": 4,
-            "default": "Sos un experto agente de ventas B2B. Tu objetivo es entender las necesidades del cliente, generar confianza, ofrecer soluciones personalizadas y guiar hacia el cierre de venta. Hacé preguntas específicas para calificar al prospecto."
-          },
-          {
-            "label": "Max Iterations",
-            "name": "maxIterations",
-            "type": "number",
-            "default": 5
+            "label": "Update Flow State",
+            "name": "toolUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true },
+              { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true }
+            ],
+            "id": "toolAgentflow_2-input-toolUpdateState-array",
+            "display": true
           }
         ],
         "inputAnchors": [
@@ -223,23 +353,40 @@
             "label": "Agent Flow",
             "name": "agentflow",
             "type": "AgentFlow",
-            "id": "agentAgentflow_1-input-agentflow-AgentFlow"
+            "id": "toolAgentflow_2-input-agentflow-AgentFlow"
           }
         ],
         "inputs": {
-          "agentName": "Sales Agent",
-          "agentDescription": "Experto en ventas B2B, generación de leads, calificación de prospectos y cierre de ventas.",
-          "systemMessage": "Sos un experto agente de ventas B2B. Tu objetivo es entender las necesidades del cliente, generar confianza, ofrecer soluciones personalizadas y guiar hacia el cierre de venta. Hacé preguntas específicas para calificar al prospecto.",
-          "maxIterations": 5,
-          "agentflow": "{{agentAgentflow_0.data.instance}}"
+          "toolAgentflowSelectedTool": "salesClosingAgent",
+          "toolInputArgs": [
+            {
+              "inputArgName": "name",
+              "inputArgValue": "Sales Closing Agent"
+            },
+            {
+              "inputArgName": "description",
+              "inputArgValue": "Experto en ventas B2B, generación de leads, calificación de prospectos y cierre de ventas."
+            },
+            {
+              "inputArgName": "systemMessage",
+              "inputArgValue": "Estás cerrando la venta. 1) Confirmá datos del cliente si faltan (nombre, apellido, dirección). 2) Para la entrega preguntá: '¿Hacemos el envío al lugar habitual (dirección registrada) o preferís otra dirección?' 3) Para el pago consultá: '¿Usamos el método de pago habitual o preferís otro?' 4) Preguntá si quiere guardar esta dirección para futuras compras. 5) Si no se cierra hoy, confirmá que haremos seguimiento mañana. Siempre cordial y en tono argentino."
+            }
+          ],
+          "toolUpdateState": [
+            {
+              "key": "currentAgent",
+              "value": "closing_agent"
+            }
+          ],
+          "agentflow": "{{conditionAgentAgentflow_0.data.instance}}"
         },
         "outputAnchors": [
           {
-            "id": "agentAgentflow_1-output-agentAgentflow-AgentFlow|Agent",
-            "name": "agentAgentflow",
-            "label": "Agent",
-            "description": "Agent node for AgentFlow",
-            "type": "AgentFlow | Agent"
+            "id": "toolAgentflow_2-output-toolAgentflow-AgentFlow|Tool",
+            "name": "toolAgentflow",
+            "label": "Tool",
+            "description": "Tool node for AgentFlow",
+            "type": "AgentFlow | Tool"
           }
         ],
         "outputs": {},
@@ -252,45 +399,67 @@
       "dragging": false
     },
     {
-      "id": "agentAgentflow_2",
+      "id": "toolAgentflow_3",
       "type": "agentFlow",
-      "position": { "x": 1200, "y": 300 },
+      "position": { "x": 900, "y": 600 },
       "data": {
-        "id": "agentAgentflow_2",
-        "label": "Product Specialist",
+        "id": "toolAgentflow_3",
+        "label": "Negociación de Precio (Tool)",
         "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
+        "name": "toolAgentflow",
+        "type": "Tool",
+        "color": "#d4a373",
+        "baseClasses": ["Tool"],
         "category": "Agent Flows",
-        "description": "Especialista en productos y especificaciones técnicas",
+        "description": "Aplica política de descuentos escalonada como herramienta",
         "inputParams": [
           {
-            "label": "Agent Name",
-            "name": "agentName",
-            "type": "string",
-            "default": "Product Specialist"
+            "label": "Tool",
+            "name": "toolAgentflowSelectedTool",
+            "type": "asyncOptions",
+            "loadMethod": "listTools",
+            "loadConfig": true,
+            "id": "toolAgentflow_3-input-toolAgentflowSelectedTool-asyncOptions",
+            "display": true
           },
           {
-            "label": "Agent Description",
-            "name": "agentDescription",
-            "type": "string",
-            "rows": 3,
-            "default": "Especialista técnico en productos de tecnología empresarial, especificaciones y comparaciones."
+            "label": "Tool Input Arguments",
+            "name": "toolInputArgs",
+            "type": "array",
+            "acceptVariable": true,
+            "refresh": true,
+            "array": [
+              {
+                "label": "Input Argument Name",
+                "name": "inputArgName",
+                "type": "asyncOptions",
+                "loadMethod": "listToolInputArgs",
+                "refresh": true
+              },
+              {
+                "label": "Input Argument Value",
+                "name": "inputArgValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ],
+            "show": { "toolAgentflowSelectedTool": ".+" },
+            "id": "toolAgentflow_3-input-toolInputArgs-array",
+            "display": true
           },
           {
-            "label": "System Message",
-            "name": "systemMessage",
-            "type": "string",
-            "rows": 4,
-            "default": "Sos un especialista técnico en productos de tecnología empresarial. Proporcioná información detallada sobre especificaciones, comparaciones y recomendaciones basadas en las necesidades del cliente."
-          },
-          {
-            "label": "Max Iterations",
-            "name": "maxIterations",
-            "type": "number",
-            "default": 5
+            "label": "Update Flow State",
+            "name": "toolUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true },
+              { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true }
+            ],
+            "id": "toolAgentflow_3-input-toolUpdateState-array",
+            "display": true
           }
         ],
         "inputAnchors": [
@@ -298,23 +467,40 @@
             "label": "Agent Flow",
             "name": "agentflow",
             "type": "AgentFlow",
-            "id": "agentAgentflow_2-input-agentflow-AgentFlow"
+            "id": "toolAgentflow_3-input-agentflow-AgentFlow"
           }
         ],
         "inputs": {
-          "agentName": "Product Specialist",
-          "agentDescription": "Especialista técnico en productos de tecnología empresarial, especificaciones y comparaciones.",
-          "systemMessage": "Sos un especialista técnico en productos de tecnología empresarial. Proporcioná información detallada sobre especificaciones, comparaciones y recomendaciones basadas en las necesidades del cliente.",
-          "maxIterations": 5,
-          "agentflow": "{{agentAgentflow_1.data.instance}}"
+          "toolAgentflowSelectedTool": "pricingNegotiationAgent",
+          "toolInputArgs": [
+            {
+              "inputArgName": "name",
+              "inputArgValue": "Pricing Negotiation Agent"
+            },
+            {
+              "inputArgName": "description",
+              "inputArgValue": "Especialista técnico en productos de tecnología empresarial, especificaciones y comparaciones."
+            },
+            {
+              "inputArgName": "systemMessage",
+              "inputArgValue": "Negociá según $flow.state.salesManual. Considerá cantidad, histórico, y ofrecé alternativas si el precio sigue siendo un problema. Máximo de intentos: $flow.state.negotiationMaxAttempts."
+            }
+          ],
+          "toolUpdateState": [
+            {
+              "key": "currentAgent",
+              "value": "negotiation_agent"
+            }
+          ],
+          "agentflow": "{{conditionAgentAgentflow_0.data.instance}}"
         },
         "outputAnchors": [
           {
-            "id": "agentAgentflow_2-output-agentAgentflow-AgentFlow|Agent",
-            "name": "agentAgentflow",
-            "label": "Agent",
-            "description": "Agent node for AgentFlow",
-            "type": "AgentFlow | Agent"
+            "id": "toolAgentflow_3-output-toolAgentflow-AgentFlow|Tool",
+            "name": "toolAgentflow",
+            "label": "Tool",
+            "description": "Tool node for AgentFlow",
+            "type": "AgentFlow | Tool"
           }
         ],
         "outputs": {},
@@ -327,45 +513,67 @@
       "dragging": false
     },
     {
-      "id": "agentAgentflow_3",
+      "id": "toolAgentflow_4",
       "type": "agentFlow",
-      "position": { "x": 1600, "y": 400 },
+      "position": { "x": 1300, "y": 350 },
       "data": {
-        "id": "agentAgentflow_3",
-        "label": "Pricing Agent",
+        "id": "toolAgentflow_4",
+        "label": "Info Técnica / Alternativas (Tool)",
         "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
+        "name": "toolAgentflow",
+        "type": "Tool",
+        "color": "#d4a373",
+        "baseClasses": ["Tool"],
         "category": "Agent Flows",
-        "description": "Especialista en precios, cotizaciones y negociación",
+        "description": "Amplía info técnica y sugiere alternativas si falta stock como herramienta",
         "inputParams": [
           {
-            "label": "Agent Name",
-            "name": "agentName",
-            "type": "string",
-            "default": "Pricing Agent"
+            "label": "Tool",
+            "name": "toolAgentflowSelectedTool",
+            "type": "asyncOptions",
+            "loadMethod": "listTools",
+            "loadConfig": true,
+            "id": "toolAgentflow_4-input-toolAgentflowSelectedTool-asyncOptions",
+            "display": true
           },
           {
-            "label": "Agent Description",
-            "name": "agentDescription",
-            "type": "string",
-            "rows": 3,
-            "default": "Especialista en precios, cotizaciones, descuentos y términos de pago para clientes B2B."
+            "label": "Tool Input Arguments",
+            "name": "toolInputArgs",
+            "type": "array",
+            "acceptVariable": true,
+            "refresh": true,
+            "array": [
+              {
+                "label": "Input Argument Name",
+                "name": "inputArgName",
+                "type": "asyncOptions",
+                "loadMethod": "listToolInputArgs",
+                "refresh": true
+              },
+              {
+                "label": "Input Argument Value",
+                "name": "inputArgValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ],
+            "show": { "toolAgentflowSelectedTool": ".+" },
+            "id": "toolAgentflow_4-input-toolInputArgs-array",
+            "display": true
           },
           {
-            "label": "System Message",
-            "name": "systemMessage",
-            "type": "string",
-            "rows": 4,
-            "default": "Sos un especialista en precios y cotizaciones B2B. Generá cotizaciones precisas, ofrecé descuentos apropiados y explicá términos de pago. Sé transparente y competitivo."
-          },
-          {
-            "label": "Max Iterations",
-            "name": "maxIterations",
-            "type": "number",
-            "default": 5
+            "label": "Update Flow State",
+            "name": "toolUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true },
+              { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true }
+            ],
+            "id": "toolAgentflow_4-input-toolUpdateState-array",
+            "display": true
           }
         ],
         "inputAnchors": [
@@ -373,23 +581,40 @@
             "label": "Agent Flow",
             "name": "agentflow",
             "type": "AgentFlow",
-            "id": "agentAgentflow_3-input-agentflow-AgentFlow"
+            "id": "toolAgentflow_4-input-agentflow-AgentFlow"
           }
         ],
         "inputs": {
-          "agentName": "Pricing Agent",
-          "agentDescription": "Especialista en precios, cotizaciones, descuentos y términos de pago para clientes B2B.",
-          "systemMessage": "Sos un especialista en precios y cotizaciones B2B. Generá cotizaciones precisas, ofrecé descuentos apropiados y explicá términos de pago. Sé transparente y competitivo.",
-          "maxIterations": 5,
-          "agentflow": "{{agentAgentflow_2.data.instance}}"
+          "toolAgentflowSelectedTool": "technicalInfoAgent",
+          "toolInputArgs": [
+            {
+              "inputArgName": "name",
+              "inputArgValue": "Technical Information Agent"
+            },
+            {
+              "inputArgName": "description",
+              "inputArgValue": "Especialista en precios, cotizaciones, descuentos y términos de pago para clientes B2B."
+            },
+            {
+              "inputArgName": "systemMessage",
+              "inputArgValue": "Proporcioná información técnica detallada usando $flow.state.inventory. Si no hay stock, sugerí alternativas similares. Explicá especificaciones, compatibilidades y casos de uso. Mantené tono técnico pero accesible."
+            }
+          ],
+          "toolUpdateState": [
+            {
+              "key": "currentAgent",
+              "value": "technical_agent"
+            }
+          ],
+          "agentflow": "{{conditionAgentAgentflow_0.data.instance}}"
         },
         "outputAnchors": [
           {
-            "id": "agentAgentflow_3-output-agentAgentflow-AgentFlow|Agent",
-            "name": "agentAgentflow",
-            "label": "Agent",
-            "description": "Agent node for AgentFlow",
-            "type": "AgentFlow | Agent"
+            "id": "toolAgentflow_4-output-toolAgentflow-AgentFlow|Tool",
+            "name": "toolAgentflow",
+            "label": "Tool",
+            "description": "Tool node for AgentFlow",
+            "type": "AgentFlow | Tool"
           }
         ],
         "outputs": {},
@@ -402,9 +627,123 @@
       "dragging": false
     },
     {
+      "id": "toolAgentflow_5",
+      "type": "agentFlow",
+      "position": { "x": 1200, "y": 400 },
+      "data": {
+        "id": "toolAgentflow_5",
+        "label": "Envío WhatsApp / Resumen (Tool)",
+        "version": 2,
+        "name": "toolAgentflow",
+        "type": "Tool",
+        "color": "#d4a373",
+        "baseClasses": ["Tool"],
+        "category": "Agent Flows",
+        "description": "Envía resumen por WhatsApp y actualiza estado como herramienta",
+        "inputParams": [
+          {
+            "label": "Tool",
+            "name": "toolAgentflowSelectedTool",
+            "type": "asyncOptions",
+            "loadMethod": "listTools",
+            "loadConfig": true,
+            "id": "toolAgentflow_5-input-toolAgentflowSelectedTool-asyncOptions",
+            "display": true
+          },
+          {
+            "label": "Tool Input Arguments",
+            "name": "toolInputArgs",
+            "type": "array",
+            "acceptVariable": true,
+            "refresh": true,
+            "array": [
+              {
+                "label": "Input Argument Name",
+                "name": "inputArgName",
+                "type": "asyncOptions",
+                "loadMethod": "listToolInputArgs",
+                "refresh": true
+              },
+              {
+                "label": "Input Argument Value",
+                "name": "inputArgValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ],
+            "show": { "toolAgentflowSelectedTool": ".+" },
+            "id": "toolAgentflow_5-input-toolInputArgs-array",
+            "display": true
+          },
+          {
+            "label": "Update Flow State",
+            "name": "toolUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true },
+              { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true }
+            ],
+            "id": "toolAgentflow_5-input-toolUpdateState-array",
+            "display": true
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Agent Flow",
+            "name": "agentflow",
+            "type": "AgentFlow",
+            "id": "toolAgentflow_5-input-agentflow-AgentFlow"
+          }
+        ],
+        "inputs": {
+          "toolAgentflowSelectedTool": "whatsappSummaryAgent",
+          "toolInputArgs": [
+            {
+              "inputArgName": "name",
+              "inputArgValue": "WhatsApp Summary Agent"
+            },
+            {
+              "inputArgName": "description",
+              "inputArgValue": "Envía resúmenes por WhatsApp y actualiza el estado del flujo."
+            },
+            {
+              "inputArgName": "systemMessage",
+              "inputArgValue": "Enviá un resumen de la conversación por WhatsApp usando los números $flow.state.senderPhoneNumber y $flow.state.receiverPhoneNumber. Incluí detalles de productos, precios acordados y próximos pasos. Actualizá el estado del flujo como 'completado'."
+            }
+          ],
+          "toolUpdateState": [
+            {
+              "key": "currentAgent",
+              "value": "whatsapp_agent"
+            }
+          ],
+          "agentflow": "{{toolAgentflow_2.data.instance}}"
+        },
+        "outputAnchors": [
+          {
+            "id": "toolAgentflow_5-output-toolAgentflow-AgentFlow|Tool",
+            "name": "toolAgentflow",
+            "label": "Tool",
+            "description": "Tool node for AgentFlow",
+            "type": "AgentFlow | Tool"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 434,
+      "selected": false,
+      "positionAbsolute": { "x": 1200, "y": 400 },
+      "dragging": false
+    },
+    {
       "id": "toolAgentflow_0",
       "type": "agentFlow",
-      "position": { "x": 2000, "y": 300 },
+      "position": { "x": 1700, "y": 350 },
       "data": {
         "id": "toolAgentflow_0",
         "label": "Database Connector",
@@ -448,7 +787,7 @@
           "toolName": "database_connector",
           "toolDescription": "Conecta con la base de datos PostgreSQL para operaciones de clientes, ventas y seguimientos.",
           "toolCode": "// Database Connector Tool\nconst { Pool } = require('pg');\n\nclass DatabaseConnector {\n  constructor() {\n    this.pool = new Pool({\n      connectionString: process.env.POSTGRES_CONNECTION\n    });\n  }\n\n  async execute(operation, data) {\n    const client = await this.pool.connect();\n    try {\n      switch(operation) {\n        case 'getCustomer':\n          return await this.getCustomer(client, data.phoneNumber);\n        case 'upsertCustomer':\n          return await this.upsertCustomer(client, data);\n        case 'createSale':\n          return await this.createSale(client, data);\n        case 'scheduleFollowUp':\n          return await this.scheduleFollowUp(client, data);\n        default:\n          throw new Error('Operación no válida');\n      }\n    } finally {\n      client.release();\n    }\n  }\n\n  async getCustomer(client, phoneNumber) {\n    const result = await client.query(\n      'SELECT * FROM customers WHERE phone_number = $1',\n      [phoneNumber]\n    );\n    return result.rows[0] || null;\n  }\n\n  async upsertCustomer(client, customerData) {\n    const query = `\n      INSERT INTO customers (phone_number, company_name, contact_name, email, industry)\n      VALUES ($1, $2, $3, $4, $5)\n      ON CONFLICT (phone_number) DO UPDATE SET\n        company_name = EXCLUDED.company_name,\n        contact_name = EXCLUDED.contact_name,\n        email = EXCLUDED.email,\n        industry = EXCLUDED.industry,\n        updated_at = CURRENT_TIMESTAMP\n      RETURNING *\n    `;\n    const result = await client.query(query, [\n      customerData.phoneNumber,\n      customerData.companyName,\n      customerData.contactName,\n      customerData.email,\n      customerData.industry\n    ]);\n    return result.rows[0];\n  }\n}\n\nmodule.exports = DatabaseConnector;",
-          "agentflow": "{{agentAgentflow_3.data.instance}}"
+          "agentflow": "{{toolAgentflow_4.data.instance}}"
         },
         "outputAnchors": [
           {
@@ -473,77 +812,125 @@
     {
       "source": "startAgentflow_0",
       "sourceHandle": "startAgentflow_0-output-startAgentflow-AgentFlow|Start",
-      "target": "agentAgentflow_0",
-      "targetHandle": "agentAgentflow_0-input-agentflow-AgentFlow",
+      "target": "toolAgentflow_1",
+      "targetHandle": "toolAgentflow_1-input-agentflow-AgentFlow",
       "data": {
         "colors": {
           "source": "#4DD0E1",
-          "target": "#4DD0E1"
+          "target": "#d4a373"
         },
         "isHumanInput": false
       },
       "type": "agentFlow",
-      "id": "startAgentflow_0-agentAgentflow_0"
+      "id": "startAgentflow_0-toolAgentflow_1"
     },
     {
-      "source": "agentAgentflow_0",
-      "sourceHandle": "agentAgentflow_0-output-agentAgentflow-AgentFlow|Agent",
-      "target": "agentAgentflow_1",
-      "targetHandle": "agentAgentflow_1-input-agentflow-AgentFlow",
+      "source": "toolAgentflow_1",
+      "sourceHandle": "toolAgentflow_1-output-toolAgentflow-AgentFlow|Tool",
+      "target": "conditionAgentAgentflow_0",
+      "targetHandle": "conditionAgentAgentflow_0-input-agentflow-AgentFlow",
       "data": {
         "colors": {
-          "source": "#4DD0E1",
-          "target": "#4DD0E1"
+          "source": "#d4a373",
+          "target": "#ff8fab"
         },
         "isHumanInput": false
       },
       "type": "agentFlow",
-      "id": "agentAgentflow_0-agentAgentflow_1"
+      "id": "toolAgentflow_1-conditionAgentAgentflow_0"
     },
     {
-      "source": "agentAgentflow_1",
-      "sourceHandle": "agentAgentflow_1-output-agentAgentflow-AgentFlow|Agent",
-      "target": "agentAgentflow_2",
-      "targetHandle": "agentAgentflow_2-input-agentflow-AgentFlow",
+      "source": "conditionAgentAgentflow_0",
+      "sourceHandle": "conditionAgentAgentflow_0-output-0",
+      "target": "toolAgentflow_2",
+      "targetHandle": "toolAgentflow_2-input-agentflow-AgentFlow",
+      "type": "buttonedge",
+      "id": "conditionAgentAgentflow_0-toolAgentflow_2",
+      "data": {
+        "label": "Precio aceptado"
+      }
+    },
+    {
+      "source": "conditionAgentAgentflow_0",
+      "sourceHandle": "conditionAgentAgentflow_0-output-1",
+      "target": "toolAgentflow_3",
+      "targetHandle": "toolAgentflow_3-input-agentflow-AgentFlow",
+      "type": "buttonedge",
+      "id": "conditionAgentAgentflow_0-toolAgentflow_3",
+      "data": {
+        "label": "Precio caro"
+      }
+    },
+    {
+      "source": "conditionAgentAgentflow_0",
+      "sourceHandle": "conditionAgentAgentflow_0-output-2",
+      "target": "toolAgentflow_4",
+      "targetHandle": "toolAgentflow_4-input-agentflow-AgentFlow",
+      "type": "buttonedge",
+      "id": "conditionAgentAgentflow_0-toolAgentflow_4",
+      "data": {
+        "label": "Más info"
+      }
+    },
+    {
+      "source": "toolAgentflow_2",
+      "sourceHandle": "toolAgentflow_2-output-toolAgentflow-AgentFlow|Tool",
+      "target": "toolAgentflow_5",
+      "targetHandle": "toolAgentflow_5-input-agentflow-AgentFlow",
       "data": {
         "colors": {
-          "source": "#4DD0E1",
-          "target": "#4DD0E1"
+          "source": "#d4a373",
+          "target": "#d4a373"
         },
         "isHumanInput": false
       },
       "type": "agentFlow",
-      "id": "agentAgentflow_1-agentAgentflow_2"
+      "id": "toolAgentflow_2-toolAgentflow_5"
     },
     {
-      "source": "agentAgentflow_2",
-      "sourceHandle": "agentAgentflow_2-output-agentAgentflow-AgentFlow|Agent",
-      "target": "agentAgentflow_3",
-      "targetHandle": "agentAgentflow_3-input-agentflow-AgentFlow",
+      "source": "toolAgentflow_3",
+      "sourceHandle": "toolAgentflow_3-output-toolAgentflow-AgentFlow|Tool",
+      "target": "toolAgentflow_2",
+      "targetHandle": "toolAgentflow_2-input-agentflow-AgentFlow",
       "data": {
         "colors": {
-          "source": "#4DD0E1",
-          "target": "#4DD0E1"
+          "source": "#d4a373",
+          "target": "#d4a373"
         },
         "isHumanInput": false
       },
       "type": "agentFlow",
-      "id": "agentAgentflow_2-agentAgentflow_3"
+      "id": "toolAgentflow_3-toolAgentflow_2"
     },
     {
-      "source": "agentAgentflow_3",
-      "sourceHandle": "agentAgentflow_3-output-agentAgentflow-AgentFlow|Agent",
+      "source": "toolAgentflow_4",
+      "sourceHandle": "toolAgentflow_4-output-toolAgentflow-AgentFlow|Tool",
+      "target": "toolAgentflow_1",
+      "targetHandle": "toolAgentflow_1-input-agentflow-AgentFlow",
+      "data": {
+        "colors": {
+          "source": "#d4a373",
+          "target": "#d4a373"
+        },
+        "isHumanInput": false
+      },
+      "type": "agentFlow",
+      "id": "toolAgentflow_4-toolAgentflow_1"
+    },
+    {
+      "source": "toolAgentflow_5",
+      "sourceHandle": "toolAgentflow_5-output-toolAgentflow-AgentFlow|Tool",
       "target": "toolAgentflow_0",
       "targetHandle": "toolAgentflow_0-input-agentflow-AgentFlow",
       "data": {
         "colors": {
-          "source": "#4DD0E1",
+          "source": "#d4a373",
           "target": "#FF9800"
         },
         "isHumanInput": false
       },
       "type": "agentFlow",
-      "id": "agentAgentflow_3-toolAgentflow_0"
+      "id": "toolAgentflow_5-toolAgentflow_0"
     }
   ]
 }

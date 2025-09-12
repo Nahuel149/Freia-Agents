@@ -16,7 +16,6 @@ import { getErrorMessage } from '../../errors/utils'
 import assistantsService from '../../services/assistants'
 import chatflowsService from '../../services/chatflows'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { checkUsageLimit } from '../../utils/quotaUsage'
 import assistantService from '../assistants'
 import chatMessagesService from '../chat-messages'
 import chatflowService from '../chatflows'
@@ -90,7 +89,7 @@ const convertExportInput = (body: any): ExportInput => {
 }
 
 const FileDefaultName = 'ExportData.json'
-const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string): Promise<{ FileDefaultName: string } & ExportData> => {
+const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
         let AgentFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT') : []
@@ -131,10 +130,10 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
             exportInput.chat_feedback === true ? await chatMessagesService.getMessagesFeedbackByChatflowIds(chatflowIds) : []
 
         let CustomTemplate: CustomTemplate[] =
-            exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates(activeWorkspaceId) : []
+            exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates() : []
 
         let DocumentStore: DocumentStore[] | { data: DocumentStore[]; total: number } =
-            exportInput.document_store === true ? await documenStoreService.getAllDocumentStores(activeWorkspaceId) : []
+            exportInput.document_store === true ? await documenStoreService.getAllDocumentStores() : []
         DocumentStore = 'data' in DocumentStore ? DocumentStore.data : DocumentStore
 
         const documentStoreIds = DocumentStore.map((documentStore) => documentStore.id)
@@ -144,7 +143,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
                 ? await documenStoreService.getAllDocumentFileChunksByDocumentStoreIds(documentStoreIds)
                 : []
 
-        const filters: ExecutionFilters = { workspaceId: activeWorkspaceId }
+        const filters: ExecutionFilters = {}
         const { data: totalExecutions } = exportInput.execution === true ? await executionService.getAllExecutions(filters) : { data: [] }
         let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
 
@@ -227,8 +226,7 @@ async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, origina
 async function replaceDuplicateIdsForChatMessage(
     queryRunner: QueryRunner,
     originalData: ExportData,
-    chatMessages: ChatMessage[],
-    activeWorkspaceId?: string
+    chatMessages: ChatMessage[]
 ) {
     try {
         const chatmessageChatflowIds = chatMessages.map((chatMessage) => {
@@ -248,8 +246,7 @@ async function replaceDuplicateIdsForChatMessage(
         const databaseChatflowIds = await (
             await queryRunner.manager.find(ChatFlow, {
                 where: {
-                    id: In(chatmessageChatflowIds.map((chatmessageChatflowId) => chatmessageChatflowId.id)),
-                    workspaceId: activeWorkspaceId
+                    id: In(chatmessageChatflowIds.map((chatmessageChatflowId) => chatmessageChatflowId.id))
                 }
             })
         ).map((chatflow) => chatflow.id)
@@ -301,8 +298,7 @@ async function replaceDuplicateIdsForChatMessage(
 async function replaceExecutionIdForChatMessage(
     queryRunner: QueryRunner,
     originalData: ExportData,
-    chatMessages: ChatMessage[],
-    activeWorkspaceId?: string
+    chatMessages: ChatMessage[]
 ) {
     try {
         // step 1 - get all execution ids from chatMessages
@@ -324,8 +320,7 @@ async function replaceExecutionIdForChatMessage(
         const databaseExecutionIds = await (
             await queryRunner.manager.find(Execution, {
                 where: {
-                    id: In(chatMessageExecutionIds.map((chatMessageExecutionId) => chatMessageExecutionId.id)),
-                    workspaceId: activeWorkspaceId
+                    id: In(chatMessageExecutionIds.map((chatMessageExecutionId) => chatMessageExecutionId.id))
                 }
             })
         ).map((execution) => execution.id)
@@ -357,8 +352,7 @@ async function replaceExecutionIdForChatMessage(
 async function replaceDuplicateIdsForChatMessageFeedback(
     queryRunner: QueryRunner,
     originalData: ExportData,
-    chatMessageFeedbacks: ChatMessageFeedback[],
-    activeWorkspaceId?: string
+    chatMessageFeedbacks: ChatMessageFeedback[]
 ) {
     try {
         const feedbackChatflowIds = chatMessageFeedbacks.map((feedback) => {
@@ -377,7 +371,7 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         })
         const databaseChatflowIds = await (
             await queryRunner.manager.find(ChatFlow, {
-                where: { id: In(feedbackChatflowIds.map((feedbackChatflowId) => feedbackChatflowId.id)), workspaceId: activeWorkspaceId }
+                where: { id: In(feedbackChatflowIds.map((feedbackChatflowId) => feedbackChatflowId.id)) }
             })
         ).map((chatflow) => chatflow.id)
         feedbackChatflowIds.forEach((item) => {
@@ -594,10 +588,7 @@ function reduceSpaceForChatflowFlowData(chatflows: ChatFlow[]) {
 }
 
 function insertWorkspaceId(importedData: any, activeWorkspaceId?: string) {
-    if (!activeWorkspaceId) return importedData
-    importedData.forEach((item: any) => {
-        item.workspaceId = activeWorkspaceId
-    })
+    // No longer using workspace IDs in single-user mode
     return importedData
 }
 
@@ -608,7 +599,7 @@ async function saveBatch(manager: EntityManager, entity: any, items: any[], batc
     }
 }
 
-const importData = async (importData: ExportData, orgId: string, activeWorkspaceId: string, subscriptionId: string) => {
+const importData = async (importData: ExportData) => {
     // Initialize missing properties with empty arrays to avoid "undefined" errors
     importData.AgentFlow = importData.AgentFlow || []
     importData.AgentFlowV2 = importData.AgentFlowV2 || []
@@ -634,123 +625,54 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
         try {
             if (importData.AgentFlow.length > 0) {
                 importData.AgentFlow = reduceSpaceForChatflowFlowData(importData.AgentFlow)
-                importData.AgentFlow = insertWorkspaceId(importData.AgentFlow, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('MULTIAGENT', orgId)
-                const newChatflowCount = importData.AgentFlow.length
-                await checkUsageLimit(
-                    'flows',
-                    subscriptionId,
-                    getRunningExpressApp().usageCacheManager,
-                    existingChatflowCount + newChatflowCount
-                )
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlow)
             }
             if (importData.AgentFlowV2.length > 0) {
                 importData.AgentFlowV2 = reduceSpaceForChatflowFlowData(importData.AgentFlowV2)
-                importData.AgentFlowV2 = insertWorkspaceId(importData.AgentFlowV2, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('AGENTFLOW', orgId)
-                const newChatflowCount = importData.AgentFlowV2.length
-                await checkUsageLimit(
-                    'flows',
-                    subscriptionId,
-                    getRunningExpressApp().usageCacheManager,
-                    existingChatflowCount + newChatflowCount
-                )
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlowV2)
             }
             if (importData.AssistantCustom.length > 0) {
-                importData.AssistantCustom = insertWorkspaceId(importData.AssistantCustom, activeWorkspaceId)
-                const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization('CUSTOM', orgId)
-                const newAssistantCount = importData.AssistantCustom.length
-                await checkUsageLimit(
-                    'flows',
-                    subscriptionId,
-                    getRunningExpressApp().usageCacheManager,
-                    existingAssistantCount + newAssistantCount
-                )
                 importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantCustom)
             }
             if (importData.AssistantFlow.length > 0) {
                 importData.AssistantFlow = reduceSpaceForChatflowFlowData(importData.AssistantFlow)
-                importData.AssistantFlow = insertWorkspaceId(importData.AssistantFlow, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('ASSISTANT', orgId)
-                const newChatflowCount = importData.AssistantFlow.length
-                await checkUsageLimit(
-                    'flows',
-                    subscriptionId,
-                    getRunningExpressApp().usageCacheManager,
-                    existingChatflowCount + newChatflowCount
-                )
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AssistantFlow)
             }
             if (importData.AssistantOpenAI.length > 0) {
-                importData.AssistantOpenAI = insertWorkspaceId(importData.AssistantOpenAI, activeWorkspaceId)
-                const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization('OPENAI', orgId)
-                const newAssistantCount = importData.AssistantOpenAI.length
-                await checkUsageLimit(
-                    'flows',
-                    subscriptionId,
-                    getRunningExpressApp().usageCacheManager,
-                    existingAssistantCount + newAssistantCount
-                )
                 importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantOpenAI)
             }
             if (importData.AssistantAzure.length > 0) {
-                importData.AssistantAzure = insertWorkspaceId(importData.AssistantAzure, activeWorkspaceId)
-                const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization('AZURE', orgId)
-                const newAssistantCount = importData.AssistantAzure.length
-                await checkUsageLimit(
-                    'flows',
-                    subscriptionId,
-                    getRunningExpressApp().usageCacheManager,
-                    existingAssistantCount + newAssistantCount
-                )
                 importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantAzure)
             }
             if (importData.ChatFlow.length > 0) {
                 importData.ChatFlow = reduceSpaceForChatflowFlowData(importData.ChatFlow)
-                importData.ChatFlow = insertWorkspaceId(importData.ChatFlow, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('CHATFLOW', orgId)
-                const newChatflowCount = importData.ChatFlow.length
-                await checkUsageLimit(
-                    'flows',
-                    subscriptionId,
-                    getRunningExpressApp().usageCacheManager,
-                    existingChatflowCount + newChatflowCount
-                )
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.ChatFlow)
             }
             if (importData.ChatMessage.length > 0) {
-                importData = await replaceDuplicateIdsForChatMessage(queryRunner, importData, importData.ChatMessage, activeWorkspaceId)
-                importData = await replaceExecutionIdForChatMessage(queryRunner, importData, importData.ChatMessage, activeWorkspaceId)
+                importData = await replaceDuplicateIdsForChatMessage(queryRunner, importData, importData.ChatMessage)
+                importData = await replaceExecutionIdForChatMessage(queryRunner, importData, importData.ChatMessage)
             }
             if (importData.ChatMessageFeedback.length > 0)
                 importData = await replaceDuplicateIdsForChatMessageFeedback(
                     queryRunner,
                     importData,
-                    importData.ChatMessageFeedback,
-                    activeWorkspaceId
+                    importData.ChatMessageFeedback
                 )
             if (importData.CustomTemplate.length > 0) {
-                importData.CustomTemplate = insertWorkspaceId(importData.CustomTemplate, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForCustomTemplate(queryRunner, importData, importData.CustomTemplate)
             }
             if (importData.DocumentStore.length > 0) {
-                importData.DocumentStore = insertWorkspaceId(importData.DocumentStore, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForDocumentStore(queryRunner, importData, importData.DocumentStore)
             }
             if (importData.DocumentStoreFileChunk.length > 0)
                 importData = await replaceDuplicateIdsForDocumentStoreFileChunk(queryRunner, importData, importData.DocumentStoreFileChunk)
             if (importData.Tool.length > 0) {
-                importData.Tool = insertWorkspaceId(importData.Tool, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForTool(queryRunner, importData, importData.Tool)
             }
             if (importData.Execution.length > 0) {
-                importData.Execution = insertWorkspaceId(importData.Execution, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForExecution(queryRunner, importData, importData.Execution)
             }
             if (importData.Variable.length > 0) {
-                importData.Variable = insertWorkspaceId(importData.Variable, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForVariable(queryRunner, importData, importData.Variable)
             }
 

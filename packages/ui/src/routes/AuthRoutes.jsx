@@ -10,8 +10,7 @@ const VerifyEmailPage = Loadable(lazy(() => import('@/views/auth/verify-email'))
 const ForgotPasswordPage = Loadable(lazy(() => import('@/views/auth/forgotPassword')))
 const ResetPasswordPage = Loadable(lazy(() => import('@/views/auth/resetPassword')))
 const UnauthorizedPage = Loadable(lazy(() => import('@/views/auth/unauthorized')))
-const OrganizationSetupPage = Loadable(lazy(() => import('@/views/organization/index')))
-const LicenseExpiredPage = Loadable(lazy(() => import('@/views/auth/expired')))
+// OSS mode - OrganizationSetupPage and LicenseExpiredPage removed
 
 const AuthRoutes = {
     path: '/',
@@ -45,14 +44,7 @@ const AuthRoutes = {
             path: '/unauthorized',
             element: <UnauthorizedPage />
         },
-        {
-            path: '/organization-setup',
-            element: <OrganizationSetupPage />
-        },
-        {
-            path: '/license-expired',
-            element: <LicenseExpiredPage />
-        }
+        // OSS mode - organization setup and license expired routes removed
     ]
 }
 

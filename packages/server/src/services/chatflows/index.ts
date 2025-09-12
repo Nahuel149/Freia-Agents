@@ -191,9 +191,19 @@ const getAllChatflowsCount = async (type?: ChatflowType): Promise<number> => {
 const getAllChatflowsCountByOrganization = async (type: ChatflowType, orgId: string): Promise<number> => {
     try {
         const appServer = getRunningExpressApp()
+        
+        // In OSS mode, ignore organization filtering and just count by type
+        if (isOssMode()) {
+            const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
+                type
+            })
+            return dbResponse
+        }
+        
+        // In enterprise mode, we would filter by organization through workspace relationship
+        // For now, just count by type since ChatFlow doesn't have direct orgId field
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
             type
-            // Note: ChatFlow entity might not have orgId field, using type only for now
         })
         return dbResponse
     } catch (error) {
@@ -335,7 +345,7 @@ const updateChatflow = async (
             appServer.usageCacheManager
         )
     }
-    if (updateChatFlow.type || updateChatFlow.type === '') {
+    if (updateChatFlow.type) {
         updateChatFlow.type = validateChatflowType(updateChatFlow.type)
     } else {
         updateChatFlow.type = chatflow.type

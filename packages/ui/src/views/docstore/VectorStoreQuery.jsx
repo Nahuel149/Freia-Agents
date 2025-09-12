@@ -59,7 +59,8 @@ const VectorStoreQuery = () => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const inputRef = useRef(null)
-    const { hasAssignedWorkspace } = useAuth()
+    // OSS mode: Workspace assignment checks removed
+    const { } = useAuth()
 
     useNotifier()
 
@@ -239,10 +240,7 @@ const VectorStoreQuery = () => {
 
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
-            if (!hasAssignedWorkspace(getSpecificDocumentStoreApi.data.workspaceId)) {
-                navigate('/unauthorized')
-                return
-            }
+            // OSS mode: Workspace assignment check removed
             setDocumentStore(getSpecificDocumentStoreApi.data)
             const vectorStoreConfig = getSpecificDocumentStoreApi.data.vectorStoreConfig
             if (vectorStoreConfig) {

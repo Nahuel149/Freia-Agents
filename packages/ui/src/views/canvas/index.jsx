@@ -63,7 +63,8 @@ const edgeTypes = { buttonedge: ButtonEdge }
 const Canvas = () => {
     const theme = useTheme()
     const navigate = useNavigate()
-    const { hasAssignedWorkspace } = useAuth()
+    // OSS mode: Workspace assignment checks removed
+    const { } = useAuth()
 
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
@@ -409,10 +410,7 @@ const Canvas = () => {
         if (getSpecificChatflowApi.data) {
             const chatflow = getSpecificChatflowApi.data
             const workspaceId = chatflow.workspaceId
-            if (!hasAssignedWorkspace(workspaceId)) {
-                navigate('/unauthorized')
-                return
-            }
+            // OSS mode: Workspace assignment check removed
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
             setLasUpdatedDateTime(chatflow.updatedDate)
             setNodes(initialFlow.nodes || [])
