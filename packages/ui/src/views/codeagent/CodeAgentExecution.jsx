@@ -145,10 +145,24 @@ const CodeAgentExecution = () => {
                 }
             })
 
+            // Prefer server-provided message; else try to parse output JSON { reply }
+            let content = response.data?.message || ''
+            if (!content) {
+                const raw = response.data?.output
+                if (typeof raw === 'string' && raw.trim()) {
+                    try {
+                        const parsed = JSON.parse(raw)
+                        content = parsed?.reply || raw
+                    } catch {
+                        content = raw
+                    }
+                }
+            }
+
             const agentMessage = {
                 id: (Date.now() + 1).toString(),
                 type: 'agent',
-                content: response.data.message || 'Code executed successfully',
+                content: content || 'Code executed successfully',
                 data: response.data.data,
                 logs: response.data.logs,
                 timestamp: new Date().toISOString()

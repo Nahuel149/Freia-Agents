@@ -13,23 +13,46 @@ export interface SendMessagePayload {
 export class WhatsAppService {
     private apiKey: string
     private baseUrl: string
+    private phoneNumberId?: string
 
     constructor() {
         this.apiKey = process.env.WASENDER_API_KEY || ''
-        this.baseUrl = (process.env.WASENDER_API_URL || 'https://wasenderapi.com/api').replace(/\/$/, '')
+        // Prefer new Wasender API if configured
+        const envUrl = process.env.WASENDER_API_URL || ''
+        const defaultUrl = 'https://wasenderapi.com/api'
+        // If phone number id is set or URL hints the new domain, default to api.wasender.live
+        const prefersNew = /api\.wasender\.live/.test(envUrl) || !!process.env.WASENDER_PHONE_NUMBER_ID
+        const fallbackUrl = prefersNew ? 'https://api.wasender.live' : defaultUrl
+        this.baseUrl = (envUrl || fallbackUrl).replace(/\/$/, '')
+        this.phoneNumberId = process.env.WASENDER_PHONE_NUMBER_ID
     }
 
     async sendMessage(payload: SendMessagePayload) {
         if (!this.apiKey) throw new Error('WASENDER_API_KEY not set')
-        const url = `${this.baseUrl}/send-message`
-        const res = await axios.post(url, payload, {
-            headers: {
-                Authorization: `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            timeout: 15000
-        })
-        return res.data
+        const headers = {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+        }
+
+        // If using new Wasender API, require phone_number_id and use new fields
+        const useNew = /api\.wasender\.live/.test(this.baseUrl) || !!this.phoneNumberId
+        if (useNew) {
+            if (!this.phoneNumberId) throw new Error('WASENDER_PHONE_NUMBER_ID not set for Wasender API v1')
+            const url = `${this.baseUrl}/v1/messages/send-text`
+            const body = {
+                phone_number_id: this.phoneNumberId,
+                to_number: payload.to,
+                type: 'text',
+                message: payload.text
+            }
+            const res = await axios.post(url, body, { headers, timeout: 20000 })
+            return res.data
+        } else {
+            // Legacy endpoint
+            const url = `${this.baseUrl}/send-message`
+            const res = await axios.post(url, payload, { headers, timeout: 15000 })
+            return res.data
+        }
     }
 
     /**
@@ -66,4 +89,3 @@ export class WhatsAppService {
         return { text: (result.output || '').toString(), raw: null }
     }
 }
-

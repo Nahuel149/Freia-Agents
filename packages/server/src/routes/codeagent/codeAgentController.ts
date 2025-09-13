@@ -232,6 +232,7 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             // Execute the code
             const result = await executeCode(existingCodeAgent.code, codeLanguage, {
                 timeout: 30000,
+                workingDirectory: process.cwd(),
                 environmentVariables: {
                     FLOWISE_INPUT: input || '',
                     FLOWISE_CHAT_HISTORY: JSON.stringify(chatHistory || []),

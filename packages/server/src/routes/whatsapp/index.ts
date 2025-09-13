@@ -11,7 +11,10 @@ router.get('/status', async (req, res) => {
     const hasKey = Boolean(process.env.WASENDER_API_KEY && process.env.WASENDER_API_KEY.trim())
     const hasAgent = Boolean(process.env.WHATSAPP_CODEAGENT_ID && process.env.WHATSAPP_CODEAGENT_ID.trim())
     const signatureRequired = Boolean(process.env.WASENDER_WEBHOOK_SECRET && process.env.WASENDER_WEBHOOK_SECRET.trim())
-    res.json({ hasKey, hasAgent, signatureRequired })
+    const hasPhone = Boolean(process.env.WASENDER_PHONE_NUMBER_ID && process.env.WASENDER_PHONE_NUMBER_ID.trim())
+    const apiUrl = (process.env.WASENDER_API_URL || '').trim()
+    const mode = /api\.wasender\.live/.test(apiUrl) || hasPhone ? 'new' : 'legacy'
+    res.json({ hasKey, hasAgent, signatureRequired, hasPhone, mode })
 })
 
 // Test send endpoint: { to, text }
