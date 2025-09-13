@@ -145,8 +145,17 @@ const CodeAgent = () => {
         }
     }
 
+    const DEFAULT_V2_STORE_IDS = ['productosgomerias', 'clientesgomeria', 'ventasgomeria', 'manualgomeria']
+
     const handleExecute = (codeAgent) => {
-        navigate(`/codeagent/${codeAgent.id}/execute`)
+        // Pass v2 IDs for server-side autoload, plus legacy selectedDocuments if present
+        navigate(`/codeagent/${codeAgent.id}/execute`, {
+            state: {
+                autoload: true,
+                selectedDocIds: DEFAULT_V2_STORE_IDS,
+                selectedDocuments
+            }
+        })
     }
 
     const onConfirm = () => {

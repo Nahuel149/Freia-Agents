@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 
@@ -18,7 +18,10 @@ import {
     IconButton,
     Chip,
     Alert,
-    CircularProgress
+    CircularProgress,
+    FormControlLabel,
+    Switch,
+    Tooltip
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -48,6 +51,7 @@ const CodeAgentExecution = () => {
     const dispatch = useDispatch()
     const { t } = useTranslation()
     const { id } = useParams()
+    const location = useLocation()
     const messagesEndRef = useRef(null)
 
     useNotifier()
@@ -60,6 +64,12 @@ const CodeAgentExecution = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [isExecuting, setIsExecuting] = useState(false)
     const [executionStatus, setExecutionStatus] = useState('idle') // idle, running, success, error
+    const [autoloadOn, setAutoloadOn] = useState(() => {
+        const preset = location?.state?.autoload
+        const hasSelection = !!(location?.state?.selectedDocIds?.length || location?.state?.selectedDocuments)
+        if (typeof preset === 'boolean') return preset
+        return hasSelection
+    })
 
     const getCodeAgentApi = useApi(codeAgentApi.getSpecificCodeAgent)
     const executeCodeAgentApi = useApi(codeAgentApi.executeCodeAgent)
@@ -120,12 +130,18 @@ const CodeAgentExecution = () => {
         setExecutionStatus('running')
 
         try {
+            const autoload = autoloadOn && !!(location?.state?.selectedDocIds?.length || location?.state?.selectedDocuments)
             const response = await executeCodeAgentApi.request(id, {
                 input: inputMessage,
                 context: {
                     chatHistory: messages,
                     sessionId: `session_${Date.now()}`,
-                    user: 'current_user'
+                    user: 'current_user',
+                    autoload,
+                    // v2: prefer IDs for server-side resolution
+                    selectedDocIds: location?.state?.selectedDocIds || null,
+                    // legacy fallback: pass inline selected documents if present
+                    selectedDocuments: location?.state?.selectedDocuments || null
                 }
             })
 
@@ -140,6 +156,15 @@ const CodeAgentExecution = () => {
 
             setMessages(prev => [...prev, agentMessage])
             setExecutionStatus('success')
+
+            // Optional banner about autoload
+            if (response?.data?.autoloadSummary) {
+                const summary = response.data.autoloadSummary
+                enqueueSnackbar({
+                    message: `Loaded ${summary.stores} store(s) · ${(summary.bytes/1024/1024).toFixed(1)} MB`,
+                    options: { key: new Date().getTime() + Math.random(), variant: 'info' }
+                })
+            }
         } catch (error) {
             console.error('Error executing code agent:', error)
             const errorMessage = {
@@ -270,6 +295,12 @@ const CodeAgentExecution = () => {
                     onBack={() => navigate('/codeagent')}
                 >
                     <Stack direction='row' spacing={1}>
+                        <Tooltip title='Use preselected root JSON datasets (v2) on first turn'>
+                            <FormControlLabel
+                                control={<Switch checked={autoloadOn} onChange={(e) => setAutoloadOn(e.target.checked)} />}
+                                label='Autoload selected docs'
+                            />
+                        </Tooltip>
                         <Chip
                             label={codeAgent?.language || 'JavaScript'}
                             color='primary'

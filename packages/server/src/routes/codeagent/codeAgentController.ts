@@ -6,6 +6,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { executeCode, CodeLanguage } from '../../utils/codeExecution'
 import logger from '../../utils/logger'
+import { resolveSelectedStores } from '../../services/documentStoreResolver'
 
 // Create a new CodeAgent
 const createCodeAgent = async (req: Request, res: Response, next: NextFunction) => {
@@ -153,7 +154,8 @@ const deleteCodeAgent = async (req: Request, res: Response, next: NextFunction) 
 const executeCodeAgent = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const appServer = getRunningExpressApp()
-        const { input, chatHistory } = req.body
+        const { input } = req.body
+        const chatHistory = (req.body?.context?.chatHistory ?? req.body?.chatHistory) || []
         const codeAgent = appServer.AppDataSource.getRepository(CodeAgent)
         const codeAgentExecution = appServer.AppDataSource.getRepository(CodeAgentExecution)
 
@@ -199,12 +201,41 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                     throw new Error(`Unsupported language: ${existingCodeAgent.language}`)
             }
 
+            // Autoload dataset from selected document IDs (v2) or legacy inline docs
+            const autoload: boolean = !!(req.body?.context?.autoload)
+            const selectedDocIds: string[] | undefined = req.body?.context?.selectedDocIds
+            const legacySelectedDocs = req.body?.context?.selectedDocuments
+
+            let envAutoload: Record<string, string> = {}
+            let autoloadSummary: any = undefined
+
+            if (autoload && Array.isArray(selectedDocIds) && selectedDocIds.length > 0) {
+                try {
+                    const { envelope, totalBytes, datasetHash, statuses } = await resolveSelectedStores(selectedDocIds)
+                    envAutoload = {
+                        FLOWISE_SELECTED_DOCS: JSON.stringify(envelope),
+                        FLOWISE_DATASET_HASH: datasetHash
+                    }
+                    autoloadSummary = {
+                        stores: envelope.stores.length,
+                        bytes: totalBytes,
+                        datasetHash,
+                        statuses
+                    }
+                } catch (e) {
+                    logger.warn('Failed to resolve selected stores:', e)
+                }
+            } else if (legacySelectedDocs) {
+                envAutoload = { FLOWISE_SELECTED_DOCS: JSON.stringify(legacySelectedDocs) }
+            }
+
             // Execute the code
             const result = await executeCode(existingCodeAgent.code, codeLanguage, {
                 timeout: 30000,
                 environmentVariables: {
                     FLOWISE_INPUT: input || '',
-                    FLOWISE_CHAT_HISTORY: JSON.stringify(chatHistory || [])
+                    FLOWISE_CHAT_HISTORY: JSON.stringify(chatHistory || []),
+                    ...envAutoload
                 }
             })
 
@@ -249,7 +280,8 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                 executionId: savedExecution.id,
                 output: savedExecution.output,
                 error: savedExecution.error,
-                status: savedExecution.status
+                status: savedExecution.status,
+                ...(autoloadSummary ? { autoloadSummary } : {})
             })
         } catch (executionError) {
             // Update execution with error

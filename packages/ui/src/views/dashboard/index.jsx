@@ -136,11 +136,11 @@ const Dashboard = () => {
                     conversionRate: apiData.conversionRate || 0,
                     avgResponseTime: apiData.avgResponseTime || 0,
                     totalRevenue: apiData.totalRevenue ?? (apiData.salesData?.reduce((sum, sale) => sum + sale.revenue, 0) || 0),
-                    monthlyGrowth: 18.7, // Keep static for now
+                    monthlyGrowth: apiData.monthlyGrowth || 0,
                     leadsGenerated: apiData.totalConversations || 0,
-                    meetingsScheduled: Math.floor((apiData.closedClients || 0) * 1.5), // Estimate
+                    meetingsScheduled: apiData.meetingsScheduled || 0,
                     followUpsCompleted: apiData.totalCallbacks || 0,
-                    customerSatisfaction: 4.2, // Keep static for now
+                    customerSatisfaction: apiData.customerSatisfaction || 0,
                     // B2B Tire Sales Specific Data from API
                     totalCallbacks: apiData.totalCallbacks || 0,
                     newClientContacts: apiData.totalConversations || 0,
@@ -149,17 +149,11 @@ const Dashboard = () => {
                     mostRequestedProducts: apiData.mostRequestedProducts?.map(p => ({
                         name: p.name,
                         requests: p.requests,
-                        stock: Math.floor(Math.random() * 20) // Random stock for demo
+                        stock: p.stock || 0
                     })) || [],
                     customerFeedbackAvg: apiData.feedbackAvg || 0,
                     sentimentAnalysis: apiData.sentimentAnalysis || { positive: 0, neutral: 0, negative: 0 },
-                    topMentionedWords: [
-                        { word: 'precio', count: 156 },
-                        { word: 'descuento', count: 89 },
-                        { word: 'calidad', count: 67 },
-                        { word: 'entrega', count: 54 },
-                        { word: 'garantía', count: 43 }
-                    ], // Keep static for now
+                    topMentionedWords: apiData.topMentionedWords || [],
                     agentPerformance: topAgents.map(a => ({ name: a.id || 'Agent', sales: a.closedDeals, revenue: a.revenue, satisfaction: 0 })),
                     inventoryAlerts: apiData.mostRequestedProducts?.filter(p => p.stock <= 5).map(p => ({
                         product: p.name,
@@ -174,12 +168,7 @@ const Dashboard = () => {
                         value: r.amount ? new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS' }).format(r.amount) : (r.message || ''),
                         time: new Date(r.ts).toLocaleString()
                     })),
-                    topPerformingAgents: [
-                        { name: 'Agent Alpha', conversations: 89, closedDeals: 12, revenue: 125000, avatar: 'A' },
-                        { name: 'Agent Beta', conversations: 76, closedDeals: 9, revenue: 98000, avatar: 'B' },
-                        { name: 'Agent Gamma', conversations: 65, closedDeals: 8, revenue: 87000, avatar: 'G' },
-                        { name: 'Agent Delta', conversations: 58, closedDeals: 7, revenue: 76000, avatar: 'D' }
-                    ], // Keep static for now
+                    topPerformingAgents: apiData.topPerformingAgents || [],
                     salesFunnel: funnel
                 })
             } catch (err) {
