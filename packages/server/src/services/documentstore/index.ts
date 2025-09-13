@@ -1324,6 +1324,15 @@ const _insertIntoVectorStoreWorkerThread = async (
         })
         vStoreNodeData.inputs.document = docs
 
+        // Guard: avoid calling vector store upsert with empty docs (some providers throw
+        // MongoInvalidArgumentError: Invalid BulkOperation, Batch cannot be empty)
+        if (!docs.length) {
+            entity.status = DocumentStoreStatus.UPSERTED
+            await appDataSource.getRepository(DocumentStore).save(entity)
+            // Return the entity so controller DTO conversion remains consistent
+            return entity
+        }
+
         // Get Vector Store Instance
         const vectorStoreObj = await _createVectorStoreObject(componentNodes, data, vStoreNodeData, upsertHistory)
         const indexResult = await vectorStoreObj.vectorStoreMethods.upsert(vStoreNodeData, options)

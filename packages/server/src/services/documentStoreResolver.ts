@@ -34,12 +34,13 @@ const ID_TO_FILE_AND_KIND: Record<string, { filename: string; kind: StoreKind; n
 const SOFT_CAP_BYTES = 100 * 1024 * 1024 // 100MB
 
 function findRepoRoot(startDir: string, targetFilenames: string[]): string | null {
-    // Walk upwards looking for any of the target filenames present at the same directory
+    // Walk upwards until we find monorepo root (pnpm-workspace.yaml) or a directory containing the target files
     let dir = startDir
-    for (let i = 0; i < 8; i++) {
-        const foundAll = targetFilenames.some((fname) => fs.existsSync(path.join(dir, fname)))
-        const hasWorkspace = fs.existsSync(path.join(dir, 'pnpm-workspace.yaml')) || fs.existsSync(path.join(dir, 'package.json'))
-        if (foundAll || hasWorkspace) return dir
+    for (let i = 0; i < 12; i++) {
+        const hasWorkspace = fs.existsSync(path.join(dir, 'pnpm-workspace.yaml'))
+        if (hasWorkspace) return dir
+        const anyTargetHere = targetFilenames.some((fname) => fs.existsSync(path.join(dir, fname)))
+        if (anyTargetHere) return dir
         const parent = path.dirname(dir)
         if (parent === dir) break
         dir = parent
@@ -120,4 +121,3 @@ export async function resolveSelectedStores(storeIds: string[]): Promise<Resolve
 
     return { envelope, totalBytes, datasetHash, statuses }
 }
-

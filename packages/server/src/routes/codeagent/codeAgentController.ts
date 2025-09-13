@@ -246,6 +246,11 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                 environmentVariables: {
                     FLOWISE_INPUT: input || '',
                     FLOWISE_CHAT_HISTORY: JSON.stringify(chatHistory || []),
+                    // Pass through OpenAI and CodeAgent environment variables
+                    OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+                    OPENAI_BASE_URL: process.env.OPENAI_BASE_URL || '',
+                    CODEAGENT_MODEL: process.env.CODEAGENT_MODEL || 'gpt-4o-mini',
+                    CODEAGENT_TEMPERATURE: process.env.CODEAGENT_TEMPERATURE || '0.2',
                     ...envAutoload
                 }
             })

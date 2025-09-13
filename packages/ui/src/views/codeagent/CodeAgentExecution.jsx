@@ -64,11 +64,15 @@ const CodeAgentExecution = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [isExecuting, setIsExecuting] = useState(false)
     const [executionStatus, setExecutionStatus] = useState('idle') // idle, running, success, error
+    const DEFAULT_V2_STORE_IDS = ['productosgomerias', 'clientesgomeria', 'ventasgomeria', 'manualgomeria']
+    const effectiveSelectedDocIds = (location?.state?.selectedDocIds && location.state.selectedDocIds.length > 0)
+        ? location.state.selectedDocIds
+        : DEFAULT_V2_STORE_IDS
     const [autoloadOn, setAutoloadOn] = useState(() => {
         const preset = location?.state?.autoload
-        const hasSelection = !!(location?.state?.selectedDocIds?.length || location?.state?.selectedDocuments)
         if (typeof preset === 'boolean') return preset
-        return hasSelection
+        // Default ON when we have default IDs to make direct-route usage smooth
+        return true
     })
 
     const getCodeAgentApi = useApi(codeAgentApi.getSpecificCodeAgent)
@@ -130,7 +134,7 @@ const CodeAgentExecution = () => {
         setExecutionStatus('running')
 
         try {
-            const autoload = autoloadOn && !!(location?.state?.selectedDocIds?.length || location?.state?.selectedDocuments)
+            const autoload = autoloadOn && !!(effectiveSelectedDocIds?.length || location?.state?.selectedDocuments)
             const response = await executeCodeAgentApi.request(id, {
                 input: inputMessage,
                 context: {
@@ -139,7 +143,7 @@ const CodeAgentExecution = () => {
                     user: 'current_user',
                     autoload,
                     // v2: prefer IDs for server-side resolution
-                    selectedDocIds: location?.state?.selectedDocIds || null,
+                    selectedDocIds: effectiveSelectedDocIds || null,
                     // legacy fallback: pass inline selected documents if present
                     selectedDocuments: location?.state?.selectedDocuments || null
                 }
