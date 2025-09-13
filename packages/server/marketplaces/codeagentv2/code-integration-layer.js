@@ -10,14 +10,17 @@ class CodeAgentIntegrationLayer {
         this.config = {
             // Database configuration
             database: {
-                host: process.env.POSTGRES_HOST || 'localhost',
-                port: process.env.POSTGRES_PORT || 5432,
-                database: process.env.POSTGRES_DB || 'freia_dev',
-                user: process.env.POSTGRES_USER || 'postgres',
-                password: process.env.POSTGRES_PASSWORD || 'password',
+                host: process.env.POSTGRES_HOST || process.env.DATABASE_HOST || 'localhost',
+                port: process.env.POSTGRES_PORT || process.env.DATABASE_PORT || 5432,
+                database: process.env.POSTGRES_DB || process.env.DATABASE_NAME || 'freia_dev',
+                user: process.env.POSTGRES_USER || process.env.DATABASE_USER || 'postgres',
+                password: process.env.POSTGRES_PASSWORD || process.env.DATABASE_PASSWORD || 'password',
                 max: 20,
                 idleTimeoutMillis: 30000,
                 connectionTimeoutMillis: 2000,
+                ssl: process.env.DATABASE_SSL === 'true' ? {
+                    rejectUnauthorized: false
+                } : false,
             },
             
             // Flowise integration

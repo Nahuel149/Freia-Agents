@@ -77,7 +77,7 @@ const dashboard = {
                     url: '/agentflows',
                     icon: icons.IconUsersGroup,
                     breadcrumbs: true,
-                    permission: 'agentflows:view'
+                    permission: 'chatflows:view'
                 },
                 {
                     id: 'chatflows',
@@ -95,7 +95,7 @@ const dashboard = {
                     url: '/codeagent',
                     icon: icons.IconCode,
                     breadcrumbs: true,
-                    permission: 'codeagent:view'
+                    permission: 'codeagents:view'
                 },
                 {
                     id: 'dashboard',

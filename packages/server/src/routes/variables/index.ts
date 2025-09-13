@@ -11,9 +11,9 @@ router.post('/', checkPermission('variables:create'), variablesController.create
 router.get('/', checkPermission('variables:view'), variablesController.getAllVariables)
 
 // UPDATE
-router.put(['/', '/:id'], checkAnyPermission('variables:create,variables:update'), variablesController.updateVariable)
+router.put('/:id', checkAnyPermission('variables:create,variables:update'), variablesController.updateVariable)
 
 // DELETE
-router.delete(['/', '/:id'], checkPermission('variables:delete'), variablesController.deleteVariable)
+router.delete('/:id', checkPermission('variables:delete'), variablesController.deleteVariable)
 
 export default router

@@ -13,7 +13,16 @@ export const ErrorProvider = ({ children }) => {
     const navigate = useNavigate()
 
     const handleError = async (err) => {
-        console.error(err)
+        try {
+            const reqId = err?.response?.headers?.['x-request-id']
+            if (reqId) {
+                console.error('[ErrorContext] requestId=', reqId, 'status=', err?.response?.status, 'url=', err?.config?.url, err)
+            } else {
+                console.error(err)
+            }
+        } catch (_e) {
+            console.error(err)
+        }
         if (err?.response?.status === 403) {
             navigate('/unauthorized')
         } else if (err?.response?.status === 401) {

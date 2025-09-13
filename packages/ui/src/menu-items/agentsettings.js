@@ -52,7 +52,7 @@ const agent_settings = {
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal,
-            permission: 'agentflows:config'
+            permission: 'chatflows:config'
         },
         {
             id: 'saveAsTemplate',
@@ -68,7 +68,7 @@ const agent_settings = {
             type: 'item',
             url: '',
             icon: icons.IconCopy,
-            permission: 'agentflows:duplicate'
+            permission: 'chatflows:duplicate'
         },
         {
             id: 'loadChatflow',
@@ -76,7 +76,7 @@ const agent_settings = {
             type: 'item',
             url: '',
             icon: icons.IconFileUpload,
-            permission: 'agentflows:import'
+            permission: 'chatflows:import'
         },
         {
             id: 'exportChatflow',
@@ -84,7 +84,7 @@ const agent_settings = {
             type: 'item',
             url: '',
             icon: icons.IconFileExport,
-            permission: 'agentflows:export'
+            permission: 'chatflows:export'
         },
         {
             id: 'deleteChatflow',
@@ -92,7 +92,7 @@ const agent_settings = {
             type: 'item',
             url: '',
             icon: icons.IconTrash,
-            permission: 'agentflows:delete'
+            permission: 'chatflows:delete'
         }
     ]
 }

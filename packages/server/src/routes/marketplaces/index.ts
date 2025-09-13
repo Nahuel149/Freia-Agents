@@ -12,6 +12,6 @@ router.post('/custom', checkAnyPermission('templates:flowexport,templates:toolex
 router.get('/custom', checkPermission('templates:custom'), marketplacesController.getAllCustomTemplates)
 
 // DELETE
-router.delete(['/', '/custom/:id'], checkPermission('templates:custom-delete'), marketplacesController.deleteCustomTemplate)
+router.delete('/custom/:id', checkPermission('templates:custom-delete'), marketplacesController.deleteCustomTemplate)
 
 export default router

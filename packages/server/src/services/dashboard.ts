@@ -10,104 +10,100 @@ export class DashboardService {
     }
 
     async getDashboardMetrics(): Promise<any> {
-        try {
-            // Get total conversations (customers)
-            const totalConversationsResult = await this.dataSource.query(
-                'SELECT COUNT(*) as count FROM customers'
-            )
-            const totalConversations = parseInt(totalConversationsResult[0]?.count || '0')
-
-            // Get active agents (unique agent_id from recent sales)
-            const activeAgentsResult = await this.dataSource.query(
-                `SELECT COUNT(DISTINCT agent_id) as count 
-                 FROM sales 
-                 WHERE created_at >= NOW() - INTERVAL '30 days'`
-            )
-            const activeAgents = parseInt(activeAgentsResult[0]?.count || '0')
-
-            // Get closed clients (customers with sales)
-            const closedClientsResult = await this.dataSource.query(
-                `SELECT COUNT(DISTINCT c.id) as count 
-                 FROM customers c 
-                 INNER JOIN sales s ON c.id = s.customer_id`
-            )
-            const closedClients = parseInt(closedClientsResult[0]?.count || '0')
-
-            // Get total callbacks (follow_ups)
-            const totalCallbacksResult = await this.dataSource.query(
-                'SELECT COUNT(*) as count FROM follow_ups'
-            )
-            const totalCallbacks = parseInt(totalCallbacksResult[0]?.count || '0')
-
-            // Get most requested products
-            const mostRequestedProductsResult = await this.dataSource.query(
-                `SELECT product_name, COUNT(*) as count 
-                 FROM sales 
-                 WHERE product_name IS NOT NULL 
-                 GROUP BY product_name 
-                 ORDER BY count DESC 
-                 LIMIT 5`
-            )
-            const mostRequestedProducts = mostRequestedProductsResult.map((row: any) => ({
-                name: row.product_name,
-                requests: parseInt(row.count)
-            }))
-
-            // Get sentiment analysis from follow_ups notes
-            const sentimentResult = await this.dataSource.query(
-                `SELECT 
-                    COUNT(CASE WHEN LOWER(notes) LIKE '%positive%' OR LOWER(notes) LIKE '%good%' OR LOWER(notes) LIKE '%excellent%' THEN 1 END) as positive,
-                    COUNT(CASE WHEN LOWER(notes) LIKE '%negative%' OR LOWER(notes) LIKE '%bad%' OR LOWER(notes) LIKE '%poor%' THEN 1 END) as negative,
-                    COUNT(*) as total
-                 FROM follow_ups 
-                 WHERE notes IS NOT NULL`
-            )
-            const sentimentData = sentimentResult[0] || { positive: 0, negative: 0, total: 0 }
-            const neutral = sentimentData.total - sentimentData.positive - sentimentData.negative
-            
-            const sentimentAnalysis = {
-                positive: parseInt(sentimentData.positive),
-                negative: parseInt(sentimentData.negative),
-                neutral: Math.max(0, neutral)
+        // Helper to run optional queries safely
+        const safeQuery = async <T = any>(sql: string, fallback: T, map?: (rows: any[]) => T): Promise<T> => {
+            try {
+                const rows = await this.dataSource.query(sql)
+                return map ? map(rows) : ((rows as unknown) as T)
+            } catch (_err) {
+                return fallback
             }
+        }
 
-            // Get recent sales data for chart
-            const recentSalesResult = await this.dataSource.query(
-                `SELECT 
-                    DATE(created_at) as date,
-                    COUNT(*) as sales,
-                    SUM(COALESCE(amount, 0)) as revenue
-                 FROM sales 
-                 WHERE created_at >= NOW() - INTERVAL '30 days'
-                 GROUP BY DATE(created_at)
-                 ORDER BY date DESC
-                 LIMIT 30`
-            )
-            const salesData = recentSalesResult.map((row: any) => ({
-                date: row.date,
-                sales: parseInt(row.sales),
-                revenue: parseFloat(row.revenue || '0')
-            }))
+        // totals
+        const totalConversations = await safeQuery<number>(
+            'SELECT COUNT(*) as count FROM customers',
+            0,
+            (rows) => parseInt(rows?.[0]?.count || '0')
+        )
 
-            // Get conversion rate
-            const conversionRate = totalConversations > 0 
-                ? Math.round((closedClients / totalConversations) * 100) 
-                : 0
+        const activeAgents = await safeQuery<number>(
+            `SELECT COUNT(DISTINCT agent_id) as count 
+             FROM sales 
+             WHERE created_at >= NOW() - INTERVAL '30 days'`,
+            0,
+            (rows) => parseInt(rows?.[0]?.count || '0')
+        )
 
-            return {
-                totalConversations,
-                activeAgents,
-                closedClients,
-                totalCallbacks,
-                mostRequestedProducts,
-                sentimentAnalysis,
-                salesData,
-                conversionRate,
-                lastUpdated: new Date().toISOString()
+        const closedClients = await safeQuery<number>(
+            `SELECT COUNT(DISTINCT c.id) as count 
+             FROM customers c 
+             INNER JOIN sales s ON c.id = s.customer_id`,
+            0,
+            (rows) => parseInt(rows?.[0]?.count || '0')
+        )
+
+        const totalCallbacks = await safeQuery<number>(
+            'SELECT COUNT(*) as count FROM follow_ups',
+            0,
+            (rows) => parseInt(rows?.[0]?.count || '0')
+        )
+
+        const mostRequestedProducts = await safeQuery<{ name: string; requests: number }[]>(
+            `SELECT product_name, COUNT(*) as count 
+             FROM sales 
+             WHERE product_name IS NOT NULL 
+             GROUP BY product_name 
+             ORDER BY count DESC 
+             LIMIT 5`,
+            [],
+            (rows) => rows.map((r: any) => ({ name: r.product_name, requests: parseInt(r.count || '0') }))
+        )
+
+        const sentimentAnalysis = await safeQuery<{ positive: number; negative: number; neutral: number }>(
+            `SELECT 
+                COUNT(CASE WHEN LOWER(notes) LIKE '%positive%' OR LOWER(notes) LIKE '%good%' OR LOWER(notes) LIKE '%excellent%' THEN 1 END) as positive,
+                COUNT(CASE WHEN LOWER(notes) LIKE '%negative%' OR LOWER(notes) LIKE '%bad%' OR LOWER(notes) LIKE '%poor%' THEN 1 END) as negative,
+                COUNT(*) as total
+             FROM follow_ups 
+             WHERE notes IS NOT NULL`,
+            { positive: 0, negative: 0, neutral: 0 },
+            (rows) => {
+                const s = rows?.[0] || { positive: 0, negative: 0, total: 0 }
+                const pos = parseInt(s.positive || '0')
+                const neg = parseInt(s.negative || '0')
+                const total = parseInt(s.total || '0')
+                const neu = Math.max(0, total - pos - neg)
+                return { positive: pos, negative: neg, neutral: neu }
             }
-        } catch (error) {
-            console.error('Error fetching dashboard metrics:', error)
-            throw new Error('Failed to fetch dashboard metrics')
+        )
+
+        const salesData = await safeQuery<{ date: string; sales: number; revenue: number }[]>(
+            `SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as sales,
+                SUM(COALESCE(amount, 0)) as revenue
+             FROM sales 
+             WHERE created_at >= NOW() - INTERVAL '30 days'
+             GROUP BY DATE(created_at)
+             ORDER BY date DESC
+             LIMIT 30`,
+            [],
+            (rows) => rows.map((r: any) => ({ date: r.date, sales: parseInt(r.sales || '0'), revenue: parseFloat(r.revenue || '0') }))
+        )
+
+        const conversionRate = totalConversations > 0 ? Math.round((closedClients / totalConversations) * 100) : 0
+
+        return {
+            totalConversations,
+            activeAgents,
+            closedClients,
+            totalCallbacks,
+            mostRequestedProducts,
+            sentimentAnalysis,
+            salesData,
+            conversionRate,
+            lastUpdated: new Date().toISOString()
         }
     }
 

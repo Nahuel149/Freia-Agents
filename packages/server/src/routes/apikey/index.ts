@@ -11,9 +11,9 @@ router.post('/import', checkPermission('apikeys:import'), apikeyController.impor
 router.get('/', checkPermission('apikeys:view'), apikeyController.getAllApiKeys)
 
 // UPDATE
-router.put(['/', '/:id'], checkAnyPermission('apikeys:create,apikeys:update'), apikeyController.updateApiKey)
+router.put('/:id', checkAnyPermission('apikeys:create,apikeys:update'), apikeyController.updateApiKey)
 
 // DELETE
-router.delete(['/', '/:id'], checkPermission('apikeys:delete'), apikeyController.deleteApiKey)
+router.delete('/:id', checkPermission('apikeys:delete'), apikeyController.deleteApiKey)
 
 export default router

@@ -258,7 +258,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     alignItems: 'center'
                 }}
             >
-                <Box item style={{ width: 50 }}>
+                <Box style={{ width: 50 }}>
                     {(() => {
                         const nodeName = data?.name || data?.id?.split('_')[0]
                         const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodeName)

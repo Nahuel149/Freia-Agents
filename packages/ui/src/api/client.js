@@ -11,11 +11,32 @@ const apiClient = axios.create({
     withCredentials: true
 })
 
+// Attach a correlation id to each request if not present
+apiClient.interceptors.request.use((config) => {
+    try {
+        const hasId = config.headers && (config.headers['x-request-id'] || config.headers['X-Request-Id'])
+        if (!hasId) {
+            const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+            if (!config.headers) config.headers = {}
+            config.headers['x-request-id'] = id
+        }
+    } catch (_e) {
+        // no-op
+    }
+    return config
+})
+
 apiClient.interceptors.response.use(
     function (response) {
         return response
     },
     async (error) => {
+        try {
+            const reqId = error?.response?.headers?.['x-request-id'] || error?.config?.headers?.['x-request-id']
+            if (reqId) {
+                console.error('[HTTP]', error?.config?.method?.toUpperCase(), error?.config?.url, 'reqId=', reqId, 'status=', error?.response?.status, 'message=', error?.message)
+            }
+        } catch (_e) {}
         // Check if error.response exists (network errors don't have response)
         if (error.response && error.response.status === 401) {
             // check if refresh is needed

@@ -25,6 +25,10 @@ export const WHITELIST_URLS = [
     '/api/v1/attachments',
     '/api/v1/metrics',
     '/api/v1/nvidia-nim',
+    // Added to align with mounted route path /codeagent-orchestration
+    '/api/v1/codeagent-orchestration/health',
+    // Legacy path kept for compatibility
+    '/api/v1/code-orchestration/health',
     '/api/v1/auth/resolve',
     '/api/v1/auth/login',
     '/api/v1/auth/refreshToken',

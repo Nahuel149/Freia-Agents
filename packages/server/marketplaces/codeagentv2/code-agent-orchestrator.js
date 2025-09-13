@@ -10,11 +10,14 @@ class CodeAgentOrchestrator {
     constructor(config = {}) {
         // Database configuration
         this.dbConfig = {
-            host: config.dbHost || process.env.DB_HOST || 'localhost',
-            port: config.dbPort || process.env.DB_PORT || 5432,
-            database: config.dbName || process.env.DB_NAME || 'freia_postgres',
-            user: config.dbUser || process.env.DB_USER || 'postgres',
-            password: config.dbPassword || process.env.DB_PASSWORD || 'password'
+            host: config.dbHost || process.env.DB_HOST || process.env.DATABASE_HOST || 'localhost',
+            port: config.dbPort || process.env.DB_PORT || process.env.DATABASE_PORT || 5432,
+            database: config.dbName || process.env.DB_NAME || process.env.DATABASE_NAME || 'freia_postgres',
+            user: config.dbUser || process.env.DB_USER || process.env.DATABASE_USER || 'postgres',
+            password: config.dbPassword || process.env.DB_PASSWORD || process.env.DATABASE_PASSWORD || 'password',
+            ssl: process.env.DATABASE_SSL === 'true' ? {
+                rejectUnauthorized: false
+            } : false
         };
         
         this.pool = new Pool(this.dbConfig);

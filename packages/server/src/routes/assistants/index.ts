@@ -9,13 +9,13 @@ router.post('/', checkPermission('assistants:create'), assistantsController.crea
 
 // READ
 router.get('/', checkPermission('assistants:view'), assistantsController.getAllAssistants)
-router.get(['/', '/:id'], checkPermission('assistants:view'), assistantsController.getAssistantById)
+router.get('/:id', checkPermission('assistants:view'), assistantsController.getAssistantById)
 
 // UPDATE
-router.put(['/', '/:id'], checkAnyPermission('assistants:create,assistants:update'), assistantsController.updateAssistant)
+router.put('/:id', checkAnyPermission('assistants:create,assistants:update'), assistantsController.updateAssistant)
 
 // DELETE
-router.delete(['/', '/:id'], checkPermission('assistants:delete'), assistantsController.deleteAssistant)
+router.delete('/:id', checkPermission('assistants:delete'), assistantsController.deleteAssistant)
 
 router.get('/components/chatmodels', assistantsController.getChatModels)
 router.get('/components/docstores', assistantsController.getDocumentStores)

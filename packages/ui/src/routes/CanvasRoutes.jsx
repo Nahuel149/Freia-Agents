@@ -36,7 +36,7 @@ const CanvasRoutes = {
         {
             path: '/agentcanvas',
             element: (
-                <RequireAuth permission={'agentflows:view'}>
+                <RequireAuth permission={'chatflows:view'}>
                     <Canvas />
                 </RequireAuth>
             )
@@ -44,7 +44,7 @@ const CanvasRoutes = {
         {
             path: '/agentcanvas/:id',
             element: (
-                <RequireAuth permission={'agentflows:view'}>
+                <RequireAuth permission={'chatflows:view'}>
                     <Canvas />
                 </RequireAuth>
             )
@@ -52,7 +52,7 @@ const CanvasRoutes = {
         {
             path: '/v2/agentcanvas',
             element: (
-                <RequireAuth permission={'agentflows:view'}>
+                <RequireAuth permission={'chatflows:view'}>
                     <CanvasV2 />
                 </RequireAuth>
             )
@@ -60,7 +60,7 @@ const CanvasRoutes = {
         {
             path: '/v2/agentcanvas/:id',
             element: (
-                <RequireAuth permission={'agentflows:view'}>
+                <RequireAuth permission={'chatflows:view'}>
                     <CanvasV2 />
                 </RequireAuth>
             )

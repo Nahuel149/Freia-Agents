@@ -589,6 +589,13 @@ router.get('/metrics',
  */
 router.get('/health', async (req, res) => {
     try {
+        console.log('=== CodeAgent Health Check Request ===');
+        console.log('Request headers:', JSON.stringify(req.headers, null, 2));
+        console.log('Request user:', req.user);
+        console.log('Request method:', req.method);
+        console.log('Request URL:', req.url);
+        console.log('Request IP:', req.ip);
+        
         const health = {
             status: 'healthy',
             timestamp: new Date().toISOString(),
@@ -618,13 +625,22 @@ router.get('/health', async (req, res) => {
         
         const statusCode = health.status === 'healthy' ? 200 : 503;
         
+        console.log('Health check response:', { statusCode, health });
+        
         res.status(statusCode).json({
             success: health.status === 'healthy',
             data: health
         });
         
     } catch (error) {
+        console.error('=== CodeAgent Health Check Error ===');
         console.error('Error in health check:', error);
+        console.error('Request details:', {
+            method: req.method,
+            url: req.url,
+            headers: req.headers,
+            user: req.user
+        });
         
         res.status(503).json({
             success: false,

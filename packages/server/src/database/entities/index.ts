@@ -19,6 +19,7 @@ import { CustomTemplate } from './CustomTemplate'
 import { Execution } from './Execution'
 import { CodeAgent } from './CodeAgent'
 import { CodeAgentExecution } from './CodeAgentExecution'
+import { SupportTicket } from './SupportTicket'
 // OSS mode: import all entities from OSS directory
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../oss/database/entities/EnterpriseEntities'
 import { User } from '../../oss/database/entities/user.entity'
@@ -72,5 +73,6 @@ export const entities = {
     Execution,
     CodeAgent,
     CodeAgentExecution,
+    SupportTicket,
     ...additionalEntities
 }

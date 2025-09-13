@@ -37,6 +37,9 @@ import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpe
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
 import { ModifyExecutionSessionIdFieldType1748450230238 } from './1748450230238-ModifyExecutionSessionIdFieldType'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
+import { AddCodeAgentEntities1755066758602 } from './1755066758602-AddCodeAgentEntities'
+import { ModifyChatMessageExecutionIdType1757800000001 } from './1757800000001-ModifyChatMessageExecutionIdType'
+import { AddSupportTicketEntity1757800000002 } from './1757800000002-AddSupportTicketEntity'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -77,5 +80,8 @@ export const postgresMigrations = [
     FixOpenSourceAssistantTable1743758056188,
     AddErrorToEvaluationRun1744964560174,
     ModifyExecutionSessionIdFieldType1748450230238,
-    ModifyChatflowType1755066758601
+    ModifyChatflowType1755066758601,
+    AddCodeAgentEntities1755066758602,
+    ModifyChatMessageExecutionIdType1757800000001,
+    AddSupportTicketEntity1757800000002
 ]

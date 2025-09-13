@@ -7,6 +7,7 @@ import { DataSource, IsNull } from 'typeorm'
 import { MODE, Platform } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
+import { randomUUID } from 'crypto'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -191,6 +192,16 @@ export class App {
 
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
+
+        // Correlation ID middleware (propagate or create x-request-id)
+        this.app.use((req, res, next) => {
+            const incoming = (req.headers['x-request-id'] as string) || ''
+            const requestId = incoming && incoming.trim() !== '' ? incoming : randomUUID()
+            res.setHeader('x-request-id', requestId)
+            ;(req as any).requestId = requestId
+            res.locals.requestId = requestId
+            next()
+        })
 
         // Add the expressRequestLogger middleware to log all requests
         this.app.use(expressRequestLogger)

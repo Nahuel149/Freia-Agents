@@ -6,7 +6,7 @@ const router = express.Router()
 
 // CREATE
 router.post(
-    ['/', '/:id'],
+    '/:id',
     getMulterStorage().array('files'),
     predictionsController.getRateLimiterMiddleware,
     predictionsController.createPrediction

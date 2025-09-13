@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { ChatMessageRatingType, ChatType, IReactFlowObject } from '../../Interface'
+import logger from '../../utils/logger'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
 import { aMonthAgo, clearSessionMemory } from '../../utils'
@@ -84,6 +85,10 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
                 `Error: chatMessageController.getAllChatMessages - id not provided!`
             )
         }
+        const reqId = (req as any).requestId || res.getHeader('x-request-id')
+        logger.info(
+            `[chat] getAllChatMessages reqId=${reqId} id=${req.params.id} order=${sortOrder} chatId=${chatId} sessionId=${sessionId} feedback=${feedback} page=${page} limit=${limit}`
+        )
         const apiResponse = await chatMessagesService.getAllChatMessages(
             req.params.id,
             chatTypes,
@@ -119,6 +124,10 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
         if (feedbackTypeFilters) {
             feedbackTypeFilters = getFeedbackTypeFilters(feedbackTypeFilters)
         }
+        const reqId = (req as any).requestId || res.getHeader('x-request-id')
+        logger.info(
+            `[chat] getAllInternalChatMessages reqId=${reqId} id=${req.params.id} order=${sortOrder} chatId=${chatId} sessionId=${sessionId} feedback=${feedback}`
+        )
         const apiResponse = await chatMessagesService.getAllInternalChatMessages(
             req.params.id,
             [ChatType.INTERNAL],

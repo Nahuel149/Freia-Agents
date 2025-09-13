@@ -234,11 +234,14 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
             return requetsEmojis[method] || '?'
         }
 
+        const reqId = (req as any).requestId || res.getHeader('x-request-id')
+        const prefix = reqId ? `[reqId=${reqId}]` : ''
+
         if (req.method !== 'GET') {
-            requestLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`, requestMetadata)
-            logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+            requestLogger.info(`${getRequestEmoji(req.method)} ${prefix} ${req.method} ${req.url}`, requestMetadata)
+            logger.info(`${getRequestEmoji(req.method)} ${prefix} ${req.method} ${req.url}`)
         } else {
-            requestLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`, requestMetadata)
+            requestLogger.http(`${getRequestEmoji(req.method)} ${prefix} ${req.method} ${req.url}`, requestMetadata)
         }
     }
 

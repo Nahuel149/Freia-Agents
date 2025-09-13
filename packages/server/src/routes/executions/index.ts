@@ -5,10 +5,10 @@ const router = express.Router()
 
 // READ
 router.get('/', checkAnyPermission('executions:view'), executionController.getAllExecutions)
-router.get(['/', '/:id'], checkAnyPermission('executions:view'), executionController.getExecutionById)
+router.get('/:id', checkAnyPermission('executions:view'), executionController.getExecutionById)
 
 // PUT
-router.put(['/', '/:id'], executionController.updateExecution)
+router.put('/:id', executionController.updateExecution)
 
 // DELETE - single execution or multiple executions
 router.delete('/:id', checkAnyPermission('executions:delete'), executionController.deleteExecutions)

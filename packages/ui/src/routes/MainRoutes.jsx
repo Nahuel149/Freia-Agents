@@ -35,6 +35,9 @@ const OpenAIAssistantLayout = Loadable(lazy(() => import('@/views/assistants/ope
 const CustomAssistantLayout = Loadable(lazy(() => import('@/views/assistants/custom/CustomAssistantLayout')))
 const CustomAssistantConfigurePreview = Loadable(lazy(() => import('@/views/assistants/custom/CustomAssistantConfigurePreview')))
 
+// support routing
+const Support = Loadable(lazy(() => import('@/views/support')))
+
 // credentials routing
 const Credentials = Loadable(lazy(() => import('@/views/credentials')))
 
@@ -104,7 +107,7 @@ const MainRoutes = {
         {
             path: '/codeagent',
             element: (
-                <RequireAuth permission={'codeagent:view'}>
+                <RequireAuth permission={'codeagents:view'}>
                     <CodeAgent />
                 </RequireAuth>
             )
@@ -112,7 +115,7 @@ const MainRoutes = {
         {
             path: '/codeagent/:id/execute',
             element: (
-                <RequireAuth permission={'codeagent:view'}>
+                <RequireAuth permission={'codeagents:view'}>
                     <CodeAgentExecution />
                 </RequireAuth>
             )
@@ -120,7 +123,7 @@ const MainRoutes = {
         {
             path: '/agentflows',
             element: (
-                <RequireAuth permission={'agentflows:view'}>
+                <RequireAuth permission={'chatflows:view'}>
                     <Agentflows />
                 </RequireAuth>
             )
@@ -128,7 +131,7 @@ const MainRoutes = {
         {
             path: '/agentflows/generator',
             element: (
-                <RequireAuth permission={'agentflows:view'}>
+                <RequireAuth permission={'chatflows:view'}>
                     <AgentflowGenerator />
                 </RequireAuth>
             )
@@ -210,6 +213,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'variables:view'}>
                     <Variables />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/support',
+            element: (
+                <RequireAuth>
+                    <Support />
                 </RequireAuth>
             )
         },

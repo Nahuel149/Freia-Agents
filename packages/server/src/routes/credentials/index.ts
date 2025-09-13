@@ -8,12 +8,12 @@ router.post('/', checkPermission('credentials:create'), credentialsController.cr
 
 // READ
 router.get('/', checkPermission('credentials:view'), credentialsController.getAllCredentials)
-router.get(['/', '/:id'], checkPermission('credentials:view'), credentialsController.getCredentialById)
+router.get('/:id', checkPermission('credentials:view'), credentialsController.getCredentialById)
 
 // UPDATE
-router.put(['/', '/:id'], checkAnyPermission('credentials:create,credentials:update'), credentialsController.updateCredential)
+router.put('/:id', checkAnyPermission('credentials:create,credentials:update'), credentialsController.updateCredential)
 
 // DELETE
-router.delete(['/', '/:id'], checkPermission('credentials:delete'), credentialsController.deleteCredentials)
+router.delete('/:id', checkPermission('credentials:delete'), credentialsController.deleteCredentials)
 
 export default router

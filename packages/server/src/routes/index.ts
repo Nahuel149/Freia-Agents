@@ -7,6 +7,7 @@ import chatflowsRouter from './chatflows'
 import chatflowsStreamingRouter from './chatflows-streaming'
 import chatflowsUploadsRouter from './chatflows-uploads'
 import codeAgentRouter from './codeagent'
+import codeOrchestrationRouter from './code-orchestration'
 import componentsCredentialsRouter from './components-credentials'
 import componentsCredentialsIconRouter from './components-credentials-icon'
 import credentialsRouter from './credentials'
@@ -26,6 +27,7 @@ import internalPredictionRouter from './internal-predictions'
 import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import logsRouter from './log'
+import loginmethodRouter from './loginmethod'
 import marketplacesRouter from './marketplaces'
 import nodeConfigRouter from './node-configs'
 import nodeCustomFunctionRouter from './node-custom-functions'
@@ -59,6 +61,7 @@ import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import dashboardRouter from './dashboard'
+import supportRouter from './support'
 
 import { IdentityManager } from '../IdentityManager'
 
@@ -72,6 +75,7 @@ router.use('/chatflows', chatflowsRouter)
 router.use('/chatflows-streaming', chatflowsStreamingRouter)
 router.use('/chatmessage', chatMessageRouter)
 router.use('/codeagent', codeAgentRouter)
+router.use('/codeagent-orchestration', codeOrchestrationRouter)
 router.use('/chatflows-uploads', chatflowsUploadsRouter)
 router.use('/components-credentials', componentsCredentialsRouter)
 router.use('/components-credentials-icon', componentsCredentialsIconRouter)
@@ -122,7 +126,9 @@ router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 router.use('/dashboard', dashboardRouter)
+router.use('/support', supportRouter)
 
+router.use('/loginmethod', loginmethodRouter)
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
 router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)
 

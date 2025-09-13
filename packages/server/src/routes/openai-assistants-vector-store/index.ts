@@ -14,15 +14,15 @@ router.get('/:id', openaiAssistantsVectorStoreController.getAssistantVectorStore
 router.get('/', openaiAssistantsVectorStoreController.listAssistantVectorStore)
 
 // UPDATE
-router.put(['/', '/:id'], openaiAssistantsVectorStoreController.updateAssistantVectorStore)
+router.put('/:id', openaiAssistantsVectorStoreController.updateAssistantVectorStore)
 
 // DELETE
-router.delete(['/', '/:id'], openaiAssistantsVectorStoreController.deleteAssistantVectorStore)
+router.delete('/:id', openaiAssistantsVectorStoreController.deleteAssistantVectorStore)
 
 // POST
 router.post('/:id', getMulterStorage().array('files'), openaiAssistantsVectorStoreController.uploadFilesToAssistantVectorStore)
 
 // DELETE
-router.patch(['/', '/:id'], openaiAssistantsVectorStoreController.deleteFilesFromAssistantVectorStore)
+router.patch('/:id', openaiAssistantsVectorStoreController.deleteFilesFromAssistantVectorStore)
 
 export default router

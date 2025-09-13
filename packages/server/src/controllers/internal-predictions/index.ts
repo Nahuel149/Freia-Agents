@@ -3,10 +3,14 @@ import { utilBuildChatflow } from '../../utils/buildChatflow'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getErrorMessage } from '../../errors/utils'
 import { MODE } from '../../Interface'
+import logger from '../../utils/logger'
 
 // Send input message and get prediction result (Internal)
 const createInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const reqId = (req as any).requestId || res.getHeader('x-request-id')
+        const streaming = !!(req.body.streaming || req.body.streaming === 'true')
+        logger.info(`[predict] createInternalPrediction reqId=${reqId} id=${req.params.id} streaming=${streaming}`)
         if (req.body.streaming || req.body.streaming === 'true') {
             createAndStreamInternalPrediction(req, res, next)
             return
@@ -25,6 +29,8 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
     const sseStreamer = getRunningExpressApp().sseStreamer
 
     try {
+        const reqId = (req as any).requestId || res.getHeader('x-request-id')
+        logger.info(`[predict] createAndStreamInternalPrediction reqId=${reqId} id=${req.params.id} chatId=${chatId}`)
         sseStreamer.addClient(chatId, res)
         res.setHeader('Content-Type', 'text/event-stream')
         res.setHeader('Cache-Control', 'no-cache')

@@ -6,12 +6,12 @@ const router = express.Router()
 // get all datasets
 router.get('/', checkPermission('evaluators:view'), evaluatorsController.getAllEvaluators)
 // get new dataset
-router.get(['/', '/:id'], checkPermission('evaluators:view'), evaluatorsController.getEvaluator)
+router.get('/:id', checkPermission('evaluators:view'), evaluatorsController.getEvaluator)
 // Create new dataset
-router.post(['/', '/:id'], checkPermission('evaluators:create'), evaluatorsController.createEvaluator)
+router.post('/', checkPermission('evaluators:create'), evaluatorsController.createEvaluator)
 // Update dataset
-router.put(['/', '/:id'], checkAnyPermission('evaluators:create,evaluators:update'), evaluatorsController.updateEvaluator)
+router.put('/:id', checkAnyPermission('evaluators:create,evaluators:update'), evaluatorsController.updateEvaluator)
 // Delete dataset via id
-router.delete(['/', '/:id'], checkPermission('evaluators:delete'), evaluatorsController.deleteEvaluator)
+router.delete('/:id', checkPermission('evaluators:delete'), evaluatorsController.deleteEvaluator)
 
 export default router
