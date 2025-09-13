@@ -60,67 +60,7 @@ const CloudMenuList = () => {
         }
     }, [logoutApi.data])
 
-    return (
-        <Box>
-            <Divider sx={{ height: '1px', borderColor: theme.palette.grey[900] + 25, my: 0 }} />
-            <List sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <a href='https://docs.flowiseai.com' target='_blank' rel='noreferrer' style={{ textDecoration: 'none' }}>
-                    <ListItemButton
-                        sx={{
-                            borderRadius: `${customization.borderRadius}px`,
-                            alignItems: 'flex-start',
-                            backgroundColor: 'inherit',
-                            py: 1.25,
-                            pl: '24px'
-                        }}
-                    >
-                        <ListItemIcon sx={{ my: 'auto', minWidth: 36 }}>
-                            <IconFileText size='1.3rem' strokeWidth='1.5' />
-                        </ListItemIcon>
-                        <Typography variant='body1' color='inherit' sx={{ my: 0.5 }}>
-                            Documentation
-                        </Typography>
-                    </ListItemButton>
-                </a>
-                <a href='/support' style={{ textDecoration: 'none' }}>
-                    <ListItemButton
-                        sx={{
-                            borderRadius: `${customization.borderRadius}px`,
-                            alignItems: 'flex-start',
-                            backgroundColor: 'inherit',
-                            py: 1.25,
-                            pl: '24px'
-                        }}
-                    >
-                        <ListItemIcon sx={{ my: 'auto', minWidth: 36 }}>
-                            {/* Reuse IconFileText as a placeholder for Support */}
-                            <IconFileText size='1.3rem' strokeWidth='1.5' />
-                        </ListItemIcon>
-                        <Typography variant='body1' color='inherit' sx={{ my: 0.5 }}>
-                            Support
-                        </Typography>
-                    </ListItemButton>
-                </a>
-                <ListItemButton
-                    onClick={signOutClicked}
-                    sx={{
-                        borderRadius: `${customization.borderRadius}px`,
-                        alignItems: 'flex-start',
-                        backgroundColor: 'inherit',
-                        py: 1.25,
-                        pl: '24px'
-                    }}
-                >
-                    <ListItemIcon sx={{ my: 'auto', minWidth: 36 }}>
-                        <IconLogout size='1.3rem' strokeWidth='1.5' />
-                    </ListItemIcon>
-                    <Typography variant='body1' color='inherit' sx={{ my: 0.5 }}>
-                        Logout
-                    </Typography>
-                </ListItemButton>
-            </List>
-        </Box>
-    )
+    return null
 }
 
 export default CloudMenuList

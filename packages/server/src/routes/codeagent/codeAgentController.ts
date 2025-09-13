@@ -208,6 +208,12 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                 }
             })
 
+            // Try to parse output as JSON to extract analytics events
+            let parsed
+            try {
+                parsed = typeof result.output === 'string' ? JSON.parse(result.output) : null
+            } catch {}
+
             // Update execution with result
             savedExecution.output = result.success ? result.output : undefined
             savedExecution.error = result.success ? undefined : result.error
@@ -215,6 +221,29 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             savedExecution.endTime = new Date()
             
             await codeAgentExecution.save(savedExecution)
+
+            // Ingest analytics (events, follow-ups, datasets on LOAD_DATA)
+            try {
+                const { CodeAgentAnalyticsService } = require('../../services/codeagent-analytics')
+                const svc = new CodeAgentAnalyticsService(appServer.AppDataSource)
+
+                // If the input is LOAD_DATA with datasets, try to ingest products/clients
+                if (typeof input === 'string' && /^\s*LOAD_DATA/i.test(input)) {
+                    const jsonPart = String(input).replace(/^\s*LOAD_DATA/i, '').trim()
+                    try {
+                        const payload = JSON.parse(jsonPart)
+                        const products = (payload?.productos?.products) || (payload?.productos?.productos) || payload?.productos || []
+                        const clients = (payload?.clientes?.clients) || (payload?.clientes?.clientes) || payload?.clientes || []
+                        await svc.ingestDatasets({ products, clients })
+                    } catch {}
+                }
+
+                if (parsed && parsed.events) {
+                    await svc.ingestEvents({ events: parsed.events, agentId: req.params.id })
+                }
+            } catch (e) {
+                logger.warn('Failed to ingest codeagent analytics:', e)
+            }
 
             return res.json({
                 executionId: savedExecution.id,

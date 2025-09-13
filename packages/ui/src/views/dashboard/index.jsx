@@ -19,7 +19,9 @@ import {
      ListItem,
      ListItemAvatar,
      ListItemText,
-     Divider
+     Divider,
+     TextField,
+     Button
  } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -101,14 +103,29 @@ const Dashboard = () => {
         }
     })
 
+    // WhatsApp Ping state
+    const [waTo, setWaTo] = useState('+542557645497')
+    const [waText, setWaText] = useState('Hola desde el panel (prueba)')
+    const [waSending, setWaSending] = useState(false)
+    const [waResult, setWaResult] = useState('')
+    const [waStatus, setWaStatus] = useState({ hasKey: false, hasAgent: false, signatureRequired: false })
+
     // Fetch real data from API
     useEffect(() => {
         const fetchDashboardData = async () => {
             setLoading(true)
             try {
                 // Fetch dashboard metrics from API
-                const response = await client.get('/dashboard')
-                const apiData = response.data
+                const [metricsRes, funnelRes, recentRes, topAgentsRes] = await Promise.all([
+                    client.get('/dashboard'),
+                    client.get('/dashboard/funnel'),
+                    client.get('/dashboard/recent'),
+                    client.get('/dashboard/top-agents')
+                ])
+                const apiData = metricsRes.data || {}
+                const funnel = funnelRes.data || { leads: 0, qualified: 0, proposals: 0, closed: 0 }
+                const recent = recentRes.data || []
+                const topAgents = topAgentsRes.data || []
                 
                 // Map API data to dashboard state with fallbacks for missing data
                 setDashboardData({
@@ -117,8 +134,8 @@ const Dashboard = () => {
                     closedClients: apiData.closedClients || 0,
                     totalContacts: apiData.totalConversations || 0, // Use same as conversations for now
                     conversionRate: apiData.conversionRate || 0,
-                    avgResponseTime: 2.3, // Keep static for now
-                    totalRevenue: apiData.salesData?.reduce((sum, sale) => sum + sale.revenue, 0) || 0,
+                    avgResponseTime: apiData.avgResponseTime || 0,
+                    totalRevenue: apiData.totalRevenue ?? (apiData.salesData?.reduce((sum, sale) => sum + sale.revenue, 0) || 0),
                     monthlyGrowth: 18.7, // Keep static for now
                     leadsGenerated: apiData.totalConversations || 0,
                     meetingsScheduled: Math.floor((apiData.closedClients || 0) * 1.5), // Estimate
@@ -134,7 +151,7 @@ const Dashboard = () => {
                         requests: p.requests,
                         stock: Math.floor(Math.random() * 20) // Random stock for demo
                     })) || [],
-                    customerFeedbackAvg: 8.4, // Keep static for now
+                    customerFeedbackAvg: apiData.feedbackAvg || 0,
                     sentimentAnalysis: apiData.sentimentAnalysis || { positive: 0, neutral: 0, negative: 0 },
                     topMentionedWords: [
                         { word: 'precio', count: 156 },
@@ -143,36 +160,27 @@ const Dashboard = () => {
                         { word: 'entrega', count: 54 },
                         { word: 'garantía', count: 43 }
                     ], // Keep static for now
-                    agentPerformance: [
-                        { name: 'Agent Carlos', sales: 23, revenue: 45600, satisfaction: 9.1 },
-                        { name: 'Agent María', sales: 19, revenue: 38200, satisfaction: 8.7 },
-                        { name: 'Agent Diego', sales: 17, revenue: 34100, satisfaction: 8.9 },
-                        { name: 'Agent Ana', sales: 15, revenue: 29800, satisfaction: 8.5 }
-                    ], // Keep static for now
+                    agentPerformance: topAgents.map(a => ({ name: a.id || 'Agent', sales: a.closedDeals, revenue: a.revenue, satisfaction: 0 })),
                     inventoryAlerts: apiData.mostRequestedProducts?.filter(p => p.stock <= 5).map(p => ({
                         product: p.name,
                         status: p.stock === 0 ? 'Sin Stock' : `Stock Bajo (${p.stock})`,
                         priority: p.stock === 0 ? 'high' : p.stock <= 3 ? 'medium' : 'low'
                     })) || [],
-                    recentActivities: [
-                        { id: 1, type: 'client_closed', agent: 'Agent Alpha', client: 'TechCorp Inc.', value: '$25,000', time: '2 hours ago' },
-                        { id: 2, type: 'new_contact', agent: 'Agent Beta', client: 'StartupXYZ', value: 'New Lead', time: '4 hours ago' },
-                        { id: 3, type: 'meeting_scheduled', agent: 'Agent Gamma', client: 'Enterprise Ltd.', value: 'Demo Call', time: '6 hours ago' },
-                        { id: 4, type: 'proposal_sent', agent: 'Agent Delta', client: 'MegaCorp', value: '$50,000', time: '8 hours ago' },
-                        { id: 5, type: 'follow_up', agent: 'Agent Epsilon', client: 'SmallBiz Co.', value: 'Follow-up', time: '1 day ago' }
-                    ], // Keep static for now
+                    recentActivities: recent.map(r => ({
+                        id: r.id,
+                        type: r.type,
+                        agent: r.agentId || 'Agent',
+                        client: r.clientName || r.clientId || '',
+                        value: r.amount ? new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS' }).format(r.amount) : (r.message || ''),
+                        time: new Date(r.ts).toLocaleString()
+                    })),
                     topPerformingAgents: [
                         { name: 'Agent Alpha', conversations: 89, closedDeals: 12, revenue: 125000, avatar: 'A' },
                         { name: 'Agent Beta', conversations: 76, closedDeals: 9, revenue: 98000, avatar: 'B' },
                         { name: 'Agent Gamma', conversations: 65, closedDeals: 8, revenue: 87000, avatar: 'G' },
                         { name: 'Agent Delta', conversations: 58, closedDeals: 7, revenue: 76000, avatar: 'D' }
                     ], // Keep static for now
-                    salesFunnel: {
-                        leads: apiData.totalConversations || 0,
-                        qualified: Math.floor((apiData.totalConversations || 0) * 0.6),
-                        proposals: Math.floor((apiData.totalConversations || 0) * 0.25),
-                        closed: apiData.closedClients || 0
-                    }
+                    salesFunnel: funnel
                 })
             } catch (err) {
                 setError(err)
@@ -182,7 +190,30 @@ const Dashboard = () => {
         }
 
         fetchDashboardData()
+        // Fetch WhatsApp status
+        ;(async () => {
+            try {
+                const s = await client.get('/whatsapp/status')
+                setWaStatus(s.data || { hasKey: false, hasAgent: false, signatureRequired: false })
+            } catch (e) {
+                // ignore – keep default false
+            }
+        })()
     }, [])
+
+    const sendWhatsAppPing = async () => {
+        setWaSending(true)
+        setWaResult('')
+        try {
+            await client.post('/whatsapp/send', { to: waTo, text: waText })
+            setWaResult('Enviado correctamente')
+        } catch (err) {
+            setWaResult('Error al enviar: ' + (err?.message || 'desconocido'))
+            setError(err)
+        } finally {
+            setWaSending(false)
+        }
+    }
 
     const MetricCard = ({ title, value, icon, color, subtitle, trend }) => (
         <Card 
@@ -264,7 +295,7 @@ const Dashboard = () => {
                 <Stack spacing={2}>
                     {Object.entries(dashboardData.salesFunnel).map(([stage, count], index) => {
                         const percentage = (count / dashboardData.salesFunnel.leads) * 100
-                        const colors = ['#2196F3', '#4CAF50', '#FF9800', '#9C27B0']
+                        const colors = [theme.palette.primary.main, theme.palette.success.main, theme.palette.warning.main, theme.palette.secondary.main]
                         return (
                             <Box key={stage}>
                                 <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -313,11 +344,18 @@ const Dashboard = () => {
                         title="B2B Agent Performance Dashboard"
                         subtitle="Monitor your AI agents' performance and business metrics"
                         action={
-                            <Tooltip title="Refresh Data">
-                                <IconButton onClick={() => window.location.reload()}>
-                                    <IconRefresh />
-                                </IconButton>
-                            </Tooltip>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Chip 
+                                    size='small'
+                                    label={waStatus.hasKey ? (waStatus.hasAgent ? 'WhatsApp Ready' : 'WhatsApp: Agent ID missing') : 'WhatsApp: API key missing'}
+                                    color={waStatus.hasKey && waStatus.hasAgent ? 'success' : 'warning'}
+                                />
+                                <Tooltip title="Refresh Data">
+                                    <IconButton onClick={() => window.location.reload()}>
+                                        <IconRefresh />
+                                    </IconButton>
+                                </Tooltip>
+                            </Stack>
                         }
                     />
 
@@ -479,7 +517,7 @@ const Dashboard = () => {
                                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, 
                                              bgcolor: alert.priority === 'high' ? 'error.light' : alert.priority === 'medium' ? 'warning.light' : 'info.light',
                                              borderRadius: 1 }}>
-                                             <IconAlertTriangle color={alert.priority === 'high' ? 'red' : alert.priority === 'medium' ? 'orange' : 'blue'} />
+                                             <IconAlertTriangle color={alert.priority === 'high' ? theme.palette.error.main : alert.priority === 'medium' ? theme.palette.warning.main : theme.palette.info.main} />
                                              <Box sx={{ ml: 2 }}>
                                                  <Typography variant="subtitle2">{alert.product}</Typography>
                                                  <Typography variant="body2" color="text.secondary">{alert.status}</Typography>
@@ -496,7 +534,7 @@ const Dashboard = () => {
                                  <CardContent>
                                      {dashboardData.mostRequestedProducts.map((product, index) => (
                                          <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, p: 2, 
-                                             bgcolor: 'grey.50', borderRadius: 1 }}>
+                                             bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50', borderRadius: 1 }}>
                                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                  <IconPackage />
                                                  <Box sx={{ ml: 2 }}>
@@ -521,17 +559,17 @@ const Dashboard = () => {
                                   <CardContent>
                                       <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
                                           <Box sx={{ textAlign: 'center' }}>
-                                              <IconMoodHappy size={40} color="green" />
+                                              <IconMoodHappy size={40} color={theme.palette.success.main} />
                                               <Typography variant="h4" color="success.main">{dashboardData.sentimentAnalysis.positive}%</Typography>
                                               <Typography variant="body2">Positivo</Typography>
                                           </Box>
                                           <Box sx={{ textAlign: 'center' }}>
-                                              <IconMoodEmpty size={40} color="orange" />
+                                              <IconMoodEmpty size={40} color={theme.palette.warning.main} />
                                               <Typography variant="h4" color="warning.main">{dashboardData.sentimentAnalysis.neutral}%</Typography>
                                               <Typography variant="body2">Neutral</Typography>
                                           </Box>
                                           <Box sx={{ textAlign: 'center' }}>
-                                              <IconMoodSad size={40} color="red" />
+                                              <IconMoodSad size={40} color={theme.palette.error.main} />
                                               <Typography variant="h4" color="error.main">{dashboardData.sentimentAnalysis.negative}%</Typography>
                                               <Typography variant="body2">Negativo</Typography>
                                           </Box>
@@ -580,10 +618,55 @@ const Dashboard = () => {
                               </MainCard>
                           </Grid>
                           
-                          <Grid item xs={12} sm={6} md={3}>
+                         <Grid item xs={12} sm={6} md={3}>
                               <SalesFunnelCard />
                           </Grid>
                      </Grid>
+
+                    {/* WhatsApp Ping */}
+                    {waStatus.hasKey && (
+                        <Grid container spacing={gridSpacing}>
+                            <Grid item xs={12} md={6}>
+                                <Card sx={{ height: '100%', borderRadius: '16px' }}>
+                                    <CardContent>
+                                        <Typography variant='h6' gutterBottom>
+                                            WhatsApp Ping
+                                        </Typography>
+                                        <Stack spacing={2}>
+                                            <TextField
+                                                label='To (E.164)'
+                                                value={waTo}
+                                                onChange={(e) => setWaTo(e.target.value)}
+                                                size='small'
+                                                placeholder='+542557645497'
+                                            />
+                                            <TextField
+                                                label='Message'
+                                                value={waText}
+                                                onChange={(e) => setWaText(e.target.value)}
+                                                size='small'
+                                                multiline
+                                                rows={2}
+                                            />
+                                            <Stack direction='row' spacing={2} alignItems='center'>
+                                                <Button variant='contained' disabled={waSending || !waTo || !waText} onClick={sendWhatsAppPing}>
+                                                    {waSending ? 'Sending…' : 'Send'}
+                                                </Button>
+                                                {waResult && (
+                                                    <Typography variant='body2' color={waResult.startsWith('Error') ? 'error' : 'success.main'}>
+                                                        {waResult}
+                                                    </Typography>
+                                                )}
+                                            </Stack>
+                                            <Typography variant='caption' color='text.secondary'>
+                                                Signature verification is {waStatus.signatureRequired ? 'enabled' : 'disabled'}.
+                                            </Typography>
+                                        </Stack>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        </Grid>
+                    )}
 
                     {/* Detailed Analytics */}
                     <Grid container spacing={gridSpacing}>

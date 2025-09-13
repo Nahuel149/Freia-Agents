@@ -49,7 +49,7 @@ const UserProfile = () => {
     const [loading, setLoading] = useState(false)
     const [authErrors, setAuthErrors] = useState([])
 
-    const getUserApi = useApi(userApi.getUserById)
+    const getUserApi = useApi(userApi.getMe)
 
     const validateAndSubmit = async () => {
         const validationErrors = []
@@ -144,7 +144,7 @@ const UserProfile = () => {
 
     useEffect(() => {
         setLoading(true)
-        getUserApi.request(currentUser.id)
+        getUserApi.request()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

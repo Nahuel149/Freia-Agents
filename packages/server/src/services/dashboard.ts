@@ -10,99 +10,89 @@ export class DashboardService {
     }
 
     async getDashboardMetrics(): Promise<any> {
-        // Helper to run optional queries safely
-        const safeQuery = async <T = any>(sql: string, fallback: T, map?: (rows: any[]) => T): Promise<T> => {
-            try {
-                const rows = await this.dataSource.query(sql)
-                return map ? map(rows) : ((rows as unknown) as T)
-            } catch (_err) {
-                return fallback
-            }
+        const q = async <T = any>(sql: string, map: (rows: any[]) => T, fallback: T): Promise<T> => {
+            try { const rows = await this.dataSource.query(sql); return map(rows) } catch { return fallback }
         }
 
-        // totals
-        const totalConversations = await safeQuery<number>(
-            'SELECT COUNT(*) as count FROM customers',
-            0,
-            (rows) => parseInt(rows?.[0]?.count || '0')
+        // Conversations (last 30 days)
+        const totalConversations = await q<number>(
+            `SELECT COUNT(*) AS c FROM agent_event WHERE type='conversation' AND ts >= NOW() - INTERVAL '30 days'`,
+            rs => parseInt(rs?.[0]?.c || '0'), 0
         )
 
-        const activeAgents = await safeQuery<number>(
-            `SELECT COUNT(DISTINCT agent_id) as count 
-             FROM sales 
-             WHERE created_at >= NOW() - INTERVAL '30 days'`,
-            0,
-            (rows) => parseInt(rows?.[0]?.count || '0')
+        // Closed clients = distinct clientIds in sale_record
+        const closedClients = await q<number>(
+            `SELECT COUNT(DISTINCT "clientId") AS c FROM sale_record WHERE ts >= NOW() - INTERVAL '90 days'`,
+            rs => parseInt(rs?.[0]?.c || '0'), 0
         )
 
-        const closedClients = await safeQuery<number>(
-            `SELECT COUNT(DISTINCT c.id) as count 
-             FROM customers c 
-             INNER JOIN sales s ON c.id = s.customer_id`,
-            0,
-            (rows) => parseInt(rows?.[0]?.count || '0')
+        // Total revenue (last 90 days)
+        const totalRevenue = await q<number>(
+            `SELECT COALESCE(SUM("totalAmount"),0) AS s FROM sale_record WHERE ts >= NOW() - INTERVAL '90 days'`,
+            rs => Number(rs?.[0]?.s || 0), 0
         )
 
-        const totalCallbacks = await safeQuery<number>(
-            'SELECT COUNT(*) as count FROM follow_ups',
-            0,
-            (rows) => parseInt(rows?.[0]?.count || '0')
+        // Leads generated
+        const leads = await q<number>(
+            `SELECT COUNT(*) AS c FROM agent_event WHERE type='lead' AND ts >= NOW() - INTERVAL '90 days'`,
+            rs => parseInt(rs?.[0]?.c || '0'), 0
         )
 
-        const mostRequestedProducts = await safeQuery<{ name: string; requests: number }[]>(
-            `SELECT product_name, COUNT(*) as count 
-             FROM sales 
-             WHERE product_name IS NOT NULL 
-             GROUP BY product_name 
-             ORDER BY count DESC 
-             LIMIT 5`,
-            [],
-            (rows) => rows.map((r: any) => ({ name: r.product_name, requests: parseInt(r.count || '0') }))
+        // Avg response time (ms) from metadata.responseTime on conversation events
+        const avgResponseTime = await q<number>(
+            `SELECT AVG( (metadata::json->>'responseTime')::numeric ) AS a FROM agent_event WHERE type='conversation' AND (metadata IS NOT NULL)`,
+            rs => parseFloat(rs?.[0]?.a || '0'), 0
         )
 
-        const sentimentAnalysis = await safeQuery<{ positive: number; negative: number; neutral: number }>(
+        // Inventory alerts (<20)
+        const lowStock = await q<any[]>(
+            `SELECT "productId", name, brand, stock FROM product_inventory WHERE stock < 20 ORDER BY stock ASC LIMIT 20`,
+            rs => rs, []
+        )
+
+        // Most requested products from agent_event.productId
+        const mostRequestedProducts = await q<{ name: string; requests: number }[]>(
+            `SELECT "productId" AS id, COUNT(*) AS c FROM agent_event WHERE "productId" IS NOT NULL GROUP BY "productId" ORDER BY c DESC LIMIT 5`,
+            rs => rs.map(r => ({ name: r.id, requests: parseInt(r.c || '0') })), []
+        )
+
+        // Sentiment analysis from metadata.sentiment
+        const sentiment = await q<{ positive:number; negative:number; neutral:number }>(
             `SELECT 
-                COUNT(CASE WHEN LOWER(notes) LIKE '%positive%' OR LOWER(notes) LIKE '%good%' OR LOWER(notes) LIKE '%excellent%' THEN 1 END) as positive,
-                COUNT(CASE WHEN LOWER(notes) LIKE '%negative%' OR LOWER(notes) LIKE '%bad%' OR LOWER(notes) LIKE '%poor%' THEN 1 END) as negative,
-                COUNT(*) as total
-             FROM follow_ups 
-             WHERE notes IS NOT NULL`,
-            { positive: 0, negative: 0, neutral: 0 },
-            (rows) => {
-                const s = rows?.[0] || { positive: 0, negative: 0, total: 0 }
-                const pos = parseInt(s.positive || '0')
-                const neg = parseInt(s.negative || '0')
-                const total = parseInt(s.total || '0')
-                const neu = Math.max(0, total - pos - neg)
-                return { positive: pos, negative: neg, neutral: neu }
-            }
+               SUM(CASE WHEN LOWER(metadata::json->>'sentiment')='positive' THEN 1 ELSE 0 END) AS pos,
+               SUM(CASE WHEN LOWER(metadata::json->>'sentiment')='negative' THEN 1 ELSE 0 END) AS neg,
+               SUM(CASE WHEN LOWER(metadata::json->>'sentiment')='neutral' THEN 1 ELSE 0 END) AS neu
+             FROM agent_event WHERE type='conversation'`,
+            rs => ({ positive: parseInt(rs?.[0]?.pos || '0'), negative: parseInt(rs?.[0]?.neg || '0'), neutral: parseInt(rs?.[0]?.neu || '0') }),
+            { positive:0, negative:0, neutral:0 }
         )
 
-        const salesData = await safeQuery<{ date: string; sales: number; revenue: number }[]>(
-            `SELECT 
-                DATE(created_at) as date,
-                COUNT(*) as sales,
-                SUM(COALESCE(amount, 0)) as revenue
-             FROM sales 
-             WHERE created_at >= NOW() - INTERVAL '30 days'
-             GROUP BY DATE(created_at)
-             ORDER BY date DESC
-             LIMIT 30`,
-            [],
-            (rows) => rows.map((r: any) => ({ date: r.date, sales: parseInt(r.sales || '0'), revenue: parseFloat(r.revenue || '0') }))
+        // Sales data (last 30 days, grouped by day)
+        const salesData = await q<{ date:string; sales:number; revenue:number }[]>(
+            `SELECT DATE(ts) AS d, COUNT(*) AS s, SUM("totalAmount") AS r FROM sale_record WHERE ts >= NOW() - INTERVAL '30 days' GROUP BY DATE(ts) ORDER BY d DESC`,
+            rs => rs.map(r => ({ date: r.d, sales: parseInt(r.s || '0'), revenue: parseFloat(r.r || '0') })), []
+        )
+
+        // Customer Satisfaction / Feedback Avg (0-10) from feedback events
+        const feedbackAvg = await q<number>(
+            `SELECT AVG( (metadata::json->>'score')::numeric ) AS a FROM agent_event WHERE type='feedback'`,
+            rs => parseFloat(rs?.[0]?.a || '0'), 0
         )
 
         const conversionRate = totalConversations > 0 ? Math.round((closedClients / totalConversations) * 100) : 0
 
         return {
             totalConversations,
-            activeAgents,
+            activeAgents: 0, // not tracked yet; can be derived from distinct AgentEvent.agentId if needed
             closedClients,
-            totalCallbacks,
+            totalCallbacks: 0, // can be derived from follow_up events if we track them
             mostRequestedProducts,
-            sentimentAnalysis,
+            sentimentAnalysis: { positive: sentiment.positive, negative: sentiment.negative, neutral: sentiment.neutral },
             salesData,
             conversionRate,
+            totalRevenue,
+            inventoryAlerts: lowStock,
+            feedbackAvg,
             lastUpdated: new Date().toISOString()
         }
     }
@@ -138,5 +128,59 @@ export class DashboardService {
             console.error('Error fetching sales stats:', error)
             throw new Error('Failed to fetch sales stats')
         }
+    }
+
+    async getFunnel() {
+        const q = async <T = any>(sql: string, map: (rows: any[]) => T, fallback: T): Promise<T> => {
+            try { const rows = await this.dataSource.query(sql); return map(rows) } catch { return fallback }
+        }
+        const leads = await q<number>(`SELECT COUNT(*) AS c FROM agent_event WHERE type='lead'`, rs => parseInt(rs?.[0]?.c || '0'), 0)
+        const qualified = await q<number>(`SELECT COUNT(*) AS c FROM agent_event WHERE type='qualified'`, rs => parseInt(rs?.[0]?.c || '0'), 0)
+        const proposals = await q<number>(`SELECT COUNT(*) AS c FROM agent_event WHERE type='proposal'`, rs => parseInt(rs?.[0]?.c || '0'), 0)
+        const closed = await q<number>(`SELECT COUNT(*) AS c FROM sale_record`, rs => parseInt(rs?.[0]?.c || '0'), 0)
+        return { leads, qualified, proposals, closed }
+    }
+
+    async getRecentActivities(limit = 20) {
+        // Pull recent from both agent_event and sale_record
+        const ev = await this.dataSource.query(
+            `SELECT id, ts, type, "clientId", "clientName", amount, message FROM agent_event ORDER BY ts DESC LIMIT $1`,
+            [limit]
+        )
+        const sales = await this.dataSource.query(
+            `SELECT id, ts, 'sale' as type, "clientId", "clientName", "totalAmount" as amount, NULL as message FROM sale_record ORDER BY ts DESC LIMIT $1`,
+            [limit]
+        )
+        const merged = [...ev, ...sales]
+            .sort((a,b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+            .slice(0, limit)
+        return merged
+    }
+
+    async getTopAgents(limit = 5) {
+        const rows = await this.dataSource.query(
+            `SELECT COALESCE("agentId", 'unknown') AS id,
+                    COUNT(*) AS closedDeals,
+                    COALESCE(SUM("totalAmount"),0) AS revenue
+             FROM sale_record
+             GROUP BY COALESCE("agentId", 'unknown')
+             ORDER BY revenue DESC
+             LIMIT $1`,
+            [limit]
+        )
+        // Add conversations per agent if needed
+        const conv = await this.dataSource.query(
+            `SELECT COALESCE("agentId", 'unknown') AS id, COUNT(*) AS conversations
+             FROM agent_event
+             WHERE type='conversation'
+             GROUP BY COALESCE("agentId", 'unknown')`
+        )
+        const convMap = new Map(conv.map((r:any)=>[r.id, parseInt(r.conversations||'0')]))
+        return rows.map((r:any)=>({
+            id: r.id,
+            conversations: convMap.get(r.id)||0,
+            closedDeals: parseInt(r.closedDeals||'0'),
+            revenue: parseFloat(r.revenue||'0')
+        }))
     }
 }

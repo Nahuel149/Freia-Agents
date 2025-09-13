@@ -1,6 +1,7 @@
 import client from './client'
 
-const getSettings = () => client.get('/settings')
+// Use '/app-settings' to avoid potential ad-block rules on '/settings'
+const getSettings = () => client.get('/app-settings')
 
 export default {
     getSettings

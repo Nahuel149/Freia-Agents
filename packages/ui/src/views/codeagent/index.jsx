@@ -44,7 +44,7 @@ import useNotifier from '@/utils/useNotifier'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // icons
-import { IconCode, IconPlus, IconEdit, IconTrash, IconPlayerPlay, IconRocket, IconBrain, IconDatabase } from '@tabler/icons-react'
+import { IconCode, IconPlus, IconEdit, IconTrash, IconPlayerPlay, IconRocket, IconBrain, IconDatabase, IconCopy } from '@tabler/icons-react'
 
 // ==============================|| CODEAGENT ||============================== //
 
@@ -348,6 +348,27 @@ const CodeAgent = () => {
                                                     >
                                                         {codeAgent.description || 'No description provided'}
                                                     </Typography>
+                                                    {/* Show CodeAgent ID for easy integration (copy to clipboard) */}
+                                                    <Stack direction='row' alignItems='center' spacing={1}>
+                                                        <Typography variant='caption' color='text.secondary' sx={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                            ID: {codeAgent.id}
+                                                        </Typography>
+                                                        <Tooltip title='Copy ID'>
+                                                            <IconButton size='small' onClick={() => {
+                                                                try {
+                                                                    navigator.clipboard.writeText(codeAgent.id)
+                                                                    enqueueSnackbar({
+                                                                        message: 'CodeAgent ID copied',
+                                                                        options: { key: new Date().getTime() + Math.random(), variant: 'success' }
+                                                                    })
+                                                                } catch (e) {
+                                                                    console.error(e)
+                                                                }
+                                                            }}>
+                                                                <IconCopy size={14} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Stack>
                                                     
                                                     <Divider />
                                                     

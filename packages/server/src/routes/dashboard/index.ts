@@ -12,4 +12,9 @@ router.get('/customers', dashboardController.getCustomerStats)
 // GET /api/v1/dashboard/sales
 router.get('/sales', dashboardController.getSalesStats)
 
+// Agent performance view
+router.get('/funnel', dashboardController.getFunnel)
+router.get('/recent', dashboardController.getRecentActivities)
+router.get('/top-agents', dashboardController.getTopAgents)
+
 export default router

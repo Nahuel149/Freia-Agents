@@ -25,7 +25,9 @@ import {
     IconShieldLock,
     IconListCheck,
     IconDashboard,
-    IconCode
+    IconCode,
+    IconFileText,
+    IconLogout
 } from '@tabler/icons-react'
 
 // constant
@@ -55,7 +57,9 @@ const icons = {
     IconShieldLock,
     IconListCheck,
     IconDashboard,
-    IconCode
+    IconCode,
+    IconFileText,
+    IconLogout
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -231,25 +235,6 @@ const dashboard = {
             type: 'group',
             children: [
                 {
-                    id: 'logs',
-                    title: 'Logs',
-                    type: 'item',
-                    url: '/logs',
-                    icon: icons.IconList,
-                    breadcrumbs: true,
-                    display: 'feat:logs',
-                    permission: 'logs:view'
-                },
-                // {
-                //     id: 'files',
-                //     title: 'Files',
-                //     type: 'item',
-                //     url: '/files',
-                //     icon: icons.IconFileDatabase,
-                //     breadcrumbs: true,
-                //     display: 'feat:files',
-                // },
-                {
                     id: 'account',
                     title: 'Account Settings',
                     type: 'item',
@@ -257,6 +242,22 @@ const dashboard = {
                     icon: icons.IconSettings,
                     breadcrumbs: true,
                     display: 'feat:account'
+                },
+                {
+                    id: 'support',
+                    title: 'Support',
+                    type: 'item',
+                    url: '/support',
+                    icon: icons.IconFileText,
+                    breadcrumbs: true
+                },
+                {
+                    id: 'logout',
+                    title: 'Logout',
+                    type: 'item',
+                    url: '/logout',
+                    icon: icons.IconLogout,
+                    breadcrumbs: true
                 }
             ]
         }

@@ -40,6 +40,7 @@ import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowT
 import { AddCodeAgentEntities1755066758602 } from './1755066758602-AddCodeAgentEntities'
 import { ModifyChatMessageExecutionIdType1757800000001 } from './1757800000001-ModifyChatMessageExecutionIdType'
 import { AddSupportTicketEntity1757800000002 } from './1757800000002-AddSupportTicketEntity'
+import { AddAgentAnalyticsEntities1757800000003 } from './1757800000003-AddAgentAnalyticsEntities'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -83,5 +84,6 @@ export const postgresMigrations = [
     ModifyChatflowType1755066758601,
     AddCodeAgentEntities1755066758602,
     ModifyChatMessageExecutionIdType1757800000001,
-    AddSupportTicketEntity1757800000002
+    AddSupportTicketEntity1757800000002,
+    AddAgentAnalyticsEntities1757800000003
 ]

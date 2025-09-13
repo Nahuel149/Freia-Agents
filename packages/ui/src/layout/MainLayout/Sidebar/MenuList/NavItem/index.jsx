@@ -5,11 +5,20 @@ import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery } from '@mui/material'
+import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery, Button } from '@mui/material'
 
 // project imports
 import { MENU_OPEN, SET_MENU } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { logoutSuccess } from '@/store/reducers/authSlice'
 import config from '@/config'
+import accountApi from '@/api/account.api'
+import useApi from '@/hooks/useApi'
+import useNotifier from '@/utils/useNotifier'
+import { store } from '@/store'
+
+// assets
+import { IconX } from '@tabler/icons-react'
 
 // assets
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
@@ -21,6 +30,11 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
+    
+    useNotifier()
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const logoutApi = useApi(accountApi.logout)
 
     const Icon = item.icon
     const itemIcon = item?.icon ? (
@@ -51,6 +65,9 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     if (item?.id === 'loadChatflow') {
         listItemProps.component = 'label'
     }
+    if (item?.id === 'logout') {
+        listItemProps = {}
+    }
 
     const handleFileUpload = (e) => {
         if (!e.target.files) return
@@ -68,7 +85,28 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
         reader.readAsText(file)
     }
 
+    const signOutClicked = () => {
+        logoutApi.request()
+        enqueueSnackbar({
+            message: 'Logging out...',
+            options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+                action: (key) => (
+                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                        <IconX />
+                    </Button>
+                )
+            }
+        })
+    }
+
     const itemHandler = (id) => {
+        if (id === 'logout') {
+            signOutClicked()
+            return
+        }
+        
         if (navType === 'SETTINGS' && id !== 'loadChatflow') {
             onClick(id)
         } else {
@@ -76,6 +114,18 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             if (matchesSM) dispatch({ type: SET_MENU, opened: false })
         }
     }
+
+    // Handle logout API response
+    useEffect(() => {
+        try {
+            if (logoutApi.data && logoutApi.data.message === 'logged_out') {
+                store.dispatch(logoutSuccess())
+                window.location.href = logoutApi.data.redirectUrl
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }, [logoutApi.data])
 
     // active menu item on page load
     useEffect(() => {

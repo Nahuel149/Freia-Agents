@@ -20,6 +20,10 @@ import { Execution } from './Execution'
 import { CodeAgent } from './CodeAgent'
 import { CodeAgentExecution } from './CodeAgentExecution'
 import { SupportTicket } from './SupportTicket'
+import { AgentEvent } from './AgentEvent'
+import { SaleRecord } from './SaleRecord'
+import { ProductInventory } from './ProductInventory'
+import { ClientAccount } from './ClientAccount'
 // OSS mode: import all entities from OSS directory
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../oss/database/entities/EnterpriseEntities'
 import { User } from '../../oss/database/entities/user.entity'
@@ -74,5 +78,9 @@ export const entities = {
     CodeAgent,
     CodeAgentExecution,
     SupportTicket,
+    AgentEvent,
+    SaleRecord,
+    ProductInventory,
+    ClientAccount,
     ...additionalEntities
 }

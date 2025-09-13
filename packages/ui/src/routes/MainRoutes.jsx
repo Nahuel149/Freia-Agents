@@ -283,7 +283,7 @@ const MainRoutes = {
         {
             path: '/datasets',
             element: (
-                <RequireAuth permission={'datasets:view'} display={'feat:datasets'}>
+                <RequireAuth>
                     <EvalDatasets />
                 </RequireAuth>
             )
@@ -291,7 +291,7 @@ const MainRoutes = {
         {
             path: '/dataset_rows/:id',
             element: (
-                <RequireAuth permission={'datasets:view'} display={'feat:datasets'}>
+                <RequireAuth>
                     <EvalDatasetRows />
                 </RequireAuth>
             )
@@ -299,7 +299,7 @@ const MainRoutes = {
         {
             path: '/evaluations',
             element: (
-                <RequireAuth permission={'evaluations:view'} display={'feat:evaluations'}>
+                <RequireAuth>
                     <EvalEvaluation />
                 </RequireAuth>
             )
@@ -315,7 +315,7 @@ const MainRoutes = {
         {
             path: '/evaluators',
             element: (
-                <RequireAuth permission={'evaluators:view'} display={'feat:evaluators'}>
+                <RequireAuth>
                     <Evaluators />
                 </RequireAuth>
             )
@@ -339,7 +339,7 @@ const MainRoutes = {
         {
             path: '/account',
             element: (
-                <RequireAuth display={'feat:account'}>
+                <RequireAuth>
                     <Account />
                 </RequireAuth>
             )

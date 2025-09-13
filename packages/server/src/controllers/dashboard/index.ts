@@ -42,8 +42,52 @@ const getSalesStats = async (req: Request, res: Response) => {
     }
 }
 
+const getFunnel = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const data = await dashboardService.getFunnel()
+        return res.json(data)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.getFunnel - ${error}`
+        )
+    }
+}
+
+const getRecentActivities = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const limit = parseInt((req.query.limit as string) || '20', 10)
+        const data = await dashboardService.getRecentActivities(limit)
+        return res.json(data)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.getRecentActivities - ${error}`
+        )
+    }
+}
+
+const getTopAgents = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const limit = parseInt((req.query.limit as string) || '5', 10)
+        const data = await dashboardService.getTopAgents(limit)
+        return res.json(data)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.getTopAgents - ${error}`
+        )
+    }
+}
+
 export default {
     getDashboardMetrics,
     getCustomerStats,
-    getSalesStats
+    getSalesStats,
+    getFunnel,
+    getRecentActivities,
+    getTopAgents
 }

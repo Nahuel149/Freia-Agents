@@ -61,6 +61,9 @@ import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import dashboardRouter from './dashboard'
+import userRouter from './user'
+import codeAgentAnalyticsRouter from './codeagent-analytics'
+import whatsappRouter from './whatsapp'
 import supportRouter from './support'
 
 import { IdentityManager } from '../IdentityManager'
@@ -80,10 +83,10 @@ router.use('/chatflows-uploads', chatflowsUploadsRouter)
 router.use('/components-credentials', componentsCredentialsRouter)
 router.use('/components-credentials-icon', componentsCredentialsIconRouter)
 router.use('/credentials', credentialsRouter)
-router.use('/datasets', IdentityManager.checkFeatureByPlan('feat:datasets'), datasetRouter)
+router.use('/datasets', datasetRouter)
 router.use('/document-store', documentStoreRouter)
-router.use('/evaluations', IdentityManager.checkFeatureByPlan('feat:evaluations'), evaluationsRouter)
-router.use('/evaluators', IdentityManager.checkFeatureByPlan('feat:evaluators'), evaluatorsRouter)
+router.use('/evaluations', evaluationsRouter)
+router.use('/evaluators', evaluatorsRouter)
 router.use('/export-import', exportImportRouter)
 router.use('/feedback', feedbackRouter)
 router.use('/fetch-links', fetchLinksRouter)
@@ -120,12 +123,17 @@ router.use('/auth', authRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
 router.use('/settings', settingsRouter)
+// Alias to avoid ad-blockers blocking '/settings'
+router.use('/app-settings', settingsRouter)
 router.use('/pricing', pricingRouter)
 router.use('/nvidia-nim', nvidiaNimRouter)
 router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 router.use('/dashboard', dashboardRouter)
+router.use('/user', userRouter)
+router.use('/codeagent-analytics', codeAgentAnalyticsRouter)
+router.use('/whatsapp', whatsappRouter)
 router.use('/support', supportRouter)
 
 router.use('/loginmethod', loginmethodRouter)

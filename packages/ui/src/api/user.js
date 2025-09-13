@@ -4,10 +4,12 @@ import client from './client'
 // Enterprise features removed for single-user OSS mode
 
 // users
-const getUserById = (id) => client.get(`/user?id=${id}`)
+const getUserById = (id) => client.get(`/user${id ? `?id=${id}` : ''}`)
+const getMe = () => client.get('/user')
 const updateUser = (body) => client.put(`/user`, body)
 
 export default {
     getUserById,
+    getMe,
     updateUser
 }

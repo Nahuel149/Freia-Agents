@@ -75,11 +75,11 @@ const AccountSettings = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const getUserByIdApi = useApi(userApi.getUserById)
+    const getUserByIdApi = useApi(userApi.getMe)
     // OSS Mode: Billing and subscription APIs removed
 
     useEffect(() => {
-        getUserByIdApi.request(currentUser.id)
+        getUserByIdApi.request()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
