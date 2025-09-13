@@ -145,6 +145,20 @@ const CodeAgentExecution = () => {
                 }
             })
 
+            // Client-side debug logging
+            try {
+                // eslint-disable-next-line no-console
+                console.debug('[CodeAgent] HTTP', response.status, 'keys=', Object.keys(response.data || {}))
+                if (response.data?.status || response.data?.error) {
+                    // eslint-disable-next-line no-console
+                    console.debug('[CodeAgent] exec status=', response.data.status, 'error=', response.data.error)
+                }
+                if (Array.isArray(response.data?.logs)) {
+                    // eslint-disable-next-line no-console
+                    console.debug('[CodeAgent] server logs:\n' + (response.data.logs || []).join('\n'))
+                }
+            } catch {}
+
             // Prefer server-provided message; else try to parse output JSON { reply }
             let content = response.data?.message || ''
             if (!content) {
@@ -158,6 +172,9 @@ const CodeAgentExecution = () => {
                     }
                 }
             }
+            if (!content && response?.data?.status === 'failed' && response?.data?.error) {
+                content = `Error: ${String(response.data.error).slice(0, 800)}`
+            }
 
             const agentMessage = {
                 id: (Date.now() + 1).toString(),
@@ -165,6 +182,7 @@ const CodeAgentExecution = () => {
                 content: content || 'Code executed successfully',
                 data: response.data.data,
                 logs: response.data.logs,
+                stderr: response.data.status === 'failed' && response.data.error ? String(response.data.error) : undefined,
                 timestamp: new Date().toISOString()
             }
 
@@ -284,6 +302,29 @@ const CodeAgentExecution = () => {
                                 }}
                             >
                                 {message.logs.join('\n')}
+                            </Box>
+                        </Box>
+                    )}
+
+                    {message.stderr && (
+                        <Box sx={{ mt: 1 }}>
+                            <Divider sx={{ my: 1 }} />
+                            <Typography variant='caption' color='error.main'>
+                                Error (stderr):
+                            </Typography>
+                            <Box
+                                component='pre'
+                                sx={{
+                                    mt: 1,
+                                    p: 1,
+                                    backgroundColor: theme.palette.error.lighter || theme.palette.action.hover,
+                                    borderRadius: 1,
+                                    fontSize: '0.8rem',
+                                    overflow: 'auto',
+                                    color: theme.palette.error.dark
+                                }}
+                            >
+                                {message.stderr}
                             </Box>
                         </Box>
                     )}

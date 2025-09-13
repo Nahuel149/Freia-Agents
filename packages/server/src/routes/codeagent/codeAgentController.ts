@@ -185,6 +185,10 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
         const savedExecution = await codeAgentExecution.save(newExecution)
 
         try {
+            const reqId = (req.headers['x-request-id'] as string) || (req.headers['X-Request-Id'] as string) || ''
+            const debugLogs: string[] = []
+            const log = (msg: string) => debugLogs.push(`[${new Date().toISOString()}] ${msg}`)
+
             // Map language string to CodeLanguage enum
             let codeLanguage: CodeLanguage
             switch (existingCodeAgent.language.toLowerCase()) {
@@ -200,6 +204,9 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                 default:
                     throw new Error(`Unsupported language: ${existingCodeAgent.language}`)
             }
+            log(`ReqId=${reqId} | Execute agent=${req.params.id} lang=${codeLanguage}`)
+            const previewInput = typeof input === 'string' ? input.slice(0, 200) : ''
+            log(`Input preview: ${previewInput}`)
 
             // Autoload dataset from selected document IDs (v2) or legacy inline docs
             const autoload: boolean = !!(req.body?.context?.autoload)
@@ -222,11 +229,14 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                         datasetHash,
                         statuses
                     }
+                    log(`Autoload v2: stores=${envelope.stores.length}, bytes=${totalBytes}, hash=${datasetHash.slice(0,8)}..., statuses=${JSON.stringify(statuses)}`)
                 } catch (e) {
                     logger.warn('Failed to resolve selected stores:', e)
+                    log(`Autoload v2 failed: ${(e as Error)?.message || String(e)}`)
                 }
             } else if (legacySelectedDocs) {
                 envAutoload = { FLOWISE_SELECTED_DOCS: JSON.stringify(legacySelectedDocs) }
+                log(`Autoload legacy docs provided`)
             }
 
             // Execute the code
@@ -239,15 +249,19 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                     ...envAutoload
                 }
             })
+            log(`Execution finished: success=${result.success} timeMs=${result.executionTime}`)
+            if (result.error) log(`stderr: ${String(result.error).slice(0, 500)}`)
 
             // Try to parse output as JSON to extract analytics events
             let parsed
             try {
                 parsed = typeof result.output === 'string' ? JSON.parse(result.output) : null
-            } catch {}
+            } catch { parsed = null }
+            if (parsed && parsed.reply) log(`Parsed reply: ${String(parsed.reply).slice(0, 200)}`)
 
             // Update execution with result
-            savedExecution.output = result.success ? result.output : undefined
+            // Always retain stdout in output so UI can render replies even if there were warnings on stderr
+            savedExecution.output = result.output
             savedExecution.error = result.success ? undefined : result.error
             savedExecution.status = result.success ? ExecutionStatus.COMPLETED : ExecutionStatus.FAILED
             savedExecution.endTime = new Date()
@@ -282,6 +296,8 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                 output: savedExecution.output,
                 error: savedExecution.error,
                 status: savedExecution.status,
+                message: parsed && parsed.reply ? parsed.reply : undefined,
+                logs: debugLogs,
                 ...(autoloadSummary ? { autoloadSummary } : {})
             })
         } catch (executionError) {
@@ -298,7 +314,8 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                 executionId: savedExecution.id,
                 output: null,
                 error: executionError instanceof Error ? executionError.message : String(executionError),
-                status: 'failed'
+                status: 'failed',
+                logs: [String(executionError)]
             })
         }
     } catch (error) {
