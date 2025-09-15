@@ -138,19 +138,48 @@ class Pinecone_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
+            if (!_index?.trim?.()) {
+                throw new Error('Pinecone index name is missing. Please configure the Pinecone node with a valid index name.')
+            }
+
+            if (!pineconeApiKey?.trim?.()) {
+                throw new Error('Pinecone API key is missing. Please attach a credential that contains a valid API key.')
+            }
+
+            if (!embeddings || typeof (embeddings as any).embedDocuments !== 'function') {
+                throw new Error('Embeddings instance is missing. Please connect an embeddings provider to the Pinecone node.')
+            }
+
             const client = new Pinecone({ apiKey: pineconeApiKey })
 
             const pineconeIndex = client.Index(_index)
 
-            const flattenDocs = docs && docs.length ? flatten(docs) : []
+            const flattenDocs = Array.isArray(docs) ? flatten(docs) : docs ? [docs] : []
             const finalDocs = []
-            for (let i = 0; i < flattenDocs.length; i += 1) {
-                if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    if (isFileUploadEnabled && options.chatId) {
-                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
-                    }
-                    finalDocs.push(new Document(flattenDocs[i]))
+            for (const rawDoc of flattenDocs) {
+                if (!rawDoc) continue
+
+                const pageContentValue = rawDoc.pageContent ?? rawDoc?.page_content
+                if (pageContentValue === undefined || pageContentValue === null) continue
+
+                const pageContent = pageContentValue.toString()
+                if (!pageContent.trim()) continue
+
+                const rawMetadata = rawDoc.metadata
+                const metadata =
+                    rawMetadata && typeof rawMetadata === 'object' && !Array.isArray(rawMetadata)
+                        ? { ...rawMetadata }
+                        : {}
+
+                if (isFileUploadEnabled && options.chatId) {
+                    metadata[FLOWISE_CHATID] = options.chatId
                 }
+
+                finalDocs.push(new Document({ pageContent, metadata, id: (rawDoc as any).id }))
+            }
+
+            if (!finalDocs.length) {
+                return { numAdded: 0, addedDocs: [] }
             }
 
             const obj: PineconeStoreParams = {
