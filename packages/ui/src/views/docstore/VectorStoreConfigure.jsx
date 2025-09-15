@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
 
 // material-ui
-import { Button, Stack, Grid, Box, Typography, IconButton, Stepper, Step, StepLabel } from '@mui/material'
+import { Button, Stack, Grid, Box, Typography, IconButton, Stepper, Step, StepLabel, Tooltip } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -507,21 +507,34 @@ const VectorStoreConfigure = () => {
                                     )}
                                     {Object.keys(selectedEmbeddingsProvider).length > 0 &&
                                         Object.keys(selectedVectorStoreProvider).length > 0 && (
-                                            <Button
-                                                variant='contained'
-                                                sx={{
-                                                    borderRadius: 2,
-                                                    height: '100%',
-                                                    backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
-                                                    '&:hover': {
-                                                        backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
-                                                    }
-                                                }}
-                                                startIcon={<IconRowInsertTop />}
-                                                onClick={() => tryAndInsertIntoStore()}
-                                            >
-                                                Upsert
-                                            </Button>
+                                            (() => {
+                                                const upsertDisabled = (documentStore?.totalChunks || 0) <= 0
+                                                const tip = upsertDisabled
+                                                    ? 'No chunks found. Save & Process a loader first.'
+                                                    : ''
+                                                return (
+                                                    <Tooltip title={tip} disableHoverListener={!upsertDisabled}>
+                                                        <span>
+                                                            <Button
+                                                                disabled={upsertDisabled}
+                                                                variant='contained'
+                                                                sx={{
+                                                                    borderRadius: 2,
+                                                                    height: '100%',
+                                                                    backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
+                                                                    '&:hover': {
+                                                                        backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
+                                                                    }
+                                                                }}
+                                                                startIcon={<IconRowInsertTop />}
+                                                                onClick={() => tryAndInsertIntoStore()}
+                                                            >
+                                                                Upsert
+                                                            </Button>
+                                                        </span>
+                                                    </Tooltip>
+                                                )
+                                            })()
                                         )}
                                     <IconButton onClick={showUpsertHistoryDrawer} size='small' color='inherit' title='Upsert History'>
                                         <IconClock />

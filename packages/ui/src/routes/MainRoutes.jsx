@@ -19,6 +19,8 @@ const AgentflowGenerator = Loadable(lazy(() => import('@/views/agentflows/Agentf
 // codeagent routing
 const CodeAgent = Loadable(lazy(() => import('@/views/codeagent')))
 const CodeAgentExecution = Loadable(lazy(() => import('@/views/codeagent/CodeAgentExecution')))
+// test chat routing
+const TestChat = Loadable(lazy(() => import('@/views/testchat')))
 
 // marketplaces routing
 const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
@@ -117,6 +119,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'codeagents:view'}>
                     <CodeAgentExecution />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/testchat',
+            element: (
+                <RequireAuth permission={'codeagents:view'}>
+                    <TestChat />
                 </RequireAuth>
             )
         },

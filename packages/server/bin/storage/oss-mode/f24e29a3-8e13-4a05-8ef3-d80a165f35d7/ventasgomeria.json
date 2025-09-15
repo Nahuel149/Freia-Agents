@@ -1,0 +1,277 @@
+[
+  {
+    "invoice_id": "FACT-B001-00001",
+    "client_id": "BIZ-001",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-12",
+    "items_sold": [
+      {
+        "product_id": "MIC-LTX-2457016",
+        "quantity": 16,
+        "sale_price_ars": 310000.00
+      },
+      {
+        "product_id": "LIQ-MOLY-5W40-5L",
+        "quantity": 8,
+        "sale_price_ars": 115000.00
+      }
+    ],
+    "total_amount_ars": 5880000.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00002",
+    "client_id": "BIZ-002",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-12",
+    "items_sold": [
+      {
+        "product_id": "FIR-F900-2656517",
+        "quantity": 24,
+        "sale_price_ars": 298000.00
+      },
+      {
+        "product_id": "SAC-AM-HILUX-TRA",
+        "quantity": 6,
+        "sale_price_ars": 240000.00
+      }
+    ],
+    "total_amount_ars": 8592000.00,
+    "payment_method": "Transferencia Bancaria"
+  },
+  {
+    "invoice_id": "FACT-B001-00003",
+    "client_id": "BIZ-003",
+    "employee_id": "EMP-002",
+    "sale_date": "2025-09-13",
+    "items_sold": [
+      {
+        "product_id": "FAT-SENTIVA-1856515",
+        "quantity": 40,
+        "sale_price_ars": 162000.00
+      },
+      {
+        "product_id": "SERV-ALB",
+        "quantity": 10,
+        "sale_price_ars": 48000.00
+      }
+    ],
+    "total_amount_ars": 6960000.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00004",
+    "client_id": "BIZ-004",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-14",
+    "items_sold": [
+      {
+        "product_id": "HEL-BAT-1290",
+        "quantity": 8,
+        "sale_price_ars": 295000.00
+      },
+      {
+        "product_id": "VAL-PREM-15W40-4L",
+        "quantity": 20,
+        "sale_price_ars": 65000.00
+      }
+    ],
+    "total_amount_ars": 3660000.00,
+    "payment_method": "Transferencia Bancaria"
+  },
+  {
+    "invoice_id": "FACT-B001-00005",
+    "client_id": "BIZ-006",
+    "employee_id": "EMP-002",
+    "sale_date": "2025-09-15",
+    "items_sold": [
+      {
+        "product_id": "MAN-HU718-5X",
+        "quantity": 50,
+        "sale_price_ars": 21000.00
+      },
+      {
+        "product_id": "FRA-A-PEU208",
+        "quantity": 30,
+        "sale_price_ars": 19500.00
+      },
+      {
+        "product_id": "WAG-DOT4-1L",
+        "quantity": 24,
+        "sale_price_ars": 18500.00
+      }
+    ],
+    "total_amount_ars": 2079000.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00006",
+    "client_id": "BIZ-014",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-15",
+    "items_sold": [
+      {
+        "product_id": "GOO-ES-1856514",
+        "quantity": 20,
+        "sale_price_ars": 152300.75
+      },
+      {
+        "product_id": "PIR-P1-1756514",
+        "quantity": 20,
+        "sale_price_ars": 149900.00
+      }
+    ],
+    "total_amount_ars": 6044015.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00007",
+    "client_id": "BIZ-010",
+    "employee_id": "EMP-002",
+    "sale_date": "2025-09-16",
+    "items_sold": [
+      {
+        "product_id": "BOS-DIS-VW-GOL",
+        "quantity": 10,
+        "sale_price_ars": 155000.00
+      },
+      {
+        "product_id": "FRE-CER-VW",
+        "quantity": 10,
+        "sale_price_ars": 68000.00
+      }
+    ],
+    "total_amount_ars": 2230000.00,
+    "payment_method": "Transferencia Bancaria"
+  },
+  {
+    "invoice_id": "FACT-B001-00008",
+    "client_id": "BIZ-008",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-17",
+    "items_sold": [
+      {
+        "product_id": "3M-CERA-PASTA",
+        "quantity": 30,
+        "sale_price_ars": 41000.00
+      },
+      {
+        "product_id": "ACC-KITSEG-01",
+        "quantity": 15,
+        "sale_price_ars": 55000.00
+      }
+    ],
+    "total_amount_ars": 2055000.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00009",
+    "client_id": "BIZ-001",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-18",
+    "items_sold": [
+      {
+        "product_id": "PIR-SAT-2657016",
+        "quantity": 8,
+        "sale_price_ars": 315000.00
+      }
+    ],
+    "total_amount_ars": 2520000.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00010",
+    "client_id": "BIZ-002",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-19",
+    "items_sold": [
+      {
+        "product_id": "BRI-D697-2357515",
+        "quantity": 12,
+        "sale_price_ars": 299000.00
+      }
+    ],
+    "total_amount_ars": 3588000.00,
+    "payment_method": "Transferencia Bancaria"
+  },
+  {
+    "invoice_id": "FACT-B001-00011",
+    "client_id": "BIZ-006",
+    "employee_id": "EMP-002",
+    "sale_date": "2025-09-19",
+    "items_sold": [
+      {
+        "product_id": "WD40-FLEX-400",
+        "quantity": 100,
+        "sale_price_ars": 22000.00
+      }
+    ],
+    "total_amount_ars": 2200000.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00012",
+    "client_id": "BIZ-012",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-20",
+    "items_sold": [
+      {
+        "product_id": "DUN-AT5-2656018",
+        "quantity": 20,
+        "sale_price_ars": 345000.00
+      }
+    ],
+    "total_amount_ars": 6900000.00,
+    "payment_method": "Transferencia Bancaria"
+  },
+  {
+    "invoice_id": "FACT-B001-00013",
+    "client_id": "BIZ-004",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-22",
+    "items_sold": [
+      {
+        "product_id": "YPF-ELA-F50-4L",
+        "quantity": 15,
+        "sale_price_ars": 89900.00
+      }
+    ],
+    "total_amount_ars": 1348500.00,
+    "payment_method": "Transferencia Bancaria"
+  },
+  {
+    "invoice_id": "FACT-B001-00014",
+    "client_id": "BIZ-003",
+    "employee_id": "EMP-002",
+    "sale_date": "2025-09-23",
+    "items_sold": [
+      {
+        "product_id": "GOO-ASSUR-2156016",
+        "quantity": 16,
+        "sale_price_ars": 225000.00
+      }
+    ],
+    "total_amount_ars": 3600000.00,
+    "payment_method": "Cuenta Corriente"
+  },
+  {
+    "invoice_id": "FACT-B001-00015",
+    "client_id": "BIZ-014",
+    "employee_id": "EMP-001",
+    "sale_date": "2025-09-24",
+    "items_sold": [
+      {
+        "product_id": "SERV-CAM-ACEITE",
+        "quantity": 25,
+        "sale_price_ars": 35000.00
+      },
+      {
+        "product_id": "CAS-MAG-10W40-4L",
+        "quantity": 25,
+        "sale_price_ars": 82500.00
+      }
+    ],
+    "total_amount_ars": 2937500.00,
+    "payment_method": "Cuenta Corriente"
+  }
+]

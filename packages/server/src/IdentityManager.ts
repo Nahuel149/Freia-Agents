@@ -211,6 +211,11 @@ export class IdentityManager {
 
     public static checkFeatureByPlan(feature: string) {
         return (req: Request, res: Response, next: NextFunction) => {
+            // In pure OSS mode, allow all features
+            try {
+                const { isOssMode } = require('./utils/ossMode')
+                if (isOssMode && isOssMode()) return next()
+            } catch (_) {}
             const user = req.user
             if (user) {
                 if (!user.features || Object.keys(user.features).length === 0) {

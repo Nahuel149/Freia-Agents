@@ -102,6 +102,15 @@ const dashboard = {
                     permission: 'codeagents:view'
                 },
                 {
+                    id: 'testchat',
+                    title: 'Test Chat',
+                    type: 'item',
+                    url: '/testchat',
+                    icon: icons.IconMicroscope,
+                    breadcrumbs: true,
+                    permission: 'codeagents:view'
+                },
+                {
                     id: 'dashboard',
                     title: 'Dashboard',
                     type: 'item',

@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
+import logger from '../utils/logger'
 
 type StoreKind = 'products' | 'clients' | 'orders' | 'manual' | 'generic'
 
@@ -22,6 +23,7 @@ export interface ResolveResult {
     totalBytes: number
     datasetHash: string
     statuses: Record<string, 'ok' | 'error'>
+    repoRoot: string
 }
 
 const ID_TO_FILE_AND_KIND: Record<string, { filename: string; kind: StoreKind; name: string }> = {
@@ -82,6 +84,7 @@ export async function resolveSelectedStores(storeIds: string[]): Promise<Resolve
     const targetFiles = Object.values(ID_TO_FILE_AND_KIND).map((m) => m.filename)
     const start = process.cwd()
     const repoRoot = findRepoRoot(start, targetFiles) || process.cwd()
+    logger.debug(`[docResolver] startDir=${start} repoRoot=${repoRoot}`)
 
     const stores: StoreEnvelopeStore[] = []
     const statuses: Record<string, 'ok' | 'error'> = {}
@@ -91,6 +94,7 @@ export async function resolveSelectedStores(storeIds: string[]): Promise<Resolve
         const map = ID_TO_FILE_AND_KIND[id]
         if (!map) {
             statuses[id] = 'error'
+            logger.debug(`[docResolver] unknown id=${id}`)
             continue
         }
         const filePath = path.join(repoRoot, map.filename)
@@ -111,13 +115,16 @@ export async function resolveSelectedStores(storeIds: string[]): Promise<Resolve
                 meta: { bytes: stat.size, source: filePath }
             })
             statuses[id] = 'ok'
+            logger.debug(`[docResolver] loaded id=${id} kind=${map.kind} bytes=${stat.size} path=${filePath}`)
         } catch (e) {
             statuses[id] = 'error'
+            logger.debug(`[docResolver] failed id=${id} path=${filePath} err=${(e as Error)?.message}`)
         }
     }
 
     const envelope: StoreEnvelope = { version: '1', stores }
     const datasetHash = crypto.createHash('sha256').update(JSON.stringify(envelope)).digest('hex')
 
-    return { envelope, totalBytes, datasetHash, statuses }
+    logger.debug(`[docResolver] result stores=${stores.length} totalBytes=${totalBytes} hash=${datasetHash.slice(0,8)}...`)
+    return { envelope, totalBytes, datasetHash, statuses, repoRoot }
 }

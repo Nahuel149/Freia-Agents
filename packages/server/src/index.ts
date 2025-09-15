@@ -31,6 +31,9 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
+// Enforce OSS mode at startup regardless of environment variables
+process.env.OSS_MODE = 'true'
+process.env.FORCE_OSS = 'true'
 import { Workspace } from './oss/database/entities/workspace.entity'
 import { Organization } from './oss/database/entities/organization.entity'
 import { GeneralRole, Role } from './oss/database/entities/role.entity'
@@ -83,6 +86,10 @@ export class App {
     async initDatabase() {
         // Initialize database
         try {
+            // Log OSS banner if enforced
+            if (process.env.OSS_MODE === 'true') {
+                logger.info('🟢 [server]: OSS mode enforced (OSS_MODE=true, FORCE_OSS=true) — full access enabled; feature gates and workspace checks disabled')
+            }
             this.AppDataSource = getDataSource()
             await this.AppDataSource.initialize()
             logger.info('📦 [server]: Data Source initialized successfully')

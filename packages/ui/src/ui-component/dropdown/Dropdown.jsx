@@ -28,7 +28,7 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
     return (
         <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
             <Autocomplete
-                id={name}
+                id={`${name}-dropdown`}
                 disabled={disabled}
                 freeSolo={freeSolo}
                 disableClearable={disableClearable}
@@ -75,8 +75,10 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                         />
                     )
                 }}
-                renderOption={(props, option) => (
-                    <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                renderOption={(props, option) => {
+                    const { key, ...rest } = props
+                    return (
+                    <Box component='li' key={key} {...rest} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {option.imageSrc && (
                             <img
                                 src={option.imageSrc}
@@ -95,8 +97,8 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                                 <Typography sx={{ color: customization.isDarkMode ? '#9e9e9e' : '' }}>{option.description}</Typography>
                             )}
                         </div>
-                    </Box>
-                )}
+                    </Box>)
+                }}
                 sx={{ height: '100%' }}
             />
         </FormControl>

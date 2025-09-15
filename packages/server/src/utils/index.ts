@@ -606,6 +606,21 @@ export const buildFlow = async ({
 
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: [${orgId}]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                try {
+                    const inpKeys = Object.keys(reactFlowNodeData.inputs || {})
+                    logger.info(`[vector-upsert:canvas] node=${reactFlowNode.data.name} keys=${inpKeys.join(',')}`)
+                    const docVal = (reactFlowNodeData.inputs || {}).document
+                    const embVal = (reactFlowNodeData.inputs || {}).embeddings
+                    logger.info(
+                        `[vector-upsert:canvas] docs=${Array.isArray(docVal) ? docVal.length : (docVal ? 1 : 0)} embeddings=${embVal ? typeof embVal : 'undefined'}`
+                    )
+                    if (!embVal) {
+                        throw new InternalFlowiseError(
+                            StatusCodes.BAD_REQUEST,
+                            `Missing embeddings instance for ${reactFlowNode.data.label}. Connect an Embeddings node to this Vector Store.`
+                        )
+                    }
+                } catch (_) {}
                 const indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     orgId,
                     workspaceId,

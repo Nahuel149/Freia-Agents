@@ -44,18 +44,9 @@ export const RequireAuth = ({ permission, display, children }) => {
     }
 
     // Step 2: Deployment Type Specific Logic
-    // Open Source: Allow access to core features including agentflows
+    // Open Source: Allow access to everything
     if (isOpenSource) {
-        // Allow access to features without display property (includes dashboard)
-        if (!display) return children
-        
-        // Allow access to core OSS features even with display property
-        const ossAllowedFeatures = ['feat:agentflows', 'feat:chatflows', 'feat:tools', 'feat:credentials', 'feat:variables']
-        if (display && ossAllowedFeatures.includes(display)) {
-            return children
-        }
-        
-        return <Navigate to='/unauthorized' replace />
+        return children
     }
 
     // OSS mode: Enterprise license checks removed - Cloud only

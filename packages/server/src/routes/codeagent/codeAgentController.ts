@@ -207,6 +207,7 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             log(`ReqId=${reqId} | Execute agent=${req.params.id} lang=${codeLanguage}`)
             const previewInput = typeof input === 'string' ? input.slice(0, 200) : ''
             log(`Input preview: ${previewInput}`)
+            log(`Chat history length: ${Array.isArray(chatHistory) ? chatHistory.length : 0}`)
 
             // Autoload dataset from selected document IDs (v2) or legacy inline docs
             const autoload: boolean = !!(req.body?.context?.autoload)
@@ -218,7 +219,7 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
 
             if (autoload && Array.isArray(selectedDocIds) && selectedDocIds.length > 0) {
                 try {
-                    const { envelope, totalBytes, datasetHash, statuses } = await resolveSelectedStores(selectedDocIds)
+                    const { envelope, totalBytes, datasetHash, statuses, repoRoot } = await resolveSelectedStores(selectedDocIds)
                     envAutoload = {
                         FLOWISE_SELECTED_DOCS: JSON.stringify(envelope),
                         FLOWISE_DATASET_HASH: datasetHash
@@ -229,6 +230,8 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                         datasetHash,
                         statuses
                     }
+                    log(`Autoload v2: repoRoot=${repoRoot}`)
+                    log(`Autoload v2: ids=${JSON.stringify(selectedDocIds)}`)
                     log(`Autoload v2: stores=${envelope.stores.length}, bytes=${totalBytes}, hash=${datasetHash.slice(0,8)}..., statuses=${JSON.stringify(statuses)}`)
                 } catch (e) {
                     logger.warn('Failed to resolve selected stores:', e)
@@ -237,6 +240,8 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             } else if (legacySelectedDocs) {
                 envAutoload = { FLOWISE_SELECTED_DOCS: JSON.stringify(legacySelectedDocs) }
                 log(`Autoload legacy docs provided`)
+            } else {
+                log(`No autoload sources present (autoload=${autoload})`)
             }
 
             // Execute the code
@@ -262,6 +267,9 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             try {
                 parsed = typeof result.output === 'string' ? JSON.parse(result.output) : null
             } catch { parsed = null }
+            if (!parsed && typeof result.output === 'string') {
+                log(`Raw stdout len=${result.output.length}`)
+            }
             if (parsed && parsed.reply) log(`Parsed reply: ${String(parsed.reply).slice(0, 200)}`)
 
             // Update execution with result
