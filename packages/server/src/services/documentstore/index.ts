@@ -1201,7 +1201,7 @@ const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObj
             entity.recordManagerConfig = null
         }
 
-        if (entity.status !== DocumentStoreStatus.UPSERTED && (data.vectorStoreName || data.recordManagerName || data.embeddingName)) {
+        if (entity.status !== DocumentStoreStatus.SYNC && (data.vectorStoreName || data.recordManagerName || data.embeddingName)) {
             // if the store is not already in sync, mark it as sync
             // this also means that the store is not yet sync'ed to vector store
             entity.status = DocumentStoreStatus.SYNC
@@ -1436,7 +1436,7 @@ const _insertIntoVectorStoreWorkerThread = async (
         // Guard: avoid calling vector store upsert with empty docs (some providers throw
         // MongoInvalidArgumentError: Invalid BulkOperation, Batch cannot be empty)
         if (!docs.length) {
-            entity.status = DocumentStoreStatus.UPSERTED
+            entity.status = DocumentStoreStatus.SYNC
             await appDataSource.getRepository(DocumentStore).save(entity)
             // Return the entity so controller DTO conversion remains consistent
             return entity
@@ -1463,7 +1463,7 @@ const _insertIntoVectorStoreWorkerThread = async (
             const msg = String(err?.message || err)
             // Some Mongo providers throw when bulk operation is empty (no effective ops)
             if (msg.includes('Invalid BulkOperation') && msg.includes('Batch cannot be empty')) {
-                entity.status = DocumentStoreStatus.UPSERTED
+                entity.status = DocumentStoreStatus.SYNC
                 await appDataSource.getRepository(DocumentStore).save(entity)
                 return entity
             }
@@ -1512,17 +1512,17 @@ const _insertIntoVectorStoreWorkerThread = async (
             orgId
         )
 
-        entity.status = DocumentStoreStatus.UPSERTED
+        entity.status = DocumentStoreStatus.SYNC
         await appDataSource.getRepository(DocumentStore).save(entity)
 
         return indexResult ?? { result: 'Successfully Upserted' }
     } catch (error) {
         const msg = getErrorMessage(error)
-        // As a last resort, mark as UPSERTED to avoid blocking the UI in OSS if provider misconfiguration causes TypeErrors
+        // As a last resort, mark as STALE to avoid blocking the UI in OSS if provider misconfiguration causes TypeErrors
         if (entity) {
             try {
                 logger.error(`[vector-upsert] provider error: ${msg}`)
-                entity.status = DocumentStoreStatus.UPSERTED
+                entity.status = DocumentStoreStatus.STALE
                 await appDataSource.getRepository(DocumentStore).save(entity)
                 return entity
             } catch (_) {}
@@ -2448,6 +2448,51 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
     return configs
 }
 
+const updateDocumentStoreStatus = async (storeId: string, status: DocumentStoreStatus) => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        if (!Object.values(DocumentStoreStatus).includes(status)) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `Error: documentStoreServices.updateDocumentStoreStatus - invalid status ${status}`
+            )
+        }
+
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({ id: storeId })
+        if (!entity) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.updateDocumentStoreStatus - Document store ${storeId} not found`
+            )
+        }
+
+        entity.status = status
+
+        if (entity.loaders) {
+            try {
+                const loaders: IDocumentStoreLoader[] = JSON.parse(entity.loaders)
+                const updatedLoaders = loaders.map((loader) => ({
+                    ...loader,
+                    status
+                }))
+                entity.loaders = JSON.stringify(updatedLoaders)
+            } catch (err) {
+                logger.warn(
+                    `[documentstore] Failed to normalize loader statuses for ${storeId}: ${getErrorMessage(err)}`
+                )
+            }
+        }
+
+        return await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateDocumentStoreStatus - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     updateDocumentStoreUsage,
     deleteDocumentStore,
@@ -2459,6 +2504,7 @@ export default {
     getUsedChatflowNames,
     getDocumentStoreFileChunks,
     updateDocumentStore,
+    updateDocumentStoreStatus,
     previewChunksMiddleware,
     saveProcessingLoader,
     processLoaderMiddleware,

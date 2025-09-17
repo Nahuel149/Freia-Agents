@@ -22,6 +22,12 @@ router.get(
 )
 // Update documentStore
 router.put('/store/:id', checkAnyPermission('documentStores:create,documentStores:update'), documentStoreController.updateDocumentStore)
+// Update documentStore status
+router.patch(
+    '/store/:id/status',
+    checkPermission('documentStores:update'),
+    documentStoreController.updateDocumentStoreStatus
+)
 // Delete documentStore
 router.delete('/store/:id', checkPermission('documentStores:delete'), documentStoreController.deleteDocumentStore)
 // Get document store configs

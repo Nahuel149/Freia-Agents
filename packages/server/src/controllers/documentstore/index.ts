@@ -264,6 +264,28 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
+const updateDocumentStoreStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.updateDocumentStoreStatus - storeId not provided!`
+            )
+        }
+        if (!req.body || typeof req.body.status === 'undefined' || req.body.status === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.updateDocumentStoreStatus - status not provided!`
+            )
+        }
+
+        const apiResponse = await documentStoreService.updateDocumentStoreStatus(req.params.id, req.body.status)
+        return res.json(DocumentStoreDTO.fromEntity(apiResponse))
+    } catch (error) {
+        next(error)
+    }
+}
+
 const deleteDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
@@ -531,6 +553,7 @@ export default {
     getDocumentStoreById,
     getDocumentStoreFileChunks,
     updateDocumentStore,
+    updateDocumentStoreStatus,
     processLoader,
     previewFileChunks,
     getDocumentLoaders,

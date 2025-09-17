@@ -75,6 +75,99 @@ export const hasValidEmbeddingRows = (result: any) => {
     )
 }
 
+const coerceEmbeddingVector = (candidate: any) => {
+    if (!candidate) return undefined
+    const vector = candidate.embedding ?? candidate
+    if (Array.isArray(vector)) return vector
+    if (isTypedArray(vector)) return Array.from(vector as any)
+    if (typeof vector === 'object' && typeof (vector as any).length === 'number') {
+        try {
+            return Array.from(vector as any)
+        } catch (_) {
+            return undefined
+        }
+    }
+    return undefined
+}
+
+const extractRowSet = (response: any): any[] | undefined => {
+    if (!response) return undefined
+    if (Array.isArray(response)) return response
+    if (Array.isArray(response?.data)) return response.data
+    if (Array.isArray(response?.body?.data)) return response.body.data
+    if (Array.isArray(response?.response?.data)) return response.response.data
+    return undefined
+}
+
+const fallbackEmbedDocuments = async (
+    embeddings: any,
+    inputs: string[],
+    logger?: LoggerLike
+) => {
+    const stripNewLines = embeddings?.stripNewLines ?? true
+    const batchSize = embeddings?.batchSize ?? 512
+    const model = embeddings?.model ?? embeddings?.modelName
+    const dimensions = embeddings?.dimensions
+    const cleaned = stripNewLines ? inputs.map((t: string) => t.replace(/\n/g, ' ')) : inputs
+
+    const vectors: number[][] = []
+    for (let cursor = 0; cursor < cleaned.length; cursor += batchSize) {
+        const batch = cleaned.slice(cursor, cursor + batchSize)
+        const params: Record<string, any> = {
+            model,
+            input: batch
+        }
+        if (dimensions) params.dimensions = dimensions
+
+        const response = await embeddings.embeddingWithRetry(params)
+        if (typeof response === 'string') {
+            logWithFallback(
+                logger,
+                'error',
+                `[embeddings] fallback raw response (string): ${response.slice(0, 500)}`
+            )
+            throw new Error(response)
+        }
+        logWithFallback(
+            logger,
+            'debug',
+            `[embeddings] fallback raw response (object): type=${response?.constructor?.name || typeof response} keys=${
+                response && typeof response === 'object' ? Object.keys(response).join(',') : 'n/a'
+            }`
+        )
+        const rows = extractRowSet(response)
+        if (!Array.isArray(rows)) {
+            logWithFallback(
+                logger,
+                'error',
+                `[embeddings] fallback response not array: type=${
+                    response ? response.constructor?.name || typeof response : 'undefined'
+                } preview=${JSON.stringify(response)?.slice(0, 500)}`
+            )
+            throw new Error('Embedding provider returned an unrecognised response shape')
+        }
+        for (let i = 0; i < batch.length; i += 1) {
+            const row = rows[i]
+            const vector = coerceEmbeddingVector(row)
+            if (!vector) {
+                logWithFallback(logger, 'error', '[embeddings] fallback row unparsable', {
+                    index: i,
+                    rowType: row ? row.constructor?.name || typeof row : 'undefined'
+                })
+                throw new Error('Embedding provider returned an empty embedding row')
+            }
+            vectors.push(vector)
+        }
+    }
+
+    logWithFallback(logger, 'info', '[embeddings] fallback embedDocuments succeeded', {
+        rows: vectors.length,
+        dimension: vectors[0]?.length
+    })
+
+    return vectors
+}
+
 export const ensureEmbeddingAdapters = (embeddings: Embeddings | undefined, logger?: LoggerLike) => {
     if (!embeddings || (embeddings as any).__flowiseNormalizedVectorOutput) {
         return
@@ -98,6 +191,16 @@ export const ensureEmbeddingAdapters = (embeddings: Embeddings | undefined, logg
                 logWithFallback(logger, 'error', `[embeddings] ${methodName} failed`, {
                     error: error?.message || String(error)
                 })
+                if (methodName === 'embedDocuments') {
+                    try {
+                        const fallback = await fallbackEmbedDocuments(embeddings, args[0] ?? [], logger)
+                        return fallback
+                    } catch (fallbackError) {
+                        logWithFallback(logger, 'error', '[embeddings] fallback embedDocuments failed', {
+                            error: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+                        })
+                    }
+                }
                 throw error
             }
         }

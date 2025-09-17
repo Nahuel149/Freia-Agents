@@ -199,6 +199,15 @@ const resources = {
         refreshDocStore: 'Refresh Document Store',
         addDocumentLoader: 'Add Document Loader',
         moreActions: 'More Actions',
+        statusActions: 'Change Status',
+        statusLabels: {
+          sync: 'Sync',
+          stale: 'Stale',
+          empty: 'Empty',
+          syncing: 'Syncing',
+          upserting: 'Upserting',
+          new: 'New'
+        },
         viewEditChunks: 'View & Edit Chunks',
         upsertAllChunks: 'Upsert All Chunks',
         retrievalQuery: 'Retrieval Query',
@@ -220,7 +229,9 @@ const resources = {
           storeDeleteFailed: 'Failed to delete Document Store',
           loaderDeleted: 'Loader and associated document chunks deleted',
           loaderDeleteFailed: 'Failed to delete Loader',
-          selectDocumentLoader: 'Select Document Loader'
+          selectDocumentLoader: 'Select Document Loader',
+          statusUpdated: 'Document store status updated.',
+          statusUpdateFailed: 'Failed to update document store status'
         },
         pendingProcessing: 'Some files are pending processing. Please Refresh to get the latest status.',
         none: 'None',
@@ -638,6 +649,15 @@ const resources = {
         refreshDocStore: 'Actualizar almacén de documentos',
         addDocumentLoader: 'Agregar cargador de documentos',
         moreActions: 'Más acciones',
+        statusActions: 'Cambiar estado',
+        statusLabels: {
+          sync: 'Sincronizado',
+          stale: 'Desactualizado',
+          empty: 'Vacío',
+          syncing: 'Sincronizando',
+          upserting: 'Actualizando',
+          new: 'Nuevo'
+        },
         viewEditChunks: 'Ver y editar fragmentos',
         upsertAllChunks: 'Insertar todos los fragmentos',
         retrievalQuery: 'Consulta de recuperación',
@@ -659,7 +679,9 @@ const resources = {
           storeDeleteFailed: 'Error al eliminar almacén de documentos',
           loaderDeleted: 'Cargador y fragmentos de documentos asociados eliminados',
           loaderDeleteFailed: 'Error al eliminar cargador',
-          selectDocumentLoader: 'Seleccionar cargador de documentos'
+          selectDocumentLoader: 'Seleccionar cargador de documentos',
+          statusUpdated: 'Estado del almacén actualizado.',
+          statusUpdateFailed: 'Error al actualizar el estado del almacén'
         },
         pendingProcessing: 'Algunos archivos están pendientes de procesamiento. Por favor actualiza para obtener el estado más reciente.',
         none: 'Ninguno',

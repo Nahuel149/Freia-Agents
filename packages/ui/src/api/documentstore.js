@@ -5,6 +5,7 @@ const getDocumentLoaders = () => client.get('/document-store/components/loaders'
 const getSpecificDocumentStore = (id) => client.get(`/document-store/store/${id}`)
 const createDocumentStore = (body) => client.post(`/document-store/store`, body)
 const updateDocumentStore = (id, body) => client.put(`/document-store/store/${id}`, body)
+const updateDocumentStoreStatus = (id, status) => client.patch(`/document-store/store/${id}/status`, { status })
 const deleteDocumentStore = (id) => client.delete(`/document-store/store/${id}`)
 const getDocumentStoreConfig = (storeId, loaderId) => client.get(`/document-store/store-configs/${storeId}/${loaderId}`)
 
@@ -37,6 +38,7 @@ export default {
     deleteLoaderFromStore,
     getFileChunks,
     updateDocumentStore,
+    updateDocumentStoreStatus,
     previewChunks,
     processLoader,
     getDocumentLoaders,

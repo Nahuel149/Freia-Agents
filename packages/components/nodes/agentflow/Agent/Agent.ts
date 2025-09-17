@@ -460,7 +460,7 @@ class Agent_Agentflow implements INode {
             const searchOptions = options.searchOptions || {}
             const stores = await appDataSource.getRepository(databaseEntities['DocumentStore']).findBy(searchOptions)
             for (const store of stores) {
-                if (store.status === 'UPSERTED') {
+                if (store.status === 'SYNC') {
                     const obj = {
                         name: `${store.id}:${store.name}`,
                         label: store.name,

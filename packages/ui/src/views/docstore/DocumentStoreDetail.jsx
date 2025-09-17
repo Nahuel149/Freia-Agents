@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as PropTypes from 'prop-types'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -157,8 +157,22 @@ const DocumentStoreDetails = () => {
 
     const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
+    const [statusAnchorEl, setStatusAnchorEl] = useState(null)
+    const statusMenuOpen = Boolean(statusAnchorEl)
 
     const { storeId } = useParams()
+
+    const statusOptions = useMemo(
+        () => [
+            { value: 'SYNC', label: t('docstore.statusLabels.sync') },
+            { value: 'STALE', label: t('docstore.statusLabels.stale') },
+            { value: 'EMPTY', label: t('docstore.statusLabels.empty') },
+            { value: 'SYNCING', label: t('docstore.statusLabels.syncing') },
+            { value: 'UPSERTING', label: t('docstore.statusLabels.upserting') },
+            { value: 'NEW', label: t('docstore.statusLabels.new') }
+        ],
+        [t]
+    )
 
     const openPreviewSettings = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
@@ -386,6 +400,57 @@ const DocumentStoreDetails = () => {
         setAnchorEl(event.currentTarget)
     }
 
+    const handleStatusMenuOpen = (event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        setStatusAnchorEl(event.currentTarget)
+    }
+
+    const handleStatusMenuClose = () => {
+        setStatusAnchorEl(null)
+    }
+
+    const handleStatusChange = async (newStatus) => {
+        setStatusAnchorEl(null)
+        if (!documentStore?.id) return
+        setBackdropLoading(true)
+        try {
+            await documentsApi.updateDocumentStoreStatus(documentStore.id, newStatus)
+            enqueueSnackbar({
+                message: t('docstore.notifications.statusUpdated'),
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            await getSpecificDocumentStore.request(storeId)
+        } catch (error) {
+            setError(error)
+            enqueueSnackbar({
+                message: `${t('docstore.notifications.statusUpdateFailed')}: ${
+                    typeof error.response?.data === 'object' ? error.response.data.message : error.message
+                }`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } finally {
+            setBackdropLoading(false)
+        }
+    }
+
     const onViewUpsertAPI = (storeId, loaderId) => {
         const props = {
             title: `Upsert API`,
@@ -498,7 +563,7 @@ const DocumentStoreDetails = () => {
                                     </MenuItem>
                                 </Available>
                                 <MenuItem
-                                    disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'UPSERTED'}
+                                    disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'SYNC'}
                                     onClick={() => showVectorStoreQuery(documentStore.id)}
                                     disableRipple
                                 >
@@ -507,7 +572,7 @@ const DocumentStoreDetails = () => {
                                 </MenuItem>
                                 <Available permission={'documentStores:upsert-config'}>
                                     <MenuItem
-                                        disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'UPSERTED'}
+                                        disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'SYNC'}
                                         onClick={() => onStoreRefresh(documentStore.id)}
                                         disableRipple
                                         title={t('docstore.refreshTooltip')}
@@ -526,7 +591,30 @@ const DocumentStoreDetails = () => {
                                 </MenuItem>
                             </StyledMenu>
                         </ViewHeader>
-                        <DocumentStoreStatus status={documentStore?.status} />
+                        <Stack direction='row' spacing={1} alignItems='center'>
+                            <DocumentStoreStatus status={documentStore?.status} />
+                            <Available permission={'documentStores:update'}>
+                                <Button
+                                    size='small'
+                                    variant='outlined'
+                                    endIcon={<KeyboardArrowDownIcon />}
+                                    onClick={handleStatusMenuOpen}
+                                >
+                                    {t('docstore.statusActions')}
+                                </Button>
+                            </Available>
+                        </Stack>
+                        <StyledMenu anchorEl={statusAnchorEl} open={statusMenuOpen} onClose={handleStatusMenuClose}>
+                            {statusOptions.map((option) => (
+                                <MenuItem
+                                    key={option.value}
+                                    selected={documentStore?.status === option.value}
+                                    onClick={() => handleStatusChange(option.value)}
+                                >
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </StyledMenu>
                         {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
                             <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                                 <div

@@ -460,7 +460,7 @@ const getDocumentStores = async (): Promise<any> => {
         const stores = await appServer.AppDataSource.getRepository(DocumentStore).find()
         const returnData = []
         for (const store of stores) {
-            if (store.status === 'UPSERTED') {
+            if (store.status === 'SYNC') {
                 const obj = {
                     name: store.id,
                     label: store.name,
