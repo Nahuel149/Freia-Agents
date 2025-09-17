@@ -4,7 +4,6 @@ import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, 
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 import { OpenAI as OpenAIClient } from 'openai'
 
 class ChatOpenAI_ChatModels implements INode {
@@ -323,9 +322,14 @@ class ChatOpenAI_ChatModels implements INode {
         }
 
         if (proxyUrl) {
+            const { ProxyAgent } = await import('undici')
+            const proxyAgent = new ProxyAgent(proxyUrl)
             obj.configuration = {
                 ...obj?.configuration,
-                httpAgent: new HttpsProxyAgent(proxyUrl)
+                fetch: (input: any, init?: any) => {
+                    const requestInit = { ...(init || {}), dispatcher: proxyAgent }
+                    return fetch(input, requestInit as any)
+                }
             }
         }
 

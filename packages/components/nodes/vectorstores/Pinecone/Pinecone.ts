@@ -9,6 +9,99 @@ import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam }
 import { addMMRInputParams, howToUseFileUpload, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 
+type LoggerLike = {
+    debug?: (...args: any[]) => void
+    info?: (...args: any[]) => void
+    warn?: (...args: any[]) => void
+    error?: (...args: any[]) => void
+}
+
+const logWithFallback = (logger: LoggerLike | undefined, level: 'debug' | 'info' | 'warn' | 'error', message: string, meta?: any) => {
+    const payload = meta !== undefined ? [message, meta] : [message]
+    const target = logger?.[level]
+    if (typeof target === 'function') {
+        target(...payload)
+        return
+    }
+    const fallback = level === 'error' ? console.error : level === 'warn' ? console.warn : console.debug
+    fallback(...payload)
+}
+
+const isTypedArray = (val: any): val is ArrayBufferView => ArrayBuffer.isView(val) && !(val instanceof DataView)
+
+const normalizeEmbeddingRow = (row: any): any => {
+    if (!row) return row
+    if (isTypedArray(row)) return Array.from(row as any)
+    if (Array.isArray(row)) return row
+    if (typeof row === 'object' && typeof (row as any).length === 'number') {
+        try {
+            return Array.from(row as any)
+        } catch (_) {
+            return row
+        }
+    }
+    return row
+}
+
+const normalizeEmbeddingResult = (result: any, expectNested: boolean) => {
+    if (expectNested) {
+        if (!Array.isArray(result)) return result
+        return result.map((row) => normalizeEmbeddingRow(row))
+    }
+    return normalizeEmbeddingRow(result)
+}
+
+const describeEmbeddingResult = (result: any) => {
+    if (!Array.isArray(result)) {
+        return `type=${result ? result.constructor?.name || typeof result : 'undefined'} rows=not-array`
+    }
+    const rows = result.length
+    const first = rows > 0 ? result[0] : undefined
+    const firstType = first ? (Array.isArray(first) ? 'array' : first.constructor?.name || typeof first) : 'undefined'
+    const firstLen = (() => {
+        if (!first) return 0
+        if (Array.isArray(first)) return first.length
+        if (isTypedArray(first)) {
+            const typed = first as any
+            return typeof typed.length === 'number' ? typed.length : typeof typed.byteLength === 'number' ? typed.byteLength : 0
+        }
+        return 0
+    })()
+    return `rows=${rows} firstType=${firstType} firstLength=${firstLen}`
+}
+
+const ensureEmbeddingAdapters = (embeddings: Embeddings | undefined, logger: LoggerLike | undefined) => {
+    if (!embeddings || (embeddings as any).__flowiseNormalizedVectorOutput) {
+        return
+    }
+
+    const patchMethod = (methodName: 'embedDocuments' | 'embedQuery', expectNested: boolean) => {
+        const original = (embeddings as any)[methodName]
+        if (typeof original !== 'function') return
+        ;(embeddings as any)[methodName] = async (...args: any[]) => {
+            const result = await original.apply(embeddings, args)
+            const normalized = normalizeEmbeddingResult(result, expectNested)
+            if (normalized !== result) {
+                logWithFallback(logger, 'debug', `[pinecone-embeddings] normalized ${methodName} output`, {
+                    method: methodName,
+                    description: describeEmbeddingResult(result)
+                })
+            }
+            return normalized
+        }
+    }
+
+    patchMethod('embedDocuments', true)
+    patchMethod('embedQuery', false)
+
+    Object.defineProperty(embeddings, '__flowiseNormalizedVectorOutput', {
+        value: true,
+        enumerable: false,
+        configurable: false
+    })
+    logWithFallback(logger, 'debug', '[pinecone-embeddings] attached normalization adapter to embeddings instance')
+}
+
 class Pinecone_VectorStores implements INode {
     label: string
     name: string
@@ -134,6 +227,7 @@ class Pinecone_VectorStores implements INode {
             const recordManager = nodeData.inputs?.recordManager
             const pineconeTextKey = nodeData.inputs?.pineconeTextKey as string
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
+            const logger = (options?.logger || options?.log) as LoggerLike | undefined
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
@@ -148,6 +242,8 @@ class Pinecone_VectorStores implements INode {
             if (!embeddings || typeof (embeddings as any).embedDocuments !== 'function') {
                 throw new Error('Embeddings instance is missing. Connect an Embeddings node to the Pinecone node.')
             }
+
+            ensureEmbeddingAdapters(embeddings, logger)
 
             const client = new Pinecone({ apiKey: pineconeApiKey })
 
@@ -176,11 +272,21 @@ class Pinecone_VectorStores implements INode {
             // Embeddings preflight: ensure provider works and returns correct shape
             try {
                 const probe = await (embeddings as any).embedDocuments(['__flowise_probe__'])
-                if (!Array.isArray(probe) || (probe.length > 0 && !Array.isArray(probe[0]))) {
-                    throw new Error('Unexpected embeddings output shape')
+                const hasValidRows =
+                    Array.isArray(probe) &&
+                    (probe.length === 0 || Array.isArray(probe[0]) || isTypedArray(probe[0]))
+                if (!hasValidRows) {
+                    const shape = describeEmbeddingResult(probe)
+                    throw new Error(`Unexpected embeddings output shape (${shape})`)
                 }
+                logWithFallback(logger, 'debug', '[pinecone-preflight] embeddings probe successful', {
+                    description: describeEmbeddingResult(probe)
+                })
             } catch (err: any) {
                 const msg = err?.message || String(err)
+                logWithFallback(logger, 'error', '[pinecone-preflight] embeddings probe failed', {
+                    error: msg
+                })
                 throw new Error(`Embeddings preflight failed: ${msg}`)
             }
 
