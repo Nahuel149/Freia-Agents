@@ -129,7 +129,7 @@ class Pinecone_VectorStores implements INode {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const _index = nodeData.inputs?.pineconeIndex as string
             const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
-            const docs = nodeData.inputs?.document as Document[]
+            const docs = nodeData.inputs?.document as Document[] | Document | undefined
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const recordManager = nodeData.inputs?.recordManager
             const pineconeTextKey = nodeData.inputs?.pineconeTextKey as string
@@ -138,19 +138,50 @@ class Pinecone_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
+            // Basic preflight with friendly messages (kept minimal for upstream parity)
+            if (!_index || !_index.trim()) {
+                throw new Error('Pinecone index name is missing. Please set Pinecone Index on the node.')
+            }
+            if (!pineconeApiKey || !pineconeApiKey.trim()) {
+                throw new Error('Pinecone API key is missing. Please attach a Pinecone credential with a valid API key.')
+            }
+            if (!embeddings || typeof (embeddings as any).embedDocuments !== 'function') {
+                throw new Error('Embeddings instance is missing. Connect an Embeddings node to the Pinecone node.')
+            }
+
             const client = new Pinecone({ apiKey: pineconeApiKey })
 
             const pineconeIndex = client.Index(_index)
 
-            const flattenDocs = docs && docs.length ? flatten(docs) : []
-            const finalDocs = []
-            for (let i = 0; i < flattenDocs.length; i += 1) {
-                if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    if (isFileUploadEnabled && options.chatId) {
-                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
-                    }
-                    finalDocs.push(new Document(flattenDocs[i]))
+            // Normalize documents: accept single doc or array; handle snake_case keys
+            const flattenDocs = Array.isArray(docs) ? flatten(docs) : docs ? [docs] : []
+            const finalDocs: Document[] = []
+            for (const raw of flattenDocs as any[]) {
+                if (!raw) continue
+                const pageContentVal = raw.pageContent ?? raw.page_content
+                if (pageContentVal === undefined || pageContentVal === null) continue
+                const pageContent = String(pageContentVal)
+                if (!pageContent.trim()) continue
+                const rawMetadata = raw.metadata
+                const metadata = rawMetadata && typeof rawMetadata === 'object' && !Array.isArray(rawMetadata) ? { ...rawMetadata } : {}
+                if (isFileUploadEnabled && options.chatId) {
+                    ;(metadata as any)[FLOWISE_CHATID] = options.chatId
                 }
+                finalDocs.push(new Document({ pageContent, metadata, id: (raw as any).id }))
+            }
+
+            // Early return if no valid docs
+            if (!finalDocs.length) return { numAdded: 0, addedDocs: [] }
+
+            // Embeddings preflight: ensure provider works and returns correct shape
+            try {
+                const probe = await (embeddings as any).embedDocuments(['__flowise_probe__'])
+                if (!Array.isArray(probe) || (probe.length > 0 && !Array.isArray(probe[0]))) {
+                    throw new Error('Unexpected embeddings output shape')
+                }
+            } catch (err: any) {
+                const msg = err?.message || String(err)
+                throw new Error(`Embeddings preflight failed: ${msg}`)
             }
 
             const obj: PineconeStoreParams = {
@@ -181,7 +212,9 @@ class Pinecone_VectorStores implements INode {
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
-                throw new Error(e)
+                // Preserve the original error message/stack if possible
+                if (e instanceof Error) throw e
+                throw new Error(String(e))
             }
         },
         async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {

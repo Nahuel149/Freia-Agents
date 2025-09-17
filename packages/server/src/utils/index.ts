@@ -607,38 +607,100 @@ export const buildFlow = async ({
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: [${orgId}]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 try {
+                    const component = componentNodes[reactFlowNode.data.name]
                     const inpKeys = Object.keys(reactFlowNodeData.inputs || {})
                     logger.info(`[vector-upsert:canvas] node=${reactFlowNode.data.name} keys=${inpKeys.join(',')}`)
-                    const docVal = (reactFlowNodeData.inputs || {}).document
+                    let docVal = (reactFlowNodeData.inputs || {}).document
                     const embVal = (reactFlowNodeData.inputs || {}).embeddings
-                    logger.info(
-                        `[vector-upsert:canvas] docs=${Array.isArray(docVal) ? docVal.length : (docVal ? 1 : 0)} embeddings=${embVal ? typeof embVal : 'undefined'}`
-                    )
+                    // Ensure document is an array for providers that expect list inputs
+                    if (docVal && !Array.isArray(docVal)) {
+                        try {
+                            (reactFlowNodeData.inputs as any).document = [docVal]
+                            docVal = (reactFlowNodeData.inputs as any).document
+                        } catch (_) {}
+                    }
+                    try {
+                        const arr = Array.isArray(docVal) ? docVal : docVal ? [docVal] : []
+                        let valid = 0
+                        for (const d of arr as any[]) {
+                            if (!d) continue
+                            const pc = (d as any).pageContent ?? (d as any).page_content
+                            if (typeof pc === 'string' && pc.trim()) valid++
+                        }
+                        logger.info(
+                            `[vector-upsert:canvas] docs=${arr.length} validDocs=${valid} embeddings=${embVal ? typeof embVal : 'undefined'}`
+                        )
+                    } catch (_) {
+                        logger.info(
+                            `[vector-upsert:canvas] docs=${Array.isArray(docVal) ? docVal.length : (docVal ? 1 : 0)} embeddings=${embVal ? typeof embVal : 'undefined'}`
+                        )
+                    }
+                    // Required embedding instance
                     if (!embVal) {
                         throw new InternalFlowiseError(
                             StatusCodes.BAD_REQUEST,
                             `Missing embeddings instance for ${reactFlowNode.data.label}. Connect an Embeddings node to this Vector Store.`
                         )
                     }
+                    // Provider credential preflight (only if credential is not optional)
+                    const credDef: any = component?.credential
+                    const credRequired = !!credDef && credDef.optional !== true
+                    if (credRequired && !reactFlowNodeData.credential) {
+                        throw new InternalFlowiseError(
+                            StatusCodes.BAD_REQUEST,
+                            `Missing credential for ${reactFlowNode.data.label}. Select a credential on the node.`
+                        )
+                    }
+                    // Do not strictly enforce other provider inputs here; let node implementations validate (upstream behavior)
                 } catch (_) {}
-                const indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
-                    orgId,
-                    workspaceId,
-                    subscriptionId,
-                    chatId,
-                    sessionId,
-                    chatflowid,
-                    chatHistory,
-                    apiMessageId,
-                    logger,
-                    appDataSource,
-                    databaseEntities,
-                    cachePool,
-                    usageCacheManager,
-                    dynamicVariables,
-                    uploads,
-                    baseURL
-                })
+                let indexResult
+                try {
+                    indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
+                        orgId,
+                        workspaceId,
+                        subscriptionId,
+                        chatId,
+                        sessionId,
+                        chatflowid,
+                        chatHistory,
+                        apiMessageId,
+                        logger,
+                        appDataSource,
+                        databaseEntities,
+                        cachePool,
+                        usageCacheManager,
+                        dynamicVariables,
+                        uploads,
+                        baseURL
+                    })
+                } catch (err: any) {
+                    const msg = String(err?.message || err)
+                    logger.warn(`[vector-upsert:canvas] upsert failed: ${msg}. Retrying without recordManager...`)
+                    try {
+                        const cloned = cloneDeep(reactFlowNodeData)
+                        if (cloned.inputs && (cloned.inputs as any).recordManager) delete (cloned.inputs as any).recordManager
+                        indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, cloned, {
+                            orgId,
+                            workspaceId,
+                            subscriptionId,
+                            chatId,
+                            sessionId,
+                            chatflowid,
+                            chatHistory,
+                            apiMessageId,
+                            logger,
+                            appDataSource,
+                            databaseEntities,
+                            cachePool,
+                            usageCacheManager,
+                            dynamicVariables,
+                            uploads,
+                            baseURL
+                        })
+                    } catch (_) {
+                        throw err
+                    }
+                }
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: [${orgId}]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break

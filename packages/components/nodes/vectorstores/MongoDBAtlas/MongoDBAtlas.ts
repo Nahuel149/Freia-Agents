@@ -130,20 +130,35 @@ class MongoDBAtlas_VectorStores implements INode {
 
             let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-            const docs = nodeData.inputs?.document as Document[]
+            const docs = nodeData.inputs?.document as Document[] | Document | undefined
 
-            const flattenDocs = docs && docs.length ? flatten(docs) : []
-            const finalDocs = []
-            for (let i = 0; i < flattenDocs.length; i += 1) {
-                if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    const document = new Document(flattenDocs[i])
-                    finalDocs.push(document)
-                }
+            // Normalize documents: accept single doc or array; support snake_case page_content
+            const flattenDocs = Array.isArray(docs) ? flatten(docs) : docs ? [docs] : []
+            const finalDocs: Document[] = []
+            for (const raw of flattenDocs as any[]) {
+                if (!raw) continue
+                const pageContentVal = raw.pageContent ?? raw.page_content
+                if (pageContentVal === undefined || pageContentVal === null) continue
+                const pageContent = String(pageContentVal)
+                if (!pageContent.trim()) continue
+                const metadata = raw.metadata && typeof raw.metadata === 'object' && !Array.isArray(raw.metadata) ? { ...raw.metadata } : {}
+                finalDocs.push(new Document({ pageContent, metadata, id: (raw as any).id }))
             }
 
             try {
                 if (!textKey || textKey === '') textKey = 'text'
                 if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
+
+                // Embeddings preflight: ensure provider works and returns correct shape
+                try {
+                    const probe = await (embeddings as any).embedDocuments(['__flowise_probe__'])
+                    if (!Array.isArray(probe) || (probe.length > 0 && !Array.isArray(probe[0]))) {
+                        throw new Error('Unexpected embeddings output shape')
+                    }
+                } catch (err: any) {
+                    const msg = err?.message || String(err)
+                    throw new Error(`Embeddings preflight failed: ${msg}`)
+                }
 
                 const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
                     connectionDetails: { mongoDBConnectUrl, databaseName, collectionName },
@@ -151,11 +166,14 @@ class MongoDBAtlas_VectorStores implements INode {
                     textKey,
                     embeddingKey
                 })
-                await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
+                if (finalDocs.length) {
+                    await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
+                }
 
                 return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
-                throw new Error(e)
+                if (e instanceof Error) throw e
+                throw new Error(String(e))
             }
         }
     }

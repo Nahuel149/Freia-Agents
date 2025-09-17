@@ -192,7 +192,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).delete({ id: assistantId })
-            if (isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
+            if (isDeleteBoth) await openai.beta.assistants.delete(assistantDetails.id)
             return dbResponse
         } catch (error: any) {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant - ${getErrorMessage(error)}`)

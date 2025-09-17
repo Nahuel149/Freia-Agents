@@ -77,7 +77,11 @@ export const init = async (): Promise<void> => {
                 entities: Object.values(entities),
                 migrations: postgresMigrations,
                 extra: {
-                    idleTimeoutMillis: 120000
+                    idleTimeoutMillis: parseInt(process.env.DATABASE_IDLE_TIMEOUT || '120000'),
+                    max: parseInt(process.env.DATABASE_POOL_MAX || '10'),
+                    min: parseInt(process.env.DATABASE_POOL_MIN || '2'),
+                    connectionTimeoutMillis: parseInt(process.env.DATABASE_CONNECT_TIMEOUT || '30000'),
+                    acquireTimeoutMillis: parseInt(process.env.DATABASE_ACQUIRE_TIMEOUT || '60000')
                 },
                 logging: ['error', 'warn', 'info', 'log'],
                 logger: 'advanced-console',
@@ -103,7 +107,11 @@ export const init = async (): Promise<void> => {
                 entities: Object.values(entities),
                 migrations: postgresMigrations,
                 extra: {
-                    idleTimeoutMillis: 120000
+                    idleTimeoutMillis: parseInt(process.env.DATABASE_IDLE_TIMEOUT || '120000'),
+                    max: parseInt(process.env.DATABASE_POOL_MAX || '10'),
+                    min: parseInt(process.env.DATABASE_POOL_MIN || '2'),
+                    connectionTimeoutMillis: parseInt(process.env.DATABASE_CONNECT_TIMEOUT || '30000'),
+                    acquireTimeoutMillis: parseInt(process.env.DATABASE_ACQUIRE_TIMEOUT || '60000')
                 }
             })
             break

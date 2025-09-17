@@ -36,7 +36,7 @@ class OpenAIEmbedding_Embeddings implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'text-embedding-ada-002'
+                default: 'text-embedding-3-small'
             },
             {
                 label: 'Strip New Lines',

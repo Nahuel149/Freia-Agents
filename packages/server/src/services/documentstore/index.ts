@@ -1320,7 +1320,7 @@ const _insertIntoVectorStoreWorkerThread = async (
             recordManagerObj = await _createRecordManagerObject(componentNodes, data, options, upsertHistory)
         }
 
-        // Preflight validation for embedding/vector providers
+        // Preflight validation for embedding/vector providers — align with upstream defaults.
         const embeddingComponent = componentNodes[data.embeddingName]
         const vectorStoreComponent = componentNodes[data.vectorStoreName]
         if (!embeddingComponent) {
@@ -1329,53 +1329,31 @@ const _insertIntoVectorStoreWorkerThread = async (
         if (!vectorStoreComponent) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Vector store provider not found: ${data.vectorStoreName}`)
         }
-        // If provider declares a credential input, enforce presence
-        const needsEmbeddingCred = (embeddingComponent.inputs || []).some((inp: any) => inp.type === 'credential')
-        if (needsEmbeddingCred && (!data.embeddingConfig || !data.embeddingConfig.credential)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Missing credential for embedding provider ${embeddingComponent.label || embeddingComponent.name}`)
-        }
-        const needsVectorCred = (vectorStoreComponent.inputs || []).some((inp: any) => inp.type === 'credential')
-        if (needsVectorCred && (!data.vectorStoreConfig || !data.vectorStoreConfig.credential)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Missing credential for vector store ${vectorStoreComponent.label || vectorStoreComponent.name}`)
-        }
-        // Validate required non-anchor vector store fields
-        const filterInputParams = ['document', 'embeddings', 'recordManager']
-        const vsInputs = (vectorStoreComponent.inputs || []).filter((inp: any) => !filterInputParams.includes(inp.name))
-        const missing: string[] = []
-        for (const inp of vsInputs) {
-            if (inp.optional) continue
-            const val = data.vectorStoreConfig ? (data.vectorStoreConfig as any)[inp.name] : undefined
-            if (val === undefined || val === null || val === '') missing.push(inp.label || inp.name)
-        }
-        if (missing.length) {
-            throw new InternalFlowiseError(
-                StatusCodes.BAD_REQUEST,
-                `Missing required vector store fields: ${missing.join(', ')}`
-            )
-        }
-        // Record Manager preflight if present
-        if (data.recordManagerName && data.recordManagerConfig) {
-            const rmComponent = componentNodes[data.recordManagerName]
-            if (!rmComponent) {
-                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Record manager provider not found: ${data.recordManagerName}`)
-            }
-            const rmInputs = (rmComponent.inputs || [])
-                .filter((inp: any) => inp.type !== 'document' && inp.type !== 'embeddings' && inp.type !== 'recordManager')
-            const rmMissing: string[] = []
-            for (const inp of rmInputs) {
-                if (inp.optional) continue
-                const val = (data.recordManagerConfig as any)[inp.name]
-                if (val === undefined || val === null || val === '') rmMissing.push(inp.label || inp.name)
-            }
-            if (rmMissing.length) {
+        // Only enforce credentials when the node's credential is not optional.
+        const embeddingCredDef: any = (embeddingComponent as any).credential
+        if (embeddingCredDef && embeddingCredDef.optional !== true) {
+            if (!data.embeddingConfig || !data.embeddingConfig.credential) {
                 throw new InternalFlowiseError(
                     StatusCodes.BAD_REQUEST,
-                    `Missing required record manager fields: ${rmMissing.join(', ')}`
+                    `Missing credential for embedding provider ${embeddingComponent.label || embeddingComponent.name}`
                 )
             }
         }
+        const vectorCredDef: any = (vectorStoreComponent as any).credential
+        if (vectorCredDef && vectorCredDef.optional !== true) {
+            if (!data.vectorStoreConfig || !data.vectorStoreConfig.credential) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `Missing credential for vector store ${vectorStoreComponent.label || vectorStoreComponent.name}`
+                )
+            }
+        }
+        // Do not enforce provider-specific required fields here; let nodes handle them (upstream behavior).
         // Get Embeddings Instance
         const embeddingObj = await _createEmbeddingsObject(componentNodes, data, options, upsertHistory)
+        try {
+            logger.info(`[vector-upsert] embeddingClass=${(embeddingObj as any)?.constructor?.name || 'unknown'}`)
+        } catch (_) {}
 
         // Get Vector Store Node Data
         let vStoreNodeData = _createVectorStoreNodeData(componentNodes, data, embeddingObj, recordManagerObj)
@@ -1410,13 +1388,39 @@ const _insertIntoVectorStoreWorkerThread = async (
         const chunks = await appDataSource.getRepository(DocumentStoreFileChunk).find({
             where: filterOptions
         })
-        const docs: Document[] = chunks.map((chunk: DocumentStoreFileChunk) => {
-            return new Document({
-                pageContent: chunk.pageContent,
-                metadata: JSON.parse(chunk.metadata)
-            })
-        })
+        // Build valid docs and track drops for observability
+        const docs: Document[] = []
+        let skippedEmpty = 0
+        let skippedBadMeta = 0
+        for (const chunk of chunks) {
+            const content = typeof chunk.pageContent === 'string' ? chunk.pageContent : ''
+            if (!content.trim()) {
+                skippedEmpty++
+                continue
+            }
+            let metadata: any = {}
+            if (chunk.metadata) {
+                try {
+                    metadata = JSON.parse(chunk.metadata)
+                } catch (_) {
+                    skippedBadMeta++
+                    metadata = {}
+                }
+            }
+            docs.push(
+                new Document({
+                    pageContent: content,
+                    metadata,
+                    id: chunk.id
+                })
+            )
+        }
         vStoreNodeData.inputs.document = docs
+        try {
+            logger.info(
+                `[vector-upsert] chunks=${chunks.length} validDocs=${docs.length} skippedEmpty=${skippedEmpty} skippedBadMeta=${skippedBadMeta}`
+            )
+        } catch (_) {}
         // Provide stable IDs if provider declares it
         try {
             const vectorStoreComponent = componentNodes[data.vectorStoreName]
@@ -1596,7 +1600,7 @@ const queryVectorStore = async (data: ICommonObject) => {
         const embeddingConfig = JSON.parse(entity.embeddingConfig)
         data.embeddingName = embeddingConfig.name
         data.embeddingConfig = embeddingConfig.config
-        // Preflight checks
+        // Minimal preflight checks (align with upstream): only enforce non-optional credentials
         const embeddingComponent = componentNodes[data.embeddingName]
         const vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)
         const vectorStoreComponent = componentNodes[vectorStoreConfig.name]
@@ -1606,9 +1610,14 @@ const queryVectorStore = async (data: ICommonObject) => {
         if (!vectorStoreComponent) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Vector store provider not found: ${vectorStoreConfig.name}`)
         }
-        const needsEmbeddingCred = (embeddingComponent.inputs || []).some((inp: any) => inp.type === 'credential')
-        if (needsEmbeddingCred && (!data.embeddingConfig || !data.embeddingConfig.credential)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Missing credential for embedding provider ${embeddingComponent.label || embeddingComponent.name}`)
+        const embeddingCredDef: any = (embeddingComponent as any).credential
+        if (embeddingCredDef && embeddingCredDef.optional !== true) {
+            if (!data.embeddingConfig || !data.embeddingConfig.credential) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `Missing credential for embedding provider ${embeddingComponent.label || embeddingComponent.name}`
+                )
+            }
         }
         // Build embedding
         let embeddingObj = await _createEmbeddingsObject(componentNodes, data, options)
@@ -1619,22 +1628,7 @@ const queryVectorStore = async (data: ICommonObject) => {
         if (data.inputs) {
             data.vectorStoreConfig = { ...vsConfig.config, ...data.inputs }
         }
-        // Validate required vector store inputs (exclude anchors)
-        const filterInputParams = ['document', 'embeddings', 'recordManager']
-        const vsInputs = (vectorStoreComponent.inputs || []).filter((inp: any) => !filterInputParams.includes(inp.name))
-        const missing: string[] = []
-        for (const inp of vsInputs) {
-            if (inp.optional) continue
-            const val = data.vectorStoreConfig ? data.vectorStoreConfig[inp.name] : undefined
-            if (val === undefined || val === null || val === '') missing.push(inp.label || inp.name)
-        }
-        const needsVectorCred = (vectorStoreComponent.inputs || []).some((inp: any) => inp.type === 'credential')
-        if (needsVectorCred && (!data.vectorStoreConfig || !data.vectorStoreConfig.credential)) {
-            missing.push('credential')
-        }
-        if (missing.length) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Missing required vector store fields: ${missing.join(', ')}`)
-        }
+        // Do not enforce other provider-specific fields at this layer; let nodes validate internally
 
         const vStoreNodeData = _createVectorStoreNodeData(componentNodes, data, embeddingObj, undefined)
 
