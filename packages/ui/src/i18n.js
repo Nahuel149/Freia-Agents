@@ -233,6 +233,8 @@ const resources = {
           statusUpdated: 'Document store status updated.',
           statusUpdateFailed: 'Failed to update document store status'
         },
+        statusSyncDisabled: 'All loaders must be in sync before marking the store as Sync',
+        statusSyncDisabled: 'All loaders must be in sync before marking the store as Sync',
         pendingProcessing: 'Some files are pending processing. Please Refresh to get the latest status.',
         none: 'None',
         noSource: 'No source',
@@ -683,6 +685,8 @@ const resources = {
           statusUpdated: 'Estado del almacén actualizado.',
           statusUpdateFailed: 'Error al actualizar el estado del almacén'
         },
+        statusSyncDisabled: 'Todos los cargadores deben estar sincronizados antes de marcar el almacén como Sincronizado',
+        statusSyncDisabled: 'Todos los cargadores deben estar sincronizados antes de marcar el almacén como Sincronizado',
         pendingProcessing: 'Algunos archivos están pendientes de procesamiento. Por favor actualiza para obtener el estado más reciente.',
         none: 'Ninguno',
         noSource: 'Sin fuente',

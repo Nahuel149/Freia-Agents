@@ -174,6 +174,15 @@ const DocumentStoreDetails = () => {
         [t]
     )
 
+    const canManuallySync = useMemo(() => {
+        if (!documentStore) return false
+        const loaders = documentStore.loaders || []
+        if (!loaders.length) {
+            return (documentStore.totalChunks || 0) > 0
+        }
+        return loaders.every((loader) => loader.status === 'SYNC')
+    }, [documentStore])
+
     const openPreviewSettings = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
     }
@@ -605,15 +614,21 @@ const DocumentStoreDetails = () => {
                             </Available>
                         </Stack>
                         <StyledMenu anchorEl={statusAnchorEl} open={statusMenuOpen} onClose={handleStatusMenuClose}>
-                            {statusOptions.map((option) => (
-                                <MenuItem
-                                    key={option.value}
-                                    selected={documentStore?.status === option.value}
-                                    onClick={() => handleStatusChange(option.value)}
-                                >
-                                    {option.label}
-                                </MenuItem>
-                            ))}
+                            {statusOptions.map((option) => {
+                                const isSyncOption = option.value === 'SYNC'
+                                const disabled = isSyncOption && !canManuallySync
+                                return (
+                                    <MenuItem
+                                        key={option.value}
+                                        selected={documentStore?.status === option.value}
+                                        disabled={disabled}
+                                        onClick={() => handleStatusChange(option.value)}
+                                        title={disabled ? t('docstore.statusSyncDisabled') : undefined}
+                                    >
+                                        {option.label}
+                                    </MenuItem>
+                                )
+                            })}
                         </StyledMenu>
                         {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
                             <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
