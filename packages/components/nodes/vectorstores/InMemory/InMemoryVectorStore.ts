@@ -2,8 +2,9 @@ import { flatten } from 'lodash'
 import { MemoryVectorStore } from 'langchain/vectorstores/memory'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult, ICommonObject } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { ensureEmbeddingAdapters, logWithFallback, LoggerLike } from '../../../src/embeddingUtils'
 
 class InMemoryVectorStore_VectorStores implements INode {
     label: string
@@ -64,9 +65,12 @@ class InMemoryVectorStore_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData): Promise<Partial<IndexingResult>> {
+        async upsert(nodeData: INodeData, options: ICommonObject = {}): Promise<Partial<IndexingResult>> {
             const rawDocs = nodeData.inputs?.document as Document[] | Document | undefined
             const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const logger = (options?.logger || options?.log) as LoggerLike | undefined
+
+            ensureEmbeddingAdapters(embeddings, logger)
 
             // Normalize input to an array and accept snake_case keys produced by some loaders/APIs
             const flattenDocs = Array.isArray(rawDocs) ? flatten(rawDocs) : rawDocs ? [rawDocs] : []
@@ -89,6 +93,9 @@ class InMemoryVectorStore_VectorStores implements INode {
                 await MemoryVectorStore.fromDocuments(finalDocs, embeddings)
                 return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e: any) {
+                logWithFallback(logger, 'error', '[memory-vector] upsert failed', {
+                    error: e?.message || String(e)
+                })
                 throw new Error(e?.message || String(e))
             }
         }
@@ -100,6 +107,8 @@ class InMemoryVectorStore_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+
+        ensureEmbeddingAdapters(embeddings)
 
         // Normalize input to an array and accept snake_case keys
         const flattenDocs = Array.isArray(rawDocs) ? flatten(rawDocs) : rawDocs ? [rawDocs] : []
