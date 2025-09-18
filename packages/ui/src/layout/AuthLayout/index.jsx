@@ -9,19 +9,25 @@ const AuthLayout = () => {
     return (
         <Box
             sx={{
+                position: 'relative',
                 width: '100vw',
                 height: '100vh',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                zIndex: 1,
+                px: { xs: 3, md: 6 },
+                py: { xs: 6, md: 8 },
                 [theme.breakpoints.down(1367)]: {
-                    alignItems: 'start',
+                    alignItems: 'flex-start',
                     overflowY: 'auto',
-                    py: '64px'
+                    py: { xs: 6, md: 8 }
                 }
             }}
         >
-            <Outlet />
+            <Box sx={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <Outlet />
+            </Box>
         </Box>
     )
 }

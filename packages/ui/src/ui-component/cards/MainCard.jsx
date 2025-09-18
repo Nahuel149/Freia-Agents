@@ -3,6 +3,7 @@ import { forwardRef } from 'react'
 
 // material-ui
 import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 
 // constant
 const headerSX = {
@@ -31,15 +32,40 @@ const MainCard = forwardRef(function MainCard(
     },
     ref
 ) {
+    const theme = useTheme()
+    const isDark = theme?.customization?.isDarkMode
+    const surfaceBackground = isDark
+        ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.78) 0%, rgba(30, 41, 59, 0.74) 100%)'
+        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(244, 247, 255, 0.9) 100%)'
+    const surfaceBorder = isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.28)'
+    const restingShadow = isDark ? '0 20px 55px rgba(8, 12, 30, 0.45)' : '0 18px 45px rgba(79, 70, 229, 0.12)'
+    const hoverShadow = isDark ? '0 26px 70px rgba(8, 12, 30, 0.55)' : '0 24px 60px rgba(79, 70, 229, 0.16)'
     const otherProps = { ...others, border: others.border === false ? undefined : others.border }
     return (
         <Card
             ref={ref}
             {...otherProps}
             sx={{
-                background: 'transparent',
+                position: 'relative',
+                overflow: 'hidden',
+                background: surfaceBackground,
+                border: `1px solid ${surfaceBorder}`,
+                boxShadow: boxShadow ? shadow || restingShadow : restingShadow,
+                backdropFilter: 'blur(22px) saturate(140%)',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                ':before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: 0.35,
+                    background: isDark
+                        ? 'radial-gradient(circle at top, rgba(59, 130, 246, 0.16) 0%, transparent 55%)'
+                        : 'radial-gradient(circle at top, rgba(59, 130, 246, 0.14) 0%, transparent 60%)',
+                    pointerEvents: 'none'
+                },
                 ':hover': {
-                    boxShadow: boxShadow ? shadow || '0 2px 14px 0 rgb(32 40 45 / 8%)' : 'inherit'
+                    boxShadow: boxShadow ? shadow || hoverShadow : hoverShadow,
+                    transform: 'translateY(-4px)'
                 },
                 maxWidth: maxWidth === 'sm' ? '800px' : maxWidth === 'md' ? '960px' : '1280px',
                 mx: 'auto',

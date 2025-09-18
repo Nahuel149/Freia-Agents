@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 
 import { ThemeProvider } from '@mui/material/styles'
-import { CssBaseline, StyledEngineProvider } from '@mui/material'
+import { Box, CssBaseline, StyledEngineProvider } from '@mui/material'
 
 // routing
 import Routes from '@/routes'
@@ -11,19 +11,36 @@ import themes from '@/themes'
 
 // project imports
 import NavigationScroll from '@/layout/NavigationScroll'
+import AnimatedBackdrop from '@/ui-component/background/AnimatedBackdrop'
 
 // ==============================|| APP ||============================== //
 
 const App = () => {
     const customization = useSelector((state) => state.customization)
+    const activeTheme = themes(customization)
+    const isDark = customization?.isDarkMode
 
     return (
         <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={themes(customization)}>
+            <ThemeProvider theme={activeTheme}>
                 <CssBaseline />
-                <NavigationScroll>
-                    <Routes />
-                </NavigationScroll>
+                <Box
+                    sx={{
+                        minHeight: '100vh',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        background: isDark
+                            ? 'radial-gradient(circle at top, rgba(15, 23, 42, 0.92) 0%, rgba(2, 6, 23, 0.96) 45%, rgba(2, 6, 23, 1) 100%)'
+                            : 'linear-gradient(135deg, rgba(244, 247, 255, 1) 0%, rgba(228, 233, 255, 0.95) 35%, rgba(210, 224, 255, 0.9) 100%)'
+                    }}
+                >
+                    <AnimatedBackdrop />
+                    <NavigationScroll>
+                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                            <Routes />
+                        </Box>
+                    </NavigationScroll>
+                </Box>
             </ThemeProvider>
         </StyledEngineProvider>
     )

@@ -23,6 +23,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
     const theme = useTheme()
     const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+    const isDarkMode = theme?.customization?.isDarkMode ?? false
 
     const drawer = (
         <>
@@ -79,13 +80,26 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                     sx={{
                         '& .MuiDrawer-paper': {
                             width: drawerWidth,
-                            background: theme.palette.background.default,
+                            background: isDarkMode
+                                ? 'linear-gradient(165deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.82) 65%, rgba(15, 23, 42, 0.9) 100%)'
+                                : 'linear-gradient(165deg, rgba(255, 255, 255, 0.95) 0%, rgba(243, 246, 255, 0.92) 70%, rgba(236, 245, 255, 0.94) 100%)',
                             color: theme.palette.text.primary,
+                            backdropFilter: 'blur(26px) saturate(160%)',
+                            boxShadow: isDarkMode
+                                ? '0 28px 80px rgba(8, 12, 30, 0.55)'
+                                : '0 26px 70px rgba(79, 70, 229, 0.12)',
                             [theme.breakpoints.up('md')]: {
                                 top: `${headerHeight}px`
                             },
-                            borderRight: drawerOpen ? '1px solid' : 'none',
-                            borderColor: drawerOpen ? theme.palette.grey[900] + 25 : 'transparent'
+                            borderRight: `1px solid ${isDarkMode ? 'rgba(148, 163, 184, 0.25)' : 'rgba(148, 163, 184, 0.35)'}`,
+                            borderTop: `1px solid ${isDarkMode ? 'rgba(148, 163, 184, 0.15)' : 'rgba(148, 163, 184, 0.22)'}`,
+                            borderBottomRightRadius: theme.spacing(3),
+                            borderBottomLeftRadius: theme.spacing(3),
+                            overflow: 'hidden',
+                            transition: theme.transitions.create(['transform', 'border-color'], {
+                                easing: theme.transitions.easing.easeInOut,
+                                duration: theme.transitions.duration.standard
+                            })
                         }
                     }}
                     ModalProps={{ keepMounted: true }}
