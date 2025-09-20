@@ -168,7 +168,7 @@ const resources = {
         },
         // OSS mode: workspace user management features removed
       datasets: {
-        title: 'Datasets',
+        title: 'Conjuntos de Datos',
         addNew: 'Add New',
         empty: 'No Datasets Yet',
         searchPlaceholder: 'Search Name',
@@ -390,9 +390,9 @@ const resources = {
           new: 'NEW'
         },
         types: {
-          chatflow: 'Chatflow',
-          agentflowV2: 'AgentflowV2',
-          tool: 'Tool'
+          chatflow: 'Flujo de chat',
+          agentflowV2: 'Flujo de agente V2',
+          tool: 'Herramienta'
         },
         frameworks: {
           langchain: 'Langchain',
@@ -419,7 +419,7 @@ const resources = {
           averageMetrics: 'Average Metrics',
           lastEvaluated: 'Last Evaluated',
           flows: 'Flow(s)',
-          dataset: 'Dataset',
+          dataset: 'Conjunto de datos',
           version: 'Version',
           lastRun: 'Last Run',
           status: 'Status'
@@ -570,7 +570,7 @@ const resources = {
         delete: 'Eliminar',
         toolNamePlaceholder: 'Mi Nueva Herramienta',
         toolDescPlaceholder: 'Descripción de lo que hace la herramienta. Esto es para que ChatGPT determine cuándo usar esta herramienta.',
-        toolIconPlaceholder: 'https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg',
+        toolIconPlaceholder: 'URL del ícono de la herramienta',
         toolNameTooltip: 'El nombre de la herramienta debe ser en minúsculas con guión bajo. Ej: mi_herramienta',
         toolDescTooltip: 'Descripción de lo que hace la herramienta. Esto es para que ChatGPT determine cuándo usar esta herramienta.',
         inputSchemaTooltip: '¿Cuál es el formato de entrada en JSON?',
@@ -819,7 +819,7 @@ const resources = {
           llamaIndex: 'LlamaIndex'
         },
         messages: {
-          noMarketplace: 'Aún no hay Mercado',
+          noMarketplace: 'No hay Mercado',
           noCustomTemplates: 'No hay Plantillas Personalizadas Guardadas'
         }
       },
@@ -871,7 +871,7 @@ const resources = {
           averageMetrics: 'Métricas Promedio',
           lastEvaluated: 'Última Evaluación',
           flows: 'Flujo(s)',
-          dataset: 'Dataset',
+          dataset: 'Conjunto de datos',
           version: 'Versión',
           lastRun: 'Última Ejecución',
           status: 'Estado'
@@ -901,10 +901,10 @@ const resources = {
           failedToDeleteEvaluation: 'Error al eliminar evaluación',
           failedToDeleteEvaluationSingle: 'Error al eliminar Evaluación'
         },
-        emptyState: 'Aún No Hay Evaluaciones',
+        emptyState: 'No Evaluations Yet',
         autoRefresh: {
-          disable: 'Desactivar actualización automática',
-          enable: 'Activar actualización automática (cada 5s)'
+          disable: 'Disable auto-refresh',
+          enable: 'Enable auto-refresh (every 5s)'
         }
       }
     }
