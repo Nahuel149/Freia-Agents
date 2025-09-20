@@ -70,6 +70,7 @@ import inventoryRouter from './inventory'
 import customersRouter from './customers'
 import salesRouter from './sales'
 import followupsRouter from './followups'
+import productsRouter from './products'
 
 import { IdentityManager } from '../IdentityManager'
 
@@ -145,6 +146,7 @@ router.use('/inventory', inventoryRouter)
 router.use('/customers', customersRouter)
 router.use('/sales', salesRouter)
 router.use('/followups', followupsRouter)
+router.use('/products', productsRouter)
 
 router.use('/loginmethod', loginmethodRouter)
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
