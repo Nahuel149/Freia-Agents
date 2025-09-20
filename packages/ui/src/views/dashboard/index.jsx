@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
@@ -21,7 +21,11 @@ import {
      ListItemText,
      Divider,
      TextField,
-     Button
+     Button,
+     Tabs,
+     Tab,
+     Alert,
+     Badge
  } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -30,8 +34,10 @@ import MainCard from '@/ui-component/cards/MainCard'
 import { gridSpacing } from '@/store/constant'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import AgentManagement from './AgentManagement'
+import { useRealTimeData } from '@/hooks/useRealTimeData'
 
-// Hooks
+// third party
 import { useTranslation } from 'react-i18next'
 import { useError } from '@/store/context/ErrorContext'
 import client from '@/api/client'
@@ -57,7 +63,14 @@ import {
     IconMoodHappy,
     IconMoodSad,
     IconMoodEmpty,
-    IconStar
+    IconStar,
+    IconRobot,
+    IconSettings,
+    IconCheck,
+    IconX,
+    IconTool,
+    IconWifi,
+    IconWifiOff
 } from '@tabler/icons-react'
 
 // ==============================|| DASHBOARD ||============================== //
@@ -68,7 +81,36 @@ const Dashboard = () => {
     const { t } = useTranslation()
     const { error, setError } = useError()
 
+    // Real-time data integration with error handling
+    const [realtimeError, setRealtimeError] = useState(null)
+    const {
+        connectionStatus,
+        isConnected,
+        lastUpdate,
+        realtimeData,
+        agentActivities,
+        toolExecutions,
+        conversations,
+        metrics,
+        errors,
+        connect,
+        disconnect,
+        refreshData,
+        getRecentActivities,
+        getRecentToolExecutions,
+        getActiveConversations,
+        getRecentErrors
+    } = useRealTimeData({
+        autoConnect: false, // Don't auto-connect to prevent errors
+        subscriptions: ['agentActivity', 'toolExecution', 'conversationUpdate', 'metricsUpdate', 'errorReport'],
+        onError: (err) => {
+            console.warn('Real-time connection failed:', err)
+            setRealtimeError(err)
+        }
+    })
+
     const [isLoading, setLoading] = useState(true)
+    const [currentTab, setCurrentTab] = useState(0)
     const [dashboardData, setDashboardData] = useState({
         totalConversations: 0,
         activeAgents: 0,
@@ -110,22 +152,39 @@ const Dashboard = () => {
     const [waResult, setWaResult] = useState('')
     const [waStatus, setWaStatus] = useState({ hasKey: false, hasAgent: false, signatureRequired: false })
 
-    // Fetch real data from API
+    // Fetch real data from API with better error handling
     useEffect(() => {
         const fetchDashboardData = async () => {
             setLoading(true)
             try {
-                // Fetch dashboard metrics from API
-                const [metricsRes, funnelRes, recentRes, topAgentsRes] = await Promise.all([
-                    client.get('/dashboard'),
-                    client.get('/dashboard/funnel'),
-                    client.get('/dashboard/recent'),
-                    client.get('/dashboard/top-agents')
+                // Fetch dashboard metrics from API with timeout
+                const fetchWithTimeout = (url, timeout = 10000) => {
+                    return Promise.race([
+                        client.get(url),
+                        new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Request timeout')), timeout)
+                        )
+                    ])
+                }
+
+                const [metricsRes, funnelRes, recentRes, topAgentsRes] = await Promise.allSettled([
+                    fetchWithTimeout('/dashboard'),
+                    fetchWithTimeout('/dashboard/funnel'),
+                    fetchWithTimeout('/dashboard/recent'),
+                    fetchWithTimeout('/dashboard/top-agents')
                 ])
-                const apiData = metricsRes.data || {}
-                const funnel = funnelRes.data || { leads: 0, qualified: 0, proposals: 0, closed: 0 }
-                const recent = recentRes.data || []
-                const topAgents = topAgentsRes.data || []
+
+                // Handle results with fallbacks for failed requests
+                const apiData = metricsRes.status === 'fulfilled' ? (metricsRes.value?.data || {}) : {}
+                const funnel = funnelRes.status === 'fulfilled' ? (funnelRes.value?.data || { leads: 0, qualified: 0, proposals: 0, closed: 0 }) : { leads: 0, qualified: 0, proposals: 0, closed: 0 }
+                const recent = recentRes.status === 'fulfilled' ? (recentRes.value?.data || []) : []
+                const topAgents = topAgentsRes.status === 'fulfilled' ? (topAgentsRes.value?.data || []) : []
+                
+                // Log any failed requests for debugging
+                if (metricsRes.status === 'rejected') console.warn('Dashboard metrics failed:', metricsRes.reason)
+                if (funnelRes.status === 'rejected') console.warn('Funnel data failed:', funnelRes.reason)
+                if (recentRes.status === 'rejected') console.warn('Recent data failed:', recentRes.reason)
+                if (topAgentsRes.status === 'rejected') console.warn('Top agents data failed:', topAgentsRes.reason)
                 
                 // Map API data to dashboard state with fallbacks for missing data
                 setDashboardData({
@@ -171,24 +230,103 @@ const Dashboard = () => {
                     topPerformingAgents: apiData.topPerformingAgents || [],
                     salesFunnel: funnel
                 })
+
+                // Try to connect to real-time data after successful API load
+                try {
+                    connect()
+                } catch (realtimeErr) {
+                    console.warn('Real-time connection failed, continuing with static data:', realtimeErr)
+                    setRealtimeError(realtimeErr)
+                }
+
             } catch (err) {
+                console.error('Dashboard data fetch failed:', err)
                 setError(err)
+                // Set default data even on error to prevent blank dashboard
+                setDashboardData({
+                    totalConversations: 0,
+                    activeAgents: 0,
+                    closedClients: 0,
+                    totalContacts: 0,
+                    conversionRate: 0,
+                    avgResponseTime: 0,
+                    totalRevenue: 0,
+                    monthlyGrowth: 0,
+                    leadsGenerated: 0,
+                    meetingsScheduled: 0,
+                    followUpsCompleted: 0,
+                    customerSatisfaction: 0,
+                    totalCallbacks: 0,
+                    newClientContacts: 0,
+                    followUpsSent: 0,
+                    outOfStockAlerts: 0,
+                    mostRequestedProducts: [],
+                    customerFeedbackAvg: 0,
+                    sentimentAnalysis: { positive: 0, neutral: 0, negative: 0 },
+                    topMentionedWords: [],
+                    agentPerformance: [],
+                    inventoryAlerts: [],
+                    recentActivities: [],
+                    topPerformingAgents: [],
+                    salesFunnel: { leads: 0, qualified: 0, proposals: 0, closed: 0 }
+                })
             } finally {
                 setLoading(false)
             }
         }
 
         fetchDashboardData()
-        // Fetch WhatsApp status
+        
+        // Fetch WhatsApp status with error handling
         ;(async () => {
             try {
                 const s = await client.get('/whatsapp/status')
                 setWaStatus(s.data || { hasKey: false, hasAgent: false, signatureRequired: false })
             } catch (e) {
-                // ignore – keep default false
+                console.warn('WhatsApp status check failed:', e)
+                // Keep default false values
             }
         })()
     }, [])
+
+    // Update dashboard data with real-time metrics
+    useEffect(() => {
+        if (metrics && Object.keys(metrics).length > 0) {
+            setDashboardData(prev => ({
+                ...prev,
+                totalConversations: metrics.totalConversations || prev.totalConversations,
+                activeAgents: metrics.activeAgents || prev.activeAgents,
+                closedClients: metrics.closedClients || prev.closedClients,
+                conversionRate: metrics.conversionRate || prev.conversionRate,
+                avgResponseTime: metrics.avgResponseTime || prev.avgResponseTime,
+                totalRevenue: metrics.totalRevenue || prev.totalRevenue,
+                customerSatisfaction: metrics.customerSatisfaction || prev.customerSatisfaction,
+                totalCallbacks: metrics.totalCallbacks || prev.totalCallbacks,
+                newClientContacts: metrics.newClientContacts || prev.newClientContacts,
+                followUpsSent: metrics.followUpsSent || prev.followUpsSent,
+                outOfStockAlerts: metrics.outOfStockAlerts || prev.outOfStockAlerts
+            }))
+        }
+    }, [metrics])
+
+    // Update recent activities with real-time data
+    useEffect(() => {
+        if (agentActivities && agentActivities.length > 0) {
+            const recentActivitiesFromRealTime = agentActivities.slice(0, 10).map(activity => ({
+                id: activity.id || Date.now(),
+                type: activity.type || 'activity',
+                agent: activity.agentId || 'Agent',
+                client: activity.clientName || activity.clientId || '',
+                value: activity.message || activity.description || '',
+                time: new Date(activity.timestamp || activity.createdAt).toLocaleString()
+            }))
+
+            setDashboardData(prev => ({
+                ...prev,
+                recentActivities: recentActivitiesFromRealTime
+            }))
+        }
+    }, [agentActivities])
 
     const sendWhatsAppPing = async () => {
         setWaSending(true)
@@ -209,12 +347,19 @@ const Dashboard = () => {
             sx={{ 
                 height: '100%',
                 background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-                border: `1px solid ${color}30`,
+                border: theme?.customization?.isDarkMode 
+                    ? `2px solid ${color}80` 
+                    : `1px solid ${color}30`,
                 borderRadius: '16px',
                 transition: 'all 0.3s ease',
+                boxShadow: theme?.customization?.isDarkMode 
+                    ? `0 4px 12px ${color}20, inset 0 1px 0 ${color}40`
+                    : `0 2px 8px ${color}10`,
                 '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: `0 8px 25px ${color}20`
+                    boxShadow: theme?.customization?.isDarkMode 
+                        ? `0 8px 25px ${color}30, inset 0 1px 0 ${color}60`
+                        : `0 8px 25px ${color}20`
                 }
             }}
         >
@@ -241,7 +386,15 @@ const Dashboard = () => {
                             />
                         )}
                     </Box>
-                    <Avatar sx={{ bgcolor: color, width: 56, height: 56 }}>
+                    <Avatar sx={{ 
+                        bgcolor: color, 
+                        width: 56, 
+                        height: 56,
+                        '& svg': {
+                            color: theme.customization?.isDarkMode ? '#ffffff' : '#ffffff',
+                            filter: theme.customization?.isDarkMode ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                        }
+                    }}>
                         {icon}
                     </Avatar>
                 </Stack>
@@ -272,6 +425,45 @@ const Dashboard = () => {
                     </Typography>
                 </Box>
             </Stack>
+        )
+    }
+
+    // Error boundary for dashboard rendering
+    if (error && !loading) {
+        return (
+            <Box sx={{ p: 3 }}>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                        Dashboard Error
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 2 }}>
+                        There was an error loading the dashboard. This might be due to network connectivity issues, server problems, or authentication issues.
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                setError(null)
+                                setRealtimeError(null)
+                                window.location.reload()
+                            }}
+                        >
+                            Retry
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setError(null)}
+                        >
+                            Continue with Limited Data
+                        </Button>
+                    </Stack>
+                    {error?.message && (
+                        <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                            Error: {error.message}
+                        </Typography>
+                    )}
+                </Alert>
+            </Box>
         )
     }
 
@@ -336,6 +528,12 @@ const Dashboard = () => {
                             <Stack direction="row" spacing={1} alignItems="center">
                                 <Chip 
                                     size='small'
+                                    label={isConnected ? 'Real-time Connected' : 'Real-time Disconnected'}
+                                    color={isConnected ? 'success' : 'error'}
+                                    icon={isConnected ? <IconWifi size={16} /> : <IconWifiOff size={16} />}
+                                />
+                                <Chip 
+                                    size='small'
                                     label={waStatus.hasKey ? (waStatus.hasAgent ? 'WhatsApp Ready' : 'WhatsApp: Agent ID missing') : 'WhatsApp: API key missing'}
                                     color={waStatus.hasKey && waStatus.hasAgent ? 'success' : 'warning'}
                                 />
@@ -347,6 +545,32 @@ const Dashboard = () => {
                             </Stack>
                         }
                     />
+
+                    {/* Dashboard Tabs */}
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs 
+                            value={currentTab} 
+                            onChange={(event, newValue) => setCurrentTab(newValue)}
+                            aria-label="dashboard tabs"
+                        >
+                            <Tab 
+                                label="Overview" 
+                                icon={<IconChartBar />} 
+                                iconPosition="start"
+                                sx={{ minHeight: 48 }}
+                            />
+                            <Tab 
+                                label="Agent Management" 
+                                icon={<IconRobot />} 
+                                iconPosition="start"
+                                sx={{ minHeight: 48 }}
+                            />
+                        </Tabs>
+                    </Box>
+
+                    {/* Tab Content */}
+                    {currentTab === 0 && (
+                        <Stack spacing={3}>
 
                     {/* Key Metrics */}
                     <Grid container spacing={gridSpacing}>
@@ -457,6 +681,15 @@ const Dashboard = () => {
                                 subtitle="Average rating"
                             />
                         </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <MetricCard
+                                title="Customer Feedback Avg"
+                                value={`${dashboardData.customerFeedbackAvg}/10`}
+                                icon={<IconChartBar />}
+                                color={theme.palette.success.main}
+                                subtitle="Average score"
+                            />
+                        </Grid>
                     </Grid>
 
                     {/* B2B Tire Sales Specific Metrics */}
@@ -488,22 +721,13 @@ const Dashboard = () => {
                                 subtitle="This week"
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <MetricCard
-                                title="Customer Feedback Avg"
-                                value={`${dashboardData.customerFeedbackAvg}/10`}
-                                icon={<IconChartBar />}
-                                color={theme.palette.success.main}
-                                subtitle="Average score"
-                            />
-                        </Grid>
                          
                          {/* Inventory Alerts Section */}
                          <Grid item xs={12} md={6}>
                              <MainCard title="Alertas de Inventario" content={false}>
                                  <CardContent>
-                                     {dashboardData.inventoryAlerts.map((alert, index) => (
-                                         <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, 
+                                     {dashboardData.inventoryAlerts.map((alert) => (
+                                         <Box key={alert.id} sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, 
                                              bgcolor: alert.priority === 'high' ? 'error.light' : alert.priority === 'medium' ? 'warning.light' : 'info.light',
                                              borderRadius: 1 }}>
                                              <IconAlertTriangle color={alert.priority === 'high' ? theme.palette.error.main : alert.priority === 'medium' ? theme.palette.warning.main : theme.palette.info.main} />
@@ -521,8 +745,8 @@ const Dashboard = () => {
                          <Grid item xs={12} md={6}>
                              <MainCard title="Productos Más Solicitados" content={false}>
                                  <CardContent>
-                                     {dashboardData.mostRequestedProducts.map((product, index) => (
-                                         <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, p: 2, 
+                                     {dashboardData.mostRequestedProducts.map((product) => (
+                                         <Box key={product.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, p: 2, 
                                              bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50', borderRadius: 1 }}>
                                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                  <IconPackage />
@@ -571,8 +795,8 @@ const Dashboard = () => {
                           <Grid item xs={12} md={6}>
                               <MainCard title="Palabras Más Mencionadas" content={false}>
                                   <CardContent>
-                                      {dashboardData.topMentionedWords.map((wordData, index) => (
-                                          <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                                      {dashboardData.topMentionedWords.map((wordData) => (
+                                          <Box key={wordData.word} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                                               <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
                                                   {wordData.word}
                                               </Typography>
@@ -612,8 +836,8 @@ const Dashboard = () => {
                           </Grid>
                      </Grid>
 
-                    {/* WhatsApp Ping */}
-                    {waStatus.hasKey && (
+                    {/* WhatsApp Ping - Hidden */}
+                    {/* {waStatus.hasKey && (
                         <Grid container spacing={gridSpacing}>
                             <Grid item xs={12} md={6}>
                                 <Card sx={{ height: '100%', borderRadius: '16px' }}>
@@ -655,7 +879,7 @@ const Dashboard = () => {
                                 </Card>
                             </Grid>
                         </Grid>
-                    )}
+                    )} */}
 
                     {/* Detailed Analytics */}
                     <Grid container spacing={gridSpacing}>
@@ -720,8 +944,15 @@ const Dashboard = () => {
                     </Grid>
                 </Stack>
             )}
-        </MainCard>
-    )
+
+            {/* Agent Management Tab */}
+            {currentTab === 1 && (
+                <AgentManagement />
+            )}
+        </Stack>
+    )}
+</MainCard>
+)
 }
 
 export default Dashboard

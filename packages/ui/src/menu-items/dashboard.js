@@ -75,15 +75,6 @@ const dashboard = {
             type: 'group',
             children: [
                 {
-                    id: 'agentflows',
-                    title: 'Agentflows',
-                    type: 'item',
-                    url: '/agentflows',
-                    icon: icons.IconUsersGroup,
-                    breadcrumbs: true,
-                    permission: 'chatflows:view'
-                },
-                {
                     id: 'chatflows',
                     title: 'Chatflows',
                     type: 'item',
@@ -93,22 +84,13 @@ const dashboard = {
                     permission: 'chatflows:view'
                 },
                 {
-                    id: 'codeagent',
-                    title: 'CodeAgent',
+                    id: 'agentflows',
+                    title: 'Agentflows',
                     type: 'item',
-                    url: '/codeagent',
-                    icon: icons.IconCode,
+                    url: '/agentflows',
+                    icon: icons.IconUsersGroup,
                     breadcrumbs: true,
-                    permission: 'codeagents:view'
-                },
-                {
-                    id: 'testchat',
-                    title: 'Test Chat',
-                    type: 'item',
-                    url: '/testchat',
-                    icon: icons.IconMicroscope,
-                    breadcrumbs: true,
-                    permission: 'codeagents:view'
+                    permission: 'chatflows:view'
                 },
                 {
                     id: 'dashboard',
@@ -128,15 +110,6 @@ const dashboard = {
                     breadcrumbs: true,
                     permission: 'executions:view'
                 },
-                {
-                    id: 'assistants',
-                    title: 'Assistants',
-                    type: 'item',
-                    url: '/assistants',
-                    icon: icons.IconRobot,
-                    breadcrumbs: true,
-                    permission: 'assistants:view'
-                },
 
                 {
                     id: 'document-stores',
@@ -146,6 +119,32 @@ const dashboard = {
                     icon: icons.IconFiles,
                     breadcrumbs: true,
                     permission: 'documentStores:view'
+                },
+                {
+                    id: 'code-tools',
+                    title: 'More',
+                    type: 'collapse',
+                    icon: icons.IconCode,
+                    children: [
+                        {
+                            id: 'codeagent',
+                            title: 'CodeAgent',
+                            type: 'item',
+                            url: '/codeagent',
+                            icon: icons.IconCode,
+                            breadcrumbs: true,
+                            permission: 'codeagents:view'
+                        },
+                        {
+                            id: 'testchat',
+                            title: 'Test Chat',
+                            type: 'item',
+                            url: '/testchat',
+                            icon: icons.IconMicroscope,
+                            breadcrumbs: true,
+                            permission: 'codeagents:view'
+                        }
+                    ]
                 }
             ]
         },
@@ -164,15 +163,6 @@ const dashboard = {
                     permission: 'tools:view'
                 },
                 {
-                    id: 'marketplaces',
-                    title: 'Marketplaces',
-                    type: 'item',
-                    url: '/marketplaces',
-                    icon: icons.IconBuildingStore,
-                    breadcrumbs: true,
-                    permission: 'templates:marketplace,templates:custom'
-                },
-                {
                     id: 'credentials',
                     title: 'Credentials',
                     type: 'item',
@@ -180,15 +170,6 @@ const dashboard = {
                     icon: icons.IconLock,
                     breadcrumbs: true,
                     permission: 'credentials:view'
-                },
-                {
-                    id: 'variables',
-                    title: 'Variables',
-                    type: 'item',
-                    url: '/variables',
-                    icon: icons.IconVariable,
-                    breadcrumbs: true,
-                    permission: 'variables:view'
                 },
                 {
                     id: 'apikey',
@@ -202,9 +183,10 @@ const dashboard = {
             ]
         },
         {
-            id: 'evaluations',
+            id: 'evaluations-group',
             title: 'Evaluations',
-            type: 'group',
+            type: 'collapse',
+            icon: icons.IconChartHistogram,
             children: [
                 {
                     id: 'datasets',
@@ -227,7 +209,7 @@ const dashboard = {
                     permission: 'evaluators:view'
                 },
                 {
-                    id: 'evaluations',
+                    id: 'evaluations-list',
                     title: 'Evaluations',
                     type: 'item',
                     url: '/evaluations',
@@ -235,6 +217,33 @@ const dashboard = {
                     breadcrumbs: true,
                     display: 'feat:evaluations',
                     permission: 'evaluations:view'
+                },
+                {
+                    id: 'marketplaces',
+                    title: 'Marketplaces',
+                    type: 'item',
+                    url: '/marketplaces',
+                    icon: icons.IconBuildingStore,
+                    breadcrumbs: true,
+                    permission: 'templates:marketplace,templates:custom'
+                },
+                {
+                    id: 'variables',
+                    title: 'Variables',
+                    type: 'item',
+                    url: '/variables',
+                    icon: icons.IconVariable,
+                    breadcrumbs: true,
+                    permission: 'variables:view'
+                },
+                {
+                    id: 'assistants',
+                    title: 'Assistants',
+                    type: 'item',
+                    url: '/assistants',
+                    icon: icons.IconRobot,
+                    breadcrumbs: true,
+                    permission: 'assistants:view'
                 }
             ]
         },

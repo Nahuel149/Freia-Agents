@@ -35,6 +35,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      node-fetch:
+        specifier: ^2.6.11
+        version: 2.7.0(encoding@0.1.13)
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.19.4
@@ -568,7 +572,7 @@ importers:
         version: 6.12.7
       '@google-cloud/logging-winston':
         specifier: ^6.0.0
-        version: 6.0.1(winston@3.17.0)
+        version: 6.0.1(encoding@0.1.13)(winston@3.17.0)
       '@keyv/redis':
         specifier: ^4.2.0
         version: 4.6.0(keyv@5.5.1)
@@ -580,7 +584,7 @@ importers:
         version: 1.9.0
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.52.0
-        version: 0.52.1(@opentelemetry/api@1.9.0)
+        version: 0.52.1(@opentelemetry/api@1.9.0)(encoding@0.1.13)
       '@opentelemetry/core':
         specifier: 1.27.0
         version: 1.27.0(@opentelemetry/api@1.9.0)
@@ -736,7 +740,7 @@ importers:
         version: 1.4.5-lts.2
       multer-cloud-storage:
         specifier: ^4.0.0
-        version: 4.1.0
+        version: 4.1.0(encoding@0.1.13)
       multer-s3:
         specifier: ^3.0.1
         version: 3.0.1(@aws-sdk/client-s3@3.887.0)
@@ -20320,7 +20324,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@google-cloud/common@5.0.2':
+  '@google-cloud/common@5.0.2(encoding@0.1.13)':
     dependencies:
       '@google-cloud/projectify': 4.0.0
       '@google-cloud/promisify': 4.0.0
@@ -20335,9 +20339,9 @@ snapshots:
       - encoding
       - supports-color
 
-  '@google-cloud/logging-winston@6.0.1(winston@3.17.0)':
+  '@google-cloud/logging-winston@6.0.1(encoding@0.1.13)(winston@3.17.0)':
     dependencies:
-      '@google-cloud/logging': 11.2.1
+      '@google-cloud/logging': 11.2.1(encoding@0.1.13)
       google-auth-library: 9.15.1(encoding@0.1.13)
       lodash.mapvalues: 4.6.0
       winston: 3.17.0
@@ -20346,9 +20350,9 @@ snapshots:
       - encoding
       - supports-color
 
-  '@google-cloud/logging@11.2.1':
+  '@google-cloud/logging@11.2.1(encoding@0.1.13)':
     dependencies:
-      '@google-cloud/common': 5.0.2
+      '@google-cloud/common': 5.0.2(encoding@0.1.13)
       '@google-cloud/paginator': 5.0.2
       '@google-cloud/projectify': 4.0.0
       '@google-cloud/promisify': 4.0.0
@@ -22229,7 +22233,7 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@opentelemetry/auto-instrumentations-node@0.52.1(@opentelemetry/api@1.9.0)':
+  '@opentelemetry/auto-instrumentations-node@0.52.1(@opentelemetry/api@1.9.0)(encoding@0.1.13)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/instrumentation': 0.54.2(@opentelemetry/api@1.9.0)
@@ -22276,7 +22280,7 @@ snapshots:
       '@opentelemetry/resource-detector-aws': 1.12.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/resource-detector-azure': 0.2.12(@opentelemetry/api@1.9.0)
       '@opentelemetry/resource-detector-container': 0.5.3(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resource-detector-gcp': 0.29.13(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resource-detector-gcp': 0.29.13(@opentelemetry/api@1.9.0)(encoding@0.1.13)
       '@opentelemetry/resources': 1.27.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-node': 0.54.2(@opentelemetry/api@1.9.0)
     transitivePeerDependencies:
@@ -22894,7 +22898,7 @@ snapshots:
       '@opentelemetry/resources': 1.27.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.27.0
 
-  '@opentelemetry/resource-detector-gcp@0.29.13(@opentelemetry/api@1.9.0)':
+  '@opentelemetry/resource-detector-gcp@0.29.13(@opentelemetry/api@1.9.0)(encoding@0.1.13)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.27.0(@opentelemetry/api@1.9.0)
@@ -32747,7 +32751,7 @@ snapshots:
     optionalDependencies:
       msgpackr-extract: 3.0.3
 
-  multer-cloud-storage@4.1.0:
+  multer-cloud-storage@4.1.0(encoding@0.1.13):
     dependencies:
       '@google-cloud/storage': 7.17.1(encoding@0.1.13)
       '@types/express': 5.0.3

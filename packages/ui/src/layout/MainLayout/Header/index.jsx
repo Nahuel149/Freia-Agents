@@ -267,10 +267,16 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 sx={{
                     borderRadius: '12px',
                     maxHeight: 40,
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                    background: theme.palette.mode === 'dark' 
+                        ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)'
+                        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    border: theme.palette.mode === 'dark' 
+                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                        : '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: theme.palette.mode === 'dark'
+                        ? '0 4px 16px rgba(0, 0, 0, 0.3)'
+                        : '0 4px 16px rgba(0, 0, 0, 0.1)',
                     mr: 2.5
                 }}
                 value={(i18n.language && i18n.language.split('-')[0]) || 'en'}
@@ -280,20 +286,28 @@ const Header = ({ handleLeftDrawerToggle }) => {
             >
                 <ToggleButton
                     sx={{
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderColor: theme.palette.mode === 'dark' 
+                            ? 'rgba(255, 255, 255, 0.1)'
+                            : 'rgba(255, 255, 255, 0.2)',
                         borderRadius: '10px',
-                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
-                        background: 'rgba(255, 255, 255, 0.1)',
+                        color: theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.text.primary,
+                        background: theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.05)'
+                            : 'rgba(255, 255, 255, 0.1)',
                         backdropFilter: 'blur(5px)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                            background: 'rgba(255, 255, 255, 0.2)',
+                            background: theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.1)'
+                                : 'rgba(255, 255, 255, 0.2)',
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                            boxShadow: theme.palette.mode === 'dark'
+                                ? '0 4px 12px rgba(0, 0, 0, 0.4)'
+                                : '0 4px 12px rgba(0, 0, 0, 0.15)'
                         },
                         '&.Mui-selected': {
                             background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',
-                            color: 'white'
+                            color: '#ffffff'
                         }
                     }}
                     variant='contained'
@@ -304,20 +318,28 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 </ToggleButton>
                 <ToggleButton
                     sx={{
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderColor: theme.palette.mode === 'dark' 
+                            ? 'rgba(255, 255, 255, 0.1)'
+                            : 'rgba(255, 255, 255, 0.2)',
                         borderRadius: '10px',
-                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
-                        background: 'rgba(255, 255, 255, 0.1)',
+                        color: theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.text.primary,
+                        background: theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.05)'
+                            : 'rgba(255, 255, 255, 0.1)',
                         backdropFilter: 'blur(5px)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                            background: 'rgba(255, 255, 255, 0.2)',
+                            background: theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.1)'
+                                : 'rgba(255, 255, 255, 0.2)',
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                            boxShadow: theme.palette.mode === 'dark'
+                                ? '0 4px 12px rgba(0, 0, 0, 0.4)'
+                                : '0 4px 12px rgba(0, 0, 0, 0.15)'
                         },
                         '&.Mui-selected': {
                             background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',
-                            color: 'white'
+                            color: '#ffffff'
                         }
                     }}
                     variant='contained'

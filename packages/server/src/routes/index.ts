@@ -61,6 +61,7 @@ import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import dashboardRouter from './dashboard'
+import agentDashboardRouter from './agent-dashboard'
 import userRouter from './user'
 import codeAgentAnalyticsRouter from './codeagent-analytics'
 import whatsappRouter from './whatsapp'
@@ -131,6 +132,7 @@ router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 router.use('/dashboard', dashboardRouter)
+router.use('/agent-dashboard', agentDashboardRouter)
 router.use('/user', userRouter)
 router.use('/codeagent-analytics', codeAgentAnalyticsRouter)
 router.use('/whatsapp', whatsappRouter)

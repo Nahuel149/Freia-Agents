@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types'
 import { useContext, useState, useEffect, memo } from 'react'
 import { useSelector } from 'react-redux'
+import { Handle, Position, useUpdateNodeInternals, NodeToolbar } from 'reactflow'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
+import { styled, useTheme } from '@mui/material/styles'
 import { IconButton, Box, Typography, Divider, Button } from '@mui/material'
 import Tooltip from '@mui/material/Tooltip'
 
@@ -17,16 +18,24 @@ import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
 
 // const
 import { baseURL } from '@/store/constant'
-import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
+import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle, IconLock, IconLockOpen } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
+
+const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
+    backgroundColor: theme.palette.card.main,
+    color: theme.darkTextPrimary,
+    padding: '5px',
+    borderRadius: '10px',
+    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)'
+}))
 
 // ===========================|| CANVAS NODE ||=========================== //
 
 const CanvasNode = ({ data }) => {
     const theme = useTheme()
     const canvas = useSelector((state) => state.canvas)
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode, reactFlowInstance } = useContext(flowContext)
 
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
@@ -35,6 +44,26 @@ const CanvasNode = ({ data }) => {
     const [warningMessage, setWarningMessage] = useState('')
     const [open, setOpen] = useState(false)
     const [isForceCloseNodeInfo, setIsForceCloseNodeInfo] = useState(null)
+
+    // Lock functionality
+    const toggleNodeLock = () => {
+        if (reactFlowInstance) {
+            reactFlowInstance.setNodes((nds) =>
+                nds.map((node) => {
+                    if (node.id === data.id) {
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                locked: !node.data.locked
+                            }
+                        }
+                    }
+                    return node
+                })
+            )
+        }
+    }
 
     const handleClose = () => {
         setOpen(false)
@@ -66,6 +95,7 @@ const CanvasNode = ({ data }) => {
 
     const getBorderColor = () => {
         if (data.selected) return theme.palette.primary.main
+        else if (data.locked) return 'red'
         else if (theme?.customization?.isDarkMode) return theme.palette.grey[900] + 25
         else return theme.palette.grey[900] + 50
     }
@@ -90,11 +120,27 @@ const CanvasNode = ({ data }) => {
 
     return (
         <>
+            <StyledNodeToolbar>
+                <Tooltip title={data.locked ? 'Unlock node' : 'Lock node'}>
+                    <IconButton
+                        onClick={toggleNodeLock}
+                        sx={{
+                            height: '35px',
+                            width: '35px',
+                            '&:hover': { color: theme?.palette.primary.main }
+                        }}
+                        color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                    >
+                        {data.locked ? <IconLockOpen size={20} /> : <IconLock size={20} />}
+                    </IconButton>
+                </Tooltip>
+            </StyledNodeToolbar>
             <NodeCardWrapper
                 content={false}
                 sx={{
                     padding: 0,
-                    borderColor: getBorderColor()
+                    borderColor: getBorderColor(),
+                    opacity: data.locked ? 0.5 : 1
                 }}
                 border={false}
             >
@@ -118,6 +164,7 @@ const CanvasNode = ({ data }) => {
                                 }}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                                disabled={data.locked}
                             >
                                 <IconCopy />
                             </IconButton>
@@ -128,6 +175,7 @@ const CanvasNode = ({ data }) => {
                                 }}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                                disabled={data.locked}
                             >
                                 <IconTrash />
                             </IconButton>
@@ -232,6 +280,7 @@ const CanvasNode = ({ data }) => {
                                     key={index}
                                     inputParam={inputParam}
                                     data={data}
+                                    disabled={data.locked}
                                     onHideNodeInfoDialog={(status) => {
                                         if (status) {
                                             setIsForceCloseNodeInfo(true)
@@ -252,7 +301,12 @@ const CanvasNode = ({ data }) => {
                                             : 0
                                 }}
                             >
-                                <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
+                                <Button
+                                    sx={{ borderRadius: 25, width: '90%', mb: 2 }}
+                                    variant='outlined'
+                                    onClick={onDialogClicked}
+                                    disabled={data.locked}
+                                >
                                     Additional Parameters
                                 </Button>
                             </div>

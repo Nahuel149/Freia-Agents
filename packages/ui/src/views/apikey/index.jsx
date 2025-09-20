@@ -66,15 +66,16 @@ import APIEmptySVG from '@/assets/images/api_empty.svg'
 // ==============================|| APIKey ||============================== //
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
-    padding: '6px 16px',
+    borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
 
     [`&.${tableCellClasses.head}`]: {
-        color: theme.palette.grey[900]
+        color: theme.palette.text.primary,
+        fontWeight: 600
     },
     [`&.${tableCellClasses.body}`]: {
         fontSize: 14,
-        height: 64
+        height: 64,
+        color: theme.palette.text.primary
     }
 }))
 
@@ -154,7 +155,7 @@ function APIKeyRow(props) {
                 <TableRow sx={{ '& td': { border: 0 } }}>
                     <StyledTableCell sx={{ p: 2 }} colSpan={6}>
                         <Collapse in={open} timeout='auto' unmountOnExit>
-                            <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
+                            <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], overflow: 'hidden' }}>
                                 <Table aria-label='chatflow table'>
                                     <TableHead sx={{ height: 48 }}>
                                         <TableRow>
@@ -433,7 +434,7 @@ const APIKey = () => {
                         ) : (
                             <>
                                 <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                    sx={{ border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], borderRadius: 2 }}
                                     component={Paper}
                                 >
                                     <Table sx={{ minWidth: 650 }} aria-label='simple table'>

@@ -1,0 +1,290 @@
+{
+  "promotional_system_tools": [
+    {
+      "id": "httpRequestGet_complementary_products",
+      "name": "Get Complementary Products",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/complementary",
+      "description": "Obtiene productos complementarios para venta cruzada. Usar cuando el cliente compre neumáticos para ofrecer productos adicionales.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "productId": "ID del producto principal",
+        "category": "Categoría del producto principal",
+        "vehicleModel": "Modelo de vehículo para compatibilidad",
+        "clientType": "Tipo de cliente para ofertas específicas",
+        "maxResults": "Máximo número de productos a retornar"
+      }
+    },
+    {
+      "id": "httpRequestGet_seasonal_promotions",
+      "name": "Get Seasonal Promotions",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/seasonal",
+      "description": "Obtiene promociones estacionales activas. Usar para ofrecer descuentos especiales por temporada.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "season": "Temporada: 'summer', 'winter', 'spring', 'autumn'",
+        "productCategory": "Categoría de productos",
+        "clientType": "Tipo de cliente",
+        "active": "Solo promociones activas (boolean)"
+      }
+    },
+    {
+      "id": "httpRequestGet_bundle_offers",
+      "name": "Get Bundle Offers",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/bundles",
+      "description": "Obtiene ofertas de paquetes de productos. Usar para ofrecer descuentos por compra de múltiples productos.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "productId": "ID del producto base",
+        "minQuantity": "Cantidad mínima para bundle",
+        "vehicleType": "Tipo de vehículo",
+        "includeServices": "Incluir servicios (boolean)"
+      }
+    },
+    {
+      "id": "httpRequestPost_create_custom_bundle",
+      "name": "Create Custom Bundle",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/custom-bundle",
+      "description": "Crea paquete personalizado para cliente específico. Usar cuando el cliente tenga necesidades especiales.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "clientId": "ID del cliente",
+        "products": "Array de productos del paquete",
+        "services": "Array de servicios incluidos",
+        "discountPercentage": "Porcentaje de descuento del bundle",
+        "validUntil": "Validez de la oferta (ISO 8601)",
+        "reason": "Razón del bundle personalizado",
+        "notes": "Notas adicionales"
+      }
+    },
+    {
+      "id": "httpRequestGet_loyalty_rewards",
+      "name": "Get Loyalty Rewards",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/loyalty",
+      "description": "Obtiene recompensas de lealtad disponibles para el cliente. Usar para clientes recurrentes.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "clientId": "ID del cliente",
+        "purchaseHistory": "Incluir historial de compras (boolean)",
+        "availablePoints": "Puntos disponibles del cliente",
+        "rewardType": "Tipo de recompensa: 'discount', 'free_product', 'service'"
+      }
+    },
+    {
+      "id": "httpRequestGet_clearance_items",
+      "name": "Get Clearance Items",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/clearance",
+      "description": "Obtiene productos en liquidación con descuentos especiales. Usar para ofrecer alternativas económicas.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "category": "Categoría de productos",
+        "maxPrice": "Precio máximo",
+        "vehicleCompatibility": "Compatibilidad con vehículo",
+        "stockLevel": "Nivel de stock mínimo",
+        "discountMin": "Descuento mínimo en porcentaje"
+      }
+    },
+    {
+      "id": "httpRequestPost_apply_promotional_code",
+      "name": "Apply Promotional Code",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/apply-code",
+      "description": "Aplica código promocional a la cotización. Usar cuando el cliente tenga un código de descuento.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "quoteId": "ID de la cotización",
+        "promoCode": "Código promocional",
+        "clientId": "ID del cliente",
+        "products": "Array de productos en la cotización"
+      }
+    },
+    {
+      "id": "httpRequestGet_cross_sell_recommendations",
+      "name": "Get Cross-sell Recommendations",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/cross-sell",
+      "description": "Obtiene recomendaciones de venta cruzada basadas en el perfil del cliente. Usar para maximizar valor de venta.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "clientId": "ID del cliente",
+        "currentProducts": "Productos actuales en cotización",
+        "vehicleInfo": "Información del vehículo",
+        "budgetRange": "Rango de presupuesto",
+        "previousPurchases": "Incluir compras anteriores (boolean)"
+      }
+    },
+    {
+      "id": "httpRequestGet_upsell_opportunities",
+      "name": "Get Upsell Opportunities",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/upsell",
+      "description": "Obtiene oportunidades de venta superior (productos de mayor calidad/precio). Usar para mejorar margen de venta.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "currentProductId": "ID del producto actual",
+        "maxPriceIncrease": "Incremento máximo de precio en porcentaje",
+        "qualityLevel": "Nivel de calidad: 'premium', 'professional', 'commercial'",
+        "features": "Características adicionales deseadas"
+      }
+    },
+    {
+      "id": "httpRequestPost_create_promotional_campaign",
+      "name": "Create Promotional Campaign",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/campaign",
+      "description": "Crea campaña promocional personalizada para cliente específico. Usar para clientes de alto valor.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "clientId": "ID del cliente",
+        "campaignName": "Nombre de la campaña",
+        "targetProducts": "Array de productos objetivo",
+        "discountType": "Tipo: 'percentage', 'fixed_amount', 'buy_x_get_y'",
+        "discountValue": "Valor del descuento",
+        "startDate": "Fecha de inicio (ISO 8601)",
+        "endDate": "Fecha de fin (ISO 8601)",
+        "conditions": "Condiciones de la promoción",
+        "maxUses": "Máximo número de usos"
+      }
+    },
+    {
+      "id": "httpRequestGet_promotional_analytics",
+      "name": "Get Promotional Analytics",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/analytics",
+      "description": "Obtiene análisis de efectividad de promociones. Usar para reportes y optimización de ofertas.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "startDate": "Fecha de inicio (ISO 8601)",
+        "endDate": "Fecha de fin (ISO 8601)",
+        "promotionType": "Tipo de promoción",
+        "clientSegment": "Segmento de clientes",
+        "productCategory": "Categoría de productos"
+      }
+    },
+    {
+      "id": "httpRequestPost_schedule_promotional_followup",
+      "name": "Schedule Promotional Follow-up",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/promotions/schedule-followup",
+      "description": "Programa seguimiento con ofertas promocionales. Usar cuando el cliente no acepte la oferta inicial.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "clientId": "ID del cliente",
+        "phoneNumber": "Teléfono del cliente",
+        "rejectedOffer": "Oferta rechazada",
+        "alternativeOffers": "Array de ofertas alternativas",
+        "scheduledAt": "Fecha programada (ISO 8601)",
+        "promotionType": "Tipo de promoción de seguimiento",
+        "maxDiscount": "Descuento máximo autorizado"
+      }
+    }
+  ],
+  "integration_notes": {
+    "existing_systems": [
+      "sales-agent.js - Lógica de recomendaciones de productos",
+      "ProductInventory.ts - Entidad de inventario con información de productos",
+      "sales-tracker.js - Tracking de productos más vendidos",
+      "followup-system.js - Sistema de seguimientos para promociones"
+    ],
+    "database_tables": [
+      "promotions - Tabla de promociones activas",
+      "product_bundles - Paquetes de productos",
+      "loyalty_points - Puntos de lealtad de clientes",
+      "promotional_campaigns - Campañas promocionales",
+      "cross_sell_rules - Reglas de venta cruzada",
+      "seasonal_promotions - Promociones estacionales",
+      "clearance_items - Productos en liquidación",
+      "promotional_codes - Códigos promocionales"
+    ],
+    "promotional_strategies": [
+      "1. Productos complementarios - Ofrecer accesorios y servicios relacionados",
+      "2. Venta cruzada - Productos adicionales basados en perfil del cliente",
+      "3. Venta superior - Productos de mayor calidad/precio",
+      "4. Paquetes - Descuentos por compra múltiple",
+      "5. Promociones estacionales - Ofertas por temporada",
+      "6. Liquidación - Productos con stock excesivo",
+      "7. Lealtad - Recompensas para clientes recurrentes",
+      "8. Códigos promocionales - Descuentos especiales",
+      "9. Campañas personalizadas - Ofertas para clientes VIP",
+      "10. Seguimiento promocional - Ofertas mejoradas tras rechazo"
+    ],
+    "api_endpoints_needed": [
+      "GET /api/v1/promotions/complementary - Productos complementarios",
+      "GET /api/v1/promotions/seasonal - Promociones estacionales",
+      "GET /api/v1/promotions/bundles - Ofertas de paquetes",
+      "POST /api/v1/promotions/custom-bundle - Crear bundle personalizado",
+      "GET /api/v1/promotions/loyalty - Recompensas de lealtad",
+      "GET /api/v1/promotions/clearance - Productos en liquidación",
+      "POST /api/v1/promotions/apply-code - Aplicar código promocional",
+      "GET /api/v1/promotions/cross-sell - Recomendaciones venta cruzada",
+      "GET /api/v1/promotions/upsell - Oportunidades venta superior",
+      "POST /api/v1/promotions/campaign - Crear campaña promocional",
+      "GET /api/v1/promotions/analytics - Análisis promocional",
+      "POST /api/v1/promotions/schedule-followup - Programar seguimiento promocional"
+    ],
+    "business_rules": {
+      "complementary_products": [
+        "Neumáticos → Llantas, válvulas, balanceado, alineación",
+        "Llantas → Neumáticos, centros, tuercas",
+        "Servicios → Productos relacionados al servicio"
+      ],
+      "seasonal_promotions": [
+        "Verano → Neumáticos de verano, refrigerantes",
+        "Invierno → Neumáticos de invierno, cadenas",
+        "Primavera → Servicios de mantenimiento",
+        "Otoño → Preparación para invierno"
+      ],
+      "client_segmentation": [
+        "Consumidor final → Promociones de volumen familiar",
+        "Gomería → Descuentos por volumen comercial",
+        "Flota → Contratos de mantenimiento integral"
+      ],
+      "discount_limits": [
+        "Automático → Hasta 15% sin aprobación",
+        "Supervisor → Hasta 25% con aprobación",
+        "Gerente → Hasta 40% casos especiales"
+      ]
+    }
+  }
+}

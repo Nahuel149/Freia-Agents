@@ -54,14 +54,16 @@ import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
 import { useError } from '@/store/context/ErrorContext'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
+    borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
 
     [`&.${tableCellClasses.head}`]: {
-        color: theme.palette.grey[900]
+        color: theme.palette.text.primary,
+        fontWeight: 600
     },
     [`&.${tableCellClasses.body}`]: {
         fontSize: 14,
-        height: 64
+        height: 64,
+        color: theme.palette.text.primary
     }
 }))
 
@@ -256,7 +258,7 @@ const Variables = () => {
                         ) : (
                             <>
                                 <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                    sx={{ border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], borderRadius: 2 }}
                                     component={Paper}
                                 >
                                     <Table sx={{ minWidth: 650 }} aria-label='simple table'>

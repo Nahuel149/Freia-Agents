@@ -382,7 +382,7 @@ const EvalsEvaluation = () => {
                         ) : (
                             <>
                                 <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                    sx={{ border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], borderRadius: 2 }}
                                     component={Paper}
                                 >
                                     <Table sx={{ minWidth: 650 }}>
@@ -757,7 +757,7 @@ function EvaluationRunRow(props) {
                     <TableRow sx={{ '& td': { border: 0 } }}>
                         <StyledTableCell colSpan={12} sx={{ p: 2 }}>
                             <Collapse in={open} timeout='auto' unmountOnExit>
-                                <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
+                                <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], overflow: 'hidden' }}>
                                     <Table aria-label='chatflow table'>
                                         <TableHead style={{ height: 10 }}>
                                             <TableRow>

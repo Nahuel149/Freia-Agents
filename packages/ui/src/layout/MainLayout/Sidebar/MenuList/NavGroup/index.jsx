@@ -91,6 +91,9 @@ const NavGroup = ({ item }) => {
             </List>
 
             {renderNonPrimaryGroups().map((group) => {
+                if (group.type === 'collapse') {
+                    return listItems(group, 1)
+                }
                 const groupPermissions = group.children.map((menu) => menu.permission).join(',')
                 return (
                     <Available key={group.id} permission={groupPermissions}>

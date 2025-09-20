@@ -80,9 +80,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                     sx={{
                         '& .MuiDrawer-paper': {
                             width: drawerWidth,
-                            background: isDarkMode
-                                ? 'linear-gradient(165deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.82) 65%, rgba(15, 23, 42, 0.9) 100%)'
-                                : 'linear-gradient(165deg, rgba(255, 255, 255, 0.95) 0%, rgba(243, 246, 255, 0.92) 70%, rgba(236, 245, 255, 0.94) 100%)',
+                            background: 'transparent',
                             color: theme.palette.text.primary,
                             backdropFilter: 'blur(26px) saturate(160%)',
                             boxShadow: isDarkMode

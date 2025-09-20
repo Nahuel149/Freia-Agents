@@ -9,7 +9,20 @@ export default function componentStyleOverrides(theme) {
         : '0 10px 24px rgba(79, 70, 229, 0.18)'
     const baseRadius = theme?.customization?.borderRadius || 12
     return {
-        MuiCssBaseline: {
+        MuiTabs: {
+        styleOverrides: {
+            root: {
+                '& .MuiTab-root': {
+                    color: theme?.customization?.isDarkMode ? '#ffffff' : '#000000',
+                    '&.Mui-selected': {
+                        color: theme?.customization?.isDarkMode ? '#ffffff' : '#000000',
+                        fontWeight: 600
+                    }
+                }
+            }
+        }
+    },
+    MuiCssBaseline: {
             styleOverrides: {
                 body: {
                     backgroundColor: theme?.customization?.isDarkMode ? '#050817' : '#f5f7ff',
@@ -72,7 +85,8 @@ export default function componentStyleOverrides(theme) {
             },
             styleOverrides: {
                 root: {
-                    backgroundImage: 'none'
+                    backgroundImage: 'none',
+                    backgroundColor: 'transparent'
                 },
                 rounded: {
                     borderRadius: `${theme?.customization?.borderRadius}px`

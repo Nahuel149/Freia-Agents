@@ -1,0 +1,253 @@
+{
+  "outbound_contact_tools": [
+    {
+      "id": "httpRequestPost_schedule_followup",
+      "name": "Schedule Follow-up Contact",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/followup/schedule",
+      "description": "Programa seguimiento automático para clientes que no finalizaron compra o no respondieron. Usar cuando el cliente no conteste o abandone la conversación.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "customerId": "ID del cliente",
+        "phoneNumber": "Número de teléfono para contacto",
+        "saleId": "ID de la venta pendiente (si aplica)",
+        "followUpType": "Tipo: 'abandoned_cart', 'price_negotiation', 'delivery_improvement', 'stock_available'",
+        "scheduledAt": "Fecha y hora programada (ISO 8601)",
+        "attemptNumber": "Número de intento (1-3)",
+        "maxAttempts": "Máximo número de intentos",
+        "reason": "Razón del seguimiento",
+        "productInterest": "Productos de interés del cliente",
+        "lastInteractionDate": "Fecha de última interacción",
+        "priority": "Prioridad: 'high', 'medium', 'low'"
+      }
+    },
+    {
+      "id": "httpRequestPost_send_whatsapp_message",
+      "name": "Send WhatsApp Message",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/whatsapp/send",
+      "description": "Envía mensaje de WhatsApp usando Wasender. Usar para contacto directo con clientes.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${WASENDER_API_KEY}"
+      },
+      "body": {
+        "phone_number_id": "ID del número de WhatsApp Business",
+        "to_number": "Número de destino con código de país",
+        "message": "Contenido del mensaje",
+        "delay": "Retraso en segundos (opcional)",
+        "schedule": "Programar envío (ISO 8601, opcional)",
+        "followUpId": "ID del seguimiento asociado"
+      }
+    },
+    {
+      "id": "httpRequestGet_pending_followups",
+      "name": "Get Pending Follow-ups",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/followup/pending",
+      "description": "Obtiene lista de seguimientos pendientes de ejecutar. Usar para revisar contactos programados.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "status": "Estado: 'pending', 'in_progress', 'completed'",
+        "followUpType": "Filtrar por tipo de seguimiento",
+        "priority": "Filtrar por prioridad",
+        "scheduledBefore": "Fecha límite (ISO 8601)",
+        "limit": "Límite de resultados"
+      }
+    },
+    {
+      "id": "httpRequestPost_execute_followup",
+      "name": "Execute Follow-up",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/followup/execute",
+      "description": "Ejecuta un seguimiento específico enviando el mensaje correspondiente. Usar cuando sea momento de contactar al cliente.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "followUpId": "ID del seguimiento a ejecutar",
+        "customMessage": "Mensaje personalizado (opcional)",
+        "executionNotes": "Notas de ejecución"
+      }
+    },
+    {
+      "id": "httpRequestPost_notify_price_approval",
+      "name": "Notify Price Approval Response",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/notifications/price-approval",
+      "description": "Notifica al cliente sobre respuesta de solicitud de descuento. Usar cuando el administrador apruebe o rechace descuento.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "approvalRequestId": "ID de la solicitud de aprobación",
+        "clientId": "ID del cliente",
+        "phoneNumber": "Teléfono del cliente",
+        "approved": "Si fue aprobado (boolean)",
+        "newPrice": "Nuevo precio aprobado (si aplica)",
+        "discountPercentage": "Porcentaje de descuento otorgado",
+        "validUntil": "Validez de la oferta (ISO 8601)",
+        "reason": "Razón de la decisión"
+      }
+    },
+    {
+      "id": "httpRequestPost_notify_delivery_improvement",
+      "name": "Notify Delivery Time Improvement",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/notifications/delivery-improvement",
+      "description": "Notifica al cliente sobre mejora en tiempos de entrega. Usar cuando se mejoren los tiempos de entrega solicitados.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "deliveryRequestId": "ID de la solicitud de mejora",
+        "clientId": "ID del cliente",
+        "phoneNumber": "Teléfono del cliente",
+        "improved": "Si se mejoró el tiempo (boolean)",
+        "newDeliveryTime": "Nuevo tiempo de entrega en días",
+        "originalDeliveryTime": "Tiempo original de entrega",
+        "reason": "Razón de la decisión",
+        "additionalCost": "Costo adicional por entrega express (si aplica)"
+      }
+    },
+    {
+      "id": "httpRequestPost_notify_stock_available",
+      "name": "Notify Stock Available",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/notifications/stock-available",
+      "description": "Notifica al cliente cuando el producto sin stock esté disponible. Usar cuando se reponga stock de productos solicitados.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "clientId": "ID del cliente",
+        "phoneNumber": "Teléfono del cliente",
+        "productId": "ID del producto disponible",
+        "productName": "Nombre del producto",
+        "quantity": "Cantidad disponible",
+        "price": "Precio actual",
+        "reservationTime": "Tiempo de reserva en horas",
+        "originalInquiryDate": "Fecha de consulta original"
+      }
+    },
+    {
+      "id": "httpRequestGet_followup_analytics",
+      "name": "Get Follow-up Analytics",
+      "type": "HttpRequestGet",
+      "url": "${FREIA_API_BASE_URL}/api/v1/followup/analytics",
+      "description": "Obtiene métricas y análisis de seguimientos. Usar para reportes y optimización del sistema de seguimiento.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "queryParams": {
+        "startDate": "Fecha de inicio (ISO 8601)",
+        "endDate": "Fecha de fin (ISO 8601)",
+        "followUpType": "Filtrar por tipo",
+        "status": "Filtrar por estado",
+        "agentId": "Filtrar por agente"
+      }
+    },
+    {
+      "id": "httpRequestPost_create_notification",
+      "name": "Create System Notification",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/notifications/create",
+      "description": "Crea notificación para el dashboard administrativo. Usar para alertas importantes que requieren atención humana.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "type": "Tipo: 'price_request', 'delivery_request', 'stock_alert', 'high_value_lead'",
+        "title": "Título de la notificación",
+        "message": "Mensaje detallado",
+        "priority": "Prioridad: 'high', 'medium', 'low'",
+        "clientId": "ID del cliente relacionado",
+        "saleId": "ID de venta relacionada (si aplica)",
+        "actionRequired": "Acción requerida",
+        "dueDate": "Fecha límite para acción (ISO 8601)",
+        "metadata": "Datos adicionales en JSON"
+      }
+    },
+    {
+      "id": "httpRequestPost_update_followup_status",
+      "name": "Update Follow-up Status",
+      "type": "HttpRequestPost",
+      "url": "${FREIA_API_BASE_URL}/api/v1/followup/update-status",
+      "description": "Actualiza estado de seguimiento después de contacto. Usar para marcar seguimientos como completados o reprogramar.",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${FREIA_API_KEY}"
+      },
+      "body": {
+        "followUpId": "ID del seguimiento",
+        "status": "Nuevo estado: 'completed', 'failed', 'rescheduled', 'customer_responded'",
+        "result": "Resultado del contacto",
+        "customerResponse": "Respuesta del cliente (si aplica)",
+        "nextAction": "Próxima acción requerida",
+        "rescheduleDate": "Nueva fecha si se reprograma (ISO 8601)",
+        "notes": "Notas adicionales"
+      }
+    }
+  ],
+  "integration_notes": {
+    "existing_systems": [
+      "followup-system.js - Sistema de seguimientos automáticos",
+      "WasenderSendMessage.ts - Integración con WhatsApp",
+      "agent-definitions.js - Puntos de integración con notificaciones",
+      "b2b-sales-integration.js - Integración principal del sistema B2B"
+    ],
+    "database_tables": [
+      "follow_ups - Tabla de seguimientos programados",
+      "notifications - Notificaciones del sistema",
+      "client_interactions - Historial de interacciones",
+      "price_approval_requests - Solicitudes de descuentos",
+      "delivery_improvement_requests - Solicitudes de mejora de tiempos",
+      "stock_notifications - Notificaciones de stock disponible"
+    ],
+    "workflow_integration": [
+      "1. Detectar abandono de conversación o venta no concretada",
+      "2. Programar seguimiento automático con schedule_followup",
+      "3. Ejecutar seguimiento en tiempo programado con execute_followup",
+      "4. Enviar mensaje via WhatsApp con send_whatsapp_message",
+      "5. Actualizar estado según respuesta del cliente",
+      "6. Crear notificaciones para dashboard cuando sea necesario",
+      "7. Reprogramar seguimientos adicionales si es necesario"
+    ],
+    "api_endpoints_needed": [
+      "POST /api/v1/followup/schedule - Programar seguimiento",
+      "POST /api/v1/whatsapp/send - Enviar WhatsApp",
+      "GET /api/v1/followup/pending - Seguimientos pendientes",
+      "POST /api/v1/followup/execute - Ejecutar seguimiento",
+      "POST /api/v1/notifications/price-approval - Notificar aprobación precio",
+      "POST /api/v1/notifications/delivery-improvement - Notificar mejora entrega",
+      "POST /api/v1/notifications/stock-available - Notificar stock disponible",
+      "GET /api/v1/followup/analytics - Análisis de seguimientos",
+      "POST /api/v1/notifications/create - Crear notificación sistema",
+      "POST /api/v1/followup/update-status - Actualizar estado seguimiento"
+    ],
+    "wasender_integration": {
+      "phone_number_id": "ID del número de WhatsApp Business registrado",
+      "api_key": "Clave API de Wasender",
+      "webhook_url": "URL para recibir respuestas de WhatsApp",
+      "message_templates": [
+        "Seguimiento por abandono de carrito",
+        "Notificación de precio aprobado",
+        "Notificación de mejora en entrega",
+        "Notificación de stock disponible",
+        "Recordatorio de cotización pendiente"
+      ]
+    }
+  }
+}

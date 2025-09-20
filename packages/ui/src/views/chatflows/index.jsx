@@ -131,15 +131,7 @@ const Chatflows = () => {
     }, [getAllChatflowsApi.data])
 
     return (
-        <MainCard 
-            sx={{
-                background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 200, 120, 0.1) 100%)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '20px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-            }}
-        >
+        <MainCard>
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
@@ -150,23 +142,10 @@ const Chatflows = () => {
                         searchPlaceholder={t('chatflows.searchPlaceholder')}
                         title={t('chatflows.title')}
                         description={t('chatflows.description')}
-                        sx={{
-                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                            backdropFilter: 'blur(15px)',
-                            borderRadius: '16px',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            padding: '20px',
-                            marginBottom: '20px'
-                        }}
                     >
                         <ToggleButtonGroup
-                            sx={{ 
-                                borderRadius: '12px', 
+                            sx={{
                                 maxHeight: 40,
-                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                                backdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
                                 mr: 1.5
                             }}
                             value={view}
@@ -178,11 +157,7 @@ const Chatflows = () => {
                             <ToggleButton
                                 sx={{
                                     borderColor: 'rgba(255, 255, 255, 0.2)',
-                                    borderRadius: '10px',
                                     color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    backdropFilter: 'blur(5px)',
-                                    transition: 'all 0.3s ease',
                                     '&:hover': {
                                         background: 'rgba(255, 255, 255, 0.2)',
                                         transform: 'translateY(-2px)',
@@ -202,11 +177,7 @@ const Chatflows = () => {
                             <ToggleButton
                                 sx={{
                                     borderColor: 'rgba(255, 255, 255, 0.2)',
-                                    borderRadius: '10px',
                                     color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    backdropFilter: 'blur(5px)',
-                                    transition: 'all 0.3s ease',
                                     '&:hover': {
                                         background: 'rgba(255, 255, 255, 0.2)',
                                         transform: 'translateY(-2px)',
@@ -229,17 +200,11 @@ const Chatflows = () => {
                             variant='contained'
                             onClick={addNew}
                             startIcon={<IconPlus />}
-                            sx={{ 
-                                borderRadius: '12px', 
+                            sx={{
                                 height: 40,
                                 ml: 0.5,
-                                background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.8) 0%, rgba(80, 200, 120, 0.8) 100%)',
-                                backdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
                                 color: 'white',
                                 fontWeight: 600,
-                                transition: 'all 0.3s ease',
                                 '&:hover': {
                                     transform: 'translateY(-2px)',
                                     boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)'
@@ -260,18 +225,12 @@ const Chatflows = () => {
                     {!isLoading && total > 0 && (
                         <>
                             {!view || view === 'card' ? (
-                                <Box 
-                                    display='grid' 
-                                    gridTemplateColumns='repeat(auto-fit, minmax(320px, 1fr))' 
+                                <Box
+                                    display='grid'
+                                    gridTemplateColumns='repeat(auto-fit, minmax(320px, 1fr))'
                                     gap={gridSpacing}
                                     sx={{
-                                        padding: '10px',
                                         '& > *': {
-                                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                                            backdropFilter: 'blur(10px)',
-                                            borderRadius: '16px',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
                                             transition: 'all 0.3s ease',
                                             '&:hover': {
                                                 transform: 'translateY(-4px)',
@@ -299,25 +258,20 @@ const Chatflows = () => {
                         </>
                     )}
                     {!isLoading && (!getAllChatflowsApi.data?.data || getAllChatflowsApi.data?.data.length === 0) && (
-                        <Stack 
-                            sx={{ 
-                                alignItems: 'center', 
+                        <Stack
+                            sx={{
+                                alignItems: 'center',
                                 justifyContent: 'center',
-                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                                backdropFilter: 'blur(10px)',
-                                borderRadius: '20px',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
                                 padding: '40px',
-                                margin: '20px 0',
-                                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
-                            }} 
+                                margin: '20px 0'
+                            }}
                             flexDirection='column'
                         >
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
-                                    style={{ 
-                                        objectFit: 'cover', 
-                                        height: '25vh', 
+                                    style={{
+                                        objectFit: 'cover',
+                                        height: '25vh',
                                         width: 'auto',
                                         filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))'
                                     }}
@@ -325,12 +279,16 @@ const Chatflows = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div style={{
-                                fontSize: '18px',
-                                fontWeight: 500,
-                                color: theme?.customization?.isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-                                textAlign: 'center'
-                            }}>{t('chatflows.empty')}</div>
+                            <div
+                                style={{
+                                    fontSize: '18px',
+                                    fontWeight: 500,
+                                    color: theme?.customization?.isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                                    textAlign: 'center'
+                                }}
+                            >
+                                {t('chatflows.empty')}
+                            </div>
                         </Stack>
                     )}
                 </Stack>

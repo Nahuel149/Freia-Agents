@@ -76,7 +76,7 @@ import {
     IconAlertCircle,
     IconCheckCircle,
     IconPlay,
-    IconPause,
+    IconPlayerPause,
     IconSettings,
     IconAnalyze,
     IconBulb
@@ -312,7 +312,7 @@ const CodeAgentSessionView = () => {
             case 'error':
                 return <IconAlertCircle size={16} />
             case 'pending':
-                return <IconPause size={16} />
+                return <IconPlayerPause size={16} />
             default:
                 return <IconClock size={16} />
         }

@@ -15,6 +15,12 @@ import {
     IconWorld,
     IconRelationOneToManyFilled,
     IconVectorBezier2
+,
+    IconSearch,
+    IconSend,
+    IconEdit,
+    IconTrash,
+    IconTool
 } from '@tabler/icons-react'
 
 export const gridSpacing = 3
@@ -112,5 +118,30 @@ export const AGENTFLOW_ICONS = [
         name: 'executeFlowAgentflow',
         icon: IconVectorBezier2,
         color: '#a3b18a'
-    }
+    },
+    {
+        name: 'httpRequestGet',
+        icon: IconSearch,
+        color: '#4CAF50'
+    },
+    {
+        name: 'httpRequestPost',
+        icon: IconSend,
+        color: '#2196F3'
+    },
+    {
+        name: 'httpRequestPut',
+        icon: IconEdit,
+        color: '#FF9800'
+    },
+    {
+        name: 'httpRequestDelete',
+        icon: IconTrash,
+        color: '#F44336'
+    },
+    {
+        name: 'httpRequestPatch',
+        icon: IconTool,
+        color: '#9C27B0'
+    },
 ]

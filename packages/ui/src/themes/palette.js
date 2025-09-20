@@ -5,7 +5,7 @@
 
 export default function themePalette(theme) {
     return {
-        mode: theme?.customization?.navType,
+        mode: theme?.customization?.isDarkMode ? 'dark' : 'light',
         transparent: theme.colors?.transparent,
         common: {
             black: theme.colors?.darkPaper,
@@ -13,7 +13,7 @@ export default function themePalette(theme) {
         },
         primary: {
             light: theme.customization.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.primaryLight,
-            main: theme.colors?.primaryMain,
+            main: theme.customization.isDarkMode ? theme.colors?.darkPrimaryMain : theme.colors?.primaryMain,
             dark: theme.customization.isDarkMode ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark,
             200: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.primary200,
             800: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primary800

@@ -25,11 +25,8 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         ...theme.typography.mainContent,
         position: 'relative',
         zIndex: 1,
-        background: surfaceBackground,
-        border: `1px solid ${surfaceBorder}`,
+        background: theme.palette.background.default,
         borderRadius: '28px',
-        boxShadow: surfaceShadow,
-        backdropFilter: 'blur(30px) saturate(150%)',
         padding: theme.spacing(5),
         marginTop: `${headerHeight + 24}px`,
         marginLeft: theme.spacing(4),
@@ -124,9 +121,7 @@ const MainLayout = () => {
                 color='inherit'
                 elevation={0}
                 sx={{
-                    background: isDarkMode
-                        ? 'linear-gradient(120deg, rgba(15, 23, 42, 0.85) 0%, rgba(56, 189, 248, 0.22) 100%)'
-                        : 'linear-gradient(120deg, rgba(255, 255, 255, 0.92) 0%, rgba(191, 219, 254, 0.5) 100%)',
+                    background: 'transparent',
                     backdropFilter: 'blur(24px) saturate(160%)',
                     borderBottom: `1px solid ${isDarkMode ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.35)'}`,
                     boxShadow: isDarkMode
