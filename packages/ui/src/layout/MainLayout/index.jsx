@@ -31,7 +31,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         marginTop: `${headerHeight + 24}px`,
         marginLeft: theme.spacing(4),
         marginRight: theme.spacing(4),
-        marginBottom: theme.spacing(6),
+        marginBottom: theme.spacing(2),
         width: `calc(100% - ${theme.spacing(8)})`,
         transition: theme.transitions.create(['margin', 'width', 'backdrop-filter'], {
             easing: theme.transitions.easing.easeInOut,

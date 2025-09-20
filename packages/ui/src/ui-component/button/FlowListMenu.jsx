@@ -62,9 +62,10 @@ const StyledMenu = styled((props) => (
             padding: '4px 0'
         },
         '& .MuiMenuItem-root': {
+            color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary,
             '& .MuiSvgIcon-root': {
                 fontSize: 18,
-                color: theme.palette.text.secondary,
+                color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.secondary,
                 marginRight: theme.spacing(1.5)
             },
             '&:active': {

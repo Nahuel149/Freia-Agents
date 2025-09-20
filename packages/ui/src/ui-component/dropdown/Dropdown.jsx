@@ -6,17 +6,19 @@ import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { useTheme, styled } from '@mui/material/styles'
 import PropTypes from 'prop-types'
 
-const StyledPopper = styled(Popper)({
+const StyledPopper = styled(Popper)(({ theme }) => ({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
     borderRadius: '10px',
+    backgroundColor: theme.palette.background.paper,
     [`& .${autocompleteClasses.listbox}`]: {
         boxSizing: 'border-box',
+        backgroundColor: theme.palette.background.paper,
         '& ul': {
             padding: 10,
             margin: 10
         }
     }
-})
+}));
 
 export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, freeSolo = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)

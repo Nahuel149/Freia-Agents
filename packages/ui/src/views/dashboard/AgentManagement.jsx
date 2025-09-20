@@ -103,21 +103,35 @@ const AgentManagement = () => {
                 const agentflows = agentflowsResponse.data || []
                 const allFlows = [...chatflows, ...agentflows]
 
-                const statsResponse = await client.get('/chatflows/stats')
-                const chatflowStats = statsResponse.data || []
-                
+                // Fetch stats for each flow individually as the stats endpoint expects an ID parameter
+                const statsPromises = allFlows.map((flow) =>
+                    client
+                        .get(`/stats/${flow.id}`)
+                        .then((res) => ({ id: flow.id, stats: res.data }))
+                        .catch((_err) => ({ id: flow.id, stats: {} }))
+                )
+                const statsResults = await Promise.all(statsPromises)
+                const statsMap = statsResults.reduce((acc, curr) => {
+                    acc[curr.id] = curr.stats || {}
+                    return acc
+                }, {})
+
                 // Transform flows to agent format
-                const agentData = allFlows.map(flow => {
-                    const stats = chatflowStats.find(s => s.chatflowid === flow.id)
+                const agentData = allFlows.map((flow) => {
+                    const stats = statsMap[flow.id] || {}
                     return {
                         id: flow.id,
                         name: flow.name,
-                        type: flow.type || (flow.flowData && JSON.parse(flow.flowData).nodes?.some(n => n.data.name === 'startAgentflow') ? 'agentflow' : 'chatflow'),
+                        type:
+                            flow.type ||
+                            (flow.flowData && JSON.parse(flow.flowData).nodes?.some((n) => n.data.name === 'startAgentflow')
+                                ? 'agentflow'
+                                : 'chatflow'),
                         status: flow.deployed ? 'active' : 'inactive',
                         lastActive: flow.updatedDate || flow.createdDate,
-                        conversations: stats?.totalConversations || 0,
-                        responseTime: stats?.avgResponseTime || 0,
-                        successRate: stats?.successRate || 0,
+                        conversations: stats.totalSessions || 0,
+                        responseTime: stats.avgResponseTime || 0,
+                        successRate: stats.successRate || 0,
                         description: flow.description || 'No description available',
                         category: flow.category || 'General',
                         deployed: flow.deployed || false
@@ -229,12 +243,12 @@ const AgentManagement = () => {
                                     <IconRobot />
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="h3" color="primary">
+                                    <Typography variant="h3" sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary.main }}>
                                         {agentStats.totalAgents}
                                     </Typography>
-                                    <Typography variant="body2" color="textSecondary">
-                                        Total Agents
-                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : 'textSecondary' }}>
+                                         Total Agents
+                                     </Typography>
                                 </Box>
                             </Stack>
                         </CardContent>

@@ -119,7 +119,7 @@ const SignInPage = () => {
         if (loginApi.data) {
             setLoading(false)
             store.dispatch(loginSuccess(loginApi.data))
-            navigate(location.state?.path || '/agentflows')
+            navigate(location.state?.path || '/chatflows')
             //navigate(0)
         }
 
@@ -129,7 +129,7 @@ const SignInPage = () => {
     useEffect(() => {
         if (ssoLoginApi.data) {
             store.dispatch(loginSuccess(ssoLoginApi.data))
-            navigate(location.state?.path || '/agentflows')
+            navigate(location.state?.path || '/chatflows')
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

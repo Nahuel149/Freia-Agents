@@ -269,11 +269,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 }}
                                 color='inherit'
                                 onClick={() => {
-                                    if (window.history.state && window.history.state.idx > 0) {
-                                        navigate(-1)
-                                    } else {
-                                        navigate('/', { replace: true })
-                                    }
+                                    navigate('/chatflows')
                                 }}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />

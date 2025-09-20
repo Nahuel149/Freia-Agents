@@ -86,7 +86,7 @@ export default function componentStyleOverrides(theme) {
             styleOverrides: {
                 root: {
                     backgroundImage: 'none',
-                    backgroundColor: 'transparent'
+                    backgroundColor: theme?.customization?.isDarkMode ? theme.colors?.darkPaper : theme.paper
                 },
                 rounded: {
                     borderRadius: `${theme?.customization?.borderRadius}px`
@@ -164,6 +164,17 @@ export default function componentStyleOverrides(theme) {
             styleOverrides: {
                 primary: {
                     color: theme.textDark
+                }
+            }
+        },
+        MuiMenuItem: {
+            styleOverrides: {
+                root: {
+                    // Always inherit theme color in light mode but force white in dark mode
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit',
+                    '& .MuiSvgIcon-root': {
+                        color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'
+                    }
                 }
             }
         },

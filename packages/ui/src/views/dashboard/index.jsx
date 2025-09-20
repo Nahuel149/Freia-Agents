@@ -579,7 +579,7 @@ const Dashboard = () => {
                                 title="Total Conversations"
                                 value={dashboardData.totalConversations.toLocaleString()}
                                 icon={<IconMessageCircle />}
-                                color={theme.palette.primary.main}
+                                color={theme.palette.secondary.main}
                                 trend={dashboardData.monthlyGrowth}
                             />
                         </Grid>
@@ -717,7 +717,7 @@ const Dashboard = () => {
                                 title="Follow-ups Sent"
                                 value={dashboardData.followUpsSent}
                                 icon={<IconMail />}
-                                color={theme.palette.primary.main}
+                                color={theme.palette.secondary.main}
                                 subtitle="This week"
                             />
                         </Grid>
