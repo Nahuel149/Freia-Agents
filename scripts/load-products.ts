@@ -1,10 +1,14 @@
 import { DataSource } from 'typeorm'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as dotenv from 'dotenv'
 import { Product } from '../packages/server/src/database/entities/Product'
 import { ProductCategory } from '../packages/server/src/database/entities/ProductCategory'
 import { ProductBrand } from '../packages/server/src/database/entities/ProductBrand'
-import { Workspace } from '../packages/server/src/database/entities/Workspace'
+import { Workspace } from '../packages/server/src/oss/database/entities/workspace.entity'
+
+// Load environment variables
+dotenv.config()
 
 interface ProductData {
     ID: string
@@ -15,6 +19,9 @@ interface ProductData {
     Stock: number
     Descripcion: string
     Especificaciones: any
+    SKU?: string
+    Costo?: number
+    StockMinimo?: number
 }
 
 interface DataFile {
@@ -29,14 +36,17 @@ class ProductLoader {
         this.workspaceId = workspaceId
         this.dataSource = new DataSource({
             type: 'postgres',
-            host: process.env.DATABASE_HOST || 'localhost',
-            port: parseInt(process.env.DATABASE_PORT || '5432'),
-            username: process.env.DATABASE_USERNAME || 'postgres',
-            password: process.env.DATABASE_PASSWORD || 'password',
-            database: process.env.DATABASE_NAME || 'flowise',
+            host: process.env.DATABASE_HOST || process.env.POSTGRES_HOST || 'localhost',
+            port: parseInt(process.env.DATABASE_PORT || process.env.POSTGRES_PORT || '5432'),
+            username: process.env.DATABASE_USER || process.env.POSTGRES_USER || 'postgres',
+            password: process.env.DATABASE_PASSWORD || process.env.POSTGRES_PASSWORD || 'password',
+            database: process.env.DATABASE_NAME || process.env.POSTGRES_DB || 'flowise',
             entities: [Product, ProductCategory, ProductBrand, Workspace],
             synchronize: false,
-            logging: true
+            logging: true,
+            ssl: {
+                rejectUnauthorized: false
+            }
         })
     }
 
@@ -47,14 +57,25 @@ class ProductLoader {
 
     async validateWorkspace(): Promise<boolean> {
         const workspaceRepo = this.dataSource.getRepository(Workspace)
-        const workspace = await workspaceRepo.findOne({ where: { id: this.workspaceId } })
+        let workspace = await workspaceRepo.findOne({ where: { id: this.workspaceId } })
         
         if (!workspace) {
-            console.error(`❌ Workspace with ID ${this.workspaceId} not found`)
-            return false
+            console.log(`⚠️ Workspace with ID ${this.workspaceId} not found, creating it...`)
+            
+            // Use an existing organization ID from the database
+            workspace = workspaceRepo.create({
+                id: this.workspaceId,
+                name: `Test Workspace ${this.workspaceId.substring(0, 8)}`,
+                description: 'Workspace created by product loader script',
+                organizationId: 'e29fdbd4-0171-4769-90f1-e5509a59ca42' // Using existing organization ID
+            })
+            
+            await workspaceRepo.save(workspace)
+            console.log(`✅ Workspace created: ${workspace.name}`)
+        } else {
+            console.log(`✅ Workspace found: ${workspace.name}`)
         }
         
-        console.log(`✅ Workspace found: ${workspace.name}`)
         return true
     }
 
@@ -124,6 +145,8 @@ class ProductLoader {
 
     async loadProducts(productos: ProductData[]): Promise<void> {
         const productRepo = this.dataSource.getRepository(Product)
+        const categoryRepo = this.dataSource.getRepository(ProductCategory)
+        const brandRepo = this.dataSource.getRepository(ProductBrand)
         
         console.log(`📦 Loading ${productos.length} products...`)
         
@@ -137,16 +160,37 @@ class ProductLoader {
                     where: { productId: productData.ID, workspaceId: this.workspaceId }
                 })
                 
+                // Get category ID
+                let categoryId = null
+                if (productData.Categoria) {
+                    const category = await categoryRepo.findOne({
+                        where: { name: productData.Categoria, workspaceId: this.workspaceId }
+                    })
+                    categoryId = category?.id || null
+                }
+                
+                // Get brand ID
+                let brandId = null
+                if (productData.Marca) {
+                    const brand = await brandRepo.findOne({
+                        where: { name: productData.Marca, workspaceId: this.workspaceId }
+                    })
+                    brandId = brand?.id || null
+                }
+                
                 const productInfo = {
                     productId: productData.ID,
                     workspaceId: this.workspaceId,
-                    categoria: productData.Categoria || null,
-                    marca: productData.Marca || null,
+                    categoryId: categoryId || undefined,
+                    brandId: brandId || undefined,
                     nombre: productData.Nombre,
-                    precio: productData.Precio || 0,
-                    stock: productData.Stock || 0,
-                    descripcion: productData.Descripcion || null,
-                    especificaciones: productData.Especificaciones || null
+                    precio: Number(productData.Precio),
+                    stock: Number(productData.Stock),
+                    descripcion: productData.Descripcion,
+                    especificaciones: productData.Especificaciones,
+                    sku: productData.SKU || undefined,
+                    costo: Number(productData.Costo || 0),
+                    stockMinimo: Number(productData.StockMinimo || 0)
                 }
                 
                 if (!product) {
@@ -161,7 +205,7 @@ class ProductLoader {
                     updated++
                     console.log(`  🔄 Updated: ${productData.Nombre} (${productData.ID})`)
                 }
-            } catch (error) {
+            } catch (error: any) {
                 errors++
                 console.error(`  ❌ Error processing product ${productData.ID}: ${error.message}`)
             }
@@ -208,7 +252,7 @@ class ProductLoader {
             
             console.log('\n🎉 Product loading completed successfully!')
             
-        } catch (error) {
+        } catch (error: any) {
             console.error('❌ Error loading products:', error.message)
             throw error
         }
@@ -238,7 +282,7 @@ async function main() {
     try {
         await loader.initialize()
         await loader.loadData()
-    } catch (error) {
+    } catch (error: any) {
         console.error('💥 Fatal error:', error.message)
         process.exit(1)
     } finally {

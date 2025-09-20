@@ -1,11 +1,13 @@
 import { DataSource } from 'typeorm'
 import { AgentEvent } from '../../database/entities/AgentEvent'
 import { SaleRecord } from '../../database/entities/SaleRecord'
-import { ProductInventory } from '../../database/entities/ProductInventory'
+import { Product } from '../../database/entities/Product'
+import { ProductCategory } from '../../database/entities/ProductCategory'
+import { ProductBrand } from '../../database/entities/ProductBrand'
 import { ClientAccount } from '../../database/entities/ClientAccount'
 
 export class CodeAgentAnalyticsService {
-    constructor(private ds: DataSource) {}
+    constructor(private ds: DataSource, private workspaceId?: string) {}
 
     async ingestEvents(body: any) {
         const events = Array.isArray(body?.events) ? body.events : []
@@ -40,32 +42,113 @@ export class CodeAgentAnalyticsService {
     }
 
     async ingestDatasets(body: any) {
+        if (!this.workspaceId) {
+            throw new Error('Workspace ID is required for dataset ingestion')
+        }
+
         const products = body?.products || []
         const clients = body?.clients || []
-        const prodRepo = this.ds.getRepository(ProductInventory)
-        const cliRepo = this.ds.getRepository(ClientAccount)
+        const productRepo = this.ds.getRepository(Product)
+        const categoryRepo = this.ds.getRepository(ProductCategory)
+        const brandRepo = this.ds.getRepository(ProductBrand)
+        const clientRepo = this.ds.getRepository(ClientAccount)
 
+        let productsProcessed = 0
+        let clientsProcessed = 0
+
+        // Process products with multi-tenant support
         for (const p of products) {
-            const id = p.id || p.product_id || p.code
-            if (!id) continue
-            const rec = new ProductInventory()
-            rec.productId = String(id)
-            rec.name = p.name || p.nombre || undefined
-            rec.brand = p.brand || p.marca || undefined
-            rec.stock = typeof p.stock === 'number' ? p.stock : 0
-            if (p.price || p.precio) rec.price = Number(p.price || p.precio)
-            await prodRepo.save(rec)
+            try {
+                const productId = p.ID || p.id || p.product_id || p.code
+                if (!productId) continue
+
+                // Handle category
+                let categoryId = null
+                if (p.Categoria || p.categoria || p.category) {
+                    const categoryName = p.Categoria || p.categoria || p.category
+                    let category = await categoryRepo.findOne({
+                        where: { name: categoryName, workspaceId: this.workspaceId }
+                    })
+                    
+                    if (!category) {
+                        category = categoryRepo.create({
+                            name: categoryName,
+                            workspaceId: this.workspaceId
+                        })
+                        await categoryRepo.save(category)
+                    }
+                    categoryId = category.id
+                }
+
+                // Handle brand
+                let brandId = null
+                if (p.Marca || p.marca || p.brand) {
+                    const brandName = p.Marca || p.marca || p.brand
+                    let brand = await brandRepo.findOne({
+                        where: { name: brandName, workspaceId: this.workspaceId }
+                    })
+                    
+                    if (!brand) {
+                        brand = brandRepo.create({
+                            name: brandName,
+                            workspaceId: this.workspaceId
+                        })
+                        await brandRepo.save(brand)
+                    }
+                    brandId = brand.id
+                }
+
+                // Create or update product
+                let product = await productRepo.findOne({
+                    where: { productId: String(productId), workspaceId: this.workspaceId }
+                })
+
+                const productData = {
+                    productId: String(productId),
+                    workspaceId: this.workspaceId,
+                    categoryId: categoryId || undefined,
+                    brandId: brandId || undefined,
+                    nombre: p.Nombre || p.nombre || p.name || '',
+                    precio: Number(p.Precio || p.precio || p.price || 0),
+                    stock: Number(p.Stock || p.stock || 0),
+                    descripcion: p.Descripcion || p.descripcion || p.description || null,
+                    especificaciones: p.Especificaciones || p.especificaciones || p.specifications || null,
+                    sku: p.SKU || p.sku || null,
+                    costo: Number(p.Costo || p.costo || p.cost || 0),
+                    stockMinimo: Number(p.StockMinimo || p.stock_minimo || p.minimum_stock || 0)
+                }
+
+                if (!product) {
+                    product = productRepo.create(productData)
+                } else {
+                    Object.assign(product, productData)
+                }
+
+                await productRepo.save(product)
+                productsProcessed++
+            } catch (error) {
+                console.error(`Error processing product ${p.ID || p.id}:`, error)
+            }
         }
+
+        // Process clients
         for (const c of clients) {
-            const id = c.id || c.email || c.name
-            if (!id) continue
-            const rec = new ClientAccount()
-            rec.clientId = String(id)
-            rec.name = c.name || c.contact || undefined
-            rec.company = c.company || c.empresa || undefined
-            rec.email = c.email || undefined
-            await cliRepo.save(rec)
+            try {
+                const clientId = c.id || c.email || c.name
+                if (!clientId) continue
+                
+                const rec = new ClientAccount()
+                rec.clientId = String(clientId)
+                rec.name = c.name || c.contact || undefined
+                rec.company = c.company || c.empresa || undefined
+                rec.email = c.email || undefined
+                await clientRepo.save(rec)
+                clientsProcessed++
+            } catch (error) {
+                console.error(`Error processing client ${c.id}:`, error)
+            }
         }
-        return { products: products.length, clients: clients.length }
+
+        return { products: productsProcessed, clients: clientsProcessed }
     }
 }

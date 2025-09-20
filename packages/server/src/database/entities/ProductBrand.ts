@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm'
-import { Workspace } from './Workspace'
+import { Workspace } from '../../oss/database/entities/workspace.entity'
 
 @Entity({ name: 'product_brands' })
 @Index(['name', 'workspaceId'], { unique: true })

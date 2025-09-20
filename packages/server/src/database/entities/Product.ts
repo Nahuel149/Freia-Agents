@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm'
-import { Workspace } from './Workspace'
+import { Workspace } from '../../oss/database/entities/workspace.entity'
 import { ProductCategory } from './ProductCategory'
 import { ProductBrand } from './ProductBrand'
 
@@ -92,5 +92,4 @@ export class Product {
     @ManyToOne(() => ProductBrand, { nullable: true })
     @JoinColumn({ name: 'brandId' })
     brand: ProductBrand
-}
 }
