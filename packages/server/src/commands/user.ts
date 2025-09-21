@@ -1,4 +1,5 @@
 import { Args } from '@oclif/core'
+import type { Interfaces } from '@oclif/core'
 import { QueryRunner } from 'typeorm'
 import * as DataSource from '../DataSource'
 import { User } from '../oss/database/entities/user.entity'
@@ -7,8 +8,10 @@ import { isInvalidPassword } from '../oss/utils/validation.util'
 import logger from '../utils/logger'
 import { BaseCommand } from './base'
 
+type UserArg = Interfaces.Arg<string | undefined, Record<string, unknown>>
+
 export default class user extends BaseCommand {
-    static args = {
+    static args: { email: UserArg; password: UserArg } = {
         email: Args.string({
             description: 'Email address to search for in the user database'
         }),

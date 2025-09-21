@@ -54,7 +54,6 @@ const FeatureIcon = styled('div')(() => ({
 const FeatureCards = () => {
     const navigate = useNavigate()
     const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
 
     const onCardClick = (index) => {
         if (index === 0) navigate('/assistants/custom')
@@ -84,7 +83,7 @@ const FeatureCards = () => {
                         border: 1,
                         borderColor: theme.palette.grey[900] + 25,
                         borderRadius: 2,
-                        color: customization.isDarkMode ? theme.palette.common.white : '#333333',
+                        color: theme.customization?.isDarkMode ? theme.palette.common.white : '#333333',
                         cursor: 'pointer',
                         '&:hover': {
                             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'

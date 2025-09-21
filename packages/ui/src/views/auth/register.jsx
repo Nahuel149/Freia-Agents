@@ -209,19 +209,20 @@ const RegisterPage = () => {
                 }}
             >
                 <Container
-                    maxWidth="sm"
+                    maxWidth={false}
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         minHeight: '100vh',
-                        py: 4
+                        py: 4,
+                        px: { xs: 2, sm: 4, md: 6, lg: 8 }
                     }}
                 >
                     <Card
                         sx={{
                             width: '100%',
-                            maxWidth: 480,
+                            maxWidth: { xs: '100%', sm: 600, md: 700, lg: 800 },
                             background: customization.isDarkMode
                                 ? 'rgba(255, 255, 255, 0.05)'
                                 : 'rgba(255, 255, 255, 0.9)',

@@ -68,7 +68,7 @@ export default function componentStyleOverrides(theme) {
                 root: {
                     fontWeight: 500,
                     borderRadius: '4px',
-                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : '#ffffff'
                 }
             }
         },

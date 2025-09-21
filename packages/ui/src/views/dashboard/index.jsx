@@ -83,6 +83,8 @@ const Dashboard = () => {
 
     // Real-time data integration with error handling
     const [realtimeError, setRealtimeError] = useState(null)
+    const [showAllActivities, setShowAllActivities] = useState(false)
+    const [showAllAgents, setShowAllAgents] = useState(false)
     const {
         connectionStatus,
         isConnected,
@@ -813,16 +815,36 @@ const Dashboard = () => {
                           
                           {/* Agent Performance */}
                           <Grid item xs={12}>
-                              <MainCard title="Rendimiento de Agentes" content={false}>
+                              <MainCard title={<Typography variant="h5" sx={{ color: theme.palette.mode === 'dark' ? '#ffffff' : '#9c27b0' }}>Rendimiento de Agentes</Typography>} content={false}>
                                   <CardContent>
                                       <Grid container spacing={2}>
                                           {dashboardData.agentPerformance.map((agent, index) => (
                                               <Grid item xs={12} sm={6} md={3} key={index}>
                                                   <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
-                                                      <Typography variant="h6">{agent.name}</Typography>
-                                                      <Typography variant="body2" color="text.secondary">Ventas: {agent.sales}</Typography>
-                                                      <Typography variant="body2" color="text.secondary">Ingresos: ${agent.revenue.toLocaleString()}</Typography>
-                                                      <Typography variant="body2" color="success.main">Satisfacción: {agent.satisfaction}/10</Typography>
+                                                      <Typography 
+                                                          variant="h6" 
+                                                          sx={{ color: theme.customization?.isDarkMode ? '#000000' : 'inherit' }}
+                                                      >
+                                                          {agent.name}
+                                                      </Typography>
+                                                      <Typography 
+                                          variant="body2" 
+                                          sx={{ color: '#9c27b0' }}
+                                      >
+                                          Ventas: {agent.sales}
+                                      </Typography>
+                                      <Typography 
+                                          variant="body2" 
+                                          sx={{ color: '#9c27b0' }}
+                                      >
+                                          Ingresos: ${agent.revenue.toLocaleString()}
+                                      </Typography>
+                                      <Typography 
+                                          variant="body2" 
+                                          sx={{ color: '#9c27b0' }}
+                                      >
+                                          Satisfacción: {agent.satisfaction}/10
+                                      </Typography>
                                                   </Box>
                                               </Grid>
                                           ))}
@@ -896,11 +918,24 @@ const Dashboard = () => {
                                                 <Skeleton key={index} height={60} />
                                             ))
                                         ) : (
-                                            dashboardData.recentActivities.map((activity) => (
-                                                <ActivityItem key={activity.id} activity={activity} />
-                                            ))
+                                            dashboardData.recentActivities
+                                                .slice(0, showAllActivities ? dashboardData.recentActivities.length : 6)
+                                                .map((activity) => (
+                                                    <ActivityItem key={activity.id} activity={activity} />
+                                                ))
                                         )}
                                     </Stack>
+                                    {!isLoading && dashboardData.recentActivities.length > 6 && (
+                                        <Box sx={{ textAlign: 'center', mt: 2 }}>
+                                            <Button
+                                                variant="text"
+                                                size="small"
+                                                onClick={() => setShowAllActivities(!showAllActivities)}
+                                            >
+                                                {showAllActivities ? 'View Less' : `View More (${dashboardData.recentActivities.length - 6} more)`}
+                                            </Button>
+                                        </Box>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -918,26 +953,39 @@ const Dashboard = () => {
                                                 <Skeleton key={index} height={60} />
                                             ))
                                         ) : (
-                                            dashboardData.topPerformingAgents.map((agent, index) => (
-                                                <Stack key={agent.name} direction="row" spacing={2} alignItems="center">
-                                                    <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
-                                                        {agent.avatar}
-                                                    </Avatar>
-                                                    <Box sx={{ flexGrow: 1 }}>
-                                                        <Typography variant="body1" fontWeight="medium">
-                                                            {agent.name}
+                                            dashboardData.topPerformingAgents
+                                                .slice(0, showAllAgents ? dashboardData.topPerformingAgents.length : 6)
+                                                .map((agent, index) => (
+                                                    <Stack key={agent.name} direction="row" spacing={2} alignItems="center">
+                                                        <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+                                                            {agent.avatar}
+                                                        </Avatar>
+                                                        <Box sx={{ flexGrow: 1 }}>
+                                                            <Typography variant="body1" fontWeight="medium">
+                                                                {agent.name}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="textSecondary">
+                                                                {agent.conversations} conversations • {agent.closedDeals} deals
+                                                            </Typography>
+                                                        </Box>
+                                                        <Typography variant="h6" color="success.main">
+                                                            ${(agent.revenue / 1000).toFixed(0)}K
                                                         </Typography>
-                                                        <Typography variant="caption" color="textSecondary">
-                                                            {agent.conversations} conversations • {agent.closedDeals} deals
-                                                        </Typography>
-                                                    </Box>
-                                                    <Typography variant="h6" color="success.main">
-                                                        ${(agent.revenue / 1000).toFixed(0)}K
-                                                    </Typography>
-                                                </Stack>
-                                            ))
+                                                    </Stack>
+                                                ))
                                         )}
                                     </Stack>
+                                    {!isLoading && dashboardData.topPerformingAgents.length > 6 && (
+                                        <Box sx={{ textAlign: 'center', mt: 2 }}>
+                                            <Button
+                                                variant="text"
+                                                size="small"
+                                                onClick={() => setShowAllAgents(!showAllAgents)}
+                                            >
+                                                {showAllAgents ? 'View Less' : `View More (${dashboardData.topPerformingAgents.length - 6} more)`}
+                                            </Button>
+                                        </Box>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Grid>

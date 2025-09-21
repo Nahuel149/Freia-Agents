@@ -171,6 +171,12 @@ export class App {
     }
 
     async config() {
+        // Add global request logging to see if requests are reaching the app
+        this.app.use((req, res, next) => {
+            console.log(`[GLOBAL DEBUG] Request received - Method: ${req.method}, Path: ${req.path}, URL: ${req.url}`)
+            next()
+        })
+
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
@@ -228,47 +234,73 @@ export class App {
 
         await initializeJwtCookieMiddleware()
 
+        // Add simple debug middleware to see if requests reach here
+        this.app.use((req, res, next) => {
+            console.log(`[MIDDLEWARE DEBUG] ${req.method} ${req.path}`)
+            console.log(`[MIDDLEWARE DEBUG] Headers:`, req.headers)
+            next()
+        })
+
         this.app.use(async (req, res, next) => {
-            // Step 1: Check if the req path contains /api/v1 regardless of case
-            if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
-                // Step 2: Check if the req path is casesensitive
-                if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
-                    // Step 3: Check if the req path is in the whitelist
-                    const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
-                    if (isWhitelisted) {
-                        next()
-                    } else if (req.headers['x-request-from'] === 'internal') {
-                        verifyToken(req, res, next)
-                    } else {
-                        // Only check license validity for non-open-source platforms
-                        if (this.identityManager && this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
-                            if (!this.identityManager.isLicenseValid()) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
-                        }
-
-                        const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
-                        if (!isValid) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
-
-                        // In OSS mode, skip workspace/organization checks and set defaults
-                        if (isOssMode()) {
-                            // @ts-ignore
-                            req.user = {
-                                permissions: [],
-                                features: {},
-                                activeOrganizationId: 'oss-mode',
-                                activeOrganizationSubscriptionId: null,
-                                activeOrganizationCustomerId: null,
-                                activeOrganizationProductId: null,
-                                isOrganizationAdmin: true,
-                                activeWorkspaceId: apiKeyWorkSpaceId || 'oss-mode',
-                                activeWorkspace: 'OSS',
-                                isApiKeyValidated: true
+            console.log(`[AUTH MIDDLEWARE] Processing request: ${req.method} ${req.path}`)
+            try {
+                // Step 1: Check if the req path contains /api/v1 regardless of case
+                if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
+                    // Step 2: Check if the req path is casesensitive
+                    if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
+                        // Step 3: Check if the req path is in the whitelist
+                        const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                        
+                        if (isWhitelisted) {
+                            // In OSS mode, set default user context for whitelisted endpoints
+                            if (isOssMode()) {
+                                // @ts-ignore
+                                req.user = {
+                                    permissions: [],
+                                    features: {},
+                                    activeOrganizationId: 'oss-mode',
+                                    activeOrganizationSubscriptionId: null,
+                                    activeOrganizationCustomerId: null,
+                                    activeOrganizationProductId: null,
+                                    isOrganizationAdmin: true,
+                                    activeWorkspaceId: 'oss-mode',
+                                    activeWorkspace: 'OSS',
+                                    isApiKeyValidated: false
+                                }
                             }
                             return next()
-                        }
+                        } else if (req.headers['x-request-from'] === 'internal') {
+                            verifyToken(req, res, next)
+                        } else {
+                            // Only check license validity for non-open-source platforms
+                            if (this.identityManager && this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
+                                if (!this.identityManager.isLicenseValid()) {
+                                    return res.status(401).json({ error: 'Unauthorized Access' })
+                                }
+                            }
+
+                            const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
+                            if (!isValid) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+
+                            // In OSS mode, skip workspace/organization checks and set defaults
+                            if (isOssMode()) {
+                                // @ts-ignore
+                                req.user = {
+                                    permissions: [],
+                                    features: {},
+                                    activeOrganizationId: 'oss-mode',
+                                    activeOrganizationSubscriptionId: null,
+                                    activeOrganizationCustomerId: null,
+                                    activeOrganizationProductId: null,
+                                    isOrganizationAdmin: true,
+                                    activeWorkspaceId: apiKeyWorkSpaceId || 'oss-mode',
+                                    activeWorkspace: 'OSS',
+                                    isApiKeyValidated: true
+                                }
+                                return next()
+                            }
 
                         // Find workspace
                         const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
@@ -344,6 +376,9 @@ export class App {
                 // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
                 next()
             }
+        } catch (error) {
+            return res.status(500).json({ error: 'Internal Server Error' })
+        }
         })
 
         // this is for SSO and must be after the JWT cookie middleware
@@ -374,6 +409,8 @@ export class App {
                 )
             }
         }
+
+
 
         this.app.use('/api/v1', flowiseApiV1Router)
 
@@ -436,17 +473,22 @@ export class App {
 let serverApp: App | undefined
 
 export async function start(): Promise<void> {
+    console.log('[DEBUG] Starting server function called')
     serverApp = new App()
 
     const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
 
+    console.log('[DEBUG] About to initialize database')
     await serverApp.initDatabase()
+    console.log('[DEBUG] About to configure app')
     await serverApp.config()
 
+    console.log('[DEBUG] About to start listening on port', port)
     server.listen(port, host, () => {
         logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
+        console.log('[DEBUG] Server is now listening')
     })
 }
 
