@@ -975,7 +975,7 @@
         ],
         "inputAnchors": [],
         "inputs": {
-          "url": "http://localhost:3000/api/inventory/check",
+          "url": "http://localhost:3000/api/v1/inventory/check",
           "description": "Herramienta para verificar el stock de neumáticos. Usar cuando el cliente pregunte por disponibilidad de un neumático específico. Pasar el número de neumático como parámetro 'tire_number' en la query string.",
           "headers": "{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer freia-api-key-2024\"}"
         },
@@ -1059,7 +1059,7 @@
         ],
         "inputAnchors": [],
         "inputs": {
-          "url": "http://localhost:3000/api/customers/create",
+          "url": "http://localhost:3000/api/v1/customers/",
           "body": "{\"name\": \"\", \"email\": \"\", \"phone\": \"\", \"address\": \"\", \"customer_type\": \"consumer\", \"company\": \"\"}",
           "description": "Herramienta para crear un nuevo cliente en el sistema. Usar cuando se obtenga información completa del cliente durante el proceso de venta. Incluir nombre, teléfono, email, dirección, tipo de cliente (consumer/business) y empresa si aplica.",
           "headers": "{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer freia-api-key-2024\"}"
@@ -1144,7 +1144,7 @@
         ],
         "inputAnchors": [],
         "inputs": {
-          "url": "http://localhost:3000/api/sales/create",
+          "url": "http://localhost:3000/api/v1/sales/",
           "body": "{\"customer_id\": \"\", \"items\": [], \"total_amount\": 0, \"payment_method\": \"\", \"delivery_method\": \"\", \"delivery_address\": \"\", \"estimated_delivery\": \"\", \"requires_invoice\": false, \"notes\": \"\"}",
           "description": "Herramienta para crear una nueva venta en el sistema. Usar cuando el cliente confirme la compra. Incluir ID del cliente, items con detalles (producto, cantidad, precio), monto total, método de pago, método de entrega, dirección si es envío, tiempo estimado de entrega, si requiere factura A, y notas adicionales.",
           "headers": "{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer freia-api-key-2024\"}"
@@ -1229,7 +1229,7 @@
         ],
         "inputAnchors": [],
         "inputs": {
-          "url": "http://localhost:3000/api/followups/create",
+          "url": "http://localhost:3000/api/v1/followups/",
           "body": "{\"customer_id\": \"\", \"reason\": \"\", \"priority\": \"medium\", \"scheduled_date\": \"\", \"notes\": \"\", \"contact_method\": \"phone\"}",
           "description": "Herramienta para crear seguimientos de clientes. Usar cuando el cliente no complete la compra por precio, tiempos de entrega, o falta de stock. Incluir ID del cliente, razón del seguimiento (price_negotiation, delivery_time, stock_availability), prioridad, fecha programada, notas y método de contacto preferido.",
           "headers": "{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer freia-api-key-2024\"}"

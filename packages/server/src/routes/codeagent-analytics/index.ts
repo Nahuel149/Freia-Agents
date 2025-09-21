@@ -6,8 +6,7 @@ const router = express.Router()
 
 router.post('/ingest', async (req, res, next) => {
     try {
-        const workspaceId = req.user?.activeWorkspaceId
-        const svc = new CodeAgentAnalyticsService(getRunningExpressApp().AppDataSource, workspaceId)
+        const svc = new CodeAgentAnalyticsService(getRunningExpressApp().AppDataSource)
         const events = await svc.ingestEvents(req.body || {})
         const datasets = await svc.ingestDatasets(req.body || {})
         res.json({ ...events, ...datasets })

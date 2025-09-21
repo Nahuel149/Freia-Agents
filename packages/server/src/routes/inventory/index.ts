@@ -15,6 +15,9 @@ router.get('/stats', inventoryController.getInventoryStats)
 // GET /api/v1/inventory/low-stock - Get low stock items
 router.get('/low-stock', inventoryController.getLowStockItems)
 
+// GET /api/v1/inventory/check - Check inventory availability
+router.get('/check', inventoryController.checkInventoryItem)
+
 // GET /api/v1/inventory/:productId - Get specific inventory item
 router.get('/:productId', inventoryController.getInventoryById)
 

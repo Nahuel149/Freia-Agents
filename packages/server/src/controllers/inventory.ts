@@ -7,18 +7,12 @@ import logger from '../utils/logger'
 // Get all inventory items
 const getAllInventory = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Workspace ID is required')
-        }
-
         const appServer = getRunningExpressApp()
         const query = `
             SELECT * FROM product_inventory 
-            WHERE "workspaceId" = $1
             ORDER BY "updatedDate" DESC
         `
-        const result = await appServer.AppDataSource.query(query, [workspaceId])
+        const result = await appServer.AppDataSource.query(query)
         return res.json(result)
     } catch (error) {
         logger.error('Error getting all inventory:', error)
@@ -30,22 +24,16 @@ const getAllInventory = async (req: Request, res: Response, next: NextFunction) 
 const getInventoryById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { productId } = req.params
-        const workspaceId = req.user?.activeWorkspaceId
-        
         if (!productId) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Product ID is required')
-        }
-        
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Workspace ID is required')
         }
 
         const appServer = getRunningExpressApp()
         const query = `
             SELECT * FROM product_inventory 
-            WHERE "productId" = $1 AND "workspaceId" = $2
+            WHERE "productId" = $1
         `
-        const result = await appServer.AppDataSource.query(query, [productId, workspaceId])
+        const result = await appServer.AppDataSource.query(query, [productId])
         
         if (result.length === 0) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Product not found')
@@ -62,15 +50,10 @@ const getInventoryById = async (req: Request, res: Response, next: NextFunction)
 const searchInventory = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { q, brand, minStock, maxStock } = req.query
-        const workspaceId = req.user?.activeWorkspaceId
         
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Workspace ID is required')
-        }
-        
-        let query = 'SELECT * FROM product_inventory WHERE "workspaceId" = $1'
-        const params: any[] = [workspaceId]
-        let paramIndex = 2
+        let query = 'SELECT * FROM product_inventory WHERE 1=1'
+        const params: any[] = []
+        let paramIndex = 1
 
         if (q) {
             query += ` AND (name ILIKE $${paramIndex} OR brand ILIKE $${paramIndex})`
@@ -245,6 +228,51 @@ const getInventoryStats = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+// Check inventory availability by tire_number or productId
+const checkInventoryItem = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { tire_number, productId, productCode } = req.query as { [key: string]: string }
+
+        if (!tire_number && !productId && !productCode) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'tire_number, productId or productCode query param required')
+        }
+
+        let query = 'SELECT * FROM product_inventory WHERE 1=1'
+        const params: any[] = []
+        let paramIndex = 1
+
+        if (tire_number) {
+            query += ` AND "productId" = $${paramIndex}`
+            params.push(tire_number)
+            paramIndex++
+        }
+
+        if (productId) {
+            query += ` AND "productId" = $${paramIndex}`
+            params.push(productId)
+            paramIndex++
+        }
+
+        if (productCode) {
+            query += ` AND "productCode" = $${paramIndex}`
+            params.push(productCode)
+            paramIndex++
+        }
+
+        const appServer = getRunningExpressApp()
+        const result = await appServer.AppDataSource.query(query, params)
+
+        if (result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' })
+        }
+
+        return res.json(result[0])
+    } catch (error) {
+        logger.error('Error checking inventory item:', error)
+        return next(error)
+    }
+}
+
 export default {
     getAllInventory,
     getInventoryById,
@@ -252,5 +280,6 @@ export default {
     updateInventoryStock,
     createInventoryItem,
     getLowStockItems,
-    getInventoryStats
+    getInventoryStats,
+    checkInventoryItem
 }

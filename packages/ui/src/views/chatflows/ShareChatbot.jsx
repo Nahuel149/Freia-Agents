@@ -27,12 +27,12 @@ import { baseURL } from '@/store/constant'
 const defaultConfig = {
     backgroundColor: '#ffffff',
     fontSize: 16,
-    poweredByTextColor: '#303235',
+    poweredByTextColor: '#ffffff',
     titleBackgroundColor: '#3B81F6',
     titleTextColor: '#ffffff',
     botMessage: {
         backgroundColor: '#f7f8ff',
-        textColor: '#303235'
+        textColor: '#ffffff'
     },
     userMessage: {
         backgroundColor: '#3B81F6',
@@ -40,7 +40,7 @@ const defaultConfig = {
     },
     textInput: {
         backgroundColor: '#ffffff',
-        textColor: '#303235',
+        textColor: '#ffffff',
         sendButtonColor: '#3B81F6'
     }
 }

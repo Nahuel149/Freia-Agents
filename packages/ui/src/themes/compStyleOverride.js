@@ -67,7 +67,8 @@ export default function componentStyleOverrides(theme) {
             styleOverrides: {
                 root: {
                     fontWeight: 500,
-                    borderRadius: '4px'
+                    borderRadius: '4px',
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'
                 }
             }
         },
@@ -96,11 +97,12 @@ export default function componentStyleOverrides(theme) {
         MuiCardHeader: {
             styleOverrides: {
                 root: {
-                    color: theme.colors?.textDark,
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : theme.colors?.textDark,
                     padding: '24px'
                 },
                 title: {
-                    fontSize: '1.125rem'
+                    fontSize: '1.125rem',
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'
                 }
             }
         },
@@ -121,7 +123,7 @@ export default function componentStyleOverrides(theme) {
         MuiListItemButton: {
             styleOverrides: {
                 root: {
-                    color: theme.darkTextPrimary,
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : theme.darkTextPrimary,
                     borderRadius: `${baseRadius + 6}px`,
                     paddingTop: '10px',
                     paddingBottom: '10px',
@@ -155,7 +157,7 @@ export default function componentStyleOverrides(theme) {
         MuiListItemIcon: {
             styleOverrides: {
                 root: {
-                    color: theme.darkTextPrimary,
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : theme.darkTextPrimary,
                     minWidth: '36px'
                 }
             }
@@ -163,7 +165,7 @@ export default function componentStyleOverrides(theme) {
         MuiListItemText: {
             styleOverrides: {
                 primary: {
-                    color: theme.textDark
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : theme.textDark
                 }
             }
         },
@@ -181,9 +183,9 @@ export default function componentStyleOverrides(theme) {
         MuiInputBase: {
             styleOverrides: {
                 input: {
-                    color: theme.textDark,
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : theme.textDark,
                     '&::placeholder': {
-                        color: theme.darkTextSecondary,
+                        color: theme?.customization?.isDarkMode ? theme.colors?.paper : theme.darkTextSecondary,
                         fontSize: '0.875rem'
                     },
                     '&.Mui-disabled': {
@@ -195,13 +197,13 @@ export default function componentStyleOverrides(theme) {
         MuiOutlinedInput: {
             styleOverrides: {
                 root: {
-                    background: theme?.customization?.isDarkMode ? theme.colors?.darkPrimary800 : bgColor,
-                    borderRadius: `${theme?.customization?.borderRadius}px`,
+                    background: theme?.customization?.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.grey50,
+                    borderRadius: `${baseRadius}px`,
                     '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: theme.colors?.grey400
+                        borderColor: theme?.customization?.isDarkMode ? theme.colors?.grey400 : theme.colors?.grey400
                     },
                     '&:hover $notchedOutline': {
-                        borderColor: theme.colors?.primaryLight
+                        borderColor: theme?.customization?.isDarkMode ? theme.colors?.primaryLight : theme.colors?.primaryLight
                     },
                     '&.MuiInputBase-multiline': {
                         padding: 1
@@ -209,9 +211,10 @@ export default function componentStyleOverrides(theme) {
                 },
                 input: {
                     fontWeight: 500,
-                    background: theme?.customization?.isDarkMode ? theme.colors?.darkPrimary800 : bgColor,
+                    background: theme?.customization?.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.grey50,
                     padding: '15.5px 14px',
-                    borderRadius: `${theme?.customization?.borderRadius}px`,
+                    borderRadius: `${baseRadius}px`,
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit',
                     '&.MuiInputBase-inputSizeSmall': {
                         padding: '10px 14px',
                         '&.MuiInputBase-inputAdornedStart': {
@@ -223,7 +226,7 @@ export default function componentStyleOverrides(theme) {
                     paddingLeft: 4
                 },
                 notchedOutline: {
-                    borderRadius: `${theme?.customization?.borderRadius}px`
+                    borderRadius: `${baseRadius}px`
                 }
             }
         },

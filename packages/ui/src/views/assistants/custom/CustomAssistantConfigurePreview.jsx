@@ -1350,7 +1350,7 @@ const CustomAssistantConfigurePreview = () => {
                                                     theme={{
                                                         button: {
                                                             backgroundColor: '#eeeeee',
-                                                            iconColor: '#333333'
+                                                            iconColor: '#ffffff'
                                                         },
                                                         chatWindow: {
                                                             height: pageHeight(),
@@ -1359,15 +1359,15 @@ const CustomAssistantConfigurePreview = () => {
                                                             title: '  Preview',
                                                             botMessage: {
                                                                 backgroundColor: '#ffffff',
-                                                                textColor: '#303235'
+                                                                textColor: '#ffffff'
                                                             },
                                                             userMessage: {
                                                                 backgroundColor: '#f7f8ff',
-                                                                textColor: '#303235'
+                                                                textColor: '#ffffff'
                                                             },
                                                             textInput: {
                                                                 backgroundColor: '#ffffff',
-                                                                textColor: '#303235'
+                                                                textColor: '#ffffff'
                                                             },
                                                             footer: {
                                                                 showFooter: false

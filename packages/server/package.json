@@ -41,6 +41,7 @@
         "typeorm:migration-generate": "pnpm typeorm migration:generate -d ./src/utils/typeormDataSource.ts",
         "typeorm:migration-run": "pnpm typeorm migration:run -d ./src/utils/typeormDataSource.ts",
         "typeorm:migration-revert": "pnpm typeorm migration:revert -d ./src/utils/typeormDataSource.ts",
+        "seed": "ts-node src/scripts/loadSeed.ts",
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md",
         "cypress:open": "cypress open",

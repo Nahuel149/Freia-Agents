@@ -343,6 +343,150 @@ const getSalesByStatus = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+// Generate sale quote
+const createSaleQuote = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { product_sku, quantity = 1 } = req.body
+        if (!product_sku) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Product SKU is required')
+        }
+        const appServer = getRunningExpressApp()
+        // Try to fetch price from inventory table if available
+        const inventoryQuery = 'SELECT price FROM product_inventory WHERE product_sku = $1 LIMIT 1'
+        let unitPrice = 0
+        try {
+            const priceResult = await appServer.AppDataSource.query(inventoryQuery, [product_sku])
+            if (priceResult.length > 0) {
+                unitPrice = parseFloat(priceResult[0].price)
+            }
+        } catch {
+            // Ignore if table not present yet
+        }
+        // Fallback unit price
+        if (!unitPrice || isNaN(unitPrice)) {
+            unitPrice = 100 // default placeholder price
+        }
+        const totalPrice = unitPrice * quantity
+        return res.json({ product_sku, quantity, unit_price: unitPrice, total_price: totalPrice })
+    } catch (error) {
+        logger.error('Error generating sale quote:', error)
+        return next(error)
+    }
+}
+
+// Get product alternatives
+const getProductAlternatives = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { product_sku } = req.query
+        if (!product_sku) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Product SKU is required')
+        }
+        const appServer = getRunningExpressApp()
+        // Simple heuristic: return up to 5 products with different SKU but same brand prefix
+        const altQuery = `SELECT product_sku, name, brand, price FROM product_inventory WHERE product_sku != $1 LIMIT 5`
+        const alternatives = await appServer.AppDataSource.query(altQuery, [product_sku])
+        return res.json({ alternatives })
+    } catch (error) {
+        logger.error('Error fetching product alternatives:', error)
+        return next(error)
+    }
+}
+
+// Apply discount to existing sale or quote
+const applyDiscount = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { base_price, discount_percentage = 0 } = req.body
+        if (base_price === undefined) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Base price is required')
+        }
+        const final_price = base_price * (1 - discount_percentage / 100)
+        return res.json({ base_price, discount_percentage, final_price })
+    } catch (error) {
+        logger.error('Error applying discount:', error)
+        return next(error)
+    }
+}
+
+// Request price approval (stub)
+const requestPriceApproval = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { sale_id, proposed_price } = req.body
+        if (!sale_id || proposed_price === undefined) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Sale ID and proposed price are required')
+        }
+        // Here you would trigger internal approval workflow
+        return res.json({ sale_id, proposed_price, status: 'pending_approval' })
+    } catch (error) {
+        logger.error('Error requesting price approval:', error)
+        return next(error)
+    }
+}
+
+// Delivery options
+const getDeliveryOptions = async (_req: Request, res: Response, _next: NextFunction) => {
+    return res.json({ options: ['pickup', 'standard_shipping', 'express_shipping'] })
+}
+
+// Delivery improvement
+const improveDeliveryTime = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { sale_id, current_eta_days } = req.body
+        if (!sale_id || current_eta_days === undefined) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Sale ID and current ETA are required')
+        }
+        // Simple improvement heuristic: reduce ETA by 1 day if possible
+        const improved_eta = Math.max(current_eta_days - 1, 1)
+        return res.json({ sale_id, improved_eta })
+    } catch (error) {
+        logger.error('Error improving delivery time:', error)
+        return next(error)
+    }
+}
+
+// Payment methods
+const getPaymentMethods = async (_req: Request, res: Response, _next: NextFunction) => {
+    return res.json({ methods: ['credit_card', 'bank_transfer', 'cash_on_delivery'] })
+}
+
+// Order number generation
+const generateOrderNumber = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { sale_id } = req.body
+        if (!sale_id) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Sale ID is required')
+        }
+        const order_number = `ORD-${sale_id}-${Date.now().toString().slice(-6)}`
+        return res.json({ sale_id, order_number })
+    } catch (error) {
+        logger.error('Error generating order number:', error)
+        return next(error)
+    }
+}
+
+// Sale summary
+const getSaleSummary = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { saleId } = req.params
+        if (!saleId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Sale ID is required')
+        }
+        const appServer = getRunningExpressApp()
+        const saleQuery = 'SELECT * FROM sales WHERE id = $1'
+        const saleRecordQuery = 'SELECT * FROM sale_record WHERE sale_id = $1'
+        const [saleResult, recordResult] = await Promise.all([
+            appServer.AppDataSource.query(saleQuery, [saleId]),
+            appServer.AppDataSource.query(saleRecordQuery, [saleId]).catch(() => [])
+        ])
+        if (saleResult.length === 0) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Sale not found')
+        }
+        return res.json({ sale: saleResult[0], records: recordResult })
+    } catch (error) {
+        logger.error('Error getting sale summary:', error)
+        return next(error)
+    }
+}
+
 export default {
     getAllSales,
     getSaleById,
@@ -351,5 +495,15 @@ export default {
     updateSale,
     getSalesStats,
     getRecentSales,
-    getSalesByStatus
+    getSalesByStatus,
+    // new exports
+    createSaleQuote,
+    getProductAlternatives,
+    applyDiscount,
+    requestPriceApproval,
+    getDeliveryOptions,
+    improveDeliveryTime,
+    getPaymentMethods,
+    generateOrderNumber,
+    getSaleSummary
 }

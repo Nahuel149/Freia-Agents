@@ -13,7 +13,7 @@ const CustomInputSlider = styled(Slider)(({ theme }) => ({
     '& .MuiSlider-thumb': {
         height: 20,
         width: 20,
-        backgroundColor: '#333',
+        backgroundColor: '#ffffff',
         boxShadow: '0 0 2px 0px rgba(0, 0, 0, 0.1)',
         '&:focus, &:hover, &.Mui-active': {
             boxShadow: '0px 0px 3px 1px rgba(0, 0, 0, 0.1)',

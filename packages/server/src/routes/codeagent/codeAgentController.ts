@@ -284,8 +284,7 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             // Ingest analytics (events, follow-ups, datasets on LOAD_DATA)
             try {
                 const { CodeAgentAnalyticsService } = require('../../services/codeagent-analytics')
-                const workspaceId = req.user?.activeWorkspaceId
-                const svc = new CodeAgentAnalyticsService(appServer.AppDataSource, workspaceId)
+                const svc = new CodeAgentAnalyticsService(appServer.AppDataSource)
 
                 // If the input is LOAD_DATA with datasets, try to ingest products/clients
                 if (typeof input === 'string' && /^\s*LOAD_DATA/i.test(input)) {
