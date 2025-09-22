@@ -41,6 +41,8 @@ import { AddCodeAgentEntities1755066758602 } from './1755066758602-AddCodeAgentE
 import { ModifyChatMessageExecutionIdType1757800000001 } from './1757800000001-ModifyChatMessageExecutionIdType'
 import { AddSupportTicketEntity1757800000002 } from './1757800000002-AddSupportTicketEntity'
 import { AddAgentAnalyticsEntities1757800000003 } from './1757800000003-AddAgentAnalyticsEntities'
+import { AddIconSrcToAssistant1757800000004 } from './1757800000004-AddIconSrcToAssistant'
+import { AddWorkspaceIdToExecution1758539817000 } from './1758539817000-AddWorkspaceIdToExecution'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -85,5 +87,7 @@ export const postgresMigrations = [
     AddCodeAgentEntities1755066758602,
     ModifyChatMessageExecutionIdType1757800000001,
     AddSupportTicketEntity1757800000002,
-    AddAgentAnalyticsEntities1757800000003
+    AddAgentAnalyticsEntities1757800000003,
+    AddIconSrcToAssistant1757800000004,
+    AddWorkspaceIdToExecution1758539817000
 ]
