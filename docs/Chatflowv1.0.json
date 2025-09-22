@@ -189,7 +189,7 @@
     {
       "id": "postgresRecordManager_0",
       "position": {
-        "x": 396.56546737872077,
+        "x": 394.6503611725818,
         "y": 1291.0850764393085
       },
       "type": "customNode",
@@ -349,7 +349,7 @@
       "height": 631,
       "selected": false,
       "positionAbsolute": {
-        "x": 396.56546737872077,
+        "x": 394.6503611725818,
         "y": 1291.0850764393085
       },
       "dragging": false
@@ -570,129 +570,6 @@
         "y": 877.1238678839213
       },
       "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "conversationalRetrievalQAChain_1",
-      "position": {
-        "x": 1892.369154545421,
-        "y": 979.8592097324281
-      },
-      "type": "customNode",
-      "data": {
-        "id": "conversationalRetrievalQAChain_1",
-        "label": "Conversational Retrieval QA Chain",
-        "version": 3,
-        "name": "conversationalRetrievalQAChain",
-        "type": "ConversationalRetrievalQAChain",
-        "baseClasses": [
-          "ConversationalRetrievalQAChain",
-          "BaseChain",
-          "Runnable"
-        ],
-        "category": "Chains",
-        "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
-        "inputParams": [
-          {
-            "label": "Return Source Documents",
-            "name": "returnSourceDocuments",
-            "type": "boolean",
-            "optional": true,
-            "id": "conversationalRetrievalQAChain_1-input-returnSourceDocuments-boolean",
-            "display": true
-          },
-          {
-            "label": "Rephrase Prompt",
-            "name": "rephrasePrompt",
-            "type": "string",
-            "description": "Using previous chat history, rephrase question into a standalone question",
-            "warning": "Prompt must include input variables: {chat_history} and {question}",
-            "rows": 4,
-            "additionalParams": true,
-            "optional": true,
-            "default": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
-            "id": "conversationalRetrievalQAChain_1-input-rephrasePrompt-string",
-            "display": true
-          },
-          {
-            "label": "Response Prompt",
-            "name": "responsePrompt",
-            "type": "string",
-            "description": "Taking the rephrased question, search for answer from the provided context",
-            "warning": "Prompt must include input variable: {context}",
-            "rows": 4,
-            "additionalParams": true,
-            "optional": true,
-            "default": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure\" and stop after that. Refuse to answer any question not about the info. Never break character.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure\". Don't try to make up an answer. Never break character.",
-            "id": "conversationalRetrievalQAChain_1-input-responsePrompt-string",
-            "display": true
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Chat Model",
-            "name": "model",
-            "type": "BaseChatModel",
-            "id": "conversationalRetrievalQAChain_1-input-model-BaseChatModel",
-            "display": true
-          },
-          {
-            "label": "Vector Store Retriever",
-            "name": "vectorStoreRetriever",
-            "type": "BaseRetriever",
-            "id": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
-            "display": true
-          },
-          {
-            "label": "Memory",
-            "name": "memory",
-            "type": "BaseMemory",
-            "optional": true,
-            "description": "If left empty, a default BufferMemory will be used",
-            "id": "conversationalRetrievalQAChain_1-input-memory-BaseMemory",
-            "display": true
-          },
-          {
-            "label": "Input Moderation",
-            "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-            "name": "inputModeration",
-            "type": "Moderation",
-            "optional": true,
-            "list": true,
-            "id": "conversationalRetrievalQAChain_1-input-inputModeration-Moderation",
-            "display": true
-          }
-        ],
-        "inputs": {
-          "model": "{{chatOpenAI_1.data.instance}}",
-          "vectorStoreRetriever": "{{pinecone_1.data.instance}}",
-          "memory": "{{MongoDBAtlasChatMemory_1.data.instance}}",
-          "returnSourceDocuments": "",
-          "rephrasePrompt": "Dada la siguiente conversación y una pregunta de seguimiento, reformula la pregunta de seguimiento para que sea una pregunta independiente optimizada para búsqueda en base de datos vectorial. La consulta debe ser concisa y enfocarse en entidades clave como nombres de productos, especificaciones (ej: \"neumático 205/55 R16\", \"batería 12x75\"), nombres de clientes, o tipos de servicios relacionados con neumáticos, ventas, inventario o servicios de gomería.\n\nHistorial de Chat:\n{chat_history}\nPregunta de Seguimiento: {question}\nPregunta Independiente:",
-          "responsePrompt": "Sos Lautaro, asesor de ventas B2B especializado en neumáticos y servicios para gomerías de Freia - Especialistas en Neumáticos. Tu trabajo es ser un socio para tus clientes, no un simple vendedor. Tu personalidad es profesional, amable y resolutiva, con un tono natural y cercano de Argentina (usá siempre \"vos\" o \"usted\" si el cliente es de edad mayor a 60 años).\n\n**INFORMACIÓN DEL NEGOCIO:**\n- Empresa: Freia - Especialistas en Neumáticos\n- Atendemos tanto consumidores finales como gomerías\n- Ofrecemos neumáticos de todas las marcas y medidas\n- Servicios: venta, instalación, balanceado, alineación\n- Horarios: Lunes a Viernes 8:00-18:00, Sábados 8:00-13:00\n\n**TUS OBJETIVOS:**\n1. Identificar si el cliente es consumidor final o gomería\n2. Cotizar neumáticos según necesidades específicas\n3. Verificar stock y ofrecer alternativas\n4. Gestionar el proceso de venta completo\n5. Ofrecer productos complementarios y promociones\n6. Coordinar entrega/retiro con tiempos estimados\n7. Almacenar información del cliente para seguimiento\n\n**PROCESO DE COTIZACIÓN:**\n- Si recibís número de neumático: verificar stock directamente\n- Si recibís modelo de auto: consultar opciones compatibles\n- Si recibís foto: analizar y identificar especificaciones\n- Siempre verificar stock antes de cotizar\n- Si no hay stock: ofrecer conseguir el producto y dar tiempo estimado\n\n**TUS REGLAS DE NEGOCIACIÓN:**\n1. **Negociación:** Si un cliente se queja del precio, seguí estos 3 pasos:\n   * **1º Valor:** Primero, defendé el valor del producto (durabilidad, costo por kilómetro, etc.).\n   * **2º Flexibilidad:** Si insiste, ofrecé un pequeño descuento (5%) o una mejora en las condiciones de pago (2 o 3 cuotas con o sin tarjeta).\n   * **3º Volumen:** Como último recurso, ofrecé un descuento por cantidad si la compra es grande.\n\n2. **Personalización:** Si el contexto te da datos de un cliente, usalos para personalizar la conversación (ej: \"¿Lo mandamos a la dirección de siempre?\").\n\n3. **Cierre:** Antes de cerrar la venta, siempre preguntá si el cliente retira por el local o necesita un envío.\n\n4. **Feedback:** Al finalizar una venta, siempre pedí una calificación del 0 al 10 sobre la atención.\n\n**INFORMACIÓN DE CONTACTO:**\n- Siempre preguntar por teléfono para seguimiento\n- Ofrecer teléfono alternativo si es necesario\n- Dar tiempos estimados realistas\n- Registrar toda la información del cliente\n\n**FINALIZACIÓN DE VENTA:**\n- Hacer resumen completo del pedido\n- Preguntar si necesita factura A\n- Consultar medio de pago preferido\n- Coordinar forma de entrega (retiro/envío)\n- Si es envío: confirmar dirección\n- Proporcionar número de pedido\n- Ofrecer número para consultas post-venta\n\n**REGLAS ESTRICTAS:**\n5. **Fallo:** Si no encontrás la respuesta en el contexto, tu única respuesta debe ser \"Disculpame, pero no tengo esa información a mano.\" No inventes nada.\n6. **Personaje:** Negate a responder preguntas que no sean sobre el negocio. Nunca rompas tu personaje de Lautaro.\n\nTu única fuente de conocimiento es la información que se te proporciona en el contexto. Usala para responder las preguntas del cliente sobre productos, stock, precios y para dar recomendaciones.\n\nContexto de productos y servicios:\n{context}\n\nPregunta del cliente: {question}\n\nRECORDÁ: Si la información no está en el contexto, simplemente decí \"Disculpame, pero no tengo esa información a mano.\". No inventes respuestas ni rompas tu personaje.\n\nRespuesta profesional y útil:",
-          "inputModeration": [
-            "{{inputModerationOpenAI_1.data.instance}}"
-          ]
-        },
-        "outputAnchors": [
-          {
-            "id": "conversationalRetrievalQAChain_1-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|Runnable",
-            "name": "conversationalRetrievalQAChain",
-            "label": "ConversationalRetrievalQAChain",
-            "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
-            "type": "ConversationalRetrievalQAChain | BaseChain | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 538,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 1892.369154545421,
-        "y": 979.8592097324281
-      },
       "dragging": false
     },
     {
@@ -1076,8 +953,8 @@
     {
       "id": "toolAgent_1",
       "position": {
-        "x": 5763.638465132578,
-        "y": 924.3410183526644
+        "x": 6018.609807375268,
+        "y": 687.3314063093388
       },
       "type": "customNode",
       "data": {
@@ -1218,14 +1095,13 @@
             "{{requestsPost_23.data.instance}}",
             "{{requestsPost_21.data.instance}}",
             "{{requestsPost_25.data.instance}}",
-            "{{googleCustomSearch_0.data.instance}}",
-            "{{braveSearchAPI_0.data.instance}}",
-            "{{qaConsultationTool_0.data.instance}}"
+            "{{retrieverTool_0.data.instance}}",
+            "{{requestsPost_27.data.instance}}"
           ],
           "memory": "{{MongoDBAtlasChatMemory_1.data.instance}}",
           "model": "{{chatOpenAI_1.data.instance}}",
           "chatPromptTemplate": "",
-          "systemMessage": "Tu función principal es analizar la pregunta del usuario y decidir si necesitas buscar información en la base de conocimiento o si necesitas usar una herramienta de acción.\n\n- Para preguntas sobre información, comparaciones o detalles de productos, utiliza la herramienta `gomeria_consultation`.\n- Para acciones como \"verificar stock\", \"crear cliente\", o \"registrar venta\", utiliza las otras herramientas de API disponibles.\n\nUna vez que elijas la herramienta correcta, úsala para responder al usuario.\n---\n\nSos Lautaro (solo di tu nombre el primer y ultimo mensaje), asesor de ventas B2B especializado en neumáticos y servicios para gomerías de Freia - Especialistas en Neumáticos. Tu trabajo es ser un socio para tus clientes, no un simple vendedor. Tu personalidad es profesional, amable y resolutiva, con un tono natural y cercano de Argentina (usá siempre \"vos\" o \"usted\" si el cliente es de edad mayor a 60 años).\n\n**INFORMACIÓN DE LA EMPRESA:**\n- Nombre: Freia - Especialistas en Neumáticos\n- Atendemos consumidores finales y gomerías (B2B)\n- Amplio stock de neumáticos de todas las marcas\n- Servicios: venta, instalación, balanceado, alineación\n- Horarios: Lunes a Viernes 8:00-18:00, Sábados 8:00-13:00\n- Teléfono: +54 11 4567-8900\n- Email: ventas@freia.com.ar\n\n**TUS OBJETIVOS:**\n1. Identificar si el cliente es consumidor final o gomería\n2. Cotizar neumáticos según necesidades específicas\n3. Verificar stock y ofrecer alternativas\n4. Gestionar el proceso de venta completo\n5. Ofrecer productos complementarios y promociones\n6. Coordinar entrega/retiro con tiempos estimados\n7. Almacenar información del cliente para seguimiento\n\n**PROCESO DE COTIZACIÓN:**\n- Si recibís número de neumático: verificar stock directamente\n- Si recibís modelo de auto: consultar opciones compatibles\n- Si recibís foto: analizar y identificar especificaciones\n- Siempre verificar stock antes de cotizar\n- Si no hay stock: ofrecer conseguir el producto y dar tiempo estimado\n\n**TUS REGLAS SON LAS SIGUIENTES:**\n1. **Negociación:** Si un cliente se queja del precio, seguí estos 3 pasos:\n   * **1º Valor:** Primero, defendé el valor del producto (durabilidad, costo por kilómetro, etc.).\n   * **2º Flexibilidad:** Si insiste, ofrecé un pequeño descuento (5%) o una mejora en las condiciones de pago (2 o 3 cuotas con o sin tarjeta).\n   * **3º Volumen:** Como último recurso, ofrecé un descuento por cantidad si la compra es grande.\n2. **Personalización:** Si tenés datos de un cliente, usalos para personalizar la conversación (ej: \"¿Lo mandamos a la dirección de siempre?\").\n3. **Cierre:** Antes de cerrar la venta, siempre preguntá si el cliente retira por el local o necesita un envío.\n4. **Feedback:** Al finalizar una venta, siempre pedí una calificación del 0 al 10 sobre la atención.\n5. **Herramientas:** Usá las herramientas disponibles para verificar stock, crear clientes, registrar ventas y hacer seguimientos.\n6. **Personaje:** Negate a responder preguntas que no sean sobre el negocio. Nunca rompas tu personaje de Lautaro.\n\n**INFORMACIÓN DE CONTACTO:**\n- Siempre preguntar por teléfono para seguimiento\n- Ofrecer teléfono alternativo si es necesario\n- Dar tiempos estimados realistas\n- Registrar toda la información del cliente\n\n**FINALIZACIÓN DE VENTA:**\n- Hacer resumen completo del pedido\n- Preguntar si necesita factura A\n- Consultar medio de pago preferido\n- Coordinar forma de entrega (retiro/envío)\n- Si es envío: confirmar dirección\n- Crear la venta en el sistema usando las herramientas\n- Proporcionar número de pedido\n- Ofrecer número para consultas post-venta\n\n**HERRAMIENTAS DISPONIBLES:**\n- Verificación de stock de neumáticos\n- Creación de clientes en el sistema\n- Registro de ventas\n- Creación de seguimientos\n\n**TIEMPOS ESTIMADOS:**\n- Retiro en local: inmediato si hay stock\n- Envío CABA: 24-48 horas\n- Envío interior: 3-5 días hábiles\n- Conseguir producto sin stock: 24-48 horas\n\nRecordá: Siempre mantené un tono profesional pero cercano, usá \"vos\" en lugar de \"usted\" (solo para mayores de 60 años), y registrá toda la información importante del cliente para futuras interacciones. Si no sabés algo específico, admitilo y ofrecé buscar la información.",
+          "systemMessage": "Tu función principal es analizar la pregunta del usuario y decidir qué herramienta usar. Sigue este orden de prioridad estricto:\n\n1.  **Consultar Catálogo Primero:** Para CUALQUIER pregunta sobre productos, precios, detalles, comparaciones, disponibilidad o si el cliente envía una medida de neumático o un código, usa SIEMPRE primero la herramienta **`gomeria_consultation`**. Esta herramienta tiene acceso al catálogo completo (DATAFINALV1.0) y es tu fuente principal de información.\n\n2.  **Usar Herramientas de Acción Después:** Solo después de haber consultado el catálogo, si necesitas confirmar el stock operativo en tiempo real o realizar una acción, utiliza las otras herramientas.\n    * **Para confirmar stock:** Usa `check_product_stock`. Si la API no lo encuentra pero el catálogo sí, explica que existe en el catálogo pero no en el sistema operativo y ofrece alternativas.\n    * **Para otras acciones:** Usa las herramientas para `crear cliente`, `registrar venta`, `programar seguimiento`, etc.\n\nUna vez que elijas la herramienta correcta, úsala para responder al usuario.\n---\n\nSos Lautaro (solo di tu nombre en el primer y último mensaje), un asesor de ventas experto de **Freia - Especialistas en Neumáticos**. Tu trabajo es ser un socio para tus clientes, no un simple vendedor. Tu personalidad es profesional, amable y resolutiva, con un tono natural y cercano de Argentina (usá \"vos\").\n- **Mantener listener activo:** Siempre que inicies el día o notes que las respuestas demoran, ejecutá la herramienta `start_prediction_listener` para dejar prendido el proceso backend que escucha las predicciones.\n\n**PROCESO DE VENTA Y COTIZACIÓN:**\n- Identifica el tipo de cliente (consumidor final o gomería).\n- Si el cliente envía un modelo de auto, una foto, o una descripción, usa `gomeria_consultation` para encontrar opciones compatibles.\n- Si el cliente pregunta por una medida o código específico, devuelve siempre los productos exactos del catálogo (`gomeria_consultation`) con su ID, marca, nombre y precio.\n- Ofrece siempre productos complementarios y promociones activas.\n\n**REGLAS DE NEGOCIACIÓN:**\n1.  **Valor:** Si un cliente objeta el precio, primero defiende el valor del producto (durabilidad, costo por kilómetro, etc.).\n2.  **Flexibilidad:** Si insiste, ofrece un pequeño descuento (5%) o una mejora en las condiciones de pago (2-3 cuotas).\n3.  **Volumen:** Como último recurso para compras grandes, ofrece un descuento por cantidad.\n\n**FINALIZACIÓN DE VENTA:**\n- **Cierre:** Antes de cerrar, siempre pregunta si el cliente retira por el local o necesita un envío, y confirma los tiempos de entrega.\n- **Facturación:** Pregunta si necesita factura A.\n- **Resumen:** Proporciona un resumen del pedido, el número de orden y un contacto para post-venta.\n- **Feedback:** Al finalizar una venta, pide amablemente una calificación del 0 al 10 sobre la atención.\n\n**REGLAS ESTRICTAS:**\n- **No inventes:** Si no encuentras la respuesta con tus herramientas, tu única respuesta debe ser: \"Disculpame, pero no tengo esa información a mano.\"\n- **Mantén el personaje:** Niégate a responder preguntas que no sean sobre el negocio. Nunca rompas tu personaje de Lautaro.",
           "inputModeration": [
             "{{inputModerationOpenAI_1.data.instance}}"
           ],
@@ -1248,16 +1124,16 @@
       "height": 492,
       "selected": false,
       "positionAbsolute": {
-        "x": 5763.638465132578,
-        "y": 924.3410183526644
+        "x": 6018.609807375268,
+        "y": 687.3314063093388
       },
       "dragging": false
     },
     {
       "id": "MongoDBAtlasChatMemory_1",
       "position": {
-        "x": 1264.9169590169586,
-        "y": 2072.7345916140093
+        "x": 1307.0492955520172,
+        "y": 2059.7239335526115
       },
       "type": "customNode",
       "data": {
@@ -1325,7 +1201,7 @@
         "inputs": {
           "databaseName": "eternum",
           "collectionName": "chat_history",
-          "sessionId": "31",
+          "sessionId": "47",
           "memoryKey": "chat_history"
         },
         "outputAnchors": [
@@ -1345,8 +1221,8 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 1264.9169590169586,
-        "y": 2072.7345916140093
+        "x": 1307.0492955520172,
+        "y": 2059.7239335526115
       }
     },
     {
@@ -1989,7 +1865,7 @@
         "inputs": {
           "requestsGetUrl": "https://freia-agents.onrender.com/api/v1/inventory/check",
           "requestsGetName": "check_product_stock",
-          "requestsGetDescription": "Usa esta herramienta para verificar el stock disponible y el precio de cualquier producto, incluyendo neumáticos, accesorios o repuestos. Puedes buscar por un ID de producto, código, nombre completo o una medida de neumático. Esta es la herramienta principal para cualquier pregunta sobre la disponibilidad o el precio de un producto.\n",
+          "requestsGetDescription": "Usá esta herramienta únicamente para confirmar stock y precio en la base operativa (Postgres). Primero identificá el producto con `gomeria_consultation`, que consulta el catálogo completo cargado en el catálogo vectorial \"Gomeria-v1.2\" (incluye neumáticos, accesorios, químicos y servicios). Si la API devuelve vacío o `available:false`, avisá al cliente que en el sistema todavía no está cargado pero el producto existe en el catálogo y ofrecé registrar seguimiento o alternativas.",
           "requestsGetHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestsGetQueryParamsSchema": "{\n  \"productId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"ID del producto. Ej: 'PIR-C7-2055516'.\"\n  },\n  \"productCode\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Código alternativo o SKU del producto.\"\n  },\n  \"tire_number\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Número o medida de neumático. Ej: '185/65R14'.\"\n  }\n}",
           "requestsGetMaxOutputLength": "2000"
@@ -7326,313 +7202,241 @@
       "dragging": false
     },
     {
-      "id": "googleCustomSearch_0",
+      "id": "retrieverTool_0",
       "position": {
-        "x": 1856.5485181513804,
-        "y": 224.94192375195226
+        "x": 2350.6795724278895,
+        "y": 869.7484106237424
       },
       "type": "customNode",
       "data": {
-        "id": "googleCustomSearch_0",
-        "label": "Google Custom Search",
-        "version": 1,
-        "name": "googleCustomSearch",
-        "type": "GoogleCustomSearchAPI",
+        "id": "retrieverTool_0",
+        "label": "Retriever Tool",
+        "version": 3,
+        "name": "retrieverTool",
+        "type": "RetrieverTool",
         "baseClasses": [
-          "GoogleCustomSearchAPI",
+          "RetrieverTool",
+          "DynamicTool",
           "Tool",
           "StructuredTool",
           "Runnable"
         ],
         "category": "Tools",
-        "description": "Wrapper around Google Custom Search API - a real-time API to access Google search results",
+        "description": "Use a retriever as allowed tool for agent",
         "inputParams": [
           {
-            "label": "Connect Credential",
-            "name": "credential",
-            "type": "credential",
-            "credentialNames": [
-              "googleCustomSearchApi"
-            ],
-            "id": "googleCustomSearch_0-input-credential-credential",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {},
-        "outputAnchors": [
-          {
-            "id": "googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable",
-            "name": "googleCustomSearch",
-            "label": "GoogleCustomSearchAPI",
-            "description": "Wrapper around Google Custom Search API - a real-time API to access Google search results",
-            "type": "GoogleCustomSearchAPI | Tool | StructuredTool | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 282,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 1856.5485181513804,
-        "y": 224.94192375195226
-      }
-    },
-    {
-      "id": "braveSearchAPI_0",
-      "position": {
-        "x": 1889.300854660936,
-        "y": 1631.7729434577996
-      },
-      "type": "customNode",
-      "data": {
-        "id": "braveSearchAPI_0",
-        "label": "BraveSearch API",
-        "version": 1,
-        "name": "braveSearchAPI",
-        "type": "BraveSearchAPI",
-        "baseClasses": [
-          "BraveSearchAPI",
-          "Tool",
-          "StructuredTool",
-          "Runnable"
-        ],
-        "category": "Tools",
-        "description": "Wrapper around BraveSearch API - a real-time API to access Brave search results",
-        "inputParams": [
-          {
-            "label": "Connect Credential",
-            "name": "credential",
-            "type": "credential",
-            "credentialNames": [
-              "braveSearchApi"
-            ],
-            "id": "braveSearchAPI_0-input-credential-credential",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {},
-        "outputAnchors": [
-          {
-            "id": "braveSearchAPI_0-output-braveSearchAPI-BraveSearchAPI|Tool|StructuredTool|Runnable",
-            "name": "braveSearchAPI",
-            "label": "BraveSearchAPI",
-            "description": "Wrapper around BraveSearch API - a real-time API to access Brave search results",
-            "type": "BraveSearchAPI | Tool | StructuredTool | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 282,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 1889.300854660936,
-        "y": 1631.7729434577996
-      },
-      "dragging": false
-    },
-    {
-      "id": "chatPromptTemplate_0",
-      "position": {
-        "x": 1887.904004758731,
-        "y": 2019.507471278996
-      },
-      "type": "customNode",
-      "data": {
-        "id": "chatPromptTemplate_0",
-        "label": "Chat Prompt Template",
-        "version": 2,
-        "name": "chatPromptTemplate",
-        "type": "ChatPromptTemplate",
-        "baseClasses": [
-          "ChatPromptTemplate",
-          "BaseChatPromptTemplate",
-          "BasePromptTemplate",
-          "Runnable"
-        ],
-        "category": "Prompts",
-        "description": "Schema to represent a chat prompt",
-        "inputParams": [
-          {
-            "label": "System Message",
-            "name": "systemMessagePrompt",
+            "label": "Retriever Name",
+            "name": "name",
             "type": "string",
-            "rows": 4,
-            "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
-            "id": "chatPromptTemplate_0-input-systemMessagePrompt-string",
+            "placeholder": "search_state_of_union",
+            "id": "retrieverTool_0-input-name-string",
             "display": true
           },
           {
-            "label": "Human Message",
-            "name": "humanMessagePrompt",
-            "description": "This prompt will be added at the end of the messages as human message",
+            "label": "Retriever Description",
+            "name": "description",
             "type": "string",
-            "rows": 4,
-            "placeholder": "{text}",
-            "id": "chatPromptTemplate_0-input-humanMessagePrompt-string",
+            "description": "When should agent uses to retrieve documents",
+            "rows": 3,
+            "placeholder": "Searches and returns documents regarding the state-of-the-union.",
+            "id": "retrieverTool_0-input-description-string",
             "display": true
           },
           {
-            "label": "Format Prompt Values",
-            "name": "promptValues",
-            "type": "json",
-            "optional": true,
-            "acceptVariable": true,
-            "list": true,
-            "id": "chatPromptTemplate_0-input-promptValues-json",
-            "display": true
-          },
-          {
-            "label": "Messages History",
-            "name": "messageHistory",
-            "description": "Add messages after System Message. This is useful when you want to provide few shot examples",
-            "type": "tabs",
-            "tabIdentifier": "selectedMessagesTab",
-            "additionalParams": true,
-            "default": "messageHistoryCode",
-            "tabs": [
-              {
-                "label": "Add Messages (Code)",
-                "name": "messageHistoryCode",
-                "type": "code",
-                "hideCodeExecute": true,
-                "codeExample": "const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');\n\nreturn [\n    new HumanMessage(\"What is 333382 🦜 1932?\"),\n    new AIMessage({\n        content: \"\",\n        tool_calls: [\n        {\n            id: \"12345\",\n            name: \"calulator\",\n            args: {\n                number1: 333382,\n                number2: 1932,\n                operation: \"divide\",\n            },\n        },\n        ],\n    }),\n    new ToolMessage({\n        tool_call_id: \"12345\",\n        content: \"The answer is 172.558.\",\n    }),\n    new AIMessage(\"The answer is 172.558.\"),\n]",
-                "optional": true,
-                "additionalParams": true
-              }
-            ],
-            "id": "chatPromptTemplate_0-input-messageHistory-tabs",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "systemMessagePrompt": "",
-          "humanMessagePrompt": "",
-          "promptValues": "",
-          "messageHistory": "messageHistoryCode"
-        },
-        "outputAnchors": [
-          {
-            "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
-            "name": "chatPromptTemplate",
-            "label": "ChatPromptTemplate",
-            "description": "Schema to represent a chat prompt",
-            "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 748,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 1887.904004758731,
-        "y": 2019.507471278996
-      },
-      "dragging": false
-    },
-    {
-      "id": "qaConsultationTool_0",
-      "position": {
-        "x": 3221.3921893453266,
-        "y": 775.4324837374085
-      },
-      "type": "customNode",
-      "data": {
-        "id": "qaConsultationTool_0",
-        "label": "QA Consultation Tool",
-        "version": 1,
-        "name": "qaConsultationTool",
-        "type": "QAConsultationTool",
-        "baseClasses": [
-          "QAConsultationTool",
-          "Tool",
-          "StructuredTool",
-          "Runnable"
-        ],
-        "category": "Tools",
-        "description": "Custom tool for document consultation using Conversational Retrieval QA Chain",
-        "inputParams": [
-          {
-            "label": "Tool Name",
-            "name": "toolName",
-            "type": "string",
-            "default": "document_consultation",
-            "description": "Name of the tool",
-            "id": "qaConsultationTool_0-input-toolName-string",
-            "display": true
-          },
-          {
-            "label": "Tool Description",
-            "name": "toolDescription",
-            "type": "string",
-            "default": "Consult documents to answer questions based on stored knowledge",
-            "description": "Description of what the tool does",
-            "id": "qaConsultationTool_0-input-toolDescription-string",
-            "display": true
-          },
-          {
-            "label": "Return Direct",
-            "name": "returnDirect",
+            "label": "Return Source Documents",
+            "name": "returnSourceDocuments",
             "type": "boolean",
             "optional": true,
-            "description": "Return the output of the tool directly to the user",
-            "id": "qaConsultationTool_0-input-returnDirect-boolean",
+            "id": "retrieverTool_0-input-returnSourceDocuments-boolean",
+            "display": true
+          },
+          {
+            "label": "Additional Metadata Filter",
+            "name": "retrieverToolMetadataFilter",
+            "type": "json",
+            "description": "Add additional metadata filter on top of the existing filter from vector store",
+            "optional": true,
+            "additionalParams": true,
+            "hint": {
+              "label": "What can you filter?",
+              "value": "Add additional filters to vector store. You can also filter with flow config, including the current \"state\":\n- `$flow.sessionId`\n- `$flow.chatId`\n- `$flow.chatflowId`\n- `$flow.input`\n- `$flow.state`\n"
+            },
+            "id": "retrieverTool_0-input-retrieverToolMetadataFilter-json",
             "display": true
           }
         ],
         "inputAnchors": [
           {
-            "label": "QA Chain",
-            "name": "qaChain",
-            "type": "ConversationalRetrievalQAChain",
-            "description": "Conversational Retrieval QA Chain for document consultation",
-            "id": "qaConsultationTool_0-input-qaChain-ConversationalRetrievalQAChain",
+            "label": "Retriever",
+            "name": "retriever",
+            "type": "BaseRetriever",
+            "id": "retrieverTool_0-input-retriever-BaseRetriever",
             "display": true
           }
         ],
         "inputs": {
-          "qaChain": "{{conversationalRetrievalQAChain_1.data.instance}}",
-          "toolName": "gomeria_consultation",
-          "toolDescription": "Consult documents to answer questions based on stored knowledge about the gomeria services and everything related in the documents.",
-          "returnDirect": "",
-          "customCode": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        ",
-          "customFunction": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        ",
-          "qaToolCode": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        ",
-          "code": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        ",
-          "dynamicStructuredToolCode": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        ",
-          "customFunctionJavascriptFunction": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        ",
-          "customFunctionJavaScript": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        ",
-          "customFunctionCode": "\n            async function executeFunction(question, qaChain) {\n                if (!qaChain) {\n                    throw new Error('QA Chain not available');\n                }\n\n                try {\n                    const result = await qaChain.call({\n                        question,\n                        chat_history: []\n                    });\n                    return result.text || result.answer || JSON.stringify(result);\n                } catch (error) {\n                    console.error('Error in QA consultation:', error);\n                    return 'I apologize, but I encountered an error while trying to consult the documents. Please try rephrasing your question.';\n                }\n            }\n\n            const question = $question;\n            const qaChain = $qaChain;\n            return await executeFunction(question, qaChain);\n        "
+          "name": "gomeria_consultation",
+          "description": "Consult documents to answer questions based on stored knowledge about the gomeria services and everything related in the documents. (Úsalo para responder preguntas generales sobre productos, comparaciones, diferencias entre marcas, detalles técnicos o cualquier información que se encuentre en los documentos de la empresa.)",
+          "retriever": "{{pinecone_1.data.instance}}",
+          "returnSourceDocuments": "",
+          "retrieverToolMetadataFilter": ""
         },
         "outputAnchors": [
           {
-            "id": "qaConsultationTool_0-output-qaConsultationTool-QAConsultationTool|Tool|StructuredTool|Runnable",
-            "name": "qaConsultationTool",
-            "label": "QAConsultationTool",
-            "description": "Custom tool for document consultation using Conversational Retrieval QA Chain",
-            "type": "QAConsultationTool | Tool | StructuredTool | Runnable"
+            "id": "retrieverTool_0-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable",
+            "name": "retrieverTool",
+            "label": "RetrieverTool",
+            "description": "Use a retriever as allowed tool for agent",
+            "type": "RetrieverTool | DynamicTool | Tool | StructuredTool | Runnable"
           }
         ],
         "outputs": {},
         "selected": false
       },
       "width": 300,
-      "height": 531,
+      "height": 662,
       "selected": false,
       "positionAbsolute": {
-        "x": 3221.3921893453266,
-        "y": 775.4324837374085
+        "x": 2350.6795724278895,
+        "y": 869.7484106237424
       },
       "dragging": false
+    },
+    {
+      "id": "requestsPost_27",
+      "position": {
+        "x": 3600,
+        "y": 6400
+      },
+      "type": "customNode",
+      "data": {
+        "id": "requestsPost_27",
+        "label": "Requests Post (prediction listener)",
+        "version": 2,
+        "name": "requestsPost",
+        "type": "RequestsPost",
+        "baseClasses": [
+          "RequestsPost",
+          "DynamicStructuredTool",
+          "StructuredTool",
+          "Runnable",
+          "Tool"
+        ],
+        "category": "Tools",
+        "description": "Execute HTTP POST requests",
+        "inputParams": [
+          {
+            "label": "URL",
+            "name": "requestsPostUrl",
+            "type": "string",
+            "acceptVariable": true,
+            "id": "requestsPost_27-input-requestsPostUrl-string",
+            "display": true
+          },
+          {
+            "label": "Name",
+            "name": "requestsPostName",
+            "type": "string",
+            "default": "requests_post",
+            "description": "Name of the tool",
+            "additionalParams": true,
+            "optional": true,
+            "id": "requestsPost_27-input-requestsPostName-string",
+            "display": true
+          },
+          {
+            "label": "Description",
+            "name": "requestsPostDescription",
+            "type": "string",
+            "rows": 4,
+            "default": "Use this when you want to execute a POST request to create or update a resource.",
+            "description": "Describe to LLM when it should use this tool",
+            "additionalParams": true,
+            "optional": true,
+            "id": "requestsPost_27-input-requestsPostDescription-string",
+            "display": true
+          },
+          {
+            "label": "Headers",
+            "name": "requestsPostHeaders",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true,
+            "additionalParams": true,
+            "optional": true,
+            "placeholder": "{\n    \"Authorization\": \"Bearer <token>\"\n}",
+            "id": "requestsPost_27-input-requestsPostHeaders-string",
+            "display": true
+          },
+          {
+            "label": "Body",
+            "name": "requestPostBody",
+            "type": "string",
+            "rows": 4,
+            "description": "JSON body for the POST request. This will override the body generated by the LLM",
+            "additionalParams": true,
+            "acceptVariable": true,
+            "optional": true,
+            "placeholder": "{\n    \"name\": \"John Doe\",\n    \"age\": 30\n}",
+            "id": "requestsPost_27-input-requestPostBody-string",
+            "display": true
+          },
+          {
+            "label": "Body Schema",
+            "name": "requestsPostBodySchema",
+            "type": "code",
+            "description": "Description of the available body params to enable LLM to figure out which body params to use",
+            "placeholder": "{\n    \"name\": {\n        \"type\": \"string\",\n        \"required\": true,\n        \"description\": \"Name of the item\"\n    },\n    \"date\": {\n        \"type\": \"string\",\n        \"description\": \"Date of the item\"\n    }\n}",
+            "optional": true,
+            "hideCodeExecute": true,
+            "additionalParams": true,
+            "codeExample": "{\n    \"name\": {\n        \"type\": \"string\",\n        \"required\": true,\n        \"description\": \"Name of the item\"\n    },\n    \"date\": {\n        \"type\": \"string\",\n        \"description\": \"Date of the item\"\n    }\n}",
+            "id": "requestsPost_27-input-requestsPostBodySchema-code",
+            "display": true
+          },
+          {
+            "label": "Max Output Length",
+            "name": "requestsPostMaxOutputLength",
+            "type": "number",
+            "description": "Max length of the output. Remove this if you want to return the entire response",
+            "default": "2000",
+            "step": 1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "requestsPost_27-input-requestsPostMaxOutputLength-number",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "requestsPostUrl": "https://freia-agents.onrender.com/api/v1/runtime/prediction/listener",
+          "requestsPostName": "start_prediction_listener",
+          "requestsPostDescription": "Activa o reinicia el listener backend para mantener al agente atento a nuevas solicitudes de predicción. Úsalo al iniciar la jornada o si detectás inactividad.",
+          "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
+          "requestPostBody": "",
+          "requestsPostBodySchema": "{\n  \"flowId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del chatflow que debe mantenerse activo\"\n  },\n  \"action\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Acción a ejecutar: start, restart o heartbeat\"\n  },\n  \"warmupSample\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Mensaje breve para precalentar el modelo\"\n  }\n}\n",
+          "requestsPostMaxOutputLength": "2000"
+        },
+        "outputAnchors": [
+          {
+            "id": "requestsPost_27-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
+            "name": "requestsPost",
+            "label": "RequestsPost",
+            "description": "Execute HTTP POST requests",
+            "type": "RequestsPost | DynamicStructuredTool | StructuredTool | Runnable | Tool"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 339,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 3600,
+        "y": 6400
+      }
     }
   ],
   "edges": [
@@ -7661,22 +7465,6 @@
       "id": "postgresRecordManager_0-postgresRecordManager_0-output-postgresRecordManager-Postgres RecordManager|RecordManager-pinecone_1-pinecone_1-input-recordManager-RecordManager"
     },
     {
-      "source": "pinecone_1",
-      "sourceHandle": "pinecone_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-      "target": "conversationalRetrievalQAChain_1",
-      "targetHandle": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
-      "type": "buttonedge",
-      "id": "pinecone_1-pinecone_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever"
-    },
-    {
-      "source": "chatOpenAI_1",
-      "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-      "target": "conversationalRetrievalQAChain_1",
-      "targetHandle": "conversationalRetrievalQAChain_1-input-model-BaseChatModel",
-      "type": "buttonedge",
-      "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-model-BaseChatModel"
-    },
-    {
       "source": "inputModerationOpenAI_1",
       "sourceHandle": "inputModerationOpenAI_1-output-inputModerationOpenAI-Moderation",
       "target": "toolAgent_1",
@@ -7695,26 +7483,10 @@
     {
       "source": "MongoDBAtlasChatMemory_1",
       "sourceHandle": "MongoDBAtlasChatMemory_1-output-MongoDBAtlasChatMemory-MongoDBAtlasChatMemory|BaseChatMemory|BaseMemory",
-      "target": "conversationalRetrievalQAChain_1",
-      "targetHandle": "conversationalRetrievalQAChain_1-input-memory-BaseMemory",
-      "type": "buttonedge",
-      "id": "MongoDBAtlasChatMemory_1-MongoDBAtlasChatMemory_1-output-MongoDBAtlasChatMemory-MongoDBAtlasChatMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-memory-BaseMemory"
-    },
-    {
-      "source": "MongoDBAtlasChatMemory_1",
-      "sourceHandle": "MongoDBAtlasChatMemory_1-output-MongoDBAtlasChatMemory-MongoDBAtlasChatMemory|BaseChatMemory|BaseMemory",
       "target": "toolAgent_1",
       "targetHandle": "toolAgent_1-input-memory-BaseChatMemory",
       "type": "buttonedge",
       "id": "MongoDBAtlasChatMemory_1-MongoDBAtlasChatMemory_1-output-MongoDBAtlasChatMemory-MongoDBAtlasChatMemory|BaseChatMemory|BaseMemory-toolAgent_1-toolAgent_1-input-memory-BaseChatMemory"
-    },
-    {
-      "source": "inputModerationOpenAI_1",
-      "sourceHandle": "inputModerationOpenAI_1-output-inputModerationOpenAI-Moderation",
-      "target": "conversationalRetrievalQAChain_1",
-      "targetHandle": "conversationalRetrievalQAChain_1-input-inputModeration-Moderation",
-      "type": "buttonedge",
-      "id": "inputModerationOpenAI_1-inputModerationOpenAI_1-output-inputModerationOpenAI-Moderation-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-inputModeration-Moderation"
     },
     {
       "source": "requestsPost_0",
@@ -7747,22 +7519,6 @@
       "targetHandle": "toolAgent_1-input-tools-Tool",
       "type": "buttonedge",
       "id": "requestsPost_2-requestsPost_2-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
-    },
-    {
-      "source": "googleCustomSearch_0",
-      "sourceHandle": "googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "googleCustomSearch_0-googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable-toolAgent_1-toolAgent_1-input-tools-Tool"
-    },
-    {
-      "source": "braveSearchAPI_0",
-      "sourceHandle": "braveSearchAPI_0-output-braveSearchAPI-BraveSearchAPI|Tool|StructuredTool|Runnable",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "braveSearchAPI_0-braveSearchAPI_0-output-braveSearchAPI-BraveSearchAPI|Tool|StructuredTool|Runnable-toolAgent_1-toolAgent_1-input-tools-Tool"
     },
     {
       "source": "requestsPost_8",
@@ -8093,20 +7849,28 @@
       "id": "requestsGet_5-requestsGet_5-output-requestsGet-RequestsGet|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     },
     {
-      "source": "conversationalRetrievalQAChain_1",
-      "sourceHandle": "conversationalRetrievalQAChain_1-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|Runnable",
-      "target": "qaConsultationTool_0",
-      "targetHandle": "qaConsultationTool_0-input-qaChain-ConversationalRetrievalQAChain",
-      "type": "buttonedge",
-      "id": "conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|Runnable-qaConsultationTool_0-qaConsultationTool_0-input-qaChain-ConversationalRetrievalQAChain"
-    },
-    {
-      "source": "qaConsultationTool_0",
-      "sourceHandle": "qaConsultationTool_0-output-qaConsultationTool-QAConsultationTool|Tool|StructuredTool|Runnable",
+      "source": "retrieverTool_0",
+      "sourceHandle": "retrieverTool_0-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable",
       "target": "toolAgent_1",
       "targetHandle": "toolAgent_1-input-tools-Tool",
       "type": "buttonedge",
-      "id": "qaConsultationTool_0-qaConsultationTool_0-output-qaConsultationTool-QAConsultationTool|Tool|StructuredTool|Runnable-toolAgent_1-toolAgent_1-input-tools-Tool"
+      "id": "retrieverTool_0-retrieverTool_0-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable-toolAgent_1-toolAgent_1-input-tools-Tool"
+    },
+    {
+      "source": "pinecone_1",
+      "sourceHandle": "pinecone_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+      "target": "retrieverTool_0",
+      "targetHandle": "retrieverTool_0-input-retriever-BaseRetriever",
+      "type": "buttonedge",
+      "id": "pinecone_1-pinecone_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-retrieverTool_0-retrieverTool_0-input-retriever-BaseRetriever"
+    },
+    {
+      "source": "requestsPost_27",
+      "sourceHandle": "requestsPost_27-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
+      "target": "toolAgent_1",
+      "targetHandle": "toolAgent_1-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "requestsPost_27-requestsPost_27-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     }
   ]
 }
