@@ -4,6 +4,43 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
 
+type ResolvedCustomer = {
+    customer: any
+    resolvedBy: 'id' | 'phone'
+}
+
+const resolveCustomer = async (identifier: string): Promise<ResolvedCustomer> => {
+    if (!identifier) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Customer identifier is required')
+    }
+
+    const appServer = getRunningExpressApp()
+    const trimmed = identifier.trim()
+
+    const isNumericId = /^\d+$/.test(trimmed)
+
+    if (isNumericId) {
+        const result = await appServer.AppDataSource.query('SELECT * FROM customers WHERE id = $1', [parseInt(trimmed)])
+        if (result.length > 0) {
+            return { customer: result[0], resolvedBy: 'id' }
+        }
+    }
+
+    const resultByPhone = await appServer.AppDataSource.query('SELECT * FROM customers WHERE phone_number = $1', [trimmed])
+    if (resultByPhone.length > 0) {
+        return { customer: resultByPhone[0], resolvedBy: 'phone' }
+    }
+
+    if (!isNumericId) {
+        const fallback = await appServer.AppDataSource.query('SELECT * FROM customers WHERE id = $1', [parseInt(trimmed)])
+        if (fallback.length > 0) {
+            return { customer: fallback[0], resolvedBy: 'id' }
+        }
+    }
+
+    throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Customer not found')
+}
+
 // Get all customers
 const getAllCustomers = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -166,6 +203,11 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
     }
 }
 
+// Alias to createCustomer using explicit client identifier
+const createCustomerAlias = async (req: Request, res: Response, next: NextFunction) => {
+    return createCustomer(req, res, next)
+}
+
 // Update customer
 const updateCustomer = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -248,6 +290,181 @@ const updateCustomer = async (req: Request, res: Response, next: NextFunction) =
     }
 }
 
+const buildCustomerFilters = (customer: any) => {
+    const conditions: string[] = []
+    const params: any[] = []
+    let index = 1
+
+    if (customer?.id) {
+        conditions.push(`customer_id = $${index}`)
+        params.push(customer.id)
+        index++
+    }
+
+    if (customer?.phone_number) {
+        conditions.push(`phone_number = $${index}`)
+        params.push(customer.phone_number)
+        index++
+    }
+
+    return {
+        clause: conditions.length > 0 ? conditions.join(' OR ') : '1=0',
+        params
+    }
+}
+
+// Get consolidated customer history
+const getCustomerHistory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { clientId } = req.params
+        const { customer } = await resolveCustomer(clientId)
+
+        const appServer = getRunningExpressApp()
+        const salesFilter = buildCustomerFilters(customer)
+
+        const salesPromise = appServer.AppDataSource.query(
+            `SELECT * FROM sales WHERE ${salesFilter.clause} ORDER BY created_at DESC`,
+            salesFilter.params
+        )
+
+        const followUpsPromise = appServer.AppDataSource.query(
+            `SELECT * FROM follow_ups WHERE ${salesFilter.clause.replace(/customer_id/g, 'customer_id').replace(/phone_number/g, 'phone_number')} ORDER BY scheduled_at DESC`,
+            salesFilter.params
+        )
+
+        const possibleClientIds: string[] = []
+        if (customer?.id) {
+            possibleClientIds.push(String(customer.id))
+        }
+        if (customer?.phone_number) {
+            possibleClientIds.push(customer.phone_number)
+        }
+
+        let saleRecords: any[] = []
+        if (possibleClientIds.length > 0) {
+            saleRecords = await appServer.AppDataSource.query(
+                'SELECT * FROM sale_record WHERE "clientId" = ANY($1::text[]) ORDER BY ts DESC',
+                [possibleClientIds]
+            )
+        }
+
+        const [sales, followUps] = await Promise.all([salesPromise, followUpsPromise])
+
+        return res.json({
+            customer,
+            sales,
+            followUps,
+            saleRecords
+        })
+    } catch (error) {
+        logger.error('Error getting customer history:', error)
+        return next(error)
+    }
+}
+
+// Get analytics summary for a customer
+const getCustomerAnalytics = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { clientId } = req.params
+        const { customer } = await resolveCustomer(clientId)
+
+        const appServer = getRunningExpressApp()
+        const salesFilter = buildCustomerFilters(customer)
+
+        const sales = await appServer.AppDataSource.query(
+            `SELECT * FROM sales WHERE ${salesFilter.clause} ORDER BY created_at DESC`,
+            salesFilter.params
+        )
+
+        const followUps = await appServer.AppDataSource.query(
+            `SELECT * FROM follow_ups WHERE ${salesFilter.clause.replace(/customer_id/g, 'customer_id').replace(/phone_number/g, 'phone_number')}`,
+            salesFilter.params
+        )
+
+        const totalSales = sales.length
+        const totalAmount = sales.reduce((acc: number, sale: any) => acc + Number(sale.final_price ?? sale.total_price ?? 0), 0)
+        const pendingSales = sales.filter((sale: any) => sale.sale_status === 'pending').length
+        const negotiationAttempts = sales.reduce((acc: number, sale: any) => acc + Number(sale.negotiation_attempts ?? 0), 0)
+        const averageTicket = totalSales > 0 ? totalAmount / totalSales : 0
+        const lastPurchase = sales[0]?.created_at ?? null
+
+        const followUpBreakdown = followUps.reduce((acc: any, item: any) => {
+            const type = item.follow_up_type ?? 'unknown'
+            acc[type] = (acc[type] ?? 0) + 1
+            return acc
+        }, {})
+
+        return res.json({
+            customer,
+            summary: {
+                totalSales,
+                totalAmount,
+                pendingSales,
+                negotiationAttempts,
+                averageTicket,
+                lastPurchase,
+                followUps: followUps.length,
+                followUpBreakdown
+            }
+        })
+    } catch (error) {
+        logger.error('Error getting customer analytics:', error)
+        return next(error)
+    }
+}
+
+// Store structured customer preferences
+const updateCustomerPreferences = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { clientId } = req.params
+        const { customer } = await resolveCustomer(clientId)
+        const {
+            preferredBrands,
+            preferredCategories,
+            priceRange,
+            paymentMethods,
+            deliveryPreference,
+            communicationPreference
+        } = req.body
+
+        const appServer = getRunningExpressApp()
+
+        let existingData: any = {}
+        if (customer.previous_purchases) {
+            try {
+                existingData = JSON.parse(customer.previous_purchases)
+            } catch (error) {
+                existingData = { history: customer.previous_purchases }
+            }
+        }
+
+        existingData.preferences = {
+            preferredBrands: Array.isArray(preferredBrands) ? preferredBrands : existingData.preferences?.preferredBrands ?? [],
+            preferredCategories: Array.isArray(preferredCategories) ? preferredCategories : existingData.preferences?.preferredCategories ?? [],
+            priceRange: priceRange ?? existingData.preferences?.priceRange ?? null,
+            paymentMethods: Array.isArray(paymentMethods) ? paymentMethods : existingData.preferences?.paymentMethods ?? [],
+            deliveryPreference: deliveryPreference ?? existingData.preferences?.deliveryPreference ?? null,
+            communicationPreference: communicationPreference ?? existingData.preferences?.communicationPreference ?? null,
+            updatedAt: new Date().toISOString()
+        }
+
+        const preferredPayment = Array.isArray(paymentMethods) && paymentMethods.length > 0 ? paymentMethods[0] : customer.default_payment_method
+
+        const updated = await appServer.AppDataSource.query(
+            `UPDATE customers SET previous_purchases = $1, default_payment_method = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
+            [JSON.stringify(existingData), preferredPayment ?? null, customer.id]
+        )
+
+        return res.json({
+            customer: updated[0],
+            preferences: existingData.preferences
+        })
+    } catch (error) {
+        logger.error('Error saving customer preferences:', error)
+        return next(error)
+    }
+}
+
 // Get customer statistics
 const getCustomerStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -299,7 +516,11 @@ export default {
     getCustomerByPhone,
     searchCustomers,
     createCustomer,
+    createCustomerAlias,
     updateCustomer,
     getCustomerStats,
-    getRecentCustomers
+    getRecentCustomers,
+    getCustomerHistory,
+    getCustomerAnalytics,
+    updateCustomerPreferences
 }

@@ -4,6 +4,53 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
 
+type InventoryUpdates = {
+    stock?: number
+    price?: number
+}
+
+const applyInventoryUpdate = async (productId: string, updates: InventoryUpdates) => {
+    const { stock, price } = updates
+
+    if (stock === undefined && price === undefined) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Stock or price must be provided')
+    }
+
+    const appServer = getRunningExpressApp()
+
+    const existingProduct = await appServer.AppDataSource.query(
+        'SELECT * FROM product_inventory WHERE "productId" = $1',
+        [productId]
+    )
+
+    if (existingProduct.length === 0) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Product not found')
+    }
+
+    let updateQuery = 'UPDATE product_inventory SET "updatedDate" = NOW()'
+    const params: any[] = []
+    let paramIndex = 1
+
+    if (stock !== undefined) {
+        updateQuery += `, stock = $${paramIndex}`
+        params.push(stock)
+        paramIndex++
+    }
+
+    if (price !== undefined) {
+        updateQuery += `, price = $${paramIndex}`
+        params.push(price)
+        paramIndex++
+    }
+
+    updateQuery += ` WHERE "productId" = $${paramIndex} RETURNING *`
+    params.push(productId)
+
+    const result = await appServer.AppDataSource.query(updateQuery, params)
+
+    return result[0]
+}
+
 // Get all inventory items
 const getAllInventory = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -101,47 +148,29 @@ const updateInventoryStock = async (req: Request, res: Response, next: NextFunct
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Product ID is required')
         }
 
-        if (stock === undefined && price === undefined) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Stock or price must be provided')
-        }
+        const result = await applyInventoryUpdate(productId, { stock, price })
 
-        const appServer = getRunningExpressApp()
-        
-        // Check if product exists
-        const existingProduct = await appServer.AppDataSource.query(
-            'SELECT * FROM product_inventory WHERE "productId" = $1',
-            [productId]
-        )
-
-        if (existingProduct.length === 0) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Product not found')
-        }
-
-        // Build update query dynamically
-        let updateQuery = 'UPDATE product_inventory SET "updatedDate" = NOW()'
-        const params: any[] = []
-        let paramIndex = 1
-
-        if (stock !== undefined) {
-            updateQuery += `, stock = $${paramIndex}`
-            params.push(stock)
-            paramIndex++
-        }
-
-        if (price !== undefined) {
-            updateQuery += `, price = $${paramIndex}`
-            params.push(price)
-            paramIndex++
-        }
-
-        updateQuery += ` WHERE "productId" = $${paramIndex} RETURNING *`
-        params.push(productId)
-
-        const result = await appServer.AppDataSource.query(updateQuery, params)
-        
-        return res.json(result[0])
+        return res.json(result)
     } catch (error) {
         logger.error('Error updating inventory:', error)
+        return next(error)
+    }
+}
+
+// Update inventory stock via POST alias
+const updateInventoryByPost = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { productId, stock, price } = req.body
+
+        if (!productId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Product ID is required')
+        }
+
+        const result = await applyInventoryUpdate(productId, { stock, price })
+
+        return res.json(result)
+    } catch (error) {
+        logger.error('Error updating inventory (POST):', error)
         return next(error)
     }
 }
@@ -254,7 +283,8 @@ const checkInventoryItem = async (req: Request, res: Response, next: NextFunctio
         }
 
         if (productCode) {
-            query += ` AND "productCode" = $${paramIndex}`
+            // Legacy behaviours from the chatflow expect productCode to map to productId
+            query += ` AND "productId" = $${paramIndex}`
             params.push(productCode)
             paramIndex++
         }
@@ -273,13 +303,280 @@ const checkInventoryItem = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
+// Get alternative inventory suggestions based on reference productId or filters
+const getInventoryAlternatives = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { productId, brand, maxPriceDelta = '0.2', maxResults = '5', category } = req.query as {
+            [key: string]: string
+        }
+
+        const appServer = getRunningExpressApp()
+
+        let referenceProduct: any = null
+        if (productId) {
+            const referenceResult = await appServer.AppDataSource.query(
+                'SELECT * FROM product_inventory WHERE "productId" = $1',
+                [productId]
+            )
+
+            if (referenceResult.length > 0) {
+                referenceProduct = referenceResult[0]
+            }
+        }
+
+        const params: any[] = []
+        let paramIndex = 1
+        let query = 'SELECT * FROM product_inventory WHERE stock > 0'
+
+        if (referenceProduct) {
+            query += ` AND "productId" != $${paramIndex}`
+            params.push(referenceProduct.productId)
+            paramIndex++
+
+            if (!brand) {
+                query += ` AND brand = $${paramIndex}`
+                params.push(referenceProduct.brand)
+                paramIndex++
+            }
+        }
+
+        if (brand) {
+            query += ` AND brand ILIKE $${paramIndex}`
+            params.push(`%${brand}%`)
+            paramIndex++
+        }
+
+        if (category) {
+            query += ` AND (name ILIKE $${paramIndex} OR "productId" ILIKE $${paramIndex})`
+            params.push(`%${category}%`)
+            paramIndex++
+        }
+
+        const candidates = await appServer.AppDataSource.query(query, params)
+
+        const parsedMaxResults = Math.max(1, parseInt(maxResults))
+        const priceDelta = Math.max(0, parseFloat(maxPriceDelta))
+
+        const alternatives = candidates
+            .map((candidate: any) => {
+                let priceDifference = null
+                let similarityScore = 0
+
+                if (referenceProduct) {
+                    const basePrice = Number(referenceProduct.price ?? 0)
+                    const candidatePrice = Number(candidate.price ?? 0)
+                    priceDifference = candidatePrice - basePrice
+
+                    const relativeDiff = basePrice === 0 ? 0 : Math.abs(priceDifference) / basePrice
+                    if (relativeDiff <= priceDelta) {
+                        similarityScore += 0.5
+                    }
+
+                    if ((candidate.name ?? '').split(' ')[0] === (referenceProduct.name ?? '').split(' ')[0]) {
+                        similarityScore += 0.2
+                    }
+                }
+
+                if (brand && candidate.brand?.toLowerCase().includes(brand.toLowerCase())) {
+                    similarityScore += 0.2
+                }
+
+                if (category && (candidate.name?.toLowerCase().includes(category.toLowerCase()) || candidate.productId?.toLowerCase().includes(category.toLowerCase()))) {
+                    similarityScore += 0.1
+                }
+
+                return {
+                    ...candidate,
+                    priceDifference,
+                    similarityScore
+                }
+            })
+            .sort((a: any, b: any) => b.similarityScore - a.similarityScore)
+            .slice(0, parsedMaxResults)
+
+        return res.json({
+            reference: referenceProduct,
+            alternatives,
+            total: alternatives.length
+        })
+    } catch (error) {
+        logger.error('Error getting inventory alternatives:', error)
+        return next(error)
+    }
+}
+
+// Reserve inventory for a customer and reduce stock
+const reserveInventory = async (req: Request, res: Response, next: NextFunction) => {
+    const client = getRunningExpressApp().AppDataSource
+    let transactionStarted = false
+
+    try {
+        const {
+            productId,
+            quantity,
+            customerId,
+            phoneNumber,
+            reason,
+            expiresAt,
+            agentId,
+            notes
+        } = req.body
+
+        if (!productId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'productId is required')
+        }
+
+        const requestedQuantity = quantity ? parseInt(quantity) : 1
+        if (Number.isNaN(requestedQuantity) || requestedQuantity <= 0) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'quantity must be a positive integer')
+        }
+
+        await client.query('BEGIN')
+        transactionStarted = true
+
+        const productRows = await client.query(
+            'SELECT * FROM product_inventory WHERE "productId" = $1 FOR UPDATE',
+            [productId]
+        )
+
+        if (productRows.length === 0) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Product not found')
+        }
+
+        const product = productRows[0]
+        const availableStock = parseInt(product.stock)
+
+        if (availableStock < requestedQuantity) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Not enough stock to reserve')
+        }
+
+        const updatedStock = availableStock - requestedQuantity
+        await client.query(
+            'UPDATE product_inventory SET stock = $1, "updatedDate" = NOW() WHERE "productId" = $2',
+            [updatedStock, productId]
+        )
+
+        await client.query(
+            `INSERT INTO follow_ups (
+                customer_id,
+                phone_number,
+                follow_up_type,
+                scheduled_at,
+                status,
+                attempt_number,
+                max_attempts,
+                message_sent,
+                next_action,
+                created_at,
+                updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+            [
+                customerId ?? null,
+                phoneNumber ?? null,
+                'inventory_reservation',
+                expiresAt ?? null,
+                'pending',
+                1,
+                1,
+                notes ?? `Reserva de ${requestedQuantity} unidades de ${product.name}`,
+                reason ?? 'inventory_hold'
+            ]
+        )
+
+        await client.query('COMMIT')
+
+        return res.json({
+            productId,
+            reservedQuantity: requestedQuantity,
+            remainingStock: updatedStock,
+            customerId: customerId ?? null,
+            agentId: agentId ?? null
+        })
+    } catch (error) {
+        if (transactionStarted) {
+            await client.query('ROLLBACK')
+        }
+        logger.error('Error reserving inventory:', error)
+        return next(error)
+    }
+}
+
+// Register notification request for when stock becomes available
+const notifyWhenInStock = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {
+            productId,
+            customerId,
+            phoneNumber,
+            notificationType = 'stock_available',
+            preferredChannel,
+            notes
+        } = req.body
+
+        if (!productId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'productId is required')
+        }
+
+        const appServer = getRunningExpressApp()
+
+        const productRows = await appServer.AppDataSource.query(
+            'SELECT * FROM product_inventory WHERE "productId" = $1',
+            [productId]
+        )
+
+        if (productRows.length === 0) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Product not found')
+        }
+
+        const scheduledAt = req.body.scheduledAt ?? null
+
+        const followUp = await appServer.AppDataSource.query(
+            `INSERT INTO follow_ups (
+                customer_id,
+                phone_number,
+                follow_up_type,
+                scheduled_at,
+                status,
+                attempt_number,
+                max_attempts,
+                message_sent,
+                next_action,
+                created_at,
+                updated_at
+            ) VALUES ($1, $2, $3, $4, $5, 1, 3, $6, $7, NOW(), NOW())
+            RETURNING *`,
+            [
+                customerId ?? null,
+                phoneNumber ?? null,
+                notificationType,
+                scheduledAt,
+                'pending',
+                notes ?? `Notificar disponibilidad de ${productRows[0].name}`,
+                preferredChannel ?? 'phone'
+            ]
+        )
+
+        return res.status(StatusCodes.CREATED).json({
+            message: 'Notification registered',
+            followUp: followUp[0]
+        })
+    } catch (error) {
+        logger.error('Error registering stock notification:', error)
+        return next(error)
+    }
+}
+
 export default {
     getAllInventory,
     getInventoryById,
     searchInventory,
     updateInventoryStock,
+    updateInventoryByPost,
     createInventoryItem,
     getLowStockItems,
     getInventoryStats,
-    checkInventoryItem
+    checkInventoryItem,
+    getInventoryAlternatives,
+    reserveInventory,
+    notifyWhenInStock
 }

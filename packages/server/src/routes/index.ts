@@ -67,8 +67,11 @@ import codeAgentAnalyticsRouter from './codeagent-analytics'
 import whatsappRouter from './whatsapp'
 import supportRouter from './support'
 import inventoryRouter from './inventory'
+import notificationsRouter from './notifications'
+import promotionsRouter from './promotions'
 import customersRouter from './customers'
 import salesRouter from './sales'
+import followupRouter from './followup'
 import followupsRouter from './followups'
 
 import { IdentityManager } from '../IdentityManager'
@@ -142,8 +145,11 @@ router.use('/codeagent-analytics', codeAgentAnalyticsRouter)
 router.use('/whatsapp', whatsappRouter)
 router.use('/support', supportRouter)
 router.use('/inventory', inventoryRouter)
+router.use('/notifications', notificationsRouter)
 router.use('/customers', customersRouter)
 router.use('/sales', salesRouter)
+router.use('/promotions', promotionsRouter)
+router.use('/followup', followupRouter)
 router.use('/followups', followupsRouter)
 
 router.use('/loginmethod', loginmethodRouter)

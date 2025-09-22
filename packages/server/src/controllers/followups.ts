@@ -4,6 +4,81 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
 
+type FollowUpInsertPayload = {
+    customer_id?: number | null
+    phone_number?: string | null
+    sale_id?: number | null
+    follow_up_type: string
+    scheduled_at?: string | null
+    status?: string
+    attempt_number?: number
+    max_attempts?: number
+    message_sent?: string | null
+    customer_response?: string | null
+    next_action?: string | null
+    completed_at?: string | null
+}
+
+const insertFollowUpRecord = async (payload: FollowUpInsertPayload) => {
+    const {
+        customer_id = null,
+        phone_number,
+        sale_id = null,
+        follow_up_type,
+        scheduled_at = null,
+        status = 'pending',
+        attempt_number = 1,
+        max_attempts = 3,
+        message_sent = null,
+        customer_response = null,
+        next_action = null,
+        completed_at = null
+    } = payload
+
+    if (!phone_number) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required')
+    }
+
+    const appServer = getRunningExpressApp()
+
+    const result = await appServer.AppDataSource.query(
+        `INSERT INTO follow_ups (
+            customer_id,
+            phone_number,
+            sale_id,
+            follow_up_type,
+            scheduled_at,
+            status,
+            attempt_number,
+            max_attempts,
+            message_sent,
+            customer_response,
+            next_action,
+            completed_at,
+            created_at,
+            updated_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+        RETURNING *`,
+        [
+            customer_id,
+            phone_number,
+            sale_id,
+            follow_up_type,
+            scheduled_at,
+            status,
+            attempt_number,
+            max_attempts,
+            message_sent,
+            customer_response,
+            next_action,
+            completed_at
+        ]
+    )
+
+    return result[0]
+}
+
 // Get all follow-ups
 const getAllFollowUps = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -136,38 +211,46 @@ const createFollowUp = async (req: Request, res: Response, next: NextFunction) =
             follow_up_type,
             scheduled_at,
             status = 'pending',
-            priority = 'medium',
-            notes,
-            agent_id,
-            related_sale_id
+            sale_id,
+            message_sent,
+            customer_response,
+            next_action,
+            attempt_number = 1,
+            max_attempts = 3,
+            completed_at
         } = req.body
 
         if (!phone_number || !follow_up_type || !scheduled_at) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number, follow-up type, and scheduled date are required')
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                'Phone number, follow-up type, and scheduled date are required'
+            )
         }
 
-        const appServer = getRunningExpressApp()
-        
-        const query = `
-            INSERT INTO follow_ups (
-                customer_id, phone_number, follow_up_type, scheduled_at,
-                status, priority, notes, agent_id, related_sale_id,
-                created_at, updated_at
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
-            RETURNING *
-        `
-        
-        const result = await appServer.AppDataSource.query(query, [
-            customer_id, phone_number, follow_up_type, scheduled_at,
-            status, priority, notes, agent_id, related_sale_id
-        ])
-        
-        return res.status(StatusCodes.CREATED).json(result[0])
+        const result = await insertFollowUpRecord({
+            customer_id: customer_id ?? null,
+            phone_number,
+            sale_id: sale_id ?? null,
+            follow_up_type,
+            scheduled_at,
+            status,
+            attempt_number,
+            max_attempts,
+            message_sent: message_sent ?? null,
+            customer_response: customer_response ?? null,
+            next_action: next_action ?? null,
+            completed_at: completed_at ?? null
+        })
+
+        return res.status(StatusCodes.CREATED).json(result)
     } catch (error) {
         logger.error('Error creating follow-up:', error)
         return next(error)
     }
+}
+
+const createFollowUpAlias = async (req: Request, res: Response, next: NextFunction) => {
+    return createFollowUp(req, res, next)
 }
 
 // Update follow-up
@@ -177,12 +260,13 @@ const updateFollowUp = async (req: Request, res: Response, next: NextFunction) =
         const {
             scheduled_at,
             status,
-            priority,
-            notes,
-            agent_id,
+            attempt_number,
+            max_attempts,
+            message_sent,
+            customer_response,
+            next_action,
             completed_at,
-            outcome,
-            next_follow_up_date
+            sale_id
         } = req.body
 
         if (!id) {
@@ -218,39 +302,45 @@ const updateFollowUp = async (req: Request, res: Response, next: NextFunction) =
             paramIndex++
         }
 
-        if (priority !== undefined) {
-            updateQuery += `, priority = $${paramIndex}`
-            params.push(priority)
-            paramIndex++
-        }
-
-        if (notes !== undefined) {
-            updateQuery += `, notes = $${paramIndex}`
-            params.push(notes)
-            paramIndex++
-        }
-
-        if (agent_id !== undefined) {
-            updateQuery += `, agent_id = $${paramIndex}`
-            params.push(agent_id)
-            paramIndex++
-        }
-
         if (completed_at !== undefined) {
             updateQuery += `, completed_at = $${paramIndex}`
             params.push(completed_at)
             paramIndex++
         }
 
-        if (outcome !== undefined) {
-            updateQuery += `, outcome = $${paramIndex}`
-            params.push(outcome)
+        if (attempt_number !== undefined) {
+            updateQuery += `, attempt_number = $${paramIndex}`
+            params.push(attempt_number)
             paramIndex++
         }
 
-        if (next_follow_up_date !== undefined) {
-            updateQuery += `, next_follow_up_date = $${paramIndex}`
-            params.push(next_follow_up_date)
+        if (max_attempts !== undefined) {
+            updateQuery += `, max_attempts = $${paramIndex}`
+            params.push(max_attempts)
+            paramIndex++
+        }
+
+        if (message_sent !== undefined) {
+            updateQuery += `, message_sent = $${paramIndex}`
+            params.push(message_sent)
+            paramIndex++
+        }
+
+        if (customer_response !== undefined) {
+            updateQuery += `, customer_response = $${paramIndex}`
+            params.push(customer_response)
+            paramIndex++
+        }
+
+        if (next_action !== undefined) {
+            updateQuery += `, next_action = $${paramIndex}`
+            params.push(next_action)
+            paramIndex++
+        }
+
+        if (sale_id !== undefined) {
+            updateQuery += `, sale_id = $${paramIndex}`
+            params.push(sale_id)
             paramIndex++
         }
 
@@ -262,6 +352,216 @@ const updateFollowUp = async (req: Request, res: Response, next: NextFunction) =
         return res.json(result[0])
     } catch (error) {
         logger.error('Error updating follow-up:', error)
+        return next(error)
+    }
+}
+
+const getPendingFollowUps = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { limit = 25 } = req.query
+        const appServer = getRunningExpressApp()
+        const result = await appServer.AppDataSource.query(
+            `SELECT * FROM follow_ups WHERE status IN ('pending', 'in_progress') ORDER BY scheduled_at ASC LIMIT $1`,
+            [parseInt(limit as string)]
+        )
+
+        return res.json({ pending: result, total: result.length })
+    } catch (error) {
+        logger.error('Error getting pending follow-ups:', error)
+        return next(error)
+    }
+}
+
+const scheduleFollowUp = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {
+            customerId,
+            phoneNumber,
+            saleId,
+            followUpType,
+            scheduledAt,
+            attemptNumber,
+            maxAttempts,
+            reason,
+            productInterest,
+            lastInteractionDate,
+            priority
+        } = req.body
+
+        let resolvedPhone = phoneNumber ?? null
+        let resolvedCustomerId = customerId ?? null
+
+        if (!resolvedPhone && resolvedCustomerId) {
+            try {
+                const lookup = await getRunningExpressApp().AppDataSource.query(
+                    'SELECT phone_number FROM customers WHERE id = $1',
+                    [parseInt(resolvedCustomerId)]
+                )
+                if (lookup.length > 0) {
+                    resolvedPhone = lookup[0].phone_number
+                }
+            } catch (error) {
+                logger.warn('Unable to resolve phone number from customerId', { customerId })
+            }
+        }
+
+        if (!resolvedPhone) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'phoneNumber or a customer with phone_number is required')
+        }
+
+        const result = await insertFollowUpRecord({
+            customer_id: resolvedCustomerId ? parseInt(resolvedCustomerId) : null,
+            phone_number: resolvedPhone,
+            sale_id: saleId ? parseInt(saleId) : null,
+            follow_up_type: followUpType ?? 'sales_follow_up',
+            scheduled_at: scheduledAt ?? lastInteractionDate ?? new Date().toISOString(),
+            status: 'pending',
+            attempt_number: attemptNumber ? parseInt(attemptNumber) : 1,
+            max_attempts: maxAttempts ? parseInt(maxAttempts) : 3,
+            message_sent: reason ?? null,
+            customer_response: null,
+            next_action: productInterest ?? priority ?? null
+        })
+
+        return res.status(StatusCodes.CREATED).json({ followUp: result })
+    } catch (error) {
+        logger.error('Error scheduling follow-up:', error)
+        return next(error)
+    }
+}
+
+const executeFollowUp = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { followUpId, customMessage, executionNotes } = req.body
+
+        if (!followUpId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'followUpId is required')
+        }
+
+        const appServer = getRunningExpressApp()
+        const result = await appServer.AppDataSource.query(
+            `UPDATE follow_ups SET 
+                status = 'completed',
+                completed_at = NOW(),
+                message_sent = COALESCE($2, message_sent),
+                next_action = COALESCE($3, next_action),
+                updated_at = NOW()
+             WHERE id = $1
+             RETURNING *`,
+            [parseInt(followUpId), customMessage ?? null, executionNotes ?? null]
+        )
+
+        if (result.length === 0) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Follow-up not found')
+        }
+
+        return res.json({ followUp: result[0] })
+    } catch (error) {
+        logger.error('Error executing follow-up:', error)
+        return next(error)
+    }
+}
+
+const updateFollowUpStatusAlias = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {
+            followUpId,
+            status,
+            result,
+            customerResponse,
+            nextAction,
+            rescheduleDate,
+            notes
+        } = req.body
+
+        if (!followUpId || !status) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'followUpId and status are required')
+        }
+
+        const appServer = getRunningExpressApp()
+
+        const updates: string[] = ['updated_at = NOW()']
+        const params: any[] = [parseInt(followUpId)]
+        let paramIndex = 2
+
+        updates.push(`status = $${paramIndex}`)
+        params.push(status)
+        paramIndex++
+
+        if (result !== undefined) {
+            updates.push(`message_sent = $${paramIndex}`)
+            params.push(result)
+            paramIndex++
+        }
+
+        if (customerResponse !== undefined) {
+            updates.push(`customer_response = $${paramIndex}`)
+            params.push(customerResponse)
+            paramIndex++
+        }
+
+        if (nextAction !== undefined) {
+            updates.push(`next_action = $${paramIndex}`)
+            params.push(nextAction)
+            paramIndex++
+        }
+
+        if (rescheduleDate) {
+            updates.push(`scheduled_at = $${paramIndex}`)
+            params.push(rescheduleDate)
+            paramIndex++
+        }
+
+        if (notes !== undefined) {
+            updates.push(`message_sent = COALESCE($${paramIndex}, message_sent)`)
+            params.push(notes)
+            paramIndex++
+        }
+
+        if (status === 'completed' && !rescheduleDate) {
+            updates.push('completed_at = NOW()')
+        }
+
+        const query = `UPDATE follow_ups SET ${updates.join(', ')} WHERE id = $1 RETURNING *`
+
+        const resultRows = await appServer.AppDataSource.query(query, params)
+
+        if (resultRows.length === 0) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Follow-up not found')
+        }
+
+        return res.json({ followUp: resultRows[0] })
+    } catch (error) {
+        logger.error('Error updating follow-up status:', error)
+        return next(error)
+    }
+}
+
+const getFollowUpAnalytics = async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        const summary = await appServer.AppDataSource.query(
+            `SELECT 
+                COUNT(*) AS total,
+                COUNT(CASE WHEN status = 'pending' THEN 1 END) AS pending,
+                COUNT(CASE WHEN status = 'completed' THEN 1 END) AS completed,
+                COUNT(CASE WHEN status = 'failed' THEN 1 END) AS failed,
+                COUNT(CASE WHEN scheduled_at::date = CURRENT_DATE THEN 1 END) AS due_today,
+                COUNT(CASE WHEN scheduled_at < NOW() AND status IN ('pending', 'in_progress') THEN 1 END) AS overdue
+            FROM follow_ups`
+        )
+
+        const byType = await appServer.AppDataSource.query(
+            `SELECT follow_up_type AS type, COUNT(*) AS count FROM follow_ups GROUP BY follow_up_type ORDER BY count DESC`
+        )
+
+        return res.json({
+            summary: summary[0],
+            byType
+        })
+    } catch (error) {
+        logger.error('Error getting follow-up analytics:', error)
         return next(error)
     }
 }
@@ -367,9 +667,15 @@ export default {
     getFollowUpsByPhone,
     getFollowUpsByCustomerId,
     createFollowUp,
+     createFollowUpAlias,
     updateFollowUp,
     getFollowUpsDueToday,
     getOverdueFollowUps,
     getFollowUpsStats,
-    getFollowUpsByType
+    getFollowUpsByType,
+    getPendingFollowUps,
+    scheduleFollowUp,
+    executeFollowUp,
+    updateFollowUpStatusAlias,
+    getFollowUpAnalytics
 }

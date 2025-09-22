@@ -121,7 +121,13 @@
         "quoteId": "ID de la cotización",
         "promoCode": "Código promocional",
         "clientId": "ID del cliente",
-        "products": "Array de productos en la cotización"
+        "products": {
+          "type": "array",
+          "description": "Array de productos en la cotización",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     {

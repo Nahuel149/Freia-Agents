@@ -1,0 +1,660 @@
+--- PRODUCTO ---
+ID: PIR-C7-2055516 | Categoría: Neumático | Marca: Pirelli | Nombre: Cinturato P7 205/55 R16 |
+Precio: 185000.5 ARS | Stock: 45 | Descripción: Neumático de alto rendimiento para autos sedán y deportivos.
+Excelente agarre en seco y mojado, con bajo ruido de rodadura. Ideal para rutas y ciudad. |
+Especificaciones: Ancho 205, Perfil 55, Rodado 16, Indice Carga 91, Indice Velocidad V.
+
+--- PRODUCTO ---
+ID: MIC-P4-1956015 | Categoría: Neumático |
+Marca: Michelin | Nombre: Primacy 4 195/60 R15 | Precio: 199500.0 ARS | Stock: 30 |
+Descripción: Neumático premium enfocado en la seguridad y durabilidad. Ofrece un frenado superior en superficies mojadas, incluso con el desgaste.
+| Especificaciones: Ancho 195, Perfil 60, Rodado 15, Indice Carga 88, Indice Velocidad H.
+
+--- PRODUCTO ---
+ID: GOO-ES-1856514 |
+Categoría: Neumático | Marca: Goodyear | Nombre: Eagle Sport 185/65 R14 | Precio: 152300.75 ARS | Stock: 60 |
+Descripción: Diseño deportivo con buena respuesta de dirección y durabilidad. Optimo para vehículos compactos en el mercado argentino. |
+Especificaciones: Ancho 185, Perfil 65, Rodado 14, Indice Carga 86, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: BOS-AER-22 | Categoría: Accesorio |
+Marca: Bosch | Nombre: Juego Escobillas Aerotwin 22'' | Precio: 45500.0 ARS | Stock: 110 |
+Descripción: Juego de escobillas limpiaparabrisas Bosch Aerotwin. Tecnología sin partes metálicas para una limpieza uniforme y silenciosa. Larga vida útil.
+| Especificaciones: Tamaño 22 pulgadas, Conector Multi-Clip.
+
+--- PRODUCTO ---
+ID: MOU-M30-1275 | Categoría: Repuesto | Marca: Moura |
+Nombre: Batería Moura M30GD 12x75 | Precio: 255000.0 ARS | Stock: 18 |
+Descripción: Batería de libre mantenimiento para una amplia gama de vehículos Mercosur (VW Gol, Fiat Palio, Chevrolet Corsa). Calidad original.
+| Especificaciones: Voltaje 12V, Amperaje 65Ah, CCA 500A.
+
+--- PRODUCTO ---
+ID: YPF-ELA-F50-4L | Categoría: Repuesto | Marca: YPF |
+Nombre: Aceite Elaion F50 D2 5W-30 4L | Precio: 89900.0 ARS | Stock: 80 |
+Descripción: Aceite sintético para motores diésel modernos con tecnología DPF. Cumple normas ACEA C2/C3.
+Protege el motor y optimiza el consumo. | Especificaciones: Viscosidad 5W-30, Tipo Sintético, Contenido 4 litros.
+--- PRODUCTO ---
+ID: FRE-CER-VW | Categoría: Repuesto | Marca: Frenmax | Nombre: Pastillas de Freno Cerámicas VW Vento |
+Precio: 68000.0 ARS | Stock: 40 | Descripción: Juego de pastillas de freno delanteras de compuesto cerámico.
+Reducen el polvo y el ruido, mejorando la performance de frenado. Para VW Vento/Golf. | Especificaciones: Posición Delanteras, Material Cerámica.
+--- PRODUCTO ---
+ID: SERV-ALB | Categoría: Servicio | Marca: N/A | Nombre: Alineación y Balanceo | Precio: 48000.0 ARS |
+Stock: 999 | Descripción: Servicio completo de alineación 3D y balanceo computarizado para las 4 ruedas.
+Incluye revisión de tren delantero. | Especificaciones: Vehículo Auto/Camioneta Liviana.
+
+--- PRODUCTO ---
+ID: FAT-PV-1757013 | Categoría: Neumático |
+Marca: Fate | Nombre: Prestiva CT 175/70 R13 | Precio: 135000.0 ARS | Stock: 85 |
+Descripción: Neumático de fabricación nacional, ideal para autos compactos como Fiat Uno o VW Gol.
+Buen rendimiento kilométrico y confort de marcha. | Especificaciones: Ancho 175, Perfil 70, Rodado 13, Indice Carga 82, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: BRI-TU-2254517 |
+Categoría: Neumático | Marca: Bridgestone | Nombre: Turanza ER300 225/45 R17 | Precio: 245000.0 ARS | Stock: 25 |
+Descripción: Neumático de alta gama para vehículos medianos y grandes. Ofrece un viaje silencioso y confortable con excelente maniobrabilidad. |
+Especificaciones: Ancho 225, Perfil 45, Rodado 17, Indice Carga 91, Indice Velocidad W.
+
+--- PRODUCTO ---
+ID: FIR-F900-2656517 | Categoría: Neumático |
+Marca: Firestone | Nombre: Destination A/T 265/65 R17 | Precio: 298000.0 ARS | Stock: 35 |
+Descripción: Neumático todo terreno (A/T) para camionetas como Toyota Hilux o Ford Ranger.
+Robusto, duradero y con buen agarre en asfalto y ripio. |
+Especificaciones: Ancho 265, Perfil 65, Rodado 17, Indice Carga 112, Indice Velocidad S.
+
+--- PRODUCTO ---
+ID: CAS-MAG-10W40-4L | Categoría: Repuesto |
+Marca: Castrol | Nombre: Aceite Magnatec 10W-40 4L | Precio: 82500.0 ARS | Stock: 95 |
+Descripción: Aceite semi-sintético con moléculas inteligentes que se adhieren al motor para una capa extra de protección desde el arranque.
+| Especificaciones: Viscosidad 10W-40, Tipo Semi-sintético, Contenido 4 litros.
+
+--- PRODUCTO ---
+ID: MAN-HU718-5X | Categoría: Repuesto | Marca: Mann-Filter |
+Nombre: Filtro de Aceite HU718/5X | Precio: 21000.0 ARS | Stock: 150 |
+Descripción: Filtro de aceite de alta calidad para vehículos Volkswagen y Audi con motores 1.9 y 2.0 TDI.
+Asegura una filtración óptima. | Especificaciones: Tipo Elemento filtrante, Compatibilidad VW/Audi TDI.
+
+--- PRODUCTO ---
+ID: NGK-BKR6E-4 | Categoría: Repuesto |
+Marca: NGK | Nombre: Juego de 4 Bujías BKR6E | Precio: 39800.0 ARS | Stock: 70 |
+Descripción: Juego de 4 bujías de encendido NGK. Estándar de cobre, alta fiabilidad y rendimiento. Compatible con múltiples vehículos nafteros.
+| Especificaciones: Material Cobre, Cantidad 4.
+
+--- PRODUCTO ---
+ID: COR-AM-VW-DEL | Categoría: Repuesto | Marca: Corven |
+Nombre: Kit 2 Amortiguadores Delanteros VW Gol | Precio: 189000.0 ARS | Stock: 22 |
+Descripción: Juego de amortiguadores delanteros Corven Plus para Volkswagen Gol, Gol Trend y Voyage. Mejora la estabilidad y el confort.
+| Especificaciones: Posición Delanteros, Línea Plus, Cantidad 2.
+
+--- PRODUCTO ---
+ID: WAG-DOT4-1L | Categoría: Repuesto | Marca: Wagner |
+Nombre: Líquido de Frenos DOT 4 1L | Precio: 18500.0 ARS | Stock: 200 |
+Descripción: Líquido de frenos de alto punto de ebullición, cumple con la especificación DOT 4. Esencial para la seguridad del sistema de frenado.
+| Especificaciones: Tipo DOT 4, Contenido 1 litro.
+
+--- PRODUCTO ---
+ID: ACC-KITSEG-01 | Categoría: Accesorio | Marca: Genérico |
+Nombre: Kit de Seguridad Reglamentario Auto | Precio: 55000.0 ARS | Stock: 80 | Descripción: Kit de seguridad vehicular obligatorio.
+Incluye matafuegos de 1kg con oblea, balizas, chaleco reflectivo, botiquín y cuarta de remolque. |
+Especificaciones: Componentes Matafuegos, balizas, chaleco, botiquín, cuarta.
+
+--- PRODUCTO ---
+ID: ACC-MAN-DIG | Categoría: Accesorio | Marca: Bremen |
+Nombre: Manómetro Medidor de Presión Digital | Precio: 29000.0 ARS | Stock: 60 |
+Descripción: Medidor de presión digital para neumáticos. Pantalla LCD iluminada, fácil de usar y preciso.
+Ayuda a mantener la presión correcta para ahorrar combustible. | Especificaciones: Tipo Digital, Rango 0-150 PSI.
+--- PRODUCTO ---
+ID: SERV-CAM-ACEITE | Categoría: Servicio | Marca: N/A | Nombre: Cambio de Aceite y Filtro |
+Precio: 35000.0 ARS | Stock: 999 | Descripción: Servicio de cambio de aceite y filtro.
+El precio corresponde a la mano de obra. No incluye el costo de los productos (aceite y filtro). |
+Especificaciones: Tipo Mano de obra, Incluye Vaciado de carter, cambio de filtro, llenado.
+
+--- PRODUCTO ---
+ID: SERV-FRENOS |
+Categoría: Servicio | Marca: N/A | Nombre: Revisión y Cambio de Pastillas de Freno | Precio: 42000.0 ARS |
+Stock: 999 | Descripción: Servicio de diagnóstico del sistema de frenos y cambio de pastillas en un eje (delantero o trasero).
+No incluye el costo de los repuestos. | Especificaciones: Tipo Mano de obra, Eje Delantero o Trasero.
+--- PRODUCTO ---
+ID: PIR-SL-907017 | Categoría: Neumático | Marca: Pirelli | Nombre: Super City 90/70 R17 |
+Precio: 89000.0 ARS | Stock: 50 | Descripción: Neumático para motocicleta urbana de 110-150cc.
+Excelente durabilidad y rendimiento en asfalto seco y mojado. Diseño moderno. |
+Especificaciones: Vehículo Moto, Ancho 90, Perfil 70, Rodado 17, Uso Urbano.
+
+--- PRODUCTO ---
+ID: WIL-BAT-GEL | Categoría: Repuesto |
+Marca: Willard | Nombre: Batería Gel 12N7A-3A para Moto | Precio: 65000.0 ARS | Stock: 40 |
+Descripción: Batería de tecnología gel, libre de mantenimiento, para motocicletas. Alta capacidad de arranque y resistencia a las vibraciones. |
+Especificaciones: Voltaje 12V, Amperaje 7Ah, Tipo Gel.
+
+--- PRODUCTO ---
+ID: 3M-CERA-PASTA | Categoría: Accesorio | Marca: 3M |
+Nombre: Cera en Pasta Sintética 3M | Precio: 41000.0 ARS | Stock: 75 |
+Descripción: Cera sintética en pasta de alta duración. Proporciona un brillo profundo y una capa de protección contra los rayos UV y la lluvia.
+| Especificaciones: Tipo Sintética, Formato Pasta, Contenido 200g.
+
+--- PRODUCTO ---
+ID: BOS-DIS-VW-GOL | Categoría: Repuesto | Marca: Bosch |
+Nombre: Juego Discos de Freno Delanteros VW Gol Trend | Precio: 155000.0 ARS | Stock: 33 |
+Descripción: Kit de dos discos de freno sólidos para el eje delantero de VW Gol Trend / Voyage.
+Calidad de equipo original para una frenada segura. | Especificaciones: Posición Delanteros, Tipo Sólido, Cantidad 2.
+
+--- PRODUCTO ---
+ID: GOO-WR-2056016 |
+Categoría: Neumático | Marca: Goodyear | Nombre: Wrangler Armortrac 205/60 R16 | Precio: 215000.0 ARS | Stock: 28 |
+Descripción: Neumático de uso mixto para SUVs y camionetas livianas como Ford Ecosport o Renault Duster.
+Robusto para caminos de tierra. | Especificaciones: Ancho 205, Perfil 60, Rodado 16, Uso Mixto (A/T).
+--- PRODUCTO ---
+ID: FRA-A-PEU208 | Categoría: Repuesto | Marca: Fram | Nombre: Filtro de Aire Peugeot 208 1.6 |
+Precio: 19500.0 ARS | Stock: 120 | Descripción: Filtro de aire de panel para Peugeot 208 y Citroen C3 con motor 1.6 VTi.
+Protege el motor de impurezas y optimiza la combustión. | Especificaciones: Tipo Panel, Compatibilidad Peugeot 208 / Citroen C3.
+--- PRODUCTO ---
+ID: LIQ-MOLY-5W40-5L | Categoría: Repuesto | Marca: Liqui Moly | Nombre: Aceite Sintético Leichtlauf 5W-40 5L |
+Precio: 115000.0 ARS | Stock: 40 | Descripción: Aceite 100% sintético de tecnología alemana.
+Alta performance para motores modernos nafteros y diésel, con antifriccionante MoS2. | Especificaciones: Viscosidad 5W-40, Tipo Sintético, Contenido 5 litros.
+--- PRODUCTO ---
+ID: ACC-ALF-VAP | Categoría: Accesorio | Marca: Vapren | Nombre: Juego Alfombras Goma Vapren (3 piezas) |
+Precio: 69000.0 ARS | Stock: 55 | Descripción: Juego de alfombras de goma de alta resistencia, específicas para el modelo de tu auto.
+Incluye delanteras y trasera enteriza. No incluye baúl. | Especificaciones: Material Goma, Piezas 3, Tipo A medida (consultar modelo).
+--- PRODUCTO ---
+ID: SERV-ROTACION | Categoría: Servicio | Marca: N/A | Nombre: Rotación de Neumáticos | Precio: 15000.0 ARS |
+Stock: 999 | Descripción: Servicio de rotación de las 4 cubiertas para promover un desgaste parejo y extender su vida útil.
+Se recomienda cada 10.000 km. | Especificaciones: Vehículo Auto/Camioneta Liviana.
+
+--- PRODUCTO ---
+ID: GAT-COR-GOL | Categoría: Repuesto |
+Marca: Gates | Nombre: Kit Distribución Gates VW Gol Power 1.6 | Precio: 195000.0 ARS | Stock: 15 |
+Descripción: Kit completo de distribución marca Gates. Incluye correa de distribución y tensor. Pieza fundamental del mantenimiento del motor. |
+Especificaciones: Componentes Correa y Tensor, Compatibilidad VW Gol Power / Gol Trend (8v).
+
+--- PRODUCTO ---
+ID: MIC-LTX-2457016 |
+Categoría: Neumático | Marca: Michelin | Nombre: LTX Force 245/70 R16 | Precio: 310000.0 ARS | Stock: 40 |
+Descripción: Neumático robusto para camionetas, diseñado para uso mixto. Gran durabilidad y seguridad tanto en asfalto como en caminos difíciles.
+| Especificaciones: Ancho 245, Perfil 70, Rodado 16, Indice Carga 111, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: SAC-AM-HILUX-TRA |
+Categoría: Repuesto | Marca: Sachs | Nombre: Kit 2 Amortiguadores Traseros Toyota Hilux | Precio: 240000.0 ARS |
+Stock: 19 | Descripción: Juego de amortiguadores traseros Sachs, calidad alemana, para Toyota Hilux (2005-2015). Máxima performance y control. |
+Especificaciones: Posición Traseros, Compatibilidad Toyota Hilux 2005-2015, Cantidad 2.
+
+--- PRODUCTO ---
+ID: HER-TORQ | Categoría: Accesorio | Marca: Bremen |
+Nombre: Torquímetro de Safe 1/2 pulgada | Precio: 95000.0 ARS | Stock: 12 |
+Descripción: Herramienta de precisión para aplicar el torque exacto a bulones y tuercas, especialmente en ruedas y partes del motor.
+Rango 28-210 Nm. | Especificaciones: Tipo Torquímetro, Encastre 1/2, Rango 28-210 Nm.
+
+--- PRODUCTO ---
+ID: VAL-PREM-15W40-4L | Categoría: Repuesto |
+Marca: Valvoline | Nombre: Aceite Premium Protection 15W-40 4L | Precio: 65000.0 ARS | Stock: 110 |
+Descripción: Aceite mineral de alta calidad para motores nafteros y diésel sin DPF.
+Ofrece protección contra el desgaste y mantiene limpio el motor. | Especificaciones: Viscosidad 15W-40, Tipo Mineral, Contenido 4 litros.
+--- PRODUCTO ---
+ID: SERV-AC | Categoría: Servicio | Marca: N/A | Nombre: Diagnóstico y Carga de Aire Acondicionado |
+Precio: 75000.0 ARS | Stock: 999 | Descripción: Servicio de revisión de fugas, vacío del sistema y carga completa de gas refrigerante R134a para el sistema de aire acondicionado.
+| Especificaciones: Gas R134a, Incluye Diagnóstico, Vacío, Carga.
+
+--- PRODUCTO ---
+ID: TYC-OPT-CORSA | Categoría: Repuesto | Marca: TYC |
+Nombre: Óptica Delantera Derecha Chevrolet Corsa | Precio: 110000.0 ARS | Stock: 25 |
+Descripción: Óptica delantera del lado del acompañante para Chevrolet Corsa Classic (2000-2010). Calidad similar a la original, lista para instalar.
+| Especificaciones: Lado Derecho (Acompañante), Compatibilidad Corsa Classic 2000-2010.
+
+--- PRODUCTO ---
+ID: FAT-AR360-1955516 | Categoría: Neumático | Marca: Fate |
+Nombre: Eximia AR-360 195/55 R16 | Precio: 165000.0 ARS | Stock: 48 |
+Descripción: Neumático de rango intermedio con un diseño que favorece la evacuación de agua, mejorando la seguridad en superficies mojadas.
+Para autos medianos. | Especificaciones: Ancho 195, Perfil 55, Rodado 16, Indice Carga 87, Indice Velocidad V.
+
+--- PRODUCTO ---
+ID: WD40-FLEX-400 |
+Categoría: Accesorio | Marca: WD-40 | Nombre: Aerosol Multiuso WD-40 Flexible 400ml | Precio: 22000.0 ARS | Stock: 300 |
+Descripción: El clásico lubricante multiuso ahora con una cánula flexible de 18cm para llegar a los lugares más difíciles.
+Lubrica, desplaza la humedad, y afloja piezas. | Especificaciones: Tipo Aerosol Multiuso, Contenido 400ml, Extra Cánula Flexible.
+--- PRODUCTO ---
+ID: HEL-BAT-1290 | Categoría: Repuesto | Marca: Heliar | Nombre: Batería Heliar Original 12x90 |
+Precio: 295000.0 ARS | Stock: 14 | Descripción: Batería de alta gama para vehículos con alta demanda eléctrica, como camionetas diésel (Amarok, S10).
+Tecnología PowerFrame para mayor vida útil. | Especificaciones: Voltaje 12V, Amperaje 80Ah, CCA 700A.
+
+--- PRODUCTO ---
+ID: SERV-TREN-DEL |
+Categoría: Servicio | Marca: N/A | Nombre: Diagnóstico de Tren Delantero y Suspensión | Precio: 25000.0 ARS |
+Stock: 999 | Descripción: Revisión completa de los componentes del tren delantero y la suspensión: amortiguadores, bujes, parrillas, extremos de dirección y rótulas.
+| Especificaciones: Tipo Diagnóstico, Incluye Informe de estado de componentes.
+
+--- PRODUCTO ---
+ID: HAN-K435-1856015 | Categoría: Neumático |
+Marca: Hankook | Nombre: Kinergy Eco2 K435 185/60 R15 | Precio: 178500.0 ARS | Stock: 75 |
+Descripción: Neumático ecológico diseñado para un bajo consumo de combustible y un andar silencioso. Ideal para autos compactos y sedanes.
+| Especificaciones: Ancho 185, Perfil 60, Rodado 15, Indice Carga 84, Indice Velocidad H.
+
+--- PRODUCTO ---
+ID: DUN-AT5-2656018 |
+Categoría: Neumático | Marca: Dunlop | Nombre: Grandtrek AT5 265/60 R18 | Precio: 345000.0 ARS | Stock: 0 |
+Descripción: Neumático todo terreno para camionetas y SUVs. Excelente balance entre rendimiento en asfalto y capacidad off-road. |
+Especificaciones: Ancho 265, Perfil 60, Rodado 18, Indice Carga 110, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: PIR-P1-1756514 | Categoría: Neumático |
+Marca: Pirelli | Nombre: Cinturato P1 175/65 R14 | Precio: 149900.0 ARS | Stock: 110 |
+Descripción: Neumático muy popular para autos urbanos como Fiat Palio o Chevrolet Celta. Buena relación precio-calidad y confort. |
+Especificaciones: Ancho 175, Perfil 65, Rodado 14, Indice Carga 82, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: BRI-POT-2254018 | Categoría: Neumático |
+Marca: Bridgestone | Nombre: Potenza S007A 225/40 R18 | Precio: 395000.0 ARS | Stock: 15 |
+Descripción: Neumático de ultra-alto rendimiento para vehículos deportivos que buscan la máxima performance y agarre en curvas. |
+Especificaciones: Ancho 225, Perfil 40, Rodado 18, Indice Carga 92, Indice Velocidad Y.
+
+--- PRODUCTO ---
+ID: GOO-EFF-1955516 | Categoría: Neumático |
+Marca: Goodyear | Nombre: EfficientGrip Performance 195/55 R16 | Precio: 192000.0 ARS | Stock: 65 |
+Descripción: Neumático con foco en la eficiencia de combustible y el frenado en mojado.
+Ideal para Peugeot 208 o VW Polo. | Especificaciones: Ancho 195, Perfil 55, Rodado 16, Indice Carga 87, Indice Velocidad V.
+
+--- PRODUCTO ---
+ID: FAT-AR440-2056515 |
+Categoría: Neumático | Marca: Fate | Nombre: Range Runner AT/R AR440 205/65 R15 | Precio: 185000.0 ARS |
+Stock: 50 | Descripción: Neumático de uso mixto de industria nacional para SUVs compactas como Renault Duster. Robusto y confiable.
+| Especificaciones: Ancho 205, Perfil 65, Rodado 15, Indice Carga 94, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: MIC-PS5-2354517 |
+Categoría: Neumático | Marca: Michelin | Nombre: Pilot Sport 5 235/45 R17 | Precio: 380000.0 ARS | Stock: 20 |
+Descripción: Neumático deportivo que combina durabilidad y precisión. Excelente respuesta de dirección para una conducción dinámica. |
+Especificaciones: Ancho 235, Perfil 45, Rodado 17, Indice Carga 97, Indice Velocidad Y.
+
+--- PRODUCTO ---
+ID: FIR-FSR-1857013 | Categoría: Neumático |
+Marca: Firestone | Nombre: F-Series FSR 185/70 R13 | Precio: 138000.0 ARS | Stock: 90 |
+Descripción: Neumático clásico y económico para vehículos como Fiat Duna o VW Senda. Diseño confiable y durable. |
+Especificaciones: Ancho 185, Perfil 70, Rodado 13, Indice Carga 86, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: PIR-SAT-2657016 | Categoría: Neumático |
+Marca: Pirelli | Nombre: Scorpion ATR 265/70 R16 | Precio: 315000.0 ARS | Stock: 38 |
+Descripción: Neumático todo terreno versátil para camionetas. Buen comportamiento en todo tipo de superficies, desde asfalto hasta barro ligero. |
+Especificaciones: Ancho 265, Perfil 70, Rodado 16, Indice Carga 112, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: DUN-DZ102-2055016 | Categoría: Neumático |
+Marca: Dunlop | Nombre: Direzza DZ102 205/50 R16 | Precio: 205000.0 ARS | Stock: 30 |
+Descripción: Neumático con diseño deportivo y agresivo. Ofrece gran agarre en seco y una buena respuesta al volante. |
+Especificaciones: Ancho 205, Perfil 50, Rodado 16, Indice Carga 87, Indice Velocidad V.
+
+--- PRODUCTO ---
+ID: HAN-RA33-2256517 | Categoría: Neumático |
+Marca: Hankook | Nombre: Dynapro HP2 RA33 225/65 R17 | Precio: 285000.0 ARS | Stock: 45 |
+Descripción: Neumático de carretera (H/T) para SUVs como Toyota RAV4 o Honda CR-V.
+Enfocado en el confort, bajo ruido y agarre en mojado. |
+Especificaciones: Ancho 225, Perfil 65, Rodado 17, Indice Carga 102, Indice Velocidad H.
+
+--- PRODUCTO ---
+ID: FAT-SENTIVA-1856515 | Categoría: Neumático |
+Marca: Fate | Nombre: Sentiva AR-360 185/65 R15 | Precio: 162000.0 ARS | Stock: 88 |
+Descripción: Neumático de industria nacional con buen equilibrio entre durabilidad y confort, para vehículos como Chevrolet Onix o Fiat Cronos.
+| Especificaciones: Ancho 185, Perfil 65, Rodado 15, Indice Carga 88, Indice Velocidad H.
+
+--- PRODUCTO ---
+ID: BRI-D697-2357515 |
+Categoría: Neumático | Marca: Bridgestone | Nombre: Dueler A/T 697 235/75 R15 | Precio: 299000.0 ARS | Stock: 28 |
+Descripción: Neumático todo terreno de alta resistencia, diseñado para soportar las condiciones más exigentes en camionetas y 4x4. |
+Especificaciones: Ancho 235, Perfil 75, Rodado 15, Indice Carga 104, Indice Velocidad S.
+
+--- PRODUCTO ---
+ID: GOO-ASSUR-2156016 | Categoría: Neumático |
+Marca: Goodyear | Nombre: Assurance MaxLife 215/60 R16 | Precio: 225000.0 ARS | Stock: 55 |
+Descripción: Neumático diseñado para maximizar la vida útil de la banda de rodamiento sin sacrificar la seguridad. Para sedanes medianos.
+| Especificaciones: Ancho 215, Perfil 60, Rodado 16, Indice Carga 95, Indice Velocidad H.
+
+--- PRODUCTO ---
+ID: PIR-PZERO-2454518 |
+Categoría: Neumático | Marca: Pirelli | Nombre: P Zero 245/45 R18 | Precio: 420000.0 ARS | Stock: 10 |
+Descripción: El icónico neumático P Zero, desarrollado junto a los fabricantes de autos más prestigiosos. Máxima performance y seguridad. |
+Especificaciones: Ancho 245, Perfil 45, Rodado 18, Indice Carga 100, Indice Velocidad Y.
+
+--- PRODUCTO ---
+ID: MIC-XLT-2557016 | Categoría: Neumático |
+Marca: Michelin | Nombre: XLT A/S 255/70 R16 | Precio: 330000.0 ARS | Stock: 33 |
+Descripción: Neumático para camionetas Ford Ranger o similares, enfocado en durabilidad y uso en carretera, con capacidades para todo clima (All Season).
+| Especificaciones: Ancho 255, Perfil 70, Rodado 16, Indice Carga 111, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: FIR-F900-1757014 |
+Categoría: Neumático | Marca: Firestone | Nombre: F-Series 900 175/70 R14 | Precio: 155000.0 ARS | Stock: 120 |
+Descripción: Un neumático robusto y confiable para el día a día en la ciudad y ruta, para vehículos como VW Gol Trend o Fiat Siena.
+| Especificaciones: Ancho 175, Perfil 70, Rodado 14, Indice Carga 88, Indice Velocidad T.
+
+--- PRODUCTO ---
+ID: DUN-SP-2054517 |
+Categoría: Neumático | Marca: Dunlop | Nombre: SP Sport Maxx 050+ 205/45 R17 | Precio: 260000.0 ARS |
+Stock: 22 | Descripción: Neumático de verano de alto rendimiento, ofrece una excelente maniobrabilidad y agarre tanto en piso seco como mojado.
+| Especificaciones: Ancho 205, Perfil 45, Rodado 17, Indice Carga 88, Indice Velocidad W.
+
+--- PRODUCTO ---
+ID: HAN-VENTUS-2255517 |
+Categoría: Neumático | Marca: Hankook | Nombre: Ventus V12 evo2 225/55 R17 | Precio: 295000.0 ARS | Stock: 35 |
+Descripción: Neumático deportivo con un diseño de banda de rodadura atractivo, que proporciona un manejo estable y seguro a altas velocidades.
+| Especificaciones: Ancho 225, Perfil 55, Rodado 17, Indice Carga 101, Indice Velocidad W.
+
+--- PRODUCTO ---
+ID: BRI-ECP-2155517 |
+Categoría: Neumático | Marca: Bridgestone | Nombre: Ecopia EP150 215/55 R17 | Precio: 275000.0 ARS | Stock: 40 |
+Descripción: Neumático diseñado para reducir la resistencia a la rodadura, lo que contribuye a un menor consumo de combustible y emisiones de CO2.
+| Especificaciones: Ancho 215, Perfil 55, Rodado 17, Indice Carga 94, Indice Velocidad V.
+
+--- CLIENTE ---
+ID: BIZ-001 |
+Nombre: Transportes Del Sur S.A. | CUIT: 30-71123456-8 | Dirección: Parque Industrial Gral. Belgrano, Lote 14, Córdoba |
+Contacto: Ricardo Montoya | Email: compras@transportesdelsur.com | Teléfono: +54 9 351 6123-4567
+
+--- CLIENTE ---
+ID: BIZ-002 | Nombre: Agroservicios Pampeanos S.R.L.
+| CUIT: 30-70987654-3 | Dirección: Ruta Nacional 8, Km 350, Venado Tuerto, Santa Fe | Contacto: Javier Estévez |
+Email: administracion@agroserviciospampeanos.com.ar | Teléfono: +54 9 3462 456-7890
+
+--- CLIENTE ---
+ID: BIZ-003 | Nombre: Taxis Avenida | CUIT: 30-68123123-5 |
+Dirección: Av. Independencia 2500, CABA, Buenos Aires | Contacto: Susana Giménez | Email: flota@taxisavenida.com |
+Teléfono: +54 9 11 4321-9876
+
+--- CLIENTE ---
+ID: BIZ-004 | Nombre: Constructora Andina S.R.L. | CUIT: 30-71456789-0 |
+Dirección: Lateral Acceso Este 1020, Guaymallén, Mendoza | Contacto: Marcos Peña | Email: proveedores@constructoraandina.com |
+Teléfono: +54 9 261 3321-4567
+
+--- CLIENTE ---
+ID: BIZ-005 | Nombre: Remis Oeste | CUIT: 33-69876543-9 | Dirección: Av.
+Rivadavia 11000, Liniers, Buenos Aires | Contacto: Horacio Pérez | Email: remis.oeste.compras@gmail.com |
+Teléfono: +54 9 11 4444-5555
+
+--- CLIENTE ---
+ID: BIZ-006 | Nombre: Taller Mecánico 'El Rápido' | CUIT: 27-25123456-7 |
+Dirección: Warnes 850, Villa Crespo, Buenos Aires | Contacto: Roberto Carlos | Email: taller.elrapido@yahoo.com |
+Teléfono: +54 9 11 5001-2002
+
+--- CLIENTE ---
+ID: BIZ-007 | Nombre: Logística Patagónica S.A. | CUIT: 30-71111222-3 |
+Dirección: Parque Industrial, Neuquén Capital, Neuquén | Contacto: Ana María Soler | Email: logistica.pat@outlook.com |
+Teléfono: +54 9 299 555-1020
+
+--- CLIENTE ---
+ID: BIZ-008 | Nombre: Concesionaria Ruta 9 | CUIT: 30-67676767-1 |
+Dirección: Autopista Cordoba-Rosario Km 550, Córdoba | Contacto: Esteban Quito | Email: gerencia@ruta9automotores.com |
+Teléfono: +54 9 351 765-4321
+
+--- CLIENTE ---
+ID: BIZ-009 | Nombre: Fletes 'Don Pepe' | CUIT: 20-12345678-9 | Dirección: Av.
+Eva Perón 3300, Rosario, Santa Fe | Contacto: José Argento | Email: pepe.fletes@hotmail.com |
+Teléfono: +54 9 341 222-3333
+
+--- CLIENTE ---
+ID: BIZ-010 | Nombre: Turismo Serrano S.R.L. | CUIT: 30-70101010-2 |
+Dirección: Terminal de Ómnibus, Local 12, Córdoba | Contacto: Guillermo Francella | Email: mantenimiento@turismoserrano.com |
+Teléfono: +54 9 351 800-9000
+
+--- CLIENTE ---
+ID: BIZ-011 | Nombre: Mantenimiento Flota Municipalidad de La Matanza | CUIT: 30-99905678-4 |
+Dirección: Almafuerte 3050, San Justo, Buenos Aires | Contacto: Luis D'Elía | Email: compras.publicas@lamatanza.gov.ar |
+Teléfono: +54 9 11 4651-0101
+
+--- CLIENTE ---
+ID: BIZ-012 | Nombre: Servicios Petroleros del Oeste | CUIT: 30-71123987-5 |
+Dirección: Ruta 22, Cutral Có, Neuquén | Contacto: Walter White | Email: spo.compras@spoweb.com |
+Teléfono: +54 9 299 444-5566
+
+--- CLIENTE ---
+ID: BIZ-013 | Nombre: Vivero 'Las Flores' | CUIT: 27-30123456-9 |
+Dirección: Camino a 60 Cuadras, Km 10, Córdoba | Contacto: Jazmín del Campo | Email: info@viverolasflores.com.ar |
+Teléfono: +54 9 351 234-5678
+
+--- CLIENTE ---
+ID: BIZ-014 | Nombre: Rent-a-Car Cuyo | CUIT: 30-66554433-2 |
+Dirección: Aeropuerto El Plumerillo, Local 5, Mendoza | Contacto: Lionel Messi | Email: mantenimiento@rentacuyo.com |
+Teléfono: +54 9 261 500-6000
+
+--- CLIENTE ---
+ID: BIZ-015 | Nombre: Distribuidora Láctea Serenísima | CUIT: 30-50000000-1 | Dirección: Av.
+Warnes 2500, La Paternal, Buenos Aires | Contacto: Pascual Mastellone | Email: logistica.caba@laserenisima.com.ar |
+Teléfono: +54 9 11 4858-0000
+
+--- CLIENTE INDIVIDUAL ---
+ID: IND-001 | Nombre: Juan Pérez | DNI: 25123456 | Email: juan.perez88@gmail.com | Teléfono: +54 9 11 6543-2109
+--- CLIENTE INDIVIDUAL ---
+ID: IND-002 | Nombre: María García | DNI: 30987654 | Email: mariagarcia@hotmail.com | Teléfono: +54 9 351 123-4567
+--- CLIENTE INDIVIDUAL ---
+ID: IND-003 | Nombre: Carlos López | DNI: 28456789 | Email: N/A | Teléfono: +54 9 261 876-5432
+--- CLIENTE INDIVIDUAL ---
+ID: IND-004 | Nombre: Ana Fernández | DNI: 33765432 | Email: ana.fernandez@yahoo.com.ar | Teléfono: +54 9 341 901-2345
+--- CLIENTE INDIVIDUAL ---
+ID: IND-005 | Nombre: Diego Martinez | DNI: 35111222 | Email: diegomartinez@live.com | Teléfono: +54 9 11 3344-5566
+
+--- VENTA ---
+ID Factura: FACT-C001-00001 | ID Cliente: IND-001 | Fecha: 2025-09-12 |
+Total: 740002.0 ARS | Método de Pago: Tarjeta de Crédito |
+Items: PIR-C7-2055516 (4 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00001 | ID Cliente: BIZ-001 | Fecha: 2025-09-12 |
+Total: 5880000.0 ARS | Método de Pago: Cuenta Corriente |
+Items: MIC-LTX-2457016 (16 unidades), LIQ-MOLY-5W40-5L (8 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00002 | ID Cliente: BIZ-002 | Fecha: 2025-09-12 |
+Total: 8592000.0 ARS | Método de Pago: Transferencia Bancaria |
+Items: FIR-F900-2656517 (24 unidades), SAC-AM-HILUX-TRA (6 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00003 | ID Cliente: BIZ-003 | Fecha: 2025-09-13 |
+Total: 6960000.0 ARS | Método de Pago: Cuenta Corriente |
+Items: FAT-SENTIVA-1856515 (40 unidades), SERV-ALB (10 unidades)
+
+--- VENTA ---
+ID Factura: FACT-C001-00002 | ID Cliente: IND-002 | Fecha: 2025-09-14 |
+Total: 441000.0 ARS | Método de Pago: Mercado Pago |
+Items: HAN-K435-1856015 (2 unidades), SERV-ALB (1 unidad)
+
+--- VENTA ---
+ID Factura: FACT-B001-00004 | ID Cliente: BIZ-004 | Fecha: 2025-09-14 |
+Total: 3660000.0 ARS | Método de Pago: Transferencia Bancaria |
+Items: HEL-BAT-1290 (8 unidades), VAL-PREM-15W40-4L (20 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00005 | ID Cliente: BIZ-006 | Fecha: 2025-09-15 |
+Total: 2079000.0 ARS | Método de Pago: Cuenta Corriente |
+Items: MAN-HU718-5X (50 unidades), FRA-A-PEU208 (30 unidades), WAG-DOT4-1L (24 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00006 | ID Cliente: BIZ-014 |
+Fecha: 2025-09-15 | Total: 6044015.0 ARS | Método de Pago: Cuenta Corriente |
+Items: GOO-ES-1856514 (20 unidades), PIR-P1-1756514 (20 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00007 | ID Cliente: BIZ-010 | Fecha: 2025-09-16 |
+Total: 2230000.0 ARS | Método de Pago: Transferencia Bancaria |
+Items: BOS-DIS-VW-GOL (10 unidades), FRE-CER-VW (10 unidades)
+
+--- VENTA ---
+ID Factura: FACT-C001-00003 | ID Cliente: IND-004 | Fecha: 2025-09-17 |
+Total: 1547000.0 ARS | Método de Pago: Efectivo |
+Items: BRI-TU-2254517 (4 unidades), SERV-ALB (1 unidad), SERV-ROTACION (1 unidad), ACC-MAN-DIG (1 unidad)
+
+--- VENTA ---
+ID Factura: FACT-B001-00008 | ID Cliente: BIZ-008 | Fecha: 2025-09-17 |
+Total: 2055000.0 ARS | Método de Pago: Cuenta Corriente |
+Items: 3M-CERA-PASTA (30 unidades), ACC-KITSEG-01 (15 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00009 | ID Cliente: BIZ-001 | Fecha: 2025-09-18 |
+Total: 2520000.0 ARS | Método de Pago: Cuenta Corriente | Items: PIR-SAT-2657016 (8 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00010 |
+ID Cliente: BIZ-002 | Fecha: 2025-09-19 | Total: 3588000.0 ARS | Método de Pago: Transferencia Bancaria |
+Items: BRI-D697-2357515 (12 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00011 | ID Cliente: BIZ-006 | Fecha: 2025-09-19 | Total: 2200000.0 ARS |
+Método de Pago: Cuenta Corriente | Items: WD40-FLEX-400 (100 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00012 | ID Cliente: BIZ-012 |
+Fecha: 2025-09-20 | Total: 6900000.0 ARS | Método de Pago: Transferencia Bancaria |
+Items: DUN-AT5-2656018 (20 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00013 | ID Cliente: BIZ-004 | Fecha: 2025-09-22 | Total: 1348500.0 ARS |
+Método de Pago: Transferencia Bancaria | Items: YPF-ELA-F50-4L (15 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00014 | ID Cliente: BIZ-003 |
+Fecha: 2025-09-23 | Total: 3600000.0 ARS | Método de Pago: Cuenta Corriente |
+Items: GOO-ASSUR-2156016 (16 unidades)
+
+--- VENTA ---
+ID Factura: FACT-B001-00015 | ID Cliente: BIZ-014 | Fecha: 2025-09-24 | Total: 2937500.0 ARS |
+Método de Pago: Cuenta Corriente | Items: SERV-CAM-ACEITE (25 unidades), CAS-MAG-10W40-4L (25 unidades)
+
+--- CONSULTA NO CONCRETADA ---
+ID Consulta: CN-001 | ID Cliente: IND-003 | Fecha: 2025-09-13 | Producto Solicitado: MIC-P4-1956015 (4 unidades) | Motivo: Precio | Estado: Pendiente de contacto (ofrecer descuento).
+--- CONSULTA NO CONCRETADA ---
+ID Consulta: CN-002 | ID Cliente: BIZ-005 | Fecha: 2025-09-16 | Producto Solicitado: GOO-WR-2056016 (12 unidades) | Motivo: Precio | Estado: Se ofreció alternativa (FAT-AR440-2056515), cliente rechazó. Pendiente de contacto.
+--- CONSULTA NO CONCRETADA ---
+ID Consulta: CN-003 | ID Cliente: BIZ-007 | Fecha: 2025-09-18 | Producto Solicitado: DUN-AT5-2656018 (20 unidades) | Motivo: Stock | Estado: Pendiente de contacto (avisar al reingreso de stock).
+--- CONSULTA NO CONCRETADA ---
+ID Consulta: CN-004 | ID Cliente: IND-005 | Fecha: 2025-09-20 | Producto Solicitado: PIR-PZERO-2454518 (4 unidades) | Motivo: Tiempos de Entrega | Estado: Se informó demora de 72hs, cliente no aceptó. Pendiente de contacto (ver si se puede mejorar tiempo).
+
+--- PROMOCION ---
+ID Promo: PROMO-NEU-001 | Nombre: Combo Alineación y Balanceo | Descripción: Comprando 4 neumáticos de cualquier marca o modelo, obtienes un 50% de descuento en el servicio de Alineación y Balanceo (SERV-ALB). | Vigencia: 2025-09-01 a 2025-09-30
+--- PROMOCION ---
+ID Promo: PROMO-SERV-002 | Nombre: Jueves de Taller | Descripción: 15% de descuento en todos los servicios de mano de obra (SERV-*) abonando en efectivo. | Vigencia: Todos los jueves de Septiembre 2025.
+--- PROMOCION ---
+ID Promo: PROMO-ACC-003 | Nombre: Kit Viajero | Descripción: Llevando un Kit de Seguridad (ACC-KITSEG-01) y un Aerosol Multiuso (WD40-FLEX-400), obtienes un Manómetro Digital (ACC-MAN-DIG) de regalo. | Vigencia: Hasta agotar stock de 60 unidades.
+
+--- MANUAL DE VENTAS ---
+
+Manual de Ventas Corporativas B2B - Gomería "El Rutero Experto"
+Sección 1: Introducción al Rol de Asesor Corporativo
+¡Bienvenido al equipo de Ventas Corporativas de "El Rutero Experto"!
+Tu rol es diferente al de un vendedor tradicional. Eres un socio estratégico para nuestros clientes empresariales.
+Tu objetivo no es simplemente vender cubiertas o repuestos, sino ofrecer soluciones integrales que optimicen la operatividad, reduzcan costos y aumenten la seguridad de las flotas de nuestros clientes.
+Este manual es tu hoja de ruta para gestionar cuentas corporativas de alto valor.
+El éxito en B2B se mide por la capacidad de construir relaciones a largo plazo y convertirnos en un proveedor indispensable.
+--- MANUAL DE VENTAS ---
+
+Sección 2: Principios de la Venta B2B
+Mentalidad de Socio, no de Proveedor: No vendemos productos, resolvemos problemas operativos.
+Pensamos en el negocio de nuestro cliente como si fuera el nuestro.
+
+El Valor por Encima del Precio: El cliente corporativo no busca "lo más barato", busca el mejor costo por kilómetro, la mayor durabilidad y el menor tiempo de inactividad de sus vehículos.
+Tu trabajo es demostrar ese valor.
+
+La Proactividad es Clave: No esperamos a que el cliente tenga un problema.
+Nos anticipamos a sus necesidades de stock, mantenimiento y recambio.
+
+Profesionalismo Absoluto: La comunicación, la puntualidad en las entregas y la precisión en la facturación son tan importantes como la calidad del producto.
+--- MANUAL DE VENTAS ---
+
+Sección 3: El Ciclo de Venta Corporativa
+El proceso B2B es consultivo y requiere una gestión detallada en cada etapa.
+
+Paso 1: Prospección e Identificación de Clientes Potenciales
+Tu trabajo comienza mucho antes del primer contacto.
+Sectores Clave:
+
+Transporte y Logística: Empresas de camiones, fletes, distribución.
+(Ej: Transportes Del Sur S.A.)
+
+Sector Agropecuario: Productores, contratistas rurales, servicios agrícolas.
+(Ej: Agroservicios Pampeanos S.R.L.)
+
+Flotas de Vehículos Livianos: Taxis, remises, flotas de venta o servicio técnico.
+(Ej: Taxis Avenida)
+
+Construcción y Servicios Pesados: Empresas constructoras, movimiento de suelos.
+(Ej: Constructora Andina S.R.L.)
+
+Talleres Mecánicos y Revendedores: Son un canal estratégico.
+(Ej: Taller Mecánico 'El Rápido')
+Investigación Previa:
+Antes de llamar, investiga la empresa. ¿A qué se dedica? ¿Qué tipo de vehículos opera?
+¿Quién es el responsable de compras o mantenimiento? Utiliza LinkedIn y Google.
+
+Paso 2: Contacto Inicial y Calificación
+El objetivo es conseguir una reunión o una llamada para entender sus necesidades.
+Contacto Profesional (Llamada o Email):
+Ejemplo: "Buenos días, [Nombre del Contacto]. Mi nombre es [Tu Nombre] de 'El Rutero Experto'. Vi que gestionan una flota de vehículos de transporte y me especializo en ayudar a empresas como la suya a reducir los costos operativos en neumáticos y mantenimiento. ¿Tendría 15 minutos la próxima semana para una breve llamada?"
+Calificación (Preguntas Clave):
+
+¿Aproximadamente cuántos vehículos componen su flota?
+
+¿Actualmente quién es su proveedor principal de neumáticos?
+
+¿Cuál es el mayor desafío que enfrentan hoy en día con el mantenimiento de su flota?
+
+Paso 3: Diagnóstico y Análisis de Necesidades
+Esta es la etapa más crítica. Eres un consultor.
+Entiende la Operación:
+
+¿Qué tipo de rutas transitan sus vehículos?
+
+¿Cuántos kilómetros recorren en promedio al mes?
+Identifica los "Puntos de Dolor":
+
+¿Sufren muchas roturas inesperadas?
+
+¿El tiempo que un vehículo pasa en el taller es un problema para ustedes?
+
+¿Están conformes con la durabilidad de sus cubiertas actuales?
+Comprende el Proceso de Decisión:
+
+¿Quiénes participan en la decisión de compra?
+
+¿Manejan un presupuesto anual para mantenimiento?
+Utiliza la Base de Datos:
+Ejemplo: "Veo en nuestro sistema que 'Transportes Del Sur' nos compró un lote de cubiertas Michelin el año pasado. ¿Qué tal fue el rendimiento de esos neumáticos para su operación?"
+
+Paso 4: Elaboración y Presentación de la Propuesta Comercial
+Tu propuesta no es un presupuesto, es un plan de negocios.
+Estructura de la Propuesta:
+
+Resumen Ejecutivo: Entendimiento de sus desafíos y objetivos.
+
+Solución Propuesta: Recomienda productos específicos y un plan de servicios.
+Ejemplo: "Proponemos estandarizar su flota con el neumático MIC-LTX-2457016, que ofrece un 15% más de durabilidad, resultando en un menor costo por kilómetro."
+
+Análisis de Inversión y Retorno (ROI): Demuestra el valor en números.
+Ejemplo: "La inversión en cubiertas premium se recupera en 8 meses gracias al ahorro en combustible y la reducción de cambios no planificados."
+
+Condiciones Comerciales: Precios por Volumen, Acuerdo de Stock, Logística de Entrega, Condiciones de Pago.
+
+Paso 5: Negociación y Cierre del Acuerdo
+Prepárate para negociar los términos, no solo el precio.
+Objeciones Comunes B2B:
+
+Objeción: "Su competidor me ofrece un precio más bajo."
+Respuesta: "Entiendo. Nuestro precio refleja no solo el producto, sino también nuestro compromiso de stock garantizado y el servicio post-venta, que reduce el tiempo de inactividad de sus vehículos. ¿Su proveedor actual le ofrece esa garantía?"
+
+Objeción: "Necesito mejores condiciones de pago."
+Respuesta: "Comprendo la importancia del flujo de caja. Déjeme ver si podemos ofrecerle un plan a 30/60 días una vez que establezcamos una relación comercial."
+
+Objeción: "Tengo un contrato con otro proveedor."
+Respuesta: "No pretendo que rompa un contrato. Me gustaría que nos considere como un proveedor secundario. Podemos empezar con una pequeña compra de prueba para que evalúe nuestro servicio."
+Cierre del Acuerdo:
+Formaliza el compromiso. Pide la orden de compra.
+Ejemplo: "Entonces, si estamos de acuerdo, ¿puedo enviarle el acuerdo para que lo revisen y procedemos con la primera entrega?"
+
+Paso 6: Gestión de la Cuenta y Expansión (Account Management)
+La venta B2B comienza después del primer cierre.
+Actividades Clave:
+
+Seguimiento Proactivo: Llama periódicamente para saber cómo está funcionando el producto.
+
+Reuniones de Revisión Trimestral (QBR): Presenta un informe de rendimiento y ahorro.
+
+Identifica Nuevas Oportunidades (Up-selling y Cross-selling): Si compra cubiertas, ¿necesita baterías, aceites, o servicios? Conviértete en su proveedor único.
+--- MANUAL DE VENTAS ---
+
+Sección 4: Conclusión
+Como Asesor Corporativo, tu éxito depende de tu capacidad para pensar estratégicamente y posicionar a "El Rutero Experto" como un aliado indispensable para el éxito del negocio de tus clientes.
+Construye confianza, demuestra valor y gestiona tus cuentas con profesionalismo.
+Lema: ¡El crecimiento de nuestros clientes es nuestro crecimiento!

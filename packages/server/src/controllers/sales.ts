@@ -352,7 +352,7 @@ const createSaleQuote = async (req: Request, res: Response, next: NextFunction) 
         }
         const appServer = getRunningExpressApp()
         // Try to fetch price from inventory table if available
-        const inventoryQuery = 'SELECT price FROM product_inventory WHERE product_sku = $1 LIMIT 1'
+        const inventoryQuery = 'SELECT price FROM product_inventory WHERE "productId" = $1 LIMIT 1'
         let unitPrice = 0
         try {
             const priceResult = await appServer.AppDataSource.query(inventoryQuery, [product_sku])
@@ -383,7 +383,7 @@ const getProductAlternatives = async (req: Request, res: Response, next: NextFun
         }
         const appServer = getRunningExpressApp()
         // Simple heuristic: return up to 5 products with different SKU but same brand prefix
-        const altQuery = `SELECT product_sku, name, brand, price FROM product_inventory WHERE product_sku != $1 LIMIT 5`
+        const altQuery = `SELECT "productId" as product_id, name, brand, price FROM product_inventory WHERE "productId" != $1 LIMIT 5`
         const alternatives = await appServer.AppDataSource.query(altQuery, [product_sku])
         return res.json({ alternatives })
     } catch (error) {
@@ -472,15 +472,18 @@ const getSaleSummary = async (req: Request, res: Response, next: NextFunction) =
         }
         const appServer = getRunningExpressApp()
         const saleQuery = 'SELECT * FROM sales WHERE id = $1'
-        const saleRecordQuery = 'SELECT * FROM sale_record WHERE sale_id = $1'
-        const [saleResult, recordResult] = await Promise.all([
-            appServer.AppDataSource.query(saleQuery, [saleId]),
-            appServer.AppDataSource.query(saleRecordQuery, [saleId]).catch(() => [])
-        ])
+        const saleResult = await appServer.AppDataSource.query(saleQuery, [saleId])
         if (saleResult.length === 0) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Sale not found')
         }
-        return res.json({ sale: saleResult[0], records: recordResult })
+        const sale = saleResult[0]
+        let recordResult: any[] = []
+        const clientKey = sale.customer_id ? sale.customer_id.toString() : sale.phone_number
+        if (clientKey) {
+            const saleRecordQuery = 'SELECT * FROM sale_record WHERE "clientId" = $1 ORDER BY ts DESC'
+            recordResult = await appServer.AppDataSource.query(saleRecordQuery, [clientKey]).catch(() => [])
+        }
+        return res.json({ sale, records: recordResult })
     } catch (error) {
         logger.error('Error getting sale summary:', error)
         return next(error)

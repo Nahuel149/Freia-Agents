@@ -1,17 +1,11 @@
 {
-  "description": "Flujo Agentflow V2 modular para Freia con agentes especializados en inventario, CRM, cierre comercial y documentación.",
-  "usecases": [
-    "Sales",
-    "Customer Support",
-    "Inventory Management"
-  ],
   "nodes": [
     {
       "id": "startAgentflow_0",
       "type": "agentFlow",
       "position": {
-        "x": -520,
-        "y": 80
+        "x": -610.2062956465243,
+        "y": 19.00000258068708
       },
       "data": {
         "id": "startAgentflow_0",
@@ -237,11 +231,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 280,
-      "height": 80,
+      "width": 103,
+      "height": 66,
       "positionAbsolute": {
-        "x": -520,
-        "y": 80
+        "x": -610.2062956465243,
+        "y": 19.00000258068708
       },
       "selected": false,
       "dragging": false
@@ -250,8 +244,8 @@
       "id": "conditionAgentAgentflow_0",
       "type": "agentFlow",
       "position": {
-        "x": -160,
-        "y": 80
+        "x": -261.9999956847528,
+        "y": -20.999995727059073
       },
       "data": {
         "id": "conditionAgentAgentflow_0",
@@ -355,7 +349,7 @@
           "conditionAgentModelConfig": {
             "credential": "",
             "modelName": "gpt-4.1-mini",
-            "temperature": 0.4,
+            "temperature": "0.3",
             "streaming": true,
             "maxTokens": "",
             "topP": "",
@@ -403,11 +397,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 320,
-      "height": 92,
+      "width": 193,
+      "height": 140,
       "positionAbsolute": {
-        "x": -160,
-        "y": 80
+        "x": -261.9999956847528,
+        "y": -20.999995727059073
       },
       "selected": false,
       "dragging": false
@@ -416,8 +410,8 @@
       "id": "agentAgentflow_consumidor",
       "type": "agentFlow",
       "position": {
-        "x": 200,
-        "y": -220
+        "x": 144.20630182325056,
+        "y": -381.999993146372
       },
       "data": {
         "id": "agentAgentflow_consumidor",
@@ -956,26 +950,41 @@
           },
           "agentKnowledgeDocumentStores": [
             {
-              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:freia_docs",
+              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:BD Gomeria v1.2 txt",
               "docStoreDescription": "Repositorio interno con fichas de productos, procesos comerciales, garantías y respuestas frecuentes de Freia.",
-              "returnSourceDocuments": true
+              "returnSourceDocuments": false
             }
           ],
           "agentKnowledgeVSEmbeddings": [
             {
               "vectorStore": "pinecone",
               "vectorStoreConfig": {
+                "credential": "",
                 "pineconeIndex": "freia-rag",
                 "pineconeNamespace": "Gomeria-v1.2",
-                "searchType": "similarity"
+                "fileUpload": "",
+                "pineconeTextKey": "",
+                "pineconeMetadataFilter": "",
+                "topK": "",
+                "searchType": "similarity",
+                "fetchK": "",
+                "lambda": "",
+                "vectorStore": "pinecone"
               },
               "embeddingModel": "openAIEmbeddings",
               "embeddingModelConfig": {
-                "modelName": "text-embedding-3-small"
+                "credential": "",
+                "modelName": "text-embedding-3-small",
+                "stripNewLines": "",
+                "batchSize": "",
+                "timeout": "",
+                "basepath": "",
+                "dimensions": "",
+                "embeddingModel": "openAIEmbeddings"
               },
               "knowledgeName": "catalogo_freia",
               "knowledgeDescription": "Embeddings con inventario histórico, métricas de ventas y documentación técnica de neumáticos y servicios Freia.",
-              "returnSourceDocuments": true
+              "returnSourceDocuments": false
             }
           ],
           "agentUpdateState": [
@@ -1007,11 +1016,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 280,
-      "height": 80,
+      "width": 540,
+      "height": 128,
       "positionAbsolute": {
-        "x": 200,
-        "y": -220
+        "x": 144.20630182325056,
+        "y": -381.999993146372
       },
       "selected": false,
       "dragging": false
@@ -1020,8 +1029,8 @@
       "id": "agentAgentflow_gomeria",
       "type": "agentFlow",
       "position": {
-        "x": 200,
-        "y": -60
+        "x": 141.00000249607444,
+        "y": -207.99999373866083
       },
       "data": {
         "id": "agentAgentflow_gomeria",
@@ -1560,22 +1569,37 @@
           },
           "agentKnowledgeDocumentStores": [
             {
-              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:freia_docs",
+              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:BD Gomeria v1.2 txt",
               "docStoreDescription": "Repositorio interno con fichas de productos, procesos comerciales, garantías y respuestas frecuentes de Freia.",
-              "returnSourceDocuments": true
+              "returnSourceDocuments": false
             }
           ],
           "agentKnowledgeVSEmbeddings": [
             {
               "vectorStore": "pinecone",
               "vectorStoreConfig": {
+                "credential": "",
                 "pineconeIndex": "freia-rag",
                 "pineconeNamespace": "Gomeria-v1.2",
-                "searchType": "similarity"
+                "fileUpload": "",
+                "pineconeTextKey": "",
+                "pineconeMetadataFilter": "",
+                "topK": "",
+                "searchType": "similarity",
+                "fetchK": "",
+                "lambda": "",
+                "vectorStore": "pinecone"
               },
               "embeddingModel": "openAIEmbeddings",
               "embeddingModelConfig": {
-                "modelName": "text-embedding-3-small"
+                "credential": "",
+                "modelName": "text-embedding-3-small",
+                "stripNewLines": "",
+                "batchSize": "",
+                "timeout": "",
+                "basepath": "",
+                "dimensions": "",
+                "embeddingModel": "openAIEmbeddings"
               },
               "knowledgeName": "catalogo_freia",
               "knowledgeDescription": "Embeddings con inventario histórico, métricas de ventas y documentación técnica de neumáticos y servicios Freia.",
@@ -1611,11 +1635,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 280,
-      "height": 80,
+      "width": 540,
+      "height": 128,
       "positionAbsolute": {
-        "x": 200,
-        "y": -60
+        "x": 141.00000249607444,
+        "y": -207.99999373866083
       },
       "selected": false,
       "dragging": false
@@ -1624,8 +1648,8 @@
       "id": "agentAgentflow_crm",
       "type": "agentFlow",
       "position": {
-        "x": 200,
-        "y": 40
+        "x": 153.16853644567942,
+        "y": -35.4267774705981
       },
       "data": {
         "id": "agentAgentflow_crm",
@@ -2244,26 +2268,41 @@
           },
           "agentKnowledgeDocumentStores": [
             {
-              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:freia_docs",
+              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:BD Gomeria v1.2 txt",
               "docStoreDescription": "Repositorio interno con fichas de productos, procesos comerciales, garantías y respuestas frecuentes de Freia.",
-              "returnSourceDocuments": true
+              "returnSourceDocuments": false
             }
           ],
           "agentKnowledgeVSEmbeddings": [
             {
               "vectorStore": "pinecone",
               "vectorStoreConfig": {
+                "credential": "",
                 "pineconeIndex": "freia-rag",
                 "pineconeNamespace": "Gomeria-v1.2",
-                "searchType": "similarity"
+                "fileUpload": "",
+                "pineconeTextKey": "",
+                "pineconeMetadataFilter": "",
+                "topK": "",
+                "searchType": "similarity",
+                "fetchK": "",
+                "lambda": "",
+                "vectorStore": "pinecone"
               },
               "embeddingModel": "openAIEmbeddings",
               "embeddingModelConfig": {
-                "modelName": "text-embedding-3-small"
+                "credential": "",
+                "modelName": "text-embedding-3-small",
+                "stripNewLines": "",
+                "batchSize": "",
+                "timeout": "",
+                "basepath": "",
+                "dimensions": "",
+                "embeddingModel": "openAIEmbeddings"
               },
               "knowledgeName": "catalogo_freia",
               "knowledgeDescription": "Embeddings con inventario histórico, métricas de ventas y documentación técnica de neumáticos y servicios Freia.",
-              "returnSourceDocuments": true
+              "returnSourceDocuments": false
             }
           ],
           "agentUpdateState": [
@@ -2299,11 +2338,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 280,
-      "height": 80,
+      "width": 708,
+      "height": 128,
       "positionAbsolute": {
-        "x": 200,
-        "y": 40
+        "x": 153.16853644567942,
+        "y": -35.4267774705981
       },
       "selected": false,
       "dragging": false
@@ -2312,8 +2351,8 @@
       "id": "agentAgentflow_cierre",
       "type": "agentFlow",
       "position": {
-        "x": 200,
-        "y": 240
+        "x": 327.3181015969366,
+        "y": 193.14330681692815
       },
       "data": {
         "id": "agentAgentflow_cierre",
@@ -2755,22 +2794,37 @@
           },
           "agentKnowledgeDocumentStores": [
             {
-              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:freia_docs",
+              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:BD Gomeria v1.2 txt",
               "docStoreDescription": "Repositorio interno con fichas de productos, procesos comerciales, garantías y respuestas frecuentes de Freia.",
-              "returnSourceDocuments": true
+              "returnSourceDocuments": false
             }
           ],
           "agentKnowledgeVSEmbeddings": [
             {
               "vectorStore": "pinecone",
               "vectorStoreConfig": {
+                "credential": "",
                 "pineconeIndex": "freia-rag",
                 "pineconeNamespace": "Gomeria-v1.2",
-                "searchType": "similarity"
+                "fileUpload": "",
+                "pineconeTextKey": "",
+                "pineconeMetadataFilter": "",
+                "topK": "",
+                "searchType": "similarity",
+                "fetchK": "",
+                "lambda": "",
+                "vectorStore": "pinecone"
               },
               "embeddingModel": "openAIEmbeddings",
               "embeddingModelConfig": {
-                "modelName": "text-embedding-3-small"
+                "credential": "",
+                "modelName": "text-embedding-3-small",
+                "stripNewLines": "",
+                "batchSize": "",
+                "timeout": "",
+                "basepath": "",
+                "dimensions": "",
+                "embeddingModel": "openAIEmbeddings"
               },
               "knowledgeName": "catalogo_freia",
               "knowledgeDescription": "Embeddings con inventario histórico, métricas de ventas y documentación técnica de neumáticos y servicios Freia.",
@@ -2806,11 +2860,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 280,
-      "height": 80,
+      "width": 316,
+      "height": 128,
       "positionAbsolute": {
-        "x": 200,
-        "y": 240
+        "x": 327.3181015969366,
+        "y": 193.14330681692815
       },
       "selected": false,
       "dragging": false
@@ -2819,8 +2873,8 @@
       "id": "agentAgentflow_conocimiento",
       "type": "agentFlow",
       "position": {
-        "x": 200,
-        "y": 440
+        "x": 344.9999938655799,
+        "y": 422.00000076151423
       },
       "data": {
         "id": "agentAgentflow_conocimiento",
@@ -3147,7 +3201,7 @@
           },
           "agentKnowledgeDocumentStores": [
             {
-              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:freia_docs",
+              "documentStore": "f084ada8-6195-495f-804a-9d78f8468f84:BD Gomeria v1.2 txt",
               "docStoreDescription": "Repositorio interno con fichas de productos, procesos comerciales, garantías y respuestas frecuentes de Freia.",
               "returnSourceDocuments": true
             }
@@ -3156,13 +3210,28 @@
             {
               "vectorStore": "pinecone",
               "vectorStoreConfig": {
+                "credential": "",
                 "pineconeIndex": "freia-rag",
                 "pineconeNamespace": "Gomeria-v1.2",
-                "searchType": "similarity"
+                "fileUpload": "",
+                "pineconeTextKey": "",
+                "pineconeMetadataFilter": "",
+                "topK": "",
+                "searchType": "similarity",
+                "fetchK": "",
+                "lambda": "",
+                "vectorStore": "pinecone"
               },
               "embeddingModel": "openAIEmbeddings",
               "embeddingModelConfig": {
-                "modelName": "text-embedding-3-small"
+                "credential": "",
+                "modelName": "text-embedding-3-small",
+                "stripNewLines": "",
+                "batchSize": "",
+                "timeout": "",
+                "basepath": "",
+                "dimensions": "",
+                "embeddingModel": "openAIEmbeddings"
               },
               "knowledgeName": "catalogo_freia",
               "knowledgeDescription": "Embeddings con inventario histórico, métricas de ventas y documentación técnica de neumáticos y servicios Freia.",
@@ -3194,11 +3263,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 280,
-      "height": 80,
+      "width": 231,
+      "height": 100,
       "positionAbsolute": {
-        "x": 200,
-        "y": 440
+        "x": 344.9999938655799,
+        "y": 422.00000076151423
       },
       "selected": false,
       "dragging": false
@@ -3207,8 +3276,8 @@
       "id": "customFunctionAgentflow_cobranzas",
       "type": "agentFlow",
       "position": {
-        "x": 520,
-        "y": 240
+        "x": 984.781012401107,
+        "y": 390.233024784689
       },
       "data": {
         "id": "customFunctionAgentflow_cobranzas",
@@ -3323,11 +3392,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 320,
-      "height": 160,
+      "width": 224,
+      "height": 66,
       "positionAbsolute": {
-        "x": 520,
-        "y": 240
+        "x": 984.781012401107,
+        "y": 390.233024784689
       },
       "selected": false,
       "dragging": false
@@ -3336,8 +3405,8 @@
       "id": "customFunctionAgentflow_pendientes",
       "type": "agentFlow",
       "position": {
-        "x": 520,
-        "y": 80
+        "x": 1052.4030458003117,
+        "y": 156.14957836349288
       },
       "data": {
         "id": "customFunctionAgentflow_pendientes",
@@ -3456,11 +3525,11 @@
         "outputs": {},
         "selected": false
       },
-      "width": 320,
-      "height": 160,
+      "width": 235,
+      "height": 66,
       "positionAbsolute": {
-        "x": 520,
-        "y": 80
+        "x": 1052.4030458003117,
+        "y": 156.14957836349288
       },
       "selected": false,
       "dragging": false

@@ -9,6 +9,9 @@ router.get('/', inventoryController.getAllInventory)
 // GET /api/v1/inventory/search - Search inventory
 router.get('/search', inventoryController.searchInventory)
 
+// GET /api/v1/inventory/alternatives - Suggest alternative products
+router.get('/alternatives', inventoryController.getInventoryAlternatives)
+
 // GET /api/v1/inventory/stats - Get inventory statistics
 router.get('/stats', inventoryController.getInventoryStats)
 
@@ -17,6 +20,15 @@ router.get('/low-stock', inventoryController.getLowStockItems)
 
 // GET /api/v1/inventory/check - Check inventory availability
 router.get('/check', inventoryController.checkInventoryItem)
+
+// POST /api/v1/inventory/reserve - Reserve stock for customer
+router.post('/reserve', inventoryController.reserveInventory)
+
+// POST /api/v1/inventory/notify - Request notification when product restocks
+router.post('/notify', inventoryController.notifyWhenInStock)
+
+// POST /api/v1/inventory/update - Alias to update inventory stock
+router.post('/update', inventoryController.updateInventoryByPost)
 
 // GET /api/v1/inventory/:productId - Get specific inventory item
 router.get('/:productId', inventoryController.getInventoryById)
