@@ -260,7 +260,7 @@ const getInventoryStats = async (req: Request, res: Response, next: NextFunction
 // Check inventory availability by tire_number or productId
 const checkInventoryItem = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { tire_number, productId, productCode } = req.query as { [key: string]: string }
+        const { tire_number, productId, productCode, brand } = req.query as { [key: string]: string }
 
         if (!tire_number && !productId && !productCode) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'tire_number, productId or productCode query param required')
@@ -270,33 +270,57 @@ const checkInventoryItem = async (req: Request, res: Response, next: NextFunctio
         const params: any[] = []
         let paramIndex = 1
 
+        const aliasId = productId ?? productCode
+        if (aliasId) {
+            query += ` AND "productId" = $${paramIndex}`
+            params.push(aliasId)
+            paramIndex++
+        }
+
+        if (brand) {
+            query += ` AND brand ILIKE $${paramIndex}`
+            params.push(`%${brand}%`)
+            paramIndex++
+        }
+
+        const filters: string[] = []
         if (tire_number) {
-            query += ` AND "productId" = $${paramIndex}`
-            params.push(tire_number)
+            const normalized = tire_number.replace(/\s+/g, '').toUpperCase()
+            const digitsOnly = normalized.replace(/[^0-9]/g, '')
+            filters.push(`UPPER("productId") LIKE $${paramIndex}`)
+            params.push(`%${normalized}%`)
+            paramIndex++
+            filters.push(`REPLACE(REPLACE(REPLACE(UPPER("productId"), '-', ''), '/', ''), 'R', '') LIKE $${paramIndex}`)
+            params.push(`%${digitsOnly}%`)
+            paramIndex++
+            filters.push(`UPPER(name) LIKE $${paramIndex}`)
+            params.push(`%${normalized}%`)
             paramIndex++
         }
 
-        if (productId) {
-            query += ` AND "productId" = $${paramIndex}`
-            params.push(productId)
-            paramIndex++
-        }
-
-        if (productCode) {
-            // Legacy behaviours from the chatflow expect productCode to map to productId
-            query += ` AND "productId" = $${paramIndex}`
-            params.push(productCode)
-            paramIndex++
+        if (filters.length > 0) {
+            query += ` AND (${filters.join(' OR ')})`
         }
 
         const appServer = getRunningExpressApp()
-        const result = await appServer.AppDataSource.query(query, params)
+        const rows = await appServer.AppDataSource.query(query, params)
 
-        if (result.length === 0) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' })
+        if (rows.length === 0) {
+            return res.json({
+                available: false,
+                query: {
+                    tire_number: tire_number ?? null,
+                    productId: aliasId ?? null,
+                    brand: brand ?? null
+                }
+            })
         }
 
-        return res.json(result[0])
+        const match = rows[0]
+        return res.json({
+            available: match.stock > 0,
+            product: match
+        })
     } catch (error) {
         logger.error('Error checking inventory item:', error)
         return next(error)
