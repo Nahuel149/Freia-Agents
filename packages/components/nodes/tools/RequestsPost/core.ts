@@ -30,9 +30,17 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
     if (bodySchema) {
         try {
             const parsedSchema = JSON.parse(bodySchema)
+            console.log('Parsed schema:', JSON.stringify(parsedSchema, null, 2))
             const bodyParamsObject: Record<string, z.ZodTypeAny> = {}
 
-            Object.entries(parsedSchema).forEach(([key, config]: [string, any]) => {
+            // Handle both flat schema format and JSON Schema format with properties
+            const schemaProperties = parsedSchema.properties || parsedSchema
+            const requiredFields = parsedSchema.required || []
+            console.log('Schema properties:', Object.keys(schemaProperties))
+            console.log('Required fields:', requiredFields)
+
+            Object.entries(schemaProperties).forEach(([key, config]: [string, any]) => {
+                console.log(`Processing property: ${key}`, config)
                 let zodType: z.ZodTypeAny = z.string()
 
                 // Handle different types
@@ -43,7 +51,64 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
                 } else if (config.type === 'object') {
                     zodType = z.record(z.any())
                 } else if (config.type === 'array') {
-                    zodType = z.array(z.any())
+                    console.log(`Processing array property: ${key}`, config)
+                    // Handle array items schema
+                    let arrayType: z.ZodArray<any>
+                    
+                    if (config.items) {
+                        if (config.items.type === 'object' && config.items.properties) {
+                            // Handle array of objects
+                            const itemsObject: Record<string, z.ZodTypeAny> = {}
+                            const itemsRequired = config.items.required || []
+                            
+                            Object.entries(config.items.properties).forEach(([itemKey, itemConfig]: [string, any]) => {
+                                let itemZodType: z.ZodTypeAny = z.string()
+                                
+                                if (itemConfig.type === 'number') {
+                                    itemZodType = z.number()
+                                } else if (itemConfig.type === 'integer') {
+                                    itemZodType = z.number().int()
+                                } else if (itemConfig.type === 'boolean') {
+                                    itemZodType = z.boolean()
+                                } else if (itemConfig.type === 'object') {
+                                    itemZodType = z.record(z.any())
+                                } else if (itemConfig.type === 'array') {
+                                    itemZodType = z.array(z.any())
+                                }
+                                
+                                if (itemConfig.description) {
+                                    itemZodType = itemZodType.describe(itemConfig.description)
+                                }
+                                
+                                if (!itemsRequired.includes(itemKey)) {
+                                    itemZodType = itemZodType.optional()
+                                }
+                                
+                                itemsObject[itemKey] = itemZodType
+                            })
+                            
+                            arrayType = z.array(z.object(itemsObject))
+                        } else if (config.items.type === 'string') {
+                            arrayType = z.array(z.string())
+                        } else if (config.items.type === 'number') {
+                            arrayType = z.array(z.number())
+                        } else if (config.items.type === 'integer') {
+                            arrayType = z.array(z.number().int())
+                        } else if (config.items.type === 'boolean') {
+                            arrayType = z.array(z.boolean())
+                        } else {
+                            arrayType = z.array(z.any())
+                        }
+                    } else {
+                        arrayType = z.array(z.any())
+                    }
+                    
+                    // Handle minItems constraint
+                    if (config.minItems && config.minItems > 0) {
+                        arrayType = arrayType.min(config.minItems)
+                    }
+                    
+                    zodType = arrayType
                 }
 
                 // Add description
@@ -51,8 +116,9 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
                     zodType = zodType.describe(config.description)
                 }
 
-                // Make optional if not required
-                if (!config.required) {
+                // Make optional if not required (check both config.required and requiredFields array)
+                const isRequired = config.required || requiredFields.includes(key)
+                if (!isRequired) {
                     zodType = zodType.optional()
                 }
 
@@ -113,10 +179,15 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
         queryZod = z.record(z.string()).optional().describe('Optional query parameters to include in the request')
     }
 
-    return z.object({
+    const finalSchema = z.object({
         body: bodyZod,
         queryParams: queryZod
     })
+    
+    console.log('Final Zod schema created:', finalSchema)
+    console.log('Body schema:', bodyZod)
+    
+    return finalSchema
 }
 
 export class RequestsPostTool extends DynamicStructuredTool {

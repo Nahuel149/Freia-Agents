@@ -3,6 +3,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
+import { analyzeConversationForProduct, validateProductSKU } from '../utils/conversationAnalyzer'
 
 // Get all sales
 const getAllSales = async (req: Request, res: Response, next: NextFunction) => {
@@ -117,14 +118,75 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             delivery_method,
             delivery_address,
             sale_status = 'pending',
-            agent_notes
+            agent_notes,
+            // New parameters for conversation analysis
+            chatflowid,
+            sessionId,
+            chatId
         } = req.body
 
-        if (!phone_number || !product_sku) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number and product SKU are required')
+        if (!phone_number) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required')
+        }
+
+        let finalProductSku = product_sku
+        let finalProductBrand = product_brand
+        let finalProductModel = product_model
+        let finalWheelSize = wheel_size
+        let analysisNotes = ''
+
+        // If product_sku is not provided, try to detect it from conversation
+        if (!finalProductSku && (chatflowid || sessionId || chatId)) {
+            logger.info('Product SKU not provided, analyzing conversation for product information...')
+            
+            const analysisResult = await analyzeConversationForProduct(
+                chatflowid,
+                sessionId,
+                chatId,
+                phone_number
+            )
+
+            if (analysisResult.productInfo && analysisResult.productInfo.confidence > 0.5) {
+                finalProductSku = analysisResult.productInfo.product_sku
+                finalProductBrand = finalProductBrand || analysisResult.productInfo.product_brand
+                finalProductModel = finalProductModel || analysisResult.productInfo.product_model
+                finalWheelSize = finalWheelSize || analysisResult.productInfo.wheel_size
+                
+                analysisNotes = `Auto-detected from conversation (confidence: ${(analysisResult.productInfo.confidence * 100).toFixed(1)}%). Keywords: ${analysisResult.analysisDetails.keywordsFound.join(', ')}`
+                
+                logger.info('Product information detected from conversation:', {
+                    product_sku: finalProductSku,
+                    product_brand: finalProductBrand,
+                    confidence: analysisResult.productInfo.confidence,
+                    keywords: analysisResult.analysisDetails.keywordsFound
+                })
+            } else {
+                logger.warn('Could not detect product information from conversation with sufficient confidence', {
+                    confidence: analysisResult.analysisDetails.confidenceScore,
+                    messagesAnalyzed: analysisResult.analysisDetails.messagesAnalyzed
+                })
+            }
+        }
+
+        // Validate that we have a product SKU
+        if (!finalProductSku) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST, 
+                'Product SKU is required. Either provide it directly or ensure the conversation contains sufficient product information (brand, tire size, etc.)'
+            )
+        }
+
+        // Validate that the product SKU exists in inventory
+        const isValidSku = await validateProductSKU(finalProductSku)
+        if (!isValidSku) {
+            logger.warn(`Product SKU ${finalProductSku} not found in inventory`)
+            // Don't throw error, just log warning - the sale can still be created for manual review
         }
 
         const appServer = getRunningExpressApp()
+        
+        // Combine agent notes with analysis notes
+        const combinedNotes = [agent_notes, analysisNotes].filter(Boolean).join(' | ')
         
         const query = `
             INSERT INTO sales (
@@ -138,13 +200,21 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         `
         
         const result = await appServer.AppDataSource.query(query, [
-            customer_id, phone_number, product_sku, product_brand, product_model,
-            wheel_size, quantity, unit_price, total_price, discount_percentage,
+            customer_id, phone_number, finalProductSku, finalProductBrand, finalProductModel,
+            finalWheelSize, quantity, unit_price, total_price, discount_percentage,
             final_price, payment_method, delivery_method, delivery_address,
-            sale_status, 0, agent_notes
+            sale_status, 0, combinedNotes
         ])
         
-        return res.status(StatusCodes.CREATED).json(result[0])
+        return res.status(StatusCodes.CREATED).json({
+            ...result[0],
+            analysis_info: analysisNotes ? {
+                auto_detected: true,
+                analysis_notes: analysisNotes
+            } : {
+                auto_detected: false
+            }
+        })
     } catch (error) {
         logger.error('Error creating sale:', error)
         return next(error)

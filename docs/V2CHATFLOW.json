@@ -845,7 +845,7 @@
         ],
         "inputs": {
           "cache": "",
-          "modelName": "gpt-5-mini",
+          "modelName": "gpt-5-nano",
           "temperature": "0.3",
           "streaming": true,
           "maxTokens": "",
@@ -1070,23 +1070,10 @@
             "{{requestsGet_3.data.instance}}",
             "{{requestsGet_5.data.instance}}",
             "{{requestsPost_0.data.instance}}",
-            "{{requestsPost_1.data.instance}}",
             "{{requestsPost_3.data.instance}}",
             "{{requestsPost_2.data.instance}}",
             "{{requestsPost_8.data.instance}}",
-            "{{requestsPost_4.data.instance}}",
-            "{{requestsPost_7.data.instance}}",
             "{{requestsPost_5.data.instance}}",
-            "{{requestsPost_6.data.instance}}",
-            "{{requestsPost_10.data.instance}}",
-            "{{requestsPost_11.data.instance}}",
-            "{{requestsPost_13.data.instance}}",
-            "{{requestsPost_16.data.instance}}",
-            "{{requestsPost_17.data.instance}}",
-            "{{requestsPost_14.data.instance}}",
-            "{{requestsPost_15.data.instance}}",
-            "{{requestsPost_12.data.instance}}",
-            "{{requestsPost_19.data.instance}}",
             "{{requestsPost_9.data.instance}}",
             "{{requestsPost_20.data.instance}}",
             "{{requestsPost_22.data.instance}}",
@@ -1095,13 +1082,12 @@
             "{{requestsPost_23.data.instance}}",
             "{{requestsPost_21.data.instance}}",
             "{{requestsPost_25.data.instance}}",
-            "{{retrieverTool_0.data.instance}}",
-            "{{requestsPost_27.data.instance}}"
+            "{{retrieverTool_0.data.instance}}"
           ],
           "memory": "{{MongoDBAtlasChatMemory_1.data.instance}}",
           "model": "{{chatOpenAI_1.data.instance}}",
           "chatPromptTemplate": "",
-          "systemMessage": "Tu función principal es analizar la pregunta del usuario y decidir qué herramienta usar. Sigue este orden de prioridad estricto:\n\n1.  **Consultar Catálogo Primero:** Para CUALQUIER pregunta sobre productos, precios, detalles, comparaciones, disponibilidad o si el cliente envía una medida de neumático o un código, usa SIEMPRE primero la herramienta **`gomeria_consultation`**. Esta herramienta tiene acceso al catálogo completo (DATAFINALV1.0) y es tu fuente principal de información.\n\n2.  **Usar Herramientas de Acción Después:** Solo después de haber consultado el catálogo, si necesitas confirmar el stock operativo en tiempo real o realizar una acción, utiliza las otras herramientas.\n    * **Para confirmar stock:** Usa `check_product_stock`. Si la API no lo encuentra pero el catálogo sí, explica que existe en el catálogo pero no en el sistema operativo y ofrece alternativas.\n    * **Para otras acciones:** Usa las herramientas para `crear cliente`, `registrar venta`, `programar seguimiento`, etc.\n\nUna vez que elijas la herramienta correcta, úsala para responder al usuario.\n---\n\nSos Lautaro (solo di tu nombre en el primer y último mensaje), un asesor de ventas experto de **Freia - Especialistas en Neumáticos**. Tu trabajo es ser un socio para tus clientes, no un simple vendedor. Tu personalidad es profesional, amable y resolutiva, con un tono natural y cercano de Argentina (usá \"vos\").\n- Siempre que un endpoint tenga variables en la ruta (ej. `{{clientId}}`), enviá el ID correcto mediante `pathParams` para que la URL se complete. Caso contrario, la API responde 500.\n\n- **Mantener listener activo:** Siempre que inicies el día o notes que las respuestas demoran, ejecutá la herramienta `start_prediction_listener` para dejar prendido el proceso backend que escucha las predicciones.\n\n**PROCESO DE VENTA Y COTIZACIÓN:**\n- Identifica el tipo de cliente (consumidor final o gomería).\n- Si el cliente envía un modelo de auto, una foto, o una descripción, usa `gomeria_consultation` para encontrar opciones compatibles.\n- Si el cliente pregunta por una medida o código específico, devuelve siempre los productos exactos del catálogo (`gomeria_consultation`) con su ID, marca, nombre y precio.\n- Ofrece siempre productos complementarios y promociones activas.\n\n**REGLAS DE NEGOCIACIÓN:**\n1.  **Valor:** Si un cliente objeta el precio, primero defiende el valor del producto (durabilidad, costo por kilómetro, etc.).\n2.  **Flexibilidad:** Si insiste, ofrece un pequeño descuento (5%) o una mejora en las condiciones de pago (2-3 cuotas).\n3.  **Volumen:** Como último recurso para compras grandes, ofrece un descuento por cantidad.\n\n**FINALIZACIÓN DE VENTA:**\n- **Cierre:** Antes de cerrar, siempre pregunta si el cliente retira por el local o necesita un envío, y confirma los tiempos de entrega.\n- **Facturación:** Pregunta si necesita factura A.\n- **Resumen:** Proporciona un resumen del pedido, el número de orden y un contacto para post-venta.\n- **Feedback:** Al finalizar una venta, pide amablemente una calificación del 0 al 10 sobre la atención.\n\n**REGLAS ESTRICTAS:**\n- **No inventes:** Si no encuentras la respuesta con tus herramientas, tu única respuesta debe ser: \"Disculpame, pero no tengo esa información a mano.\"\n- **Mantén el personaje:** Niégate a responder preguntas que no sean sobre el negocio. Nunca rompas tu personaje de Lautaro.",
+          "systemMessage": "Tu función principal es analizar la pregunta del usuario y decidir qué herramienta usar. Sigue este orden de prioridad estricto:\n\n1.  **Consultar Catálogo Primero:** Para CUALQUIER pregunta sobre productos, precios, detalles, comparaciones, disponibilidad o si el cliente envía una medida de neumático o un código, usa SIEMPRE primero la herramienta **`gomeria_consultation`**.\n\n2.  **Usar Herramientas de Acción Después:** Solo después de haber consultado el catálogo, si necesitas confirmar el stock operativo en tiempo real o realizar una acción, utiliza las otras herramientas.\n---\n\n**TU PERSONA:**\n- **Nombre:** Lautaro.\n- **Rol:** Asesor de ventas experto de **Freia - Especialistas en Neumáticos**.\n- **Edad Proyectada:** Entre 30 y 50 años, con la experiencia y seguridad que eso implica.\n- **Idioma y Dialecto:** Español Rioplatense (de Buenos Aires). Usá siempre \"vos\" y modismos comunes y profesionales como \"dale\", \"perfecto\", \"no hay problema\".\n- **Tono:** Tu tono es una mezcla de **profesionalismo** y **amabilidad**. Sos siempre **atento**, resolutivo y generás confianza.\n\n**ESTILO DE COMUNICACIÓN:**\n- **Claridad para el Cliente:** **Nunca muestres IDs internos de productos** (ej: 'WD40-FLEX-400') en tu respuesta, a menos que sea estrictamente necesario para diferenciar dos productos muy similares. El cliente solo necesita la marca y el nombre.\n- **Lenguaje Sencillo:** **Evitá usar jerga técnica o de negocios como \"B2B\"**. Hablá de forma clara y directa (ej: \"venta para empresas\" o \"compra por mayor\").\n- **Puntuación Natural:** **Usá una puntuación que suene a conversación.** Evitá los guiones largos (—) en los saludos y los dos puntos (:) para introducir información. Haz que la conversación fluya.\n\n**ESTRATEGIA DE CONVERSACIÓN (MUY IMPORTANTE):**\n- **Un paso a la vez:** Concéntrate en una sola pregunta o tarea por mensaje.\n- **Respuestas Cortas:** Mantén tus respuestas breves y al punto.\n- **Pregunta y Espera:** Haz una pregunta clave, espera la respuesta del cliente, y LUEGO haz la siguiente.\n\n**PROCESO DE VENTA (Paso a Paso):**\n- **Identificar:** Primero, identifica si el cliente es consumidor final o una empresa/gomería.\n- **Consultar:** Usa `gomeria_consultation` para encontrar productos y mostrar las opciones básicas (Nombre, Marca, Precio).\n- **Confirmar:** Pregunta al cliente qué opción le interesa.\n- **Cotizar:** Una vez que el cliente elige, pregunta la cantidad para armar una cotización.\n\n**REGLAS DE NEGOCIACIÓN:**\n1.  **Valor:** Si un cliente objeta el precio, primero defiende el valor del producto.\n2.  **Flexibilidad:** Si insiste, ofrece un pequeño descuento (5%) o una mejora en las condiciones de pago.\n3.  **Volumen:** Para compras grandes, ofrece un descuento por cantidad.\n\n**FINALIZACIÓN DE VENTA:**\n- **Cierre:** Antes de cerrar, pregunta si retira o necesita envío.\n- **Facturación:** Pregunta si necesita factura A.\n- **Resumen:** Proporciona un resumen del pedido y número de orden.\n- **Feedback:** Al finalizar, pide amablemente una calificación del 0 al 10 sobre la atención.\n\n**REGLAS ESTRICTAS:**\n- **No inventes:** Si no encuentras la respuesta, tu única respuesta debe ser: \"Disculpame, pero no tengo esa información a mano.\"\n- **Mantén el personaje:** Niégate a responder preguntas que no sean sobre el negocio.",
           "inputModeration": [
             "{{inputModerationOpenAI_1.data.instance}}"
           ],
@@ -1132,7 +1118,7 @@
     {
       "id": "MongoDBAtlasChatMemory_1",
       "position": {
-        "x": 1307.0492955520172,
+        "x": 1305.5292747274536,
         "y": 2059.7239335526115
       },
       "type": "customNode",
@@ -1201,7 +1187,7 @@
         "inputs": {
           "databaseName": "eternum",
           "collectionName": "chat_history",
-          "sessionId": "47",
+          "sessionId": "59",
           "memoryKey": "chat_history"
         },
         "outputAnchors": [
@@ -1221,7 +1207,7 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 1307.0492955520172,
+        "x": 1305.5292747274536,
         "y": 2059.7239335526115
       }
     },
@@ -1337,7 +1323,7 @@
           "requestsPostDescription": "Actualiza el stock de un producto después de una venta confirmada.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"productId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del producto (alias de product_sku/sku)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"SKU del producto (alias de productId/sku)\"\n    },\n    \"sku\": {\n      \"type\": \"string\",\n      \"description\": \"SKU del producto (alias)\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad a aplicar al stock. Negativo para ventas, positivo para reposición.\"\n    },\n    \"saleId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la venta asociada (si aplica)\"\n    },\n    \"sale_id\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la venta asociada (alias de saleId)\"\n    },\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Motivo del cambio de stock (venta, ajuste, devolución, etc.)\"\n    }\n  },\n  \"required\": []\n}\n",
+          "requestsPostBodySchema": "{\n  \"productId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del producto\"\n  },\n  \"quantity\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Cantidad a aplicar al stock. Negativo para ventas, positivo para reposición.\"\n  },\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de la venta asociada (si aplica)\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Motivo del cambio de stock (venta, ajuste, devolución, etc.)\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -1364,8 +1350,8 @@
     {
       "id": "requestsPost_1",
       "position": {
-        "x": 3322.8311894373255,
-        "y": -296.5885174582331
+        "x": 3128.2685292949504,
+        "y": -1014.0383245307428
       },
       "type": "customNode",
       "data": {
@@ -1473,7 +1459,7 @@
           "requestsPostDescription": "Herramienta para crear un nuevo cliente en el sistema. Usar cuando se obtenga información completa del cliente durante el proceso de venta. Incluir nombre, teléfono, email, dirección, tipo de cliente (consumer/business) y empresa si aplica.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Nombre completo; alternativamente use first_name y last_name\"\n    },\n    \"first_name\": {\n      \"type\": \"string\",\n      \"description\": \"Nombre (alias de 'name')\"\n    },\n    \"last_name\": {\n      \"type\": \"string\",\n      \"description\": \"Apellido (alias de 'name')\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Email del cliente\"\n    },\n    \"phone\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente (alias de 'phone')\"\n    },\n    \"address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección del cliente\"\n    },\n    \"default_address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección del cliente (alias de 'address')\"\n    },\n    \"customer_type\": {\n      \"type\": \"string\",\n      \"description\": \"Tipo de cliente: final_consumer | tire_shop (alias de 'customerType')\"\n    },\n    \"customerType\": {\n      \"type\": \"string\",\n      \"description\": \"Tipo de cliente: final_consumer | tire_shop\"\n    },\n    \"company\": {\n      \"type\": \"string\",\n      \"description\": \"Empresa/Gomería (opcional)\"\n    },\n    \"taxId\": {\n      \"type\": \"string\",\n      \"description\": \"CUIT/CUIL (para facturación A)\"\n    },\n    \"default_payment_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de pago preferido (cash, debit, credit, transfer, mercado_pago, etc.)\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas adicionales sobre el cliente\"\n    }\n  },\n  \"required\": []\n}\n",
+          "requestsPostBodySchema": "{\n  \"name\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Nombre completo del cliente\"\n  },\n  \"email\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Email del cliente\"\n  },\n  \"phone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Número de teléfono del cliente\"\n  },\n  \"address\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Dirección del cliente\"\n  },\n  \"customer_type\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tipo de cliente: consumer o business\"\n  },\n  \"company\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Nombre de la empresa si aplica (solo para clientes business)\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -1493,8 +1479,8 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3322.8311894373255,
-        "y": -296.5885174582331
+        "x": 3128.2685292949504,
+        "y": -1014.0383245307428
       }
     },
     {
@@ -1745,7 +1731,7 @@
           "requestsPostDescription": "Herramienta para crear seguimientos de clientes. Usar cuando el cliente no complete la compra por precio, tiempos de entrega, o falta de stock. Incluir ID del cliente, razón del seguimiento (price_negotiation, delivery_time, stock_availability), prioridad, fecha programada, notas y método de contacto preferido.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customer_id\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente para el seguimiento\"\n    },\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Motivo del seguimiento (price_negotiation | delivery_time | stock_availability | other)\"\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"description\": \"Prioridad (low | medium | high). Default: medium\"\n    },\n    \"scheduled_date\": {\n      \"type\": \"string\",\n      \"description\": \"Fecha/hora programada en ISO 8601. Ej: 2025-09-22T14:30:00Z\"\n    },\n    \"contact_method\": {\n      \"type\": \"string\",\n      \"description\": \"Cómo contactar (phone | whatsapp | email). Default: phone\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas internas\"\n    },\n    \"related_sale_id\": {\n      \"type\": \"string\",\n      \"description\": \"ID de venta relacionada (si aplica)\"\n    },\n    \"assigned_to\": {\n      \"type\": \"string\",\n      \"description\": \"Usuario/asesor asignado al seguimiento\"\n    }\n  },\n  \"required\": [\"customer_id\", \"reason\"]\n}\n",
+          "requestsPostBodySchema": "{\n  \"customer_id\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente para el seguimiento\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Motivo del seguimiento (price_negotiation | delivery_time | stock_availability | other)\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad (low | medium | high). Default: medium\"\n  },\n  \"scheduled_date\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha/hora programada en ISO 8601. Ej: 2025-09-22T14:30:00Z\"\n  },\n  \"contact_method\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Cómo contactar (phone | whatsapp | email). Default: phone\"\n  },\n  \"notes\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Notas internas\"\n  },\n  \"related_sale_id\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de venta relacionada (si aplica)\"\n  },\n  \"assigned_to\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Usuario/asesor asignado al seguimiento\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -1894,7 +1880,7 @@
     {
       "id": "requestsGet_2",
       "position": {
-        "x": 3385.993013820387,
+        "x": 3384.077907614248,
         "y": 1642.8479542327984
       },
       "type": "customNode",
@@ -2008,7 +1994,7 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3385.993013820387,
+        "x": 3384.077907614248,
         "y": 1642.8479542327984
       },
       "dragging": false
@@ -2138,8 +2124,8 @@
     {
       "id": "requestsPost_4",
       "position": {
-        "x": 3779.9678154510652,
-        "y": 1651.3320169899946
+        "x": 4228.763976795279,
+        "y": -1006.2168652923518
       },
       "type": "customNode",
       "data": {
@@ -2247,7 +2233,7 @@
           "requestsPostDescription": "Reserva stock de un producto durante el proceso de venta. Usar cuando el cliente confirme interés en comprar.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"productId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del producto a reservar\"\n    },\n    \"product_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId\"\n    },\n    \"sku\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"productSKU\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias genérico de productId\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad a reservar\"\n    },\n    \"qty\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"amount\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"units\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"count\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente\"\n    },\n    \"client_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"customerId\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"customer_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"clientPhone\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente (opcional)\"\n    },\n    \"phone\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientPhone\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientPhone\"\n    },\n    \"reservationTime\": {\n      \"type\": \"integer\",\n      \"description\": \"Tiempo de reserva en minutos (default: 30)\"\n    },\n    \"reservation_time\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de reservationTime\"\n    },\n    \"holdMinutes\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de reservationTime\"\n    },\n    \"holdDuration\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de reservationTime\"\n    },\n    \"ttlMinutes\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de reservationTime\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas adicionales\"\n    }\n  },\n  \"required\": []\n}\n",
+          "requestsPostBodySchema": "{\n  \"productId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del producto a reservar\"\n  },\n  \"quantity\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Cantidad a reservar\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"reservationTime\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Tiempo de reserva en minutos (default: 30)\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -2266,8 +2252,8 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3779.9678154510652,
-        "y": 1651.3320169899946
+        "x": 4228.763976795279,
+        "y": -1006.2168652923518
       },
       "dragging": false
     },
@@ -2367,7 +2353,7 @@
         "inputs": {
           "requestsGetUrl": "https://freia-agents.onrender.com/api/v1/customers/{clientId}",
           "requestsGetName": "get_customer_information",
-          "requestsGetDescription": "Obtiene información completa de un cliente existente. Usar cuando se necesite consultar datos del cliente. Siempre incluye pathParams { clientId } con los valores correctos; de lo contrario, la API devuelve 500.",
+          "requestsGetDescription": "Obtiene información completa de un cliente existente. Usar cuando se necesite consultar datos del cliente.",
           "requestsGetHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestsGetQueryParamsSchema": "{\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"path\",\n    \"description\": \"ID del cliente. Ruta: /customers/:clientId\"\n  }\n}\n",
           "requestsGetMaxOutputLength": "2000"
@@ -2396,7 +2382,7 @@
     {
       "id": "requestsPost_5",
       "position": {
-        "x": 4158.738250866818,
+        "x": 4160.653357072957,
         "y": 2117.168235130893
       },
       "type": "customNode",
@@ -2505,7 +2491,7 @@
           "requestsPostDescription": "Crea una notificación para contactar al cliente cuando llegue stock de un producto agotado.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"productId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del producto sin stock\"\n    },\n    \"product_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId\"\n    },\n    \"sku\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"productSKU\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias genérico de productId\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente interesado\"\n    },\n    \"client_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"customerId\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"customer_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"clientPhone\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente (usar si el contacto será por llamada/WhatsApp)\"\n    },\n    \"phone\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientPhone\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientPhone\"\n    },\n    \"whatsapp\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientPhone (WhatsApp)\"\n    },\n    \"clientEmail\": {\n      \"type\": \"string\",\n      \"description\": \"Email del cliente (opcional)\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientEmail\"\n    },\n    \"estimatedTime\": {\n      \"type\": \"string\",\n      \"description\": \"Tiempo estimado de reposición (ISO 8601 o texto, ej. '48h')\"\n    },\n    \"eta\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de estimatedTime\"\n    },\n    \"estimated_time\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de estimatedTime\"\n    },\n    \"wait_time\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de estimatedTime\"\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"description\": \"Prioridad de la notificación (high, medium, low). Default: medium\"\n    },\n    \"urgency\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de priority\"\n    },\n    \"importance\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de priority\"\n    },\n    \"notifyChannel\": {\n      \"type\": \"string\",\n      \"description\": \"Canal preferido (phone | whatsapp | email)\"\n    },\n    \"channel\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de notifyChannel\"\n    },\n    \"contact_method\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de notifyChannel\"\n    },\n    \"contactChannel\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de notifyChannel\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas adicionales\"\n    },\n    \"comment\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de notes\"\n    },\n    \"comments\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de notes\"\n    },\n    \"description\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de notes\"\n    }\n  },\n  \"required\": []\n}\n",
+          "requestsPostBodySchema": "{\n  \"productId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del producto sin stock\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente interesado\"\n  },\n  \"clientPhone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente (usar si el contacto será por llamada/WhatsApp)\"\n  },\n  \"clientEmail\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Email del cliente (opcional)\"\n  },\n  \"estimatedTime\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Tiempo estimado de reposición (ISO 8601 o texto, ej. '48h')\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad de la notificación (high, medium, low). Default: medium\"\n  },\n  \"notifyChannel\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Canal preferido (phone | whatsapp | email)\"\n  },\n  \"notes\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Notas adicionales\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -2525,20 +2511,20 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4158.738250866818,
+        "x": 4160.653357072957,
         "y": 2117.168235130893
       }
     },
     {
       "id": "requestsPost_6",
       "position": {
-        "x": 3313.891166381906,
-        "y": 2110.2935792349344
+        "x": 3866.7377929230006,
+        "y": -938.3943214727091
       },
       "type": "customNode",
       "data": {
         "id": "requestsPost_6",
-        "label": "Requests Post (5) (6)",
+        "label": "Crear Cliente",
         "version": 2,
         "name": "requestsPost",
         "type": "RequestsPost",
@@ -2641,7 +2627,7 @@
           "requestsPostDescription": "Crea un nuevo registro de cliente. Usar cuando un cliente nuevo interactúe por primera vez.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Nombre completo; alternativamente use first_name y last_name\"\n    },\n    \"first_name\": {\n      \"type\": \"string\",\n      \"description\": \"Nombre (alias de 'name')\"\n    },\n    \"last_name\": {\n      \"type\": \"string\",\n      \"description\": \"Apellido (alias de 'name')\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Email del cliente\"\n    },\n    \"phone\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente (alias de 'phone')\"\n    },\n    \"address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección del cliente\"\n    },\n    \"default_address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección del cliente (alias de 'address')\"\n    },\n    \"customer_type\": {\n      \"type\": \"string\",\n      \"description\": \"Tipo de cliente: final_consumer | tire_shop (alias de 'customerType')\"\n    },\n    \"customerType\": {\n      \"type\": \"string\",\n      \"description\": \"Tipo de cliente: final_consumer | tire_shop\"\n    },\n    \"company\": {\n      \"type\": \"string\",\n      \"description\": \"Empresa/Gomería (opcional)\"\n    },\n    \"taxId\": {\n      \"type\": \"string\",\n      \"description\": \"CUIT/CUIL (para facturación A)\"\n    },\n    \"default_payment_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de pago preferido (cash, debit, credit, transfer, mercado_pago, etc.)\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas adicionales sobre el cliente\"\n    }\n  },\n  \"required\": []\n}\n",
+          "requestsPostBodySchema": "{\n  \"name\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Nombre completo del cliente\"\n  },\n  \"company\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Empresa (opcional, para clientes B2B)\"\n  },\n  \"email\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Email del cliente\"\n  },\n  \"phone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente\"\n  },\n  \"address\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Dirección del cliente\"\n  },\n  \"customerType\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tipo de cliente: 'final_consumer' o 'tire_shop'\"\n  },\n  \"taxId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"CUIT/CUIL (para facturación A)\"\n  },\n  \"notes\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Notas adicionales sobre el cliente\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -2661,8 +2647,8 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3313.891166381906,
-        "y": 2110.2935792349344
+        "x": 3866.7377929230006,
+        "y": -938.3943214727091
       }
     },
     {
@@ -2761,9 +2747,9 @@
         "inputs": {
           "requestsGetUrl": "https://freia-agents.onrender.com/api/v1/customers/{clientId}/history",
           "requestsGetName": "get_customer_purchases",
-          "requestsGetDescription": "Obtiene el historial de compras de un cliente. Siempre incluye clientId (path) y usa limit cuando necesites acotar la cantidad de registros. Siempre incluye pathParams { clientId } con los valores correctos; de lo contrario, la API devuelve 500.",
+          "requestsGetDescription": "Obtiene el historial de compras de un cliente. Usar para personalizar recomendaciones y ofertas.",
           "requestsGetHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
-          "requestsGetQueryParamsSchema": "{\n  \"limit\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Número máximo de registros (default: 10)\"\n  },\n  \"dateFrom\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Fecha desde (YYYY-MM-DD)\"\n  },\n  \"dateTo\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Fecha hasta (YYYY-MM-DD)\"\n  },\n  \"clientId\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"path\",\n    \"description\": \"ID numérico del cliente (obtenido de search_customers). Reemplaza {clientId} en la URL.\"\n  }\n}",
+          "requestsGetQueryParamsSchema": "{\n  \"limit\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Número máximo de registros (default: 10)\"\n  },\n  \"dateFrom\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Fecha desde (YYYY-MM-DD)\"\n  },\n  \"dateTo\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"query\",\n    \"description\": \"Fecha hasta (YYYY-MM-DD)\"\n  }\n}\n",
           "requestsGetMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -2912,8 +2898,8 @@
     {
       "id": "requestsPost_7",
       "position": {
-        "x": 3695.6365917718454,
-        "y": 2088.236958040383
+        "x": 3534.1764554019255,
+        "y": -979.9198938388437
       },
       "type": "customNode",
       "data": {
@@ -3021,7 +3007,7 @@
           "requestsPostDescription": "Crea un lead de venta cuando un cliente muestre interés pero no concrete la compra.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Nombre del cliente\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Email del cliente\"\n    },\n    \"phone\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente\"\n    },\n    \"chatflowId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chatflow actual\"\n    },\n    \"chatId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la conversación\"\n    },\n    \"productInterest\": {\n      \"type\": \"string\",\n      \"description\": \"Producto de interés\"\n    },\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Razón por la que no se concretó (precio, tiempo, stock)\"\n    },\n    \"followUpDate\": {\n      \"type\": \"string\",\n      \"description\": \"Fecha para seguimiento (YYYY-MM-DD o ISO 8601)\"\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"description\": \"Prioridad del lead (high, medium, low). Default: medium\"\n    }\n  },\n  \"required\": [\"name\", \"chatflowId\", \"chatId\", \"reason\"]\n}\n",
+          "requestsPostBodySchema": "{\n  \"name\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Nombre del cliente\"\n  },\n  \"email\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Email del cliente\"\n  },\n  \"phone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente\"\n  },\n  \"chatflowId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del chatflow actual\"\n  },\n  \"chatId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la conversación\"\n  },\n  \"productInterest\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Producto de interés\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Razón por la que no se concretó (precio, tiempo, stock)\"\n  },\n  \"followUpDate\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha para seguimiento (YYYY-MM-DD o ISO 8601)\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad del lead (high, medium, low). Default: medium\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -3041,8 +3027,8 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3695.6365917718454,
-        "y": 2088.236958040383
+        "x": 3534.1764554019255,
+        "y": -979.9198938388437
       }
     },
     {
@@ -3141,7 +3127,7 @@
         "inputs": {
           "requestsGetUrl": "https://freia-agents.onrender.com/api/v1/customers/{clientId}/analytics",
           "requestsGetName": "get_customer_analytics",
-          "requestsGetDescription": "Obtiene análisis del comportamiento del cliente. Usar para estrategias de venta personalizadas. Siempre incluye pathParams { clientId } con los valores correctos; de lo contrario, la API devuelve 500.",
+          "requestsGetDescription": "Obtiene análisis del comportamiento del cliente. Usar para estrategias de venta personalizadas.",
           "requestsGetHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestsGetQueryParamsSchema": "{\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"path\",\n    \"description\": \"ID del cliente. Ruta: /customers/:clientId/analytics\"\n  }\n}\n",
           "requestsGetMaxOutputLength": "2000"
@@ -3673,7 +3659,7 @@
           "requestsPostDescription": "Programa seguimiento automático para clientes que no finalizaron compra o no respondieron. Usar cuando el cliente no conteste o abandone la conversación.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "{\"customerId\":\"ID del cliente\",\"phoneNumber\":\"Número de teléfono para contacto\",\"saleId\":\"ID de la venta pendiente (si aplica)\",\"followUpType\":\"Tipo: 'abandoned_cart', 'price_negotiation', 'delivery_improvement', 'stock_available'\",\"scheduledAt\":\"Fecha y hora programada (ISO 8601)\",\"attemptNumber\":\"Número de intento (1-3)\",\"maxAttempts\":\"Máximo número de intentos\",\"reason\":\"Razón del seguimiento\",\"productInterest\":\"Productos de interés del cliente\",\"lastInteractionDate\":\"Fecha de última interacción\",\"priority\":\"Prioridad: 'high', 'medium', 'low'\"}",
-          "requestsPostBodySchema": "{\n  \"customerId\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"ID del cliente\" },\n  \"customer_id\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de customerId\" },\n  \"clientId\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de customerId\" },\n  \"client_id\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de customerId\" },\n  \"customer\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de customerId\" },\n  \"client\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de customerId\" },\n  \"id\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de customerId\" },\n\n  \"phoneNumber\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Número de teléfono para contacto\" },\n  \"phone\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n  \"phone_number\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n  \"whatsapp\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n  \"clientPhone\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n  \"to\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n  \"to_number\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n  \"contact\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n  \"mobile\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de phoneNumber\" },\n\n  \"saleId\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"ID de la venta pendiente (si aplica)\" },\n  \"sale_id\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de saleId\" },\n  \"quoteId\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de saleId / ID de cotización\" },\n  \"quote_id\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de saleId / ID de cotización\" },\n  \"orderId\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de saleId\" },\n  \"order_id\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de saleId\" },\n  \"transactionId\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de saleId\" },\n  \"transaction_id\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de saleId\" },\n\n  \"followUpType\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Tipo de seguimiento: 'abandoned_cart', 'price_negotiation', 'delivery_improvement', 'stock_available'\" },\n  \"follow_up_type\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de followUpType\" },\n  \"type\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de followUpType\" },\n  \"category\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de followUpType\" },\n  \"reason_code\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de followUpType\" },\n\n  \"scheduledAt\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Fecha y hora programada (ISO 8601)\" },\n  \"schedule\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de scheduledAt\" },\n  \"scheduled_at\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de scheduledAt\" },\n  \"sendAt\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de scheduledAt\" },\n  \"send_at\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de scheduledAt\" },\n  \"when\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de scheduledAt\" },\n\n  \"attemptNumber\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Número de intento (1-3)\" },\n  \"attempt\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de attemptNumber\" },\n  \"try\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de attemptNumber\" },\n  \"attempt_number\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de attemptNumber\" },\n  \"attemptCount\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de attemptNumber\" },\n\n  \"maxAttempts\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Máximo número de intentos\" },\n  \"max_attempts\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de maxAttempts\" },\n  \"retries\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de maxAttempts\" },\n  \"retry_limit\": { \"type\": \"integer\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de maxAttempts\" },\n\n  \"reason\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Razón del seguimiento\" },\n  \"note\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de reason\" },\n  \"notes\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de reason\" },\n  \"comment\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de reason\" },\n  \"justification\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de reason\" },\n\n  \"productInterest\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Productos de interés del cliente\" },\n  \"interestedProducts\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de productInterest\" },\n  \"product_interest\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de productInterest\" },\n  \"products\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de productInterest\" },\n  \"items\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de productInterest\" },\n\n  \"lastInteractionDate\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Fecha de última interacción (ISO 8601)\" },\n  \"last_interaction\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de lastInteractionDate\" },\n  \"lastInteraction\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de lastInteractionDate\" },\n  \"lastContact\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de lastInteractionDate\" },\n  \"last_contact_date\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de lastInteractionDate\" },\n  \"last_seen\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de lastInteractionDate\" },\n\n  \"priority\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Prioridad: 'high', 'medium', 'low'\" },\n  \"urgency\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de priority\" },\n  \"importance\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de priority\" },\n  \"level\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de priority\" },\n  \"prio\": { \"type\": \"string\", \"required\": false, \"in\": \"body\", \"description\": \"Alias de priority\" }\n}\n",
+          "requestsPostBodySchema": "{\n  \"customerId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"phoneNumber\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Número de teléfono para contacto\"\n  },\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de la venta pendiente (si aplica)\"\n  },\n  \"followUpType\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tipo de seguimiento: 'abandoned_cart', 'price_negotiation', 'delivery_improvement', 'stock_available'\"\n  },\n  \"scheduledAt\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha y hora programada (ISO 8601)\"\n  },\n  \"attemptNumber\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Número de intento (1-3)\"\n  },\n  \"maxAttempts\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Máximo número de intentos\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón del seguimiento\"\n  },\n  \"productInterest\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Productos de interés del cliente\"\n  },\n  \"lastInteractionDate\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha de última interacción (ISO 8601)\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad: 'high', 'medium', 'low'\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -3818,142 +3804,6 @@
         "y": 2655.564513181918
       },
       "dragging": false
-    },
-    {
-      "id": "requestsPost_11",
-      "position": {
-        "x": 3671.438600295197,
-        "y": 2677.8410999809535
-      },
-      "type": "customNode",
-      "data": {
-        "id": "requestsPost_11",
-        "label": "Requests Post (5) (9) (11)",
-        "version": 2,
-        "name": "requestsPost",
-        "type": "RequestsPost",
-        "baseClasses": [
-          "RequestsPost",
-          "DynamicStructuredTool",
-          "StructuredTool",
-          "Runnable",
-          "Tool"
-        ],
-        "category": "Tools",
-        "description": "Execute HTTP POST requests",
-        "inputParams": [
-          {
-            "label": "URL",
-            "name": "requestsPostUrl",
-            "type": "string",
-            "acceptVariable": true,
-            "id": "requestsPost_11-input-requestsPostUrl-string",
-            "display": true
-          },
-          {
-            "label": "Name",
-            "name": "requestsPostName",
-            "type": "string",
-            "default": "requests_post",
-            "description": "Name of the tool",
-            "additionalParams": true,
-            "optional": true,
-            "id": "requestsPost_11-input-requestsPostName-string",
-            "display": true
-          },
-          {
-            "label": "Description",
-            "name": "requestsPostDescription",
-            "type": "string",
-            "rows": 4,
-            "default": "Use this when you want to execute a POST request to create or update a resource.",
-            "description": "Describe to LLM when it should use this tool",
-            "additionalParams": true,
-            "optional": true,
-            "id": "requestsPost_11-input-requestsPostDescription-string",
-            "display": true
-          },
-          {
-            "label": "Headers",
-            "name": "requestsPostHeaders",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true,
-            "additionalParams": true,
-            "optional": true,
-            "placeholder": "{\n    \"Authorization\": \"Bearer <token>\"\n}",
-            "id": "requestsPost_11-input-requestsPostHeaders-string",
-            "display": true
-          },
-          {
-            "label": "Body",
-            "name": "requestPostBody",
-            "type": "string",
-            "rows": 4,
-            "description": "JSON body for the POST request. This will override the body generated by the LLM",
-            "additionalParams": true,
-            "acceptVariable": true,
-            "optional": true,
-            "placeholder": "{\n    \"name\": \"John Doe\",\n    \"age\": 30\n}",
-            "id": "requestsPost_11-input-requestPostBody-string",
-            "display": true
-          },
-          {
-            "label": "Body Schema",
-            "name": "requestsPostBodySchema",
-            "type": "code",
-            "description": "Description of the available body params to enable LLM to figure out which body params to use",
-            "placeholder": "{\n    \"name\": {\n        \"type\": \"string\",\n        \"required\": true,\n        \"description\": \"Name of the item\"\n    },\n    \"date\": {\n        \"type\": \"string\",\n        \"description\": \"Date of the item\"\n    }\n}",
-            "optional": true,
-            "hideCodeExecute": true,
-            "additionalParams": true,
-            "codeExample": "{\n    \"name\": {\n        \"type\": \"string\",\n        \"required\": true,\n        \"description\": \"Name of the item\"\n    },\n    \"date\": {\n        \"type\": \"string\",\n        \"description\": \"Date of the item\"\n    }\n}",
-            "id": "requestsPost_11-input-requestsPostBodySchema-code",
-            "display": true
-          },
-          {
-            "label": "Max Output Length",
-            "name": "requestsPostMaxOutputLength",
-            "type": "number",
-            "description": "Max length of the output. Remove this if you want to return the entire response",
-            "default": "2000",
-            "step": 1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "requestsPost_11-input-requestsPostMaxOutputLength-number",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "requestsPostUrl": "https://freia-agents.onrender.com/api/v1/whatsapp/send",
-          "requestsPostName": "send_whatsapp",
-          "requestsPostDescription": "Envía mensaje de WhatsApp usando Wasender. Usar para contacto directo con clientes.",
-          "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
-          "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"phone_number_id\": {\n      \"type\": \"string\",\n      \"description\": \"ID del número de WhatsApp Business\"\n    },\n    \"phoneNumberId\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de phone_number_id\"\n    },\n    \"waba_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de phone_number_id\"\n    },\n    \"to_number\": {\n      \"type\": \"string\",\n      \"description\": \"Número de destino en formato E.164 (ej: +5491122334455)\"\n    },\n    \"to\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de to_number\"\n    },\n    \"phone\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de to_number\"\n    },\n    \"phoneNumber\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de to_number\"\n    },\n    \"recipient\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de to_number\"\n    },\n    \"number\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de to_number\"\n    },\n    \"message\": {\n      \"type\": \"string\",\n      \"description\": \"Contenido del mensaje\"\n    },\n    \"text\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de message\"\n    },\n    \"body\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de message\"\n    },\n    \"content\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de message\"\n    },\n    \"template\": {\n      \"type\": \"string\",\n      \"description\": \"Nombre de plantilla (si aplica)\"\n    },\n    \"variables\": {\n      \"type\": \"object\",\n      \"description\": \"Variables para plantilla\"\n    },\n    \"delay\": {\n      \"type\": \"integer\",\n      \"description\": \"Retraso en segundos (opcional, ignora si 'schedule' está presente)\"\n    },\n    \"schedule\": {\n      \"type\": \"string\",\n      \"description\": \"Fecha/hora programada en ISO 8601 (opcional). Ej: 2025-09-25T15:30:00Z\"\n    },\n    \"scheduledAt\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de schedule\"\n    },\n    \"sendAt\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de schedule\"\n    },\n    \"followUpId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del seguimiento asociado\"\n    },\n    \"follow_up_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de followUpId\"\n    },\n    \"customerId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de cliente (si aplica)\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de customerId\"\n    }\n  },\n  \"required\": []\n}\n",
-          "requestsPostMaxOutputLength": "2000"
-        },
-        "outputAnchors": [
-          {
-            "id": "requestsPost_11-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-            "name": "requestsPost",
-            "label": "RequestsPost",
-            "description": "Execute HTTP POST requests",
-            "type": "RequestsPost | DynamicStructuredTool | StructuredTool | Runnable | Tool"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 339,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 3671.438600295197,
-        "y": 2677.8410999809535
-      }
     },
     {
       "id": "requestsGet_10",
@@ -4189,7 +4039,7 @@
           "requestsPostDescription": "Notifica al cliente sobre respuesta de solicitud de descuento. Usar cuando el administrador apruebe o rechace descuento.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"approvalRequestId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la solicitud de aprobación\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente\"\n    },\n    \"phoneNumber\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente\"\n    },\n    \"approved\": {\n      \"type\": \"boolean\",\n      \"description\": \"Si la solicitud fue aprobada o no\"\n    },\n    \"newPrice\": {\n      \"type\": \"number\",\n      \"description\": \"Nuevo precio aprobado (si aplica)\"\n    },\n    \"discountPercentage\": {\n      \"type\": \"number\",\n      \"description\": \"Porcentaje de descuento otorgado (si aplica)\"\n    },\n    \"validUntil\": {\n      \"type\": \"string\",\n      \"description\": \"Validez de la oferta (ISO 8601)\"\n    },\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Razón de la decisión\"\n    }\n  },\n  \"required\": [\"approvalRequestId\", \"clientId\", \"approved\"]\n}",
+          "requestsPostBodySchema": "{\n  \"approvalRequestId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la solicitud de aprobación\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"phoneNumber\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente\"\n  },\n  \"approved\": {\n    \"type\": \"boolean\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Si la solicitud fue aprobada o no\"\n  },\n  \"newPrice\": {\n    \"type\": \"number\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Nuevo precio aprobado (si aplica)\"\n  },\n  \"discountPercentage\": {\n    \"type\": \"number\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Porcentaje de descuento otorgado (si aplica)\"\n  },\n  \"validUntil\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Validez de la oferta (ISO 8601)\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón de la decisión\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -4325,7 +4175,7 @@
           "requestsPostDescription": "Ejecuta un seguimiento específico enviando el mensaje correspondiente. Usar cuando sea momento de contactar al cliente.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"followUpId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del seguimiento a ejecutar\"\n    },\n    \"customMessage\": {\n      \"type\": \"string\",\n      \"description\": \"Mensaje personalizado para el cliente (opcional)\"\n    },\n    \"executionNotes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas internas de ejecución\"\n    }\n  },\n  \"required\": [\"followUpId\"]\n}\n",
+          "requestsPostBodySchema": "{\n  \"followUpId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del seguimiento a ejecutar\"\n  },\n  \"customMessage\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Mensaje personalizado para el cliente (opcional)\"\n  },\n  \"executionNotes\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Notas internas de ejecución\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -4461,7 +4311,7 @@
           "requestsPostDescription": "Notifica al cliente sobre mejora en tiempos de entrega. Usar cuando se mejoren los tiempos de entrega solicitados.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"deliveryRequestId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la solicitud de mejora\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente\"\n    },\n    \"phoneNumber\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente\"\n    },\n    \"improved\": {\n      \"type\": \"boolean\",\n      \"description\": \"Si se mejoró el tiempo de entrega\"\n    },\n    \"newDeliveryTime\": {\n      \"type\": \"integer\",\n      \"description\": \"Nuevo tiempo de entrega en días (si improved = true)\"\n    },\n    \"originalDeliveryTime\": {\n      \"type\": \"integer\",\n      \"description\": \"Tiempo original de entrega en días\"\n    },\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Razón de la decisión\"\n    },\n    \"additionalCost\": {\n      \"type\": \"number\",\n      \"description\": \"Costo adicional por entrega express (si aplica)\"\n    }\n  },\n  \"required\": [\"deliveryRequestId\", \"clientId\", \"improved\", \"originalDeliveryTime\"]\n}",
+          "requestsPostBodySchema": "{\n  \"deliveryRequestId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la solicitud de mejora\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"phoneNumber\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente\"\n  },\n  \"improved\": {\n    \"type\": \"boolean\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Si se mejoró el tiempo de entrega\"\n  },\n  \"newDeliveryTime\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Nuevo tiempo de entrega en días (si improved = true)\"\n  },\n  \"originalDeliveryTime\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tiempo original de entrega en días\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón de la decisión\"\n  },\n  \"additionalCost\": {\n    \"type\": \"number\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Costo adicional por entrega express (si aplica)\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -4597,7 +4447,7 @@
           "requestsPostDescription": "Notifica al cliente cuando el producto sin stock esté disponible. Usar cuando se reponga stock de productos solicitados.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente\"\n    },\n    \"phoneNumber\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente\"\n    },\n    \"productId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del producto disponible\"\n    },\n    \"productName\": {\n      \"type\": \"string\",\n      \"description\": \"Nombre del producto\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad disponible\"\n    },\n    \"price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio actual\"\n    },\n    \"reservationTime\": {\n      \"type\": \"integer\",\n      \"description\": \"Tiempo de reserva en horas\"\n    },\n    \"originalInquiryDate\": {\n      \"type\": \"string\",\n      \"description\": \"Fecha de la consulta original\"\n    }\n  },\n  \"required\": [\"clientId\", \"productId\", \"quantity\", \"price\"]\n}\n",
+          "requestsPostBodySchema": "{\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"phoneNumber\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente\"\n  },\n  \"productId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del producto disponible\"\n  },\n  \"productName\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Nombre del producto\"\n  },\n  \"quantity\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Cantidad disponible\"\n  },\n  \"price\": {\n    \"type\": \"number\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Precio actual\"\n  },\n  \"reservationTime\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Tiempo de reserva en horas\"\n  },\n  \"originalInquiryDate\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha de la consulta original\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -4733,7 +4583,7 @@
           "requestsPostDescription": "Actualiza estado de seguimiento después de contacto. Usar para marcar seguimientos como completados o reprogramar.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"followUpId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del seguimiento\"\n    },\n    \"status\": {\n      \"type\": \"string\",\n      \"description\": \"Nuevo estado: 'completed', 'failed', 'rescheduled', 'customer_responded'\"\n    },\n    \"result\": {\n      \"type\": \"string\",\n      \"description\": \"Resultado del contacto\"\n    },\n    \"customerResponse\": {\n      \"type\": \"string\",\n      \"description\": \"Respuesta del cliente (si aplica)\"\n    },\n    \"nextAction\": {\n      \"type\": \"string\",\n      \"description\": \"Próxima acción requerida\"\n    },\n    \"rescheduleDate\": {\n      \"type\": \"string\",\n      \"description\": \"Nueva fecha si se reprograma (ISO 8601)\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas adicionales\"\n    }\n  },\n  \"required\": [\"followUpId\", \"status\"]\n}\n",
+          "requestsPostBodySchema": "{\n  \"followUpId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del seguimiento\"\n  },\n  \"status\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Nuevo estado: 'completed', 'failed', 'rescheduled', 'customer_responded'\"\n  },\n  \"result\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Resultado del contacto\"\n  },\n  \"customerResponse\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Respuesta del cliente (si aplica)\"\n  },\n  \"nextAction\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Próxima acción requerida\"\n  },\n  \"rescheduleDate\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Nueva fecha si se reprograma (ISO 8601)\"\n  },\n  \"notes\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Notas adicionales\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -4869,7 +4719,7 @@
           "requestsPostDescription": "Crea notificación para el dashboard administrativo. Usar para alertas importantes que requieren atención humana.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"type\": {\n      \"type\": \"string\",\n      \"description\": \"Tipo: 'price_request', 'delivery_request', 'stock_alert', 'high_value_lead'\"\n    },\n    \"title\": {\n      \"type\": \"string\",\n      \"description\": \"Título de la notificación\"\n    },\n    \"message\": {\n      \"type\": \"string\",\n      \"description\": \"Mensaje detallado\"\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"description\": \"Prioridad: 'high', 'medium', 'low'\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente relacionado\"\n    },\n    \"saleId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de venta relacionada (si aplica)\"\n    },\n    \"actionRequired\": {\n      \"type\": \"string\",\n      \"description\": \"Acción requerida (ej: call_customer, send_quote, etc.)\"\n    },\n    \"dueDate\": {\n      \"type\": \"string\",\n      \"description\": \"Fecha límite para acción (ISO 8601)\"\n    },\n    \"metadata\": {\n      \"type\": \"object\",\n      \"description\": \"Datos adicionales en JSON\"\n    }\n  },\n  \"required\": [\"type\", \"title\", \"message\"]\n}\n",
+          "requestsPostBodySchema": "{\n  \"type\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tipo: 'price_request', 'delivery_request', 'stock_alert', 'high_value_lead'\"\n  },\n  \"title\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Título de la notificación\"\n  },\n  \"message\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Mensaje detallado\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad: 'high', 'medium', 'low'\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente relacionado\"\n  },\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de venta relacionada (si aplica)\"\n  },\n  \"actionRequired\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Acción requerida (ej: call_customer, send_quote, etc.)\"\n  },\n  \"dueDate\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha límite para acción (ISO 8601)\"\n  },\n  \"metadata\": {\n    \"type\": \"object\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Datos adicionales en JSON\"\n  }\n}\n",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -4897,7 +4747,7 @@
       "id": "requestsGet_11",
       "position": {
         "x": 3433.078505298349,
-        "y": 4463.717789884268
+        "y": 4465.6328960904075
       },
       "type": "customNode",
       "data": {
@@ -5011,7 +4861,7 @@
       "selected": false,
       "positionAbsolute": {
         "x": 3433.078505298349,
-        "y": 4463.717789884268
+        "y": 4465.6328960904075
       },
       "dragging": false
     },
@@ -5263,7 +5113,7 @@
       "id": "requestsGet_15",
       "position": {
         "x": 2584.5228684111225,
-        "y": 4041.057515610233
+        "y": 4037.2273031979557
       },
       "type": "customNode",
       "data": {
@@ -5377,7 +5227,7 @@
       "selected": false,
       "positionAbsolute": {
         "x": 2584.5228684111225,
-        "y": 4041.057515610233
+        "y": 4037.2273031979557
       },
       "dragging": false
     },
@@ -6009,7 +5859,7 @@
           "requestsPostDescription": "Crea una cotización para un producto específico. Usar cuando el cliente solicite precio de un neumático o producto.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"productId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del producto a cotizar\"\n    },\n    \"product_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId\"\n    },\n    \"sku\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"productSKU\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (SKU)\"\n    },\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias genérico de productId\"\n    },\n    \"productCode\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (código)\"\n    },\n    \"code\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de productId (código)\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad solicitada\"\n    },\n    \"qty\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"amount\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"units\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"count\": {\n      \"type\": \"integer\",\n      \"description\": \"Alias de quantity\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente\"\n    },\n    \"client_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"customerId\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"customer_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"userId\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"user_id\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientId\"\n    },\n    \"clientType\": {\n      \"type\": \"string\",\n      \"description\": \"Tipo de cliente: 'final_consumer' o 'tire_shop'\"\n    },\n    \"customerType\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientType\"\n    },\n    \"customer_type\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientType\"\n    },\n    \"type\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de clientType\"\n    },\n    \"vehicleModel\": {\n      \"type\": \"string\",\n      \"description\": \"Modelo de vehículo (si aplica)\"\n    },\n    \"vehicle_model\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de vehicleModel\"\n    },\n    \"carModel\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de vehicleModel\"\n    },\n    \"car_model\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de vehicleModel\"\n    },\n    \"model\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de vehicleModel\"\n    },\n    \"tireNumber\": {\n      \"type\": \"string\",\n      \"description\": \"Número de neumático (si aplica)\"\n    },\n    \"tire_number\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de tireNumber\"\n    },\n    \"tireSize\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de tireNumber (tamaño)\"\n    },\n    \"tire_size\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de tireNumber (tamaño)\"\n    },\n    \"specialRequirements\": {\n      \"type\": \"string\",\n      \"description\": \"Requerimientos especiales\"\n    },\n    \"requirements\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de specialRequirements\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de specialRequirements\"\n    },\n    \"comments\": {\n      \"type\": \"string\",\n      \"description\": \"Alias de specialRequirements\"\n    }\n  },\n  \"required\": []\n}",
+          "requestsPostBodySchema": "{\n  \"productId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del producto a cotizar\"\n  },\n  \"quantity\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Cantidad solicitada\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"clientType\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Tipo de cliente: 'final_consumer' o 'tire_shop'\"\n  },\n  \"vehicleModel\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Modelo de vehículo (si aplica)\"\n  },\n  \"tireNumber\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Número de neumático (si aplica)\"\n  },\n  \"specialRequirements\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Requerimientos especiales\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -6267,7 +6117,7 @@
           "requestsPostDescription": "Solicita mejora en tiempos de entrega cuando el cliente no acepta los tiempos estándar.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"quoteId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la cotización asociada\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente\"\n    },\n    \"currentDeliveryTime\": {\n      \"type\": \"integer\",\n      \"description\": \"Tiempo actual de entrega en días\"\n    },\n    \"requestedDeliveryTime\": {\n      \"type\": \"integer\",\n      \"description\": \"Tiempo solicitado por el cliente en días\"\n    },\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Razón de la solicitud de mejora\"\n    },\n    \"clientPhone\": {\n      \"type\": \"string\",\n      \"description\": \"Teléfono del cliente para contacto\"\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"description\": \"Prioridad de la solicitud (ej: high, medium, low)\"\n    }\n  },\n  \"required\": [\"quoteId\", \"clientId\", \"currentDeliveryTime\", \"requestedDeliveryTime\"]\n}",
+          "requestsPostBodySchema": "{\n  \"quoteId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la cotización asociada\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"currentDeliveryTime\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tiempo actual de entrega en días\"\n  },\n  \"requestedDeliveryTime\": {\n    \"type\": \"integer\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tiempo solicitado por el cliente en días\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón de la solicitud de mejora\"\n  },\n  \"clientPhone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente para contacto\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad de la solicitud (ej: high, medium, low)\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -6387,7 +6237,7 @@
         "inputs": {
           "requestsGetUrl": "https://freia-agents.onrender.com/api/v1/sales/{saleId}/summary",
           "requestsGetName": "get_sale_summary",
-          "requestsGetDescription": "Obtiene resumen completo de la venta para mostrar al cliente. Usar para confirmación final. Siempre incluye pathParams { saleId } con los valores correctos; de lo contrario, la API devuelve 500.",
+          "requestsGetDescription": "Obtiene resumen completo de la venta para mostrar al cliente. Usar para confirmación final.",
           "requestsGetHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestsGetQueryParamsSchema": "{\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"path\",\n    \"description\": \"ID de la venta. Ruta: /sales/{saleId}/summary\"\n  }\n}",
           "requestsGetMaxOutputLength": "2000"
@@ -6797,7 +6647,7 @@
           "requestsPostDescription": "Aplica descuentos automáticos por cantidad o promociones. Usar cuando el cliente compre múltiples unidades.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"quoteId\": {\"type\": \"string\", \"description\": \"ID de la cotización\"},\n  \"quote_id\": {\"type\": \"string\", \"aliasFor\": \"quoteId\"},\n  \"clientId\": {\"type\": \"string\", \"description\": \"ID del cliente\"},\n  \"client_id\": {\"type\": \"string\", \"aliasFor\": \"clientId\"},\n  \"discountType\": {\"type\": \"string\", \"description\": \"Tipo de descuento: 'quantity', 'loyalty', 'seasonal', 'clearance', 'manual'\"},\n  \"type\": {\"type\": \"string\", \"aliasFor\": \"discountType\"},\n  \"discount_type\": {\"type\": \"string\", \"aliasFor\": \"discountType\"},\n  \"quantity\": {\"type\": \"number\", \"description\": \"Cantidad de productos (para descuento por volumen)\"},\n  \"qty\": {\"type\": \"number\", \"aliasFor\": \"quantity\"},\n  \"amount\": {\"type\": \"number\", \"aliasFor\": \"quantity\"},\n  \"units\": {\"type\": \"number\", \"aliasFor\": \"quantity\"},\n  \"productId\": {\"type\": \"string\", \"description\": \"SKU/ID del producto cuando aplica a un ítem\"},\n  \"product_id\": {\"type\": \"string\", \"aliasFor\": \"productId\"},\n  \"sku\": {\"type\": \"string\", \"aliasFor\": \"productId\"},\n  \"promoCode\": {\"type\": \"string\", \"description\": \"Código de descuento opcional\"},\n  \"promo_code\": {\"type\": \"string\", \"aliasFor\": \"promoCode\"},\n  \"coupon\": {\"type\": \"string\", \"aliasFor\": \"promoCode\"},\n  \"reason\": {\"type\": \"string\", \"description\": \"Justificación o nota\"}\n}\n",
+          "requestsPostBodySchema": "{\n  \"quoteId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la cotización\"\n  },\n  \"discountType\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tipo de descuento: 'quantity', 'loyalty', 'seasonal', 'clearance'\"\n  },\n  \"quantity\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Cantidad de productos (para descuento por volumen)\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente (para descuentos de lealtad)\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -6933,7 +6783,7 @@
           "requestsPostDescription": "Solicita aprobación de descuento especial al administrador. Usar cuando el cliente no acepta el precio con descuentos automáticos.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"quoteId\": {\"type\": \"string\", \"description\": \"ID de la cotización\"},\n  \"quote_id\": {\"type\": \"string\", \"aliasFor\": \"quoteId\"},\n  \"clientId\": {\"type\": \"string\", \"description\": \"ID del cliente\"},\n  \"client_id\": {\"type\": \"string\", \"aliasFor\": \"clientId\"},\n  \"requestedDiscount\": {\"type\": \"number\", \"description\": \"Porcentaje de descuento solicitado (0-100)\"},\n  \"discount\": {\"type\": \"number\", \"aliasFor\": \"requestedDiscount\"},\n  \"discount_percent\": {\"type\": \"number\", \"aliasFor\": \"requestedDiscount\"},\n  \"discountPercentage\": {\"type\": \"number\", \"aliasFor\": \"requestedDiscount\"},\n  \"reason\": {\"type\": \"string\", \"description\": \"Razón / justificación\"},\n  \"justification\": {\"type\": \"string\", \"aliasFor\": \"reason\"},\n  \"clientPhone\": {\"type\": \"string\", \"description\": \"Teléfono del cliente\"},\n  \"phone\": {\"type\": \"string\", \"aliasFor\": \"clientPhone\"},\n  \"phone_number\": {\"type\": \"string\", \"aliasFor\": \"clientPhone\"},\n  \"whatsapp\": {\"type\": \"string\", \"aliasFor\": \"clientPhone\"},\n  \"estimatedResponseTime\": {\"type\": \"number\", \"description\": \"ETA en horas\"},\n  \"etaHours\": {\"type\": \"number\", \"aliasFor\": \"estimatedResponseTime\"},\n  \"response_eta\": {\"type\": \"number\", \"aliasFor\": \"estimatedResponseTime\"},\n  \"sla_hours\": {\"type\": \"number\", \"aliasFor\": \"estimatedResponseTime\"},\n  \"priority\": {\"type\": \"string\", \"description\": \"Prioridad: 'high', 'medium', 'low'\"},\n  \"urgency\": {\"type\": \"string\", \"aliasFor\": \"priority\"},\n  \"importance\": {\"type\": \"string\", \"aliasFor\": \"priority\"},\n  \"approverId\": {\"type\": \"string\", \"description\": \"Aprobador específico a notificar\"},\n  \"maxPrice\": {\"type\": \"number\", \"description\": \"Precio máximo aceptable\"},\n  \"targetPrice\": {\"type\": \"number\", \"description\": \"Precio objetivo\"}\n}\n",
+          "requestsPostBodySchema": "{\n  \"quoteId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la cotización\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"requestedDiscount\": {\n    \"type\": \"number\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Porcentaje de descuento solicitado\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón del cliente para pedir el descuento especial\"\n  },\n  \"clientPhone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente para contacto\"\n  },\n  \"estimatedResponseTime\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Tiempo estimado de respuesta en horas\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad de la solicitud: 'high', 'medium', 'low'\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -7204,8 +7054,8 @@
     {
       "id": "retrieverTool_0",
       "position": {
-        "x": 2350.6795724278895,
-        "y": 869.7484106237424
+        "x": 2292.7703903189586,
+        "y": 804.6005807511955
       },
       "type": "customNode",
       "data": {
@@ -7297,146 +7147,10 @@
       "height": 662,
       "selected": false,
       "positionAbsolute": {
-        "x": 2350.6795724278895,
-        "y": 869.7484106237424
+        "x": 2292.7703903189586,
+        "y": 804.6005807511955
       },
       "dragging": false
-    },
-    {
-      "id": "requestsPost_27",
-      "position": {
-        "x": 3600,
-        "y": 6400
-      },
-      "type": "customNode",
-      "data": {
-        "id": "requestsPost_27",
-        "label": "Requests Post (prediction listener)",
-        "version": 2,
-        "name": "requestsPost",
-        "type": "RequestsPost",
-        "baseClasses": [
-          "RequestsPost",
-          "DynamicStructuredTool",
-          "StructuredTool",
-          "Runnable",
-          "Tool"
-        ],
-        "category": "Tools",
-        "description": "Execute HTTP POST requests",
-        "inputParams": [
-          {
-            "label": "URL",
-            "name": "requestsPostUrl",
-            "type": "string",
-            "acceptVariable": true,
-            "id": "requestsPost_27-input-requestsPostUrl-string",
-            "display": true
-          },
-          {
-            "label": "Name",
-            "name": "requestsPostName",
-            "type": "string",
-            "default": "requests_post",
-            "description": "Name of the tool",
-            "additionalParams": true,
-            "optional": true,
-            "id": "requestsPost_27-input-requestsPostName-string",
-            "display": true
-          },
-          {
-            "label": "Description",
-            "name": "requestsPostDescription",
-            "type": "string",
-            "rows": 4,
-            "default": "Use this when you want to execute a POST request to create or update a resource.",
-            "description": "Describe to LLM when it should use this tool",
-            "additionalParams": true,
-            "optional": true,
-            "id": "requestsPost_27-input-requestsPostDescription-string",
-            "display": true
-          },
-          {
-            "label": "Headers",
-            "name": "requestsPostHeaders",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true,
-            "additionalParams": true,
-            "optional": true,
-            "placeholder": "{\n    \"Authorization\": \"Bearer <token>\"\n}",
-            "id": "requestsPost_27-input-requestsPostHeaders-string",
-            "display": true
-          },
-          {
-            "label": "Body",
-            "name": "requestPostBody",
-            "type": "string",
-            "rows": 4,
-            "description": "JSON body for the POST request. This will override the body generated by the LLM",
-            "additionalParams": true,
-            "acceptVariable": true,
-            "optional": true,
-            "placeholder": "{\n    \"name\": \"John Doe\",\n    \"age\": 30\n}",
-            "id": "requestsPost_27-input-requestPostBody-string",
-            "display": true
-          },
-          {
-            "label": "Body Schema",
-            "name": "requestsPostBodySchema",
-            "type": "code",
-            "description": "Description of the available body params to enable LLM to figure out which body params to use",
-            "placeholder": "{\n    \"name\": {\n        \"type\": \"string\",\n        \"required\": true,\n        \"description\": \"Name of the item\"\n    },\n    \"date\": {\n        \"type\": \"string\",\n        \"description\": \"Date of the item\"\n    }\n}",
-            "optional": true,
-            "hideCodeExecute": true,
-            "additionalParams": true,
-            "codeExample": "{\n    \"name\": {\n        \"type\": \"string\",\n        \"required\": true,\n        \"description\": \"Name of the item\"\n    },\n    \"date\": {\n        \"type\": \"string\",\n        \"description\": \"Date of the item\"\n    }\n}",
-            "id": "requestsPost_27-input-requestsPostBodySchema-code",
-            "display": true
-          },
-          {
-            "label": "Max Output Length",
-            "name": "requestsPostMaxOutputLength",
-            "type": "number",
-            "description": "Max length of the output. Remove this if you want to return the entire response",
-            "default": "2000",
-            "step": 1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "requestsPost_27-input-requestsPostMaxOutputLength-number",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "requestsPostUrl": "https://freia-agents.onrender.com/api/v1/runtime/prediction/listener",
-          "requestsPostName": "start_prediction_listener",
-          "requestsPostDescription": "Activa o reinicia el listener backend para mantener al agente atento a nuevas solicitudes de predicción. Úsalo al iniciar la jornada o si detectás inactividad.",
-          "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
-          "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"flowId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del chatflow que debe mantenerse activo\"\n  },\n  \"action\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Acción a ejecutar: start, restart o heartbeat\"\n  },\n  \"warmupSample\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Mensaje breve para precalentar el modelo\"\n  }\n}\n",
-          "requestsPostMaxOutputLength": "2000"
-        },
-        "outputAnchors": [
-          {
-            "id": "requestsPost_27-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-            "name": "requestsPost",
-            "label": "RequestsPost",
-            "description": "Execute HTTP POST requests",
-            "type": "RequestsPost | DynamicStructuredTool | StructuredTool | Runnable | Tool"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 339,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 3600,
-        "y": 6400
-      }
     }
   ],
   "edges": [
@@ -7497,14 +7211,6 @@
       "id": "requestsPost_0-requestsPost_0-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     },
     {
-      "source": "requestsPost_1",
-      "sourceHandle": "requestsPost_1-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "requestsPost_1-requestsPost_1-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
-    },
-    {
       "source": "requestsPost_3",
       "sourceHandle": "requestsPost_3-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
       "target": "toolAgent_1",
@@ -7529,22 +7235,6 @@
       "id": "requestsPost_8-requestsPost_8-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     },
     {
-      "source": "requestsPost_4",
-      "sourceHandle": "requestsPost_4-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "requestsPost_4-requestsPost_4-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
-    },
-    {
-      "source": "requestsPost_7",
-      "sourceHandle": "requestsPost_7-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "requestsPost_7-requestsPost_7-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
-    },
-    {
       "source": "requestsPost_5",
       "sourceHandle": "requestsPost_5-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
       "target": "toolAgent_1",
@@ -7553,28 +7243,12 @@
       "id": "requestsPost_5-requestsPost_5-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     },
     {
-      "source": "requestsPost_6",
-      "sourceHandle": "requestsPost_6-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "requestsPost_6-requestsPost_6-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
-    },
-    {
       "source": "requestsPost_10",
       "sourceHandle": "requestsPost_10-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
       "target": "toolAgent_1",
       "targetHandle": "toolAgent_1-input-tools-Tool",
       "type": "buttonedge",
       "id": "requestsPost_10-requestsPost_10-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
-    },
-    {
-      "source": "requestsPost_11",
-      "sourceHandle": "requestsPost_11-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "requestsPost_11-requestsPost_11-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     },
     {
       "source": "requestsPost_13",
@@ -7863,14 +7537,6 @@
       "targetHandle": "retrieverTool_0-input-retriever-BaseRetriever",
       "type": "buttonedge",
       "id": "pinecone_1-pinecone_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-retrieverTool_0-retrieverTool_0-input-retriever-BaseRetriever"
-    },
-    {
-      "source": "requestsPost_27",
-      "sourceHandle": "requestsPost_27-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
-      "target": "toolAgent_1",
-      "targetHandle": "toolAgent_1-input-tools-Tool",
-      "type": "buttonedge",
-      "id": "requestsPost_27-requestsPost_27-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     }
   ]
 }

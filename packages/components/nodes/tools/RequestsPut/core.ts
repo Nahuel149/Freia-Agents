@@ -32,7 +32,11 @@ const createRequestsPutSchema = (bodySchema?: string, queryParamsSchema?: string
             const parsedSchema = JSON.parse(bodySchema)
             const bodyParamsObject: Record<string, z.ZodTypeAny> = {}
 
-            Object.entries(parsedSchema).forEach(([key, config]: [string, any]) => {
+            // Handle both flat schema format and JSON Schema format with properties
+            const schemaProperties = parsedSchema.properties || parsedSchema
+            const requiredFields = parsedSchema.required || []
+
+            Object.entries(schemaProperties).forEach(([key, config]: [string, any]) => {
                 let zodType: z.ZodTypeAny = z.string()
 
                 // Handle different types
@@ -51,8 +55,9 @@ const createRequestsPutSchema = (bodySchema?: string, queryParamsSchema?: string
                     zodType = zodType.describe(config.description)
                 }
 
-                // Make optional if not required
-                if (!config.required) {
+                // Make optional if not required (check both config.required and requiredFields array)
+                const isRequired = config.required || requiredFields.includes(key)
+                if (!isRequired) {
                     zodType = zodType.optional()
                 }
 
