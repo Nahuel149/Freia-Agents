@@ -115,7 +115,7 @@ const createNotification = async (req: Request, res: Response, next: NextFunctio
             message: `${title}: ${message}`,
             nextAction: actionRequired ?? priority,
             saleId: parsedSaleId,
-            scheduledAt: dueDate ?? null,
+            scheduledAt: dueDate ?? new Date().toISOString(),
             metadata
         })
 

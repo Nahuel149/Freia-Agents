@@ -2,6 +2,11 @@
 
 Este documento contiene ejemplos listos para ejecutar en **Git Bash** (o cualquier shell compatible con Bash) en Windows 11.
 
+## 📋 Documentación Relacionada
+
+Para información detallada sobre patrones de extracción y validación de información de clientes, consulte:
+- [Patrones de Extracción de Información de Clientes](./CUSTOMER_INFORMATION_EXTRACTION_PATTERNS.md)
+
 ---
 ## Preparación
 1. Abrí **Git Bash**.
@@ -184,65 +189,140 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/sales/create" \
 
 ## 4. Reservar stock de producto
 
-**❌ ENDPOINT NO FUNCIONAL**
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
-**Estado actual:** REQUIERE IMPLEMENTACIÓN O CORRECCIÓN
-
-El endpoint está devolviendo un error "Product not found" lo que indica que:
-- El endpoint no está implementado correctamente
-- El producto con ID especificado no existe en el inventario
-- Los parámetros esperados pueden ser diferentes
-
-**Error actual:**
-```json
-{
-  "statusCode": 404,
-  "success": false,
-  "message": "Product not found",
-  "stack": {}
-}
-```
-
-**Ejemplo de uso (una vez corregido):**
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/reserve" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "productId": 45,
-    "quantity": 3,
-    "clientId": 123,
-    "reservationTime": "2025-10-01T12:00:00Z"
+    "productId": "PIR-C7-2055516",
+    "quantity": 1,
+    "phoneNumber": "+5491123456789",
+    "reason": "customer_request",
+    "agentId": "AGENT001",
+    "notes": "Reserva para cliente prioritario",
+    "expiresAt": "2025-01-24T12:00:00.000Z"
   }'
 ```
 
+**Respuesta exitosa:**
+```json
+{
+  "productId": "PIR-C7-2055516",
+  "reservedQuantity": 1,
+  "remainingStock": 44,
+  "customerId": null,
+  "agentId": "AGENT001"
+}
+```
+
+**Campos requeridos:**
+- `productId`: ID del producto (string, ej: "PIR-C7-2055516")
+- `quantity`: Cantidad a reservar (número)
+- `phoneNumber`: Número de teléfono del cliente
+- `agentId`: ID del agente que realiza la reserva
+
+**Campos opcionales:**
+- `customerId`: ID del cliente (si existe en la base de datos)
+- `reason`: Motivo de la reserva (default: "customer_request")
+- `notes`: Notas adicionales sobre la reserva
+- `expiresAt`: Fecha de expiración de la reserva (ISO string, default: 30 minutos desde ahora)
+
+**Nota**: Si no se proporciona `expiresAt`, el sistema automáticamente establece la expiración en 30 minutos desde el momento de la reserva. El `customerId` es opcional y puede ser `null` si el cliente no está registrado en el sistema.
+
 ## 5. Avisar llegada de stock
+
+**⚠️ ENDPOINT CON PROBLEMAS CONOCIDOS**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/notify" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "productId": 45,
-    "clientId": 123,
-    "estimatedTime": "2025-10-05T15:00:00Z",
-    "notifyChannel": "email"
+    "productId": "PIR-PZERO-2454518",
+    "clientId": "12345",
+    "phone_number": "+1234567890",
+    "estimatedTime": "2024-01-15T10:00:00Z",
+    "notifyChannel": "whatsapp"
   }'
 ```
 
+**⚠️ PROBLEMA CONOCIDO - Error 500:**
+```json
+{
+  "statusCode": 500,
+  "success": false,
+  "message": "null value in column \"phone_number\" of relation \"follow_ups\" violates not-null constraint",
+  "stack": {}
+}
+```
+
+**Detalles del problema:**
+- **Error**: `null value in column "phone_number" of relation "follow_ups" violates not-null constraint`
+- **Causa**: El endpoint no está procesando correctamente el campo `phone_number` del request body
+- **Estado**: Bug persistente - requiere investigación adicional del código del controlador
+- **Parámetros SQL observados**: `[null,null,"stock_available",null,"pending","Notificar disponibilidad de P Zero 245/45 R18","phone"]`
+- **Observaciones**: 
+  - Los valores `customer_id`, `phone_number` y `scheduled_at` llegan como `null` a la base de datos
+  - El debug logging agregado no aparece en los logs, sugiriendo problemas de recarga de código
+  - El servidor se reinició múltiples veces pero el problema persiste
+
+**Campos requeridos (según esquema DB):**
+- `productId`: ID del producto (string)
+- `phone_number`: Número de teléfono (VARCHAR(20) NOT NULL)
+- `scheduled_at`: Fecha programada (TIMESTAMP NOT NULL)
+
+**Campos opcionales:**
+- `clientId`: ID del cliente
+- `customerId`: ID del cliente (alternativo)
+- `estimatedTime`: Tiempo estimado (se mapea a scheduled_at)
+- `notifyChannel`: Canal de notificación
+- `notificationType`: Tipo de notificación (default: "stock_available")
+
 ## 6. Actualizar inventario
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/update" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "productId": 45,
-    "newQuantity": 100
+    "productId": "PIR-C7-2055516",
+    "stock": 100,
+    "price": 45000.50
   }'
+
+# Respuesta exitosa:
+[{"productId":"PIR-C7-2055516","name":"Cinturato P7 205/55 R16","brand":"Pirelli","stock":100,"price":"45000.5","updatedDate":"2025-09-23T22:55:53.434Z"}]
 ```
 
+**Respuesta exitosa:**
+```json
+{
+  "productId": "PIR-C7-2055516",
+  "name": "Pirelli Cinturato P7 205/55 R16",
+  "brand": "Pirelli",
+  "stock": 100,
+  "price": "45000.50",
+  "updatedDate": "2025-01-24T15:30:45.123Z"
+}
+```
+
+**Campos requeridos:**
+- `productId`: ID del producto (string, ej: "PIR-C7-2055516")
+
+**Campos opcionales (al menos uno requerido):**
+- `stock`: Nueva cantidad de stock (número entero)
+- `price`: Nuevo precio del producto (número decimal)
+
+**Nota**: Debes proporcionar al menos `stock` o `price`. Puedes actualizar ambos campos en la misma request.
+
 ## 7. Crear/actualizar preferencias del cliente
+
 ```bash
-clientId=123 # variable de ejemplo
+clientId=1
 curl -X POST "https://freia-agents.onrender.com/api/v1/customers/${clientId}/preferences" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
@@ -252,18 +332,91 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/customers/${clientId}/pre
   }'
 ```
 
+**Respuesta exitosa:**
+```json
+{
+  "customer": [
+    {
+      "id": 1,
+      "phone_number": "+54935161234567",
+      "first_name": "Ricardo Montoya",
+      "last_name": "Transportes Del Sur S.A.",
+      "email": "compras@transportesdelsur.com",
+      "default_address": "Parque Industrial Gral. Belgrano, Lote 14, Córdoba",
+      "default_payment_method": null,
+      "previous_purchases": "{\"preferences\":{\"preferredBrands\":[],\"preferredCategories\":[],\"priceRange\":null,\"paymentMethods\":[],\"deliveryPreference\":null,\"communicationPreference\":null,\"updatedAt\":\"2025-09-23T22:59:30.008Z\"}}",
+      "created_at": "2025-09-23T04:20:07.153Z",
+      "updated_at": "2025-09-23T22:59:30.007Z"
+    }
+  ],
+  "preferences": {
+    "preferredBrands": [],
+    "preferredCategories": [],
+    "priceRange": null,
+    "paymentMethods": [],
+    "deliveryPreference": null,
+    "communicationPreference": null,
+    "updatedAt": "2025-09-23T22:59:30.008Z"
+  }
+}
+```
+
 ## 8. Crear notificación personalizada
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/create" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "clientId": 123,
+    "type": "order_ready",
     "title": "Tu pedido está listo para retiro",
-    "body": "Podés pasar a buscarlo cuando quieras",
-    "channel": "whatsapp"
+    "message": "Podés pasar a buscarlo cuando quieras",
+    "priority": "high",
+    "clientId": "1",
+    "actionRequired": "pickup_confirmation"
   }'
 ```
+
+**Respuesta exitosa:**
+```json
+{
+  "message": "Notification stored",
+  "followUp": {
+    "id": 45,
+    "customer_id": 123,
+    "phone_number": "+5491123456789",
+    "sale_id": null,
+    "follow_up_type": "notification_order_ready",
+    "scheduled_at": null,
+    "completed_at": null,
+    "status": "pending",
+    "attempt_number": 1,
+    "max_attempts": 1,
+    "message_sent": "Tu pedido está listo para retiro: Podés pasar a buscarlo cuando quieras",
+    "customer_response": null,
+    "next_action": "pickup_confirmation",
+    "created_at": "2025-01-24T16:30:45.123Z",
+    "updated_at": "2025-01-24T16:30:45.123Z"
+  }
+}
+```
+
+**Campos requeridos:**
+- `type`: Tipo de notificación (string, ej: "order_ready", "stock_available", "payment_reminder")
+- `title`: Título de la notificación (string)
+- `message`: Mensaje de la notificación (string)
+
+**Campos opcionales:**
+- `priority`: Prioridad de la notificación (string, default: "medium", opciones: "low", "medium", "high")
+- `clientId`: ID del cliente (number)
+- `saleId`: ID de la venta relacionada (number)
+- `actionRequired`: Acción requerida (string)
+- `dueDate`: Fecha límite (ISO string)
+- `metadata`: Datos adicionales (object)
+
+**Nota**: El sistema almacena las notificaciones en la tabla `follow_ups` con el tipo `notification_{type}`. Si se proporciona `clientId`, el sistema intentará resolver el número de teléfono del cliente automáticamente.
 
 ## 9. Enviar mensaje de WhatsApp
 ```bash

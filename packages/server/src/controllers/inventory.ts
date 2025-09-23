@@ -530,17 +530,32 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
 // Register notification request for when stock becomes available
 const notifyWhenInStock = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        // Debug: Log the entire request body first
+        console.log('Debug - Full req.body:', JSON.stringify(req.body, null, 2))
+
         const {
             productId,
             customerId,
-            phoneNumber,
+            clientId,
+            phone_number,
             notificationType = 'stock_available',
             preferredChannel,
             notes
         } = req.body
 
+        // Debug: Log extracted values
+        console.log('Debug - Extracted productId:', productId)
+        console.log('Debug - Extracted phone_number:', phone_number)
+        console.log('Debug - Extracted customerId:', customerId)
+        console.log('Debug - Extracted clientId:', clientId)
+
         if (!productId) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'productId is required')
+        }
+
+        if (!phone_number) {
+            console.log('Debug - phone_number is falsy:', phone_number)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'phone_number is required')
         }
 
         const appServer = getRunningExpressApp()
@@ -554,7 +569,16 @@ const notifyWhenInStock = async (req: Request, res: Response, next: NextFunction
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Product not found')
         }
 
-        const scheduledAt = req.body.scheduledAt ?? null
+        const scheduledAt = req.body.scheduledAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000) // Default to 24 hours from now
+        
+        const finalPhoneNumber = phone_number
+        const finalCustomerId = clientId || customerId || null
+
+        // Debug logging
+        console.log('Debug - finalPhoneNumber:', finalPhoneNumber)
+        console.log('Debug - finalCustomerId:', finalCustomerId)
+        console.log('Debug - scheduledAt:', scheduledAt)
+        console.log('Debug - phone_number from req.body:', phone_number)
 
         const followUp = await appServer.AppDataSource.query(
             `INSERT INTO follow_ups (
@@ -572,8 +596,8 @@ const notifyWhenInStock = async (req: Request, res: Response, next: NextFunction
             ) VALUES ($1, $2, $3, $4, $5, 1, 3, $6, $7, NOW(), NOW())
             RETURNING *`,
             [
-                customerId ?? null,
-                phoneNumber ?? null,
+                finalCustomerId,
+                finalPhoneNumber,
                 notificationType,
                 scheduledAt,
                 'pending',
