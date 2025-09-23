@@ -39,6 +39,9 @@ const insertFollowUpRecord = async (payload: FollowUpInsertPayload) => {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required')
     }
 
+    // Ensure scheduled_at is never null - use current timestamp if not provided
+    const finalScheduledAt = scheduled_at || new Date().toISOString()
+
     const appServer = getRunningExpressApp()
 
     const result = await appServer.AppDataSource.query(
@@ -65,7 +68,7 @@ const insertFollowUpRecord = async (payload: FollowUpInsertPayload) => {
             phone_number,
             sale_id,
             follow_up_type,
-            scheduled_at,
+            finalScheduledAt,
             status,
             attempt_number,
             max_attempts,
@@ -376,20 +379,23 @@ const scheduleFollowUp = async (req: Request, res: Response, next: NextFunction)
     try {
         const {
             customerId,
+            clientId, // alias for customerId
             phoneNumber,
             saleId,
             followUpType,
             scheduledAt,
+            date, // alias for scheduledAt
             attemptNumber,
             maxAttempts,
             reason,
+            note, // alias for reason
             productInterest,
             lastInteractionDate,
             priority
         } = req.body
 
         let resolvedPhone = phoneNumber ?? null
-        let resolvedCustomerId = customerId ?? null
+        let resolvedCustomerId = customerId ?? clientId ?? null
 
         if (!resolvedPhone && resolvedCustomerId) {
             try {
@@ -409,16 +415,20 @@ const scheduleFollowUp = async (req: Request, res: Response, next: NextFunction)
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'phoneNumber or a customer with phone_number is required')
         }
 
+        // Use date field if provided, otherwise use scheduledAt
+        const finalScheduledAt = date ?? scheduledAt ?? lastInteractionDate ?? new Date().toISOString()
+        const finalReason = note ?? reason ?? null
+
         const result = await insertFollowUpRecord({
             customer_id: resolvedCustomerId ? parseInt(resolvedCustomerId) : null,
             phone_number: resolvedPhone,
             sale_id: saleId ? parseInt(saleId) : null,
             follow_up_type: followUpType ?? 'sales_follow_up',
-            scheduled_at: scheduledAt ?? lastInteractionDate ?? new Date().toISOString(),
+            scheduled_at: finalScheduledAt,
             status: 'pending',
             attempt_number: attemptNumber ? parseInt(attemptNumber) : 1,
             max_attempts: maxAttempts ? parseInt(maxAttempts) : 3,
-            message_sent: reason ?? null,
+            message_sent: finalReason,
             customer_response: null,
             next_action: productInterest ?? priority ?? null
         })

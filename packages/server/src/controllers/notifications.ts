@@ -62,6 +62,9 @@ const insertNotificationFollowUp = async (payload: NotificationPayload) => {
         metadata = null
     } = payload
 
+    // Ensure scheduled_at is never null - use current timestamp if not provided
+    const finalScheduledAt = scheduledAt || new Date().toISOString()
+
     const appServer = getRunningExpressApp()
 
     const result = await appServer.AppDataSource.query(
@@ -85,7 +88,7 @@ const insertNotificationFollowUp = async (payload: NotificationPayload) => {
             phoneNumber ?? 'internal',
             saleId,
             followUpType,
-            scheduledAt,
+            finalScheduledAt,
             status,
             message,
             metadata ? JSON.stringify(metadata) : null,
