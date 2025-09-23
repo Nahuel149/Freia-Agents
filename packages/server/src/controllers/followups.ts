@@ -397,19 +397,69 @@ const scheduleFollowUp = async (req: Request, res: Response, next: NextFunction)
         let resolvedPhone = phoneNumber ?? null
         let resolvedCustomerId = customerId ?? clientId ?? null
 
+        logger.info('scheduleFollowUp - Initial values', { 
+            phoneNumber, 
+            customerId, 
+            clientId, 
+            resolvedPhone, 
+            resolvedCustomerId 
+        })
+
+        // If no phone number provided, try to look it up from customer ID
         if (!resolvedPhone && resolvedCustomerId) {
             try {
-                const lookup = await getRunningExpressApp().AppDataSource.query(
-                    'SELECT phone_number FROM customers WHERE id = $1',
-                    [parseInt(resolvedCustomerId)]
-                )
-                if (lookup.length > 0) {
-                    resolvedPhone = lookup[0].phone_number
+                const appServer = getRunningExpressApp()
+                const customerIdStr = String(resolvedCustomerId).trim()
+                
+                logger.info('Attempting phone lookup', { 
+                    resolvedCustomerId, 
+                    customerIdStr, 
+                    isValidNumeric: /^\d+$/.test(customerIdStr),
+                    parsedId: parseInt(customerIdStr)
+                })
+                
+                // Check if it's a valid numeric ID
+                if (/^\d+$/.test(customerIdStr)) {
+                    const lookup = await appServer.AppDataSource.query(
+                        'SELECT phone_number FROM customers WHERE id = $1',
+                        [parseInt(customerIdStr)]
+                    )
+                    
+                    logger.info('Database lookup result', { 
+                        customerId: resolvedCustomerId,
+                        lookupLength: lookup.length,
+                        lookupResult: lookup,
+                        hasPhoneNumber: lookup.length > 0 && lookup[0]?.phone_number
+                    })
+                    
+                    if (lookup.length > 0 && lookup[0].phone_number) {
+                        resolvedPhone = lookup[0].phone_number
+                        logger.info('Phone number resolved from customer ID', { 
+                            customerId: resolvedCustomerId, 
+                            phoneNumber: resolvedPhone 
+                        })
+                    } else {
+                        logger.warn('No phone number found for customer', {
+                            customerId: resolvedCustomerId,
+                            lookupResult: lookup
+                        })
+                    }
+                } else {
+                    logger.warn('Invalid customer ID format', { 
+                        resolvedCustomerId, 
+                        customerIdStr 
+                    })
                 }
             } catch (error) {
-                logger.warn('Unable to resolve phone number from customerId', { customerId })
+                logger.error('Error looking up phone number from customer ID', { 
+                    customerId: resolvedCustomerId, 
+                    error: error instanceof Error ? error.message : error,
+                    stack: error instanceof Error ? error.stack : undefined
+                })
             }
         }
+
+        logger.info('Final resolved values', { resolvedPhone, resolvedCustomerId })
 
         if (!resolvedPhone) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'phoneNumber or a customer with phone_number is required')
