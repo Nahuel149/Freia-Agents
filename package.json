@@ -31,7 +31,8 @@
         "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
         "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
-        "migration:create": "pnpm typeorm migration:create"
+        "migration:create": "pnpm typeorm migration:create",
+        "followups:run": "pnpm --filter \"./packages/server\" run followups:run"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"

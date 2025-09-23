@@ -103,9 +103,145 @@ services:
         value: "true"
       - key: WASENDER_API_TOKEN
         value: "51807b69afb0e9b4f6bd2afce35342247e3de2aa0cca18b1a6390cb80aafdd35"
+      - key: ADMIN_EMAIL
+        value: "admin@freia.ai"
+      - key: ADMIN_NAME
+        value: "Admin"
+      - key: ADMIN_PASSWORD
+        value: "Testing123!"
+      - key: APIKEY_PATH
+        value: "/opt/render/project/.flowise"
+      - key: BLOB_STORAGE_PATH
+        value: "/opt/render/project/.flowise/storage"
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: DATABASE_HOST
+        value: "dpg-d2u0qtmr433s73dresng-a"
+      - key: DATABASE_NAME
+        value: "freia_postgres"
+      - key: DATABASE_PASSWORD
+        value: "imFxMsDUgcEzDaZqF3wRORrBumZHuwpO"
+      - key: DATABASE_PORT
+        value: "5432"
+      - key: DATABASE_SSL
+        value: "true"
+      - key: DATABASE_SSL_REJECT_UNAUTHORIZED
+        value: "false"
+      - key: DATABASE_TYPE
+        value: "postgres"
+      - key: DATABASE_USER
+        value: "freia_postgres_user"
+      - key: DEBUG
+        value: "false"
+      - key: DISABLE_FLOWISE_TELEMETRY
+        value: "true"
+      - key: EXECUTE_CHILD_PROCESS
+        value: "true"
+      - key: FLOWISE_API_KEY
+        value: "<flowise-api-key>"
+      - key: FLOWISE_BASE_URL
+        value: "https://freia-agents.onrender.com"
+      - key: FLOWISE_FILE_SIZE_LIMIT
+        value: "50mb"
+      - key: FLOWISE_PASSWORD
+        value: "Testing123!"
+      - key: FLOWISE_SECRETKEY_OVERWRITE
+        value: "8abff6478e0d06383deaa42f486e27c0435e89a6ff35c391c343"
+      - key: FLOWISE_USERNAME
+        value: "nahuelbalsas199@gmail.com"
+      - key: FOLLOW_UP_BATCH_SIZE
+        value: "20"
+      - key: FOLLOW_UP_CHATFLOW_ID
+        value: "10e7d06f-90e9-41cb-a3e5-bba91c47a56d"
+      - key: FOLLOW_UP_OVERRIDE_ENABLED
+        value: "false"
+      - key: FOLLOW_UP_REQUEST_TIMEOUT_MS
+        value: "30000"
+      - key: FOLLOW_UP_RETRY_MINUTES
+        value: "60"
+      - key: FREIA_API_KEY
+        value: "mthzYc75CRBfFL_6kNvrftUkyXBSnzSB8vNnueUXL3k"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: IFRAME_ORIGINS
+        value: "*"
+      - key: JWT_AUDIENCE
+        value: "FREIA_USERS"
+      - key: JWT_AUTH_TOKEN_SECRET
+        value: "8abff6478e0d06383deaa42f486e27c0435e89a6ff35c391c343"
+      - key: JWT_ISSUER
+        value: "FREIA_FLOWISE"
+      - key: JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES
+        value: "43200"
+      - key: JWT_REFRESH_TOKEN_SECRET
+        value: "ca7dec4d4701ece54b03789e3f43f6ff0a4a3b8036e2ab9f8"
+      - key: JWT_TOKEN_EXPIRY_IN_MINUTES
+        value: "360"
+      - key: LOG_LEVEL
+        value: "debug"
+      - key: LOG_PATH
+        value: "/opt/render/project/.flowise/logs"
+      - key: MODE
+        value: "main"
+      - key: NODE_ENV
+        value: "production"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=4096"
+      - key: NODE_VERSION
+        value: "20"
+      - key: NPM_CONFIG_AUDIT_LEVEL
+        value: "moderate"
+
+      - key: OPENAI_BASE_URL
+        value: "https://api.openai.com/v1"
+      - key: OSS_MODE
+        value: "true"
+      - key: PORT
+        value: "10000"
+      - key: POSTGRES_DB
+        value: "freia_postgres"
+      - key: POSTGRES_HOST
+        value: "dpg-d2u0qtmr433s73dresng-a"
+      - key: POSTGRES_PASSWORD
+        value: "imFxMsDUgcEzDaZqF3wRORrBumZHuwpO"
+      - key: POSTGRES_PORT
+        value: "5432"
+      - key: POSTGRES_USER
+        value: "freia_postgres_user"
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: "/usr/bin/chromium-browser"
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"
+      - key: RATE_LIMIT_DURATION
+        value: "1"
+      - key: RATE_LIMIT_ENABLE
+        value: "true"
+      - key: RATE_LIMIT_MAX
+        value: "1000"
+      - key: SECRETKEY_PATH
+        value: "/opt/render/project/.flowise"
+      - key: SHOW_COMMUNITY_NODES
+        value: "true"
+      - key: TOOL_FUNCTION_BUILTIN_DEP
+        value: "crypto,fs"
+      - key: TOOL_FUNCTION_EXTERNAL_DEP
+        value: "moment,lodash"
+      - key: WASENDER_API_TOKEN
+        value: "51807b69afb0e9b4f6bd2afce35342247e3de2aa0cca18b1a6390cb80aafdd35"
+      - key: WASENDER_API_URL
+        value: "https://wasenderapi.com/api"
+      - key: WASENDER_PHONE_NUMBER_ID
+        value: "+818045774815"
+      - key: WASENDER_WEBHOOK_SECRET
+        value: "d2950a8307e515131e70ec41400270f7"
+      - key: WHATSAPP_CODEAGENT_ID
+        value: "b96020c1-4d5a-4d6d-8c9c-595992dc50ef"
     disk:
       name: freia-data
       mountPath: /opt/render/project/.flowise
       sizeGB: 2
-
+  - type: cron
+    name: freia-cron
+    schedule: "*/30 * * * *"
+    command: "pnpm followups:run"
 databases: []

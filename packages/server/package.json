@@ -42,6 +42,7 @@
         "typeorm:migration-run": "pnpm typeorm migration:run -d ./src/utils/typeormDataSource.ts",
         "typeorm:migration-revert": "pnpm typeorm migration:revert -d ./src/utils/typeormDataSource.ts",
         "seed": "ts-node src/scripts/loadSeed.ts",
+        "followups:run": "ts-node src/scripts/runScheduledFollowUps.ts",
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md",
         "cypress:open": "cypress open",
@@ -95,7 +96,6 @@
         "cache-manager": "^6.3.2",
         "connect-pg-simple": "^10.0.0",
         "connect-redis": "^8.0.1",
-        
         "content-disposition": "0.5.4",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
@@ -143,7 +143,6 @@
         "reflect-metadata": "^0.1.13",
         "s3-streamlogger": "^1.11.0",
         "sanitize-html": "^2.11.0",
-        
         "stripe": "^15.6.0",
         "turndown": "^7.2.0",
         "typeorm": "^0.3.6",
