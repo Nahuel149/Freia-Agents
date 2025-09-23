@@ -20,11 +20,13 @@ export interface RequestParameters {
     name?: string
     bodySchema?: string
     maxOutputLength?: number
+    queryParamsSchema?: string
 }
 
 // Base schema for PUT request
-const createRequestsPutSchema = (bodySchema?: string) => {
-    // If bodySchema is provided, parse it and add dynamic body params
+const createRequestsPutSchema = (bodySchema?: string, queryParamsSchema?: string) => {
+    // Build body schema
+    let bodyZod: z.ZodTypeAny | undefined
     if (bodySchema) {
         try {
             const parsedSchema = JSON.parse(bodySchema)
@@ -58,18 +60,62 @@ const createRequestsPutSchema = (bodySchema?: string) => {
             })
 
             if (Object.keys(bodyParamsObject).length > 0) {
-                return z.object({
-                    body: z.object(bodyParamsObject).describe('Request body parameters')
-                })
+                bodyZod = z.object(bodyParamsObject).describe('Request body parameters')
             }
         } catch (error) {
             console.warn('Failed to parse bodySchema:', error)
         }
     }
 
-    // Fallback to generic body
+    if (!bodyZod) {
+        bodyZod = z.record(z.any()).optional().describe('Optional body data to include in the request')
+    }
+
+    // Build query params schema
+    let queryZod: z.ZodTypeAny | undefined
+    if (queryParamsSchema) {
+        try {
+            const parsedSchema = JSON.parse(queryParamsSchema)
+            const queryParamsObject: Record<string, z.ZodTypeAny> = {}
+
+            Object.entries(parsedSchema).forEach(([key, config]: [string, any]) => {
+                let zodType: z.ZodTypeAny = z.string()
+
+                // Handle different types
+                if (config.type === 'number') {
+                    zodType = z.string().transform((val) => Number(val))
+                } else if (config.type === 'boolean') {
+                    zodType = z.string().transform((val) => val === 'true')
+                }
+
+                // Add description
+                if (config.description) {
+                    zodType = zodType.describe(config.description)
+                }
+
+                // Make optional if not required
+                if (!config.required) {
+                    zodType = zodType.optional()
+                }
+
+                queryParamsObject[key] = zodType
+            })
+
+            if (Object.keys(queryParamsObject).length > 0) {
+                queryZod = z.object(queryParamsObject).optional().describe('Query parameters for the request')
+            }
+        } catch (error) {
+            console.warn('Failed to parse queryParamsSchema:', error)
+        }
+    }
+
+    if (!queryZod) {
+        queryZod = z.record(z.string()).optional().describe('Optional query parameters to include in the request')
+    }
+
     return z.object({
-        body: z.record(z.any()).optional().describe('Optional body data to include in the request')
+        body: bodyZod,
+        queryParams: queryZod
     })
 }
 
@@ -79,9 +125,10 @@ export class RequestsPutTool extends DynamicStructuredTool {
     headers = {}
     body = {}
     bodySchema?: string
+    queryParamsSchema?: string
 
     constructor(args?: RequestParameters) {
-        const schema = createRequestsPutSchema(args?.bodySchema)
+        const schema = createRequestsPutSchema(args?.bodySchema, args?.queryParamsSchema)
 
         const toolInput = {
             name: args?.name || 'requests_put',
@@ -97,6 +144,7 @@ export class RequestsPutTool extends DynamicStructuredTool {
         this.body = args?.body ?? this.body
         this.maxOutputLength = args?.maxOutputLength ?? this.maxOutputLength
         this.bodySchema = args?.bodySchema
+        this.queryParamsSchema = args?.queryParamsSchema
     }
 
     /** @ignore */
@@ -107,6 +155,60 @@ export class RequestsPutTool extends DynamicStructuredTool {
             const inputUrl = this.url
             if (!inputUrl) {
                 throw new Error('URL is required for PUT request')
+            }
+
+            // Build final URL with path/query params
+            let finalUrl = inputUrl
+            const queryParams: Record<string, string> = {}
+
+            if (this.queryParamsSchema && params.queryParams && Object.keys(params.queryParams).length > 0) {
+                try {
+                    const parsedSchema = JSON.parse(this.queryParamsSchema)
+                    const pathParams: Array<{ key: string; value: string }> = []
+
+                    Object.entries(params.queryParams).forEach(([key, value]) => {
+                        const paramConfig = parsedSchema[key]
+                        if (paramConfig && value !== undefined && value !== null) {
+                            if (paramConfig.in === 'path') {
+                                const pathPattern = new RegExp(`:${key}\\b`, 'g')
+                                if (finalUrl.includes(`:${key}`)) {
+                                    finalUrl = finalUrl.replace(pathPattern, encodeURIComponent(String(value)))
+                                } else {
+                                    pathParams.push({ key, value: String(value) })
+                                }
+                            } else if (paramConfig.in === 'query') {
+                                queryParams[key] = String(value)
+                            }
+                        }
+                    })
+
+                    if (pathParams.length > 0) {
+                        let urlPath = finalUrl
+                        if (urlPath.endsWith('/')) {
+                            urlPath = urlPath.slice(0, -1)
+                        }
+                        pathParams.forEach(({ value }) => {
+                            urlPath += `/${encodeURIComponent(value)}`
+                        })
+                        finalUrl = urlPath
+                    }
+
+                    if (Object.keys(queryParams).length > 0) {
+                        const url = new URL(finalUrl)
+                        Object.entries(queryParams).forEach(([key, value]) => {
+                            url.searchParams.append(key, value)
+                        })
+                        finalUrl = url.toString()
+                    }
+                } catch (error) {
+                    console.warn('Failed to process queryParamsSchema:', error)
+                }
+            } else if (params.queryParams && Object.keys(params.queryParams).length > 0) {
+                const url = new URL(finalUrl)
+                Object.entries(params.queryParams).forEach(([key, value]) => {
+                    url.searchParams.append(key, String(value))
+                })
+                finalUrl = url.toString()
             }
 
             let inputBody = {
@@ -126,7 +228,7 @@ export class RequestsPutTool extends DynamicStructuredTool {
                 ...this.headers
             }
 
-            const res = await secureFetch(inputUrl, {
+            const res = await secureFetch(finalUrl, {
                 method: 'PUT',
                 headers: requestHeaders,
                 body: JSON.stringify(inputBody)

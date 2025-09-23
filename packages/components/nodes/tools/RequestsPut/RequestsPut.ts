@@ -34,6 +34,20 @@ class RequestsPut_Tools implements INode {
         this.category = 'Tools'
         this.description = 'Execute HTTP PUT requests'
         this.baseClasses = [this.type, ...getBaseClasses(RequestsPutTool), 'Tool']
+        // Example for query/path params schema
+        const queryCodeExample = `{
+    "id": {
+        "type": "string",
+        "required": true,
+        "in": "path",
+        "description": "ID of the item to update. /:id"
+    },
+    "force": {
+        "type": "string",
+        "in": "query",
+        "description": "Force update the item. ?force=true"
+    }
+}`
         this.inputs = [
             {
                 label: 'URL',
@@ -108,6 +122,18 @@ class RequestsPut_Tools implements INode {
                 codeExample: codeExample
             },
             {
+                label: 'Query Params Schema',
+                name: 'requestsPutQueryParamsSchema',
+                type: 'code',
+                description:
+                    'Description of the available query/path params to enable LLM to figure out which parameters to use',
+                placeholder: queryCodeExample,
+                optional: true,
+                hideCodeExecute: true,
+                additionalParams: true,
+                codeExample: queryCodeExample
+            },
+            {
                 label: 'Max Output Length',
                 name: 'requestsPutMaxOutputLength',
                 type: 'number',
@@ -127,6 +153,7 @@ class RequestsPut_Tools implements INode {
         const description = (nodeData.inputs?.description as string) || (nodeData.inputs?.requestsPutDescription as string)
         const body = (nodeData.inputs?.body as string) || (nodeData.inputs?.requestPutBody as string)
         const bodySchema = nodeData.inputs?.requestsPutBodySchema as string
+        const queryParamsSchema = nodeData.inputs?.requestsPutQueryParamsSchema as string
         const maxOutputLength = (nodeData.inputs?.maxOutputLength as string) || (nodeData.inputs?.requestsPutMaxOutputLength as string)
 
         const obj: RequestParameters = {}
@@ -138,6 +165,7 @@ class RequestsPut_Tools implements INode {
                 .replace(/ /g, '_')
                 .replace(/[^a-z0-9_-]/g, '')
         if (bodySchema) obj.bodySchema = stripHTMLFromToolInput(bodySchema)
+        if (queryParamsSchema) obj.queryParamsSchema = queryParamsSchema
         if (maxOutputLength) obj.maxOutputLength = parseInt(maxOutputLength, 10)
         if (headers) {
             const parsedHeaders = typeof headers === 'object' ? headers : JSON.parse(stripHTMLFromToolInput(headers))

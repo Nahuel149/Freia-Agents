@@ -1,0 +1,49 @@
+                        List of relations
+ Schema |           Name            | Type  |        Owner        
+--------+---------------------------+-------+---------------------
+ public | agent_event               | table | freia_postgres_user
+ public | api_key                   | table | freia_postgres_user
+ public | apikey                    | table | freia_postgres_user
+ public | assistant                 | table | freia_postgres_user
+ public | chat_flow                 | table | freia_postgres_user
+ public | chat_message              | table | freia_postgres_user
+ public | chat_message_feedback     | table | freia_postgres_user
+ public | client_account            | table | freia_postgres_user
+ public | code_agent                | table | freia_postgres_user
+ public | code_agent_execution      | table | freia_postgres_user
+ public | credential                | table | freia_postgres_user
+ public | custom_template           | table | freia_postgres_user
+ public | customers                 | table | freia_postgres_user
+ public | dataset                   | table | freia_postgres_user
+ public | dataset_row               | table | freia_postgres_user
+ public | document_store            | table | freia_postgres_user
+ public | document_store_file_chunk | table | freia_postgres_user
+ public | evaluation                | table | freia_postgres_user
+ public | evaluation_run            | table | freia_postgres_user
+ public | evaluator                 | table | freia_postgres_user
+ public | execution                 | table | freia_postgres_user
+ public | follow_ups                | table | freia_postgres_user
+ public | lead                      | table | freia_postgres_user
+ public | login_activity            | table | freia_postgres_user
+ public | login_method              | table | freia_postgres_user
+ public | login_sessions            | table | freia_postgres_user
+ public | migrations                | table | freia_postgres_user
+ public | organization              | table | freia_postgres_user
+ public | organization_user         | table | freia_postgres_user
+ public | product_inventory         | table | freia_postgres_user
+ public | role                      | table | freia_postgres_user
+ public | roles                     | table | freia_postgres_user
+ public | sale_record               | table | freia_postgres_user
+ public | sales                     | table | freia_postgres_user
+ public | support_ticket            | table | freia_postgres_user
+ public | tool                      | table | freia_postgres_user
+ public | upsert_history            | table | freia_postgres_user
+ public | upsertion_records         | table | freia_postgres_user
+ public | user                      | table | freia_postgres_user
+ public | variable                  | table | freia_postgres_user
+ public | workspace                 | table | freia_postgres_user
+ public | workspace_shared          | table | freia_postgres_user
+ public | workspace_user            | table | freia_postgres_user
+ public | workspace_users           | table | freia_postgres_user
+(44 rows)
+
