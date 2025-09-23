@@ -480,6 +480,9 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
             [updatedStock, productId]
         )
 
+        // Set default expiration time to 30 minutes from now if not provided
+        const defaultExpiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+        
         await client.query(
             `INSERT INTO follow_ups (
                 customer_id,
@@ -498,7 +501,7 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
                 customerId ?? null,
                 phoneNumber ?? null,
                 'inventory_reservation',
-                expiresAt ?? null,
+                expiresAt ?? defaultExpiresAt,
                 'pending',
                 1,
                 1,
