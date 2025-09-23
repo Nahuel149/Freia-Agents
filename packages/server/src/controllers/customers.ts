@@ -157,17 +157,38 @@ const searchCustomers = async (req: Request, res: Response, next: NextFunction) 
 // Create new customer
 const createCustomer = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { 
-            phone_number, 
-            first_name, 
-            last_name, 
-            email, 
-            default_address, 
-            default_payment_method 
+        const {
+            phone_number,
+            phone,
+            first_name,
+            last_name,
+            name,
+            email,
+            default_address,
+            address,
+            default_payment_method,
+            // Accept optional extra fields without failing validation
+            company,
+            customerType,
+            taxId,
+            notes
         } = req.body
 
-        if (!phone_number) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required')
+        // Normalize incoming fields to server schema
+        const normalizedPhone = phone_number || phone
+        let normalizedFirstName = first_name
+        let normalizedLastName = last_name
+
+        if ((!normalizedFirstName || !normalizedLastName) && typeof name === 'string' && name.trim()) {
+            const parts = name.trim().split(/\s+/)
+            if (!normalizedFirstName) normalizedFirstName = parts[0]
+            if (!normalizedLastName) normalizedLastName = parts.length > 1 ? parts.slice(1).join(' ') : ''
+        }
+
+        const normalizedAddress = default_address || address
+
+        if (!normalizedPhone) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required (use phone or phone_number)')
         }
 
         const appServer = getRunningExpressApp()
@@ -175,7 +196,7 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
         // Check if customer already exists
         const existingCustomer = await appServer.AppDataSource.query(
             'SELECT * FROM customers WHERE phone_number = $1',
-            [phone_number]
+            [normalizedPhone]
         )
 
         if (existingCustomer.length > 0) {
@@ -191,9 +212,10 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
             RETURNING *
         `
         
+        const normalizedPaymentMethod = default_payment_method ?? null
         const result = await appServer.AppDataSource.query(query, [
-            phone_number, first_name, last_name, email, 
-            default_address, default_payment_method
+            normalizedPhone, normalizedFirstName, normalizedLastName, email, 
+            normalizedAddress, normalizedPaymentMethod
         ])
         
         return res.status(StatusCodes.CREATED).json(result[0])
