@@ -446,6 +446,21 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
             notes
         } = req.body
 
+        const normalizeString = (value: unknown): string | null => {
+            if (value === null || value === undefined) return null
+            const stringValue = typeof value === 'string' ? value : String(value)
+            const trimmed = stringValue.trim()
+            return trimmed.length ? trimmed : null
+        }
+
+        const normalizeNumericId = (value: unknown): number | null => {
+            const normalized = normalizeString(value)
+            if (!normalized) return null
+            if (!/^\d+$/.test(normalized)) return null
+            const parsed = parseInt(normalized, 10)
+            return Number.isFinite(parsed) ? parsed : null
+        }
+
         if (!productId) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'productId is required')
         }
@@ -454,6 +469,16 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
         if (Number.isNaN(requestedQuantity) || requestedQuantity <= 0) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'quantity must be a positive integer')
         }
+
+        const normalizedPhoneNumber = normalizeString(phoneNumber)
+        if (!normalizedPhoneNumber) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'phoneNumber is required')
+        }
+
+        const normalizedCustomerId = normalizeNumericId(customerId)
+        const normalizedAgentId = normalizeString(agentId)
+        const normalizedNotes = normalizeString(notes)
+        const normalizedReason = normalizeString(reason) ?? 'customer_request'
 
         await client.query('BEGIN')
         transactionStarted = true
@@ -482,7 +507,7 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
 
         // Set default expiration time to 30 minutes from now if not provided
         const defaultExpiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
-        const finalExpiresAt = expiresAt || defaultExpiresAt
+        const finalExpiresAt = normalizeString(expiresAt) || defaultExpiresAt
         
         await client.query(
             `INSERT INTO follow_ups (
@@ -497,15 +522,15 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
                 next_action
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
             [
-                customerId ?? null,
-                phoneNumber ?? null,
+                normalizedCustomerId,
+                normalizedPhoneNumber,
                 'inventory_reservation',
                 finalExpiresAt,
                 'pending',
                 1,
                 1,
-                notes ?? `Reserva de ${requestedQuantity} unidades de ${product.name}`,
-                reason ?? 'inventory_hold'
+                normalizedNotes ?? `Reserva de ${requestedQuantity} unidades de ${product.name}`,
+                normalizedReason ?? 'inventory_hold'
             ]
         )
 
@@ -515,8 +540,8 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
             productId,
             reservedQuantity: requestedQuantity,
             remainingStock: updatedStock,
-            customerId: customerId ?? null,
-            agentId: agentId ?? null
+            customerId: normalizedCustomerId,
+            agentId: normalizedAgentId
         })
     } catch (error) {
         if (transactionStarted) {
@@ -526,6 +551,7 @@ const reserveInventory = async (req: Request, res: Response, next: NextFunction)
         return next(error)
     }
 }
+
 
 // Register notification request for when stock becomes available
 const notifyWhenInStock = async (req: Request, res: Response, next: NextFunction) => {

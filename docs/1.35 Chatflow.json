@@ -845,7 +845,7 @@
         ],
         "inputs": {
           "cache": "",
-          "modelName": "gpt-5-nano",
+          "modelName": "gpt-5-mini",
           "temperature": "0.3",
           "streaming": true,
           "maxTokens": "",
@@ -1069,6 +1069,7 @@
             "{{requestsGet_6.data.instance}}",
             "{{requestsGet_3.data.instance}}",
             "{{requestsGet_5.data.instance}}",
+            "{{requestsGet_7.data.instance}}",
             "{{requestsPost_0.data.instance}}",
             "{{requestsPost_3.data.instance}}",
             "{{requestsPost_2.data.instance}}",
@@ -1082,12 +1083,16 @@
             "{{requestsPost_23.data.instance}}",
             "{{requestsPost_21.data.instance}}",
             "{{requestsPost_25.data.instance}}",
+            "{{requestsPost_7.data.instance}}",
+            "{{requestsPost_4.data.instance}}",
+            "{{requestsPost_6.data.instance}}",
+            "{{requestsPost_1.data.instance}}",
             "{{retrieverTool_0.data.instance}}"
           ],
           "memory": "{{MongoDBAtlasChatMemory_1.data.instance}}",
           "model": "{{chatOpenAI_1.data.instance}}",
           "chatPromptTemplate": "",
-          "systemMessage": "Tu función principal es analizar la pregunta del usuario y elegir una herramienta. Seguí este orden de prioridad estricto:\n\n1. **Consultar Catálogo Primero:** Para cualquier consulta sobre productos, precios, medidas o disponibilidad, usá SIEMPRE la herramienta `gomeria_consultation` antes de responder. Nunca compartas precios ni detalles de productos sin haberla llamado.\n2. **Herramientas de acción después:** Solo después de consultar el catálogo, si hace falta confirmar stock operativo o ejecutar una acción, recurrí a las otras herramientas.\n\n**Regla crítica de precios:** Nunca inventes, estimes ni des precios aproximados. Si `gomeria_consultation` no trae precios, respondé exactamente: \"Disculpame, pero no tengo esa información de precios disponible en este momento.\"\n---\n**Tu persona**\n- Nombre: Lautaro.\n- Rol: Asesor de ventas experto de Freia - Especialistas en Neumáticos.\n- Edad proyectada: entre 30 y 50 años.\n- Idioma / Dialecto: español rioplatense (Buenos Aires). Usá \"vos\" y expresiones locales como \"dale\", \"perfecto\", \"no hay problema\".\n- Tono: profesional, amable, atento y resolutivo.\n\n**Información de Freia**\n- Dirección: Av. San Martín 1234, Buenos Aires, Argentina.\n- Teléfono: +54 11 4567-8900\n- Email: info@freia.com.ar\n- Horarios: Lunes a Viernes 8:00-18:00, Sábados 8:00-13:00, Domingos cerrado.\n- Servicios: Venta de neumáticos, montaje, balanceado, alineación, reparación y asesoramiento técnico.\n- Formas de pago: efectivo, tarjeta de débito/crédito y transferencia bancaria.\n\nCuando el cliente mencione la gomería (ej: \"tu gomería\", \"la gomería de Freia\"), respondé automáticamente: \"Perfecto, nuestra gomería está en Av. San Martín 1234, Buenos Aires. Horarios: Lunes a Viernes 8:00-18:00, Sábados 8:00-13:00.\"\n---\n**Estilo de comunicación**\n- Nunca muestres IDs internos de productos; mencioná marca y nombre.\n- Evitá jerga técnica como \"B2B\"; preferí frases claras (ej: \"venta para empresas\").\n- Usá puntuación conversacional, sin guiones largos ni listas rígidas.\n\n**Estrategia de conversación**\n- Un paso a la vez. Respuestas breves y concretas.\n- Prohibido hacer más de una pregunta en el mismo mensaje. Esperá la respuesta antes de continuar.\n- Preguntá siguiendo el proceso de venta:\n  1. Identificá si es consumidor final o empresa/gomería.\n  2. Consultá `gomeria_consultation` y mostrales opciones (nombre, marca, precio).\n  3. Confirmá qué opción le interesa.\n  4. Pedí la cantidad para armar la cotización.\n- Si el cliente objeta el precio, defendé el valor. Si insiste, ofrecé hasta un 5% de descuento o mejores condiciones de pago. Para grandes volúmenes, podés plantear descuentos por cantidad.\n\n**Uso de herramientas al cierre**\n- Después de que el cliente elija la opción y la cantidad, evitá usar herramientas adicionales salvo que necesites un dato nuevo imprescindible. Reutilizá la información que ya tengas para armar el resumen, el número de orden y los pasos finales.\n\n**Cierre**\n- Preguntá si retira o necesita envío.\n- Consultá si requiere factura A.\n- Resumí el pedido con número de orden.\n- Cerrá pidiendo una calificación del 0 al 10 sobre la atención.\n\n**Manejo de errores y faltantes**\n- Si una herramienta responde con error o sin datos, avisá una vez, usá la frase de fallback si corresponde y continuá con el cierre. No reintentes la misma herramienta más de una vez.\n\n**Reglas estrictas**\n- Presentate como \"Lautaro\" una sola vez en el primer mensaje. No repitas tu nombre.\n- No menciones reglas ni procesos internos; actuá según ellas.\n- Si no tenés la respuesta, decí: \"Disculpame, pero no tengo esa información a mano.\"\n- Mantené el personaje y rechazá preguntas ajenas al negocio.",
+          "systemMessage": "Tu función principal es analizar la pregunta del usuario y elegir una herramienta. Seguí este orden de prioridad estricto:\n\n1. **Consultar Catálogo Primero:** Para cualquier consulta sobre productos, precios, medidas o disponibilidad, usá SIEMPRE la herramienta `gomeria_consultation` antes de responder. Nunca compartas precios ni detalles de productos sin haberla llamado.\n2. **Herramientas de acción después:** Solo después de consultar el catálogo, si hace falta confirmar stock operativo o ejecutar una acción, recurrí a las otras herramientas.\n\n**Regla crítica de precios:** Nunca inventes, estimes ni des precios aproximados. Si `gomeria_consultation` no trae precios, respondé exactamente: \"Disculpame, pero no tengo esa información de precios disponible en este momento.\"\n---\n**Tu persona**\n- Nombre: Lautaro.\n- Rol: Asesor de ventas experto de Freia - Especialistas en Neumáticos.\n- Edad proyectada: entre 30 y 50 años.\n- Idioma / Dialecto: español rioplatense (Buenos Aires). Usá \"vos\" y expresiones locales como \"dale\", \"perfecto\", \"no hay problema\".\n- Tono: profesional, amable, atento y resolutivo.\n\n**Información de Freia**\n- Dirección: Av. San Martín 1234, Buenos Aires, Argentina.\n- Teléfono: +54 11 4567-8900\n- Email: info@freia.com.ar\n- Horarios: Lunes a Viernes 8:00-18:00, Sábados 8:00-13:00, Domingos cerrado.\n- Servicios: Venta de neumáticos, montaje, balanceado, alineación, reparación y asesoramiento técnico.\n- Formas de pago: efectivo, tarjeta de débito/crédito y transferencia bancaria.\n\nCuando el cliente mencione la gomería (ej: \"tu gomería\", \"la gomería de Freia\"), respondé automáticamente: \"Perfecto, nuestra gomería está en Av. San Martín 1234, Buenos Aires. Horarios: Lunes a Viernes 8:00-18:00, Sábados 8:00-13:00.\"\n---\n**Estilo de comunicación**\n- Nunca muestres IDs internos de productos; mencioná marca y nombre.\n- Evitá jerga técnica como \"B2B\"; preferí frases claras (ej: \"venta para empresas\").\n- Usá puntuación conversacional, sin guiones largos ni listas rígidas.\n\n**Estrategia de conversación**\n- Un paso a la vez. Respuestas breves y concretas.\n- Prohibido hacer más de una pregunta en el mismo mensaje. Esperá la respuesta antes de continuar.\n- Preguntá siguiendo el proceso de venta:\n  1. Identificá si es consumidor final o empresa/gomería.\n  2. Consultá `gomeria_consultation` y mostrales opciones (nombre, marca, precio).\n  3. Confirmá qué opción le interesa.\n  4. Pedí la cantidad para armar la cotización.\n- Si el cliente objeta el precio, defendé el valor. Si insiste, ofrecé hasta un 5% de descuento o mejores condiciones de pago. Para grandes volúmenes, podés plantear descuentos por cantidad.\n\n**Uso de herramientas al cierre**\n- Después de que el cliente elija la opción y la cantidad, evitá usar herramientas adicionales salvo que necesites un dato nuevo imprescindible. Reutilizá la información que ya tengas para armar el resumen, el número de orden y los pasos finales.\n\n**Cierre**\n- Preguntá si retira o necesita envío.\n- Consultá si requiere factura A.\n- Resumí el pedido con número de orden.\n- Cerrá pidiendo una calificación del 0 al 10 sobre la atención.\n\n**Manejo de errores y faltantes**\n- Si una herramienta responde con error o sin datos, avisá una vez, usá la frase de fallback si corresponde y continuá con el cierre. No reintentes la misma herramienta más de una vez.\n\n**Reglas estrictas**\n- Presentate como \"Lautaro\" una sola vez en el primer mensaje. No repitas tu nombre.\n- No menciones reglas ni procesos internos; actuá según ellas.\n- Si no tenés la respuesta, decí: \"Disculpame, pero no tengo esa información a mano.\"\n- Mantené el personaje y rechazá preguntas ajenas al negocio.\n\n**Validación de datos**\n- Antes de llamar a una herramienta, verificá que todos los parámetros obligatorios del backend endpoint que vas a utilizar estén completos y que no queden campos vacíos (por ejemplo, \"customerId\" no puede estar vacío).\n- Si falta algún dato, generá la información o solicitásela al cliente antes de avanzar al siguiente paso o herramienta.\n- Confirmá que los datos generados se mantengan coherentes entre herramientas previas y posteriores.",
           "inputModeration": [
             "{{inputModerationOpenAI_1.data.instance}}"
           ],
@@ -1118,8 +1123,8 @@
     {
       "id": "MongoDBAtlasChatMemory_1",
       "position": {
-        "x": 1305.5292747274536,
-        "y": 2059.7239335526115
+        "x": 1301.5278808390426,
+        "y": 2058.390135589808
       },
       "type": "customNode",
       "data": {
@@ -1187,7 +1192,7 @@
         "inputs": {
           "databaseName": "eternum",
           "collectionName": "chat_history",
-          "sessionId": "{{sessionId}}",
+          "sessionId": "",
           "memoryKey": "chat_history"
         },
         "outputAnchors": [
@@ -1207,15 +1212,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 1305.5292747274536,
-        "y": 2059.7239335526115
+        "x": 1301.5278808390426,
+        "y": 2058.390135589808
       }
     },
     {
       "id": "requestsPost_0",
       "position": {
-        "x": 2635.583171073854,
-        "y": -282.4846119527907
+        "x": 3064.912475785189,
+        "y": -783.2809327314226
       },
       "type": "customNode",
       "data": {
@@ -1343,15 +1348,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 2635.583171073854,
-        "y": -282.4846119527907
+        "x": 3064.912475785189,
+        "y": -783.2809327314226
       }
     },
     {
       "id": "requestsPost_1",
       "position": {
-        "x": 3128.2685292949504,
-        "y": -1014.0383245307428
+        "x": 6606.081354809581,
+        "y": 2346.4768001869734
       },
       "type": "customNode",
       "data": {
@@ -1479,15 +1484,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3128.2685292949504,
-        "y": -1014.0383245307428
+        "x": 6606.081354809581,
+        "y": 2346.4768001869734
       }
     },
     {
       "id": "requestsPost_2",
       "position": {
-        "x": 3722.6781011953994,
-        "y": -308.17818323689323
+        "x": 3961.306266144094,
+        "y": -761.9077926463831
       },
       "type": "customNode",
       "data": {
@@ -1595,7 +1600,7 @@
           "requestsPostDescription": "Herramienta para crear una nueva venta en el sistema. Usar cuando el cliente confirme la compra. Incluir ID del cliente, items con detalles (producto, cantidad, precio), monto total, método de pago, método de entrega, dirección si es envío, tiempo estimado de entrega, si requiere factura A, y notas adicionales.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Número de teléfono del cliente (requerido)\"\n    },\n    \"customer_id\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente (opcional si existe)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"SKU del producto (ej: PIR-C7-2055516)\"\n    },\n    \"product_brand\": {\n      \"type\": \"string\",\n      \"description\": \"Marca del producto (ej: Pirelli)\"\n    },\n    \"product_model\": {\n      \"type\": \"string\",\n      \"description\": \"Modelo del producto (ej: Cinturato P7)\"\n    },\n    \"wheel_size\": {\n      \"type\": \"string\",\n      \"description\": \"Medida de la rueda (ej: 205/55 R16)\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad de productos\",\n      \"default\": 1\n    },\n    \"unit_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio unitario del producto\"\n    },\n    \"total_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio total (quantity * unit_price)\"\n    },\n    \"discount_percentage\": {\n      \"type\": \"number\",\n      \"description\": \"Porcentaje de descuento aplicado\",\n      \"default\": 0\n    },\n    \"final_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio final después del descuento\"\n    },\n    \"payment_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de pago (cash, credit_card, debit_card, transfer, etc.)\"\n    },\n    \"delivery_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de entrega (pickup | delivery)\"\n    },\n    \"delivery_address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección de entrega (requerida si delivery_method es 'delivery')\"\n    },\n    \"sale_status\": {\n      \"type\": \"string\",\n      \"description\": \"Estado de la venta\",\n      \"default\": \"pending\"\n    },\n    \"agent_notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas adicionales del agente sobre la venta\"\n    },\n    \"chatflowid\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chatflow (para detección automática de producto si no se proporciona product_sku)\"\n    },\n    \"sessionId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la sesión (para detección automática de producto)\"\n    },\n    \"chatId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chat (para detección automática de producto)\"\n    }\n  },\n  \"required\": [\n    \"phone_number\",\n    \"payment_method\",\n    \"delivery_method\",\n    \"sale_status\",\n    \"agent_notes\",\n    \"chatflowid\",\n    \"sessionId\",\n    \"chatId\"\n  ],\n  \"additionalProperties\": false\n}",
+          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Número de teléfono del cliente (requerido)\"\n    },\n    \"customer_id\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente (opcional si existe)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"SKU del producto (ej: PIR-C7-2055516)\"\n    },\n    \"product_brand\": {\n      \"type\": \"string\",\n      \"description\": \"Marca del producto (ej: Pirelli)\"\n    },\n    \"product_model\": {\n      \"type\": \"string\",\n      \"description\": \"Modelo del producto (ej: Cinturato P7)\"\n    },\n    \"wheel_size\": {\n      \"type\": \"string\",\n      \"description\": \"Medida de la rueda (ej: 205/55 R16)\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad de productos\",\n      \"default\": 1\n    },\n    \"unit_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio unitario del producto\"\n    },\n    \"total_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio total (quantity * unit_price)\"\n    },\n    \"discount_percentage\": {\n      \"type\": \"number\",\n      \"description\": \"Porcentaje de descuento aplicado\",\n      \"default\": 0\n    },\n    \"final_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio final después del descuento\"\n    },\n    \"payment_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de pago (cash, credit_card, debit_card, transfer, etc.)\"\n    },\n    \"delivery_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de entrega (pickup | delivery)\"\n    },\n    \"delivery_address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección de entrega (requerida si delivery_method es 'delivery')\"\n    },\n    \"sale_status\": {\n      \"type\": \"string\",\n      \"description\": \"Estado de la venta\",\n      \"default\": \"pending\"\n    },\n    \"agent_notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas adicionales del agente sobre la venta\"\n    },\n    \"chatflowid\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chatflow (para detección automática de producto si no se proporciona product_sku)\"\n    },\n    \"sessionId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de la sesión (para detección automática de producto)\"\n    },\n    \"chatId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chat (para detección automática de producto)\"\n    }\n  },\n  \"required\": [\n    \"phone_number\"\n  ],\n  \"additionalProperties\": false\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -1615,15 +1620,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3722.6781011953994,
-        "y": -308.17818323689323
+        "x": 3961.306266144094,
+        "y": -761.9077926463831
       }
     },
     {
       "id": "requestsPost_3",
       "position": {
-        "x": 4117.593315782851,
-        "y": -308.60103443715707
+        "x": 4393.192041498245,
+        "y": -789.2183244042462
       },
       "type": "customNode",
       "data": {
@@ -1731,7 +1736,7 @@
           "requestsPostDescription": "Herramienta para crear seguimientos de clientes. Usar cuando el cliente no complete la compra por precio, tiempos de entrega, o falta de stock. Incluir ID del cliente, razón del seguimiento (price_negotiation, delivery_time, stock_availability), prioridad, fecha programada, notas y método de contacto preferido.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"customer_id\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente para el seguimiento\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Motivo del seguimiento (price_negotiation | delivery_time | stock_availability | other)\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad (low | medium | high). Default: medium\"\n  },\n  \"scheduled_date\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha/hora programada en ISO 8601. Ej: 2025-09-22T14:30:00Z\"\n  },\n  \"contact_method\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Cómo contactar (phone | whatsapp | email). Default: phone\"\n  },\n  \"notes\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Notas internas\"\n  },\n  \"related_sale_id\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de venta relacionada (si aplica)\"\n  },\n  \"assigned_to\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Usuario/asesor asignado al seguimiento\"\n  }\n}\n",
+          "requestsPostBodySchema": "{\n  \"customer_id\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente para el seguimiento (usar el ID interno si existe, sino dejar nulo)\"\n  },\n  \"phone_number\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Número de teléfono del cliente (obligatorio)\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Motivo del seguimiento (price_negotiation | delivery_time | stock_availability | other)\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad (low | medium | high). Default: medium\"\n  },\n  \"scheduled_date\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha/hora programada en ISO 8601. Ej: 2025-09-22T14:30:00Z\"\n  },\n  \"contact_method\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Cómo contactar (phone | whatsapp | email). Default: phone\"\n  },\n  \"notes\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Notas internas para el equipo comercial\"\n  },\n  \"related_sale_id\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de venta relacionada (si aplica)\"\n  },\n  \"assigned_to\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Usuario/asesor asignado al seguimiento\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -1751,15 +1756,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4117.593315782851,
-        "y": -308.60103443715707
+        "x": 4393.192041498245,
+        "y": -789.2183244042462
       }
     },
     {
       "id": "requestsGet_1",
       "position": {
-        "x": 2971.026811556354,
-        "y": -293.7614948442072
+        "x": 3511.2545281744437,
+        "y": -815.9239669829235
       },
       "type": "customNode",
       "data": {
@@ -1872,16 +1877,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2971.026811556354,
-        "y": -293.7614948442072
+        "x": 3511.2545281744437,
+        "y": -815.9239669829235
       },
       "dragging": false
     },
     {
       "id": "requestsGet_2",
       "position": {
-        "x": 3384.077907614248,
-        "y": 1642.8479542327984
+        "x": 2577.994268364892,
+        "y": -760.6923803278708
       },
       "type": "customNode",
       "data": {
@@ -1994,16 +1999,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3384.077907614248,
-        "y": 1642.8479542327984
+        "x": 2577.994268364892,
+        "y": -760.6923803278708
       },
       "dragging": false
     },
     {
       "id": "requestsGet_3",
       "position": {
-        "x": 2563.2727501114655,
-        "y": 2137.881524888051
+        "x": 2643.729094834425,
+        "y": 2404.657825811549
       },
       "type": "customNode",
       "data": {
@@ -2116,16 +2121,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2563.2727501114655,
-        "y": 2137.881524888051
+        "x": 2643.729094834425,
+        "y": 2404.657825811549
       },
       "dragging": false
     },
     {
       "id": "requestsPost_4",
       "position": {
-        "x": 4228.763976795279,
-        "y": -1006.2168652923518
+        "x": 1149.7600514360954,
+        "y": -681.9505414172339
       },
       "type": "customNode",
       "data": {
@@ -2252,16 +2257,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 4228.763976795279,
-        "y": -1006.2168652923518
+        "x": 1149.7600514360954,
+        "y": -681.9505414172339
       },
       "dragging": false
     },
     {
       "id": "requestsGet_4",
       "position": {
-        "x": 4175.2087337922985,
-        "y": 1648.4240955139612
+        "x": 5674.237408896383,
+        "y": 2359.8275345464076
       },
       "type": "customNode",
       "data": {
@@ -2374,16 +2379,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 4175.2087337922985,
-        "y": 1648.4240955139612
+        "x": 5674.237408896383,
+        "y": 2359.8275345464076
       },
       "dragging": false
     },
     {
       "id": "requestsPost_5",
       "position": {
-        "x": 4160.653357072957,
-        "y": 2117.168235130893
+        "x": 5126.129452902706,
+        "y": 2362.771803368286
       },
       "type": "customNode",
       "data": {
@@ -2511,15 +2516,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4160.653357072957,
-        "y": 2117.168235130893
+        "x": 5126.129452902706,
+        "y": 2362.771803368286
       }
     },
     {
       "id": "requestsPost_6",
       "position": {
-        "x": 3866.7377929230006,
-        "y": -938.3943214727091
+        "x": 6213.439882739161,
+        "y": 2372.146492882466
       },
       "type": "customNode",
       "data": {
@@ -2647,15 +2652,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3866.7377929230006,
-        "y": -938.3943214727091
+        "x": 6213.439882739161,
+        "y": 2372.146492882466
       }
     },
     {
       "id": "requestsGet_5",
       "position": {
-        "x": 2953.042515904836,
-        "y": 2121.8877287807045
+        "x": 3046.202494005105,
+        "y": 2373.843124097342
       },
       "type": "customNode",
       "data": {
@@ -2768,16 +2773,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2953.042515904836,
-        "y": 2121.8877287807045
+        "x": 3046.202494005105,
+        "y": 2373.843124097342
       },
       "dragging": false
     },
     {
       "id": "requestsGet_6",
       "position": {
-        "x": 2583.941833798627,
-        "y": 1595.6301805932317
+        "x": 2170.5437452255364,
+        "y": -686.4617067330171
       },
       "type": "customNode",
       "data": {
@@ -2890,16 +2895,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2583.941833798627,
-        "y": 1595.6301805932317
+        "x": 2170.5437452255364,
+        "y": -686.4617067330171
       },
       "dragging": false
     },
     {
       "id": "requestsPost_7",
       "position": {
-        "x": 3534.1764554019255,
-        "y": -979.9198938388437
+        "x": 5533.831313999923,
+        "y": -866.9652674520814
       },
       "type": "customNode",
       "data": {
@@ -3027,15 +3032,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3534.1764554019255,
-        "y": -979.9198938388437
+        "x": 5533.831313999923,
+        "y": -866.9652674520814
       }
     },
     {
       "id": "requestsGet_7",
       "position": {
-        "x": 2917.8808565706063,
-        "y": 1645.6715857215777
+        "x": 1640.716030084635,
+        "y": -707.0004630683695
       },
       "type": "customNode",
       "data": {
@@ -3148,16 +3153,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2917.8808565706063,
-        "y": 1645.6715857215777
+        "x": 1640.716030084635,
+        "y": -707.0004630683695
       },
       "dragging": false
     },
     {
       "id": "requestsPost_8",
       "position": {
-        "x": 4480.947807305895,
-        "y": -301.4004476997074
+        "x": 4944.760296924485,
+        "y": -839.1540588516953
       },
       "type": "customNode",
       "data": {
@@ -3285,15 +3290,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4480.947807305895,
-        "y": -301.4004476997074
+        "x": 4944.760296924485,
+        "y": -839.1540588516953
       }
     },
     {
       "id": "requestsGet_8",
       "position": {
-        "x": 4282.496192749776,
-        "y": 4477.050399227848
+        "x": 5973.751866483142,
+        "y": -874.1465747613211
       },
       "type": "customNode",
       "data": {
@@ -3406,16 +3411,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 4282.496192749776,
-        "y": 4477.050399227848
+        "x": 5973.751866483142,
+        "y": -874.1465747613211
       },
       "dragging": false
     },
     {
       "id": "requestsPost_9",
       "position": {
-        "x": 2576.5582615479884,
-        "y": 4447.482132793857
+        "x": 9090.826960691335,
+        "y": 307.3736065569724
       },
       "type": "customNode",
       "data": {
@@ -3543,15 +3548,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 2576.5582615479884,
-        "y": 4447.482132793857
+        "x": 9090.826960691335,
+        "y": 307.3736065569724
       }
     },
     {
       "id": "requestsPost_10",
       "position": {
-        "x": 2894.463977134237,
-        "y": 2655.2339142585124
+        "x": 3874.761019416615,
+        "y": 2367.2848910394987
       },
       "type": "customNode",
       "data": {
@@ -3659,7 +3664,7 @@
           "requestsPostDescription": "Programa seguimiento automático para clientes que no finalizaron compra o no respondieron. Usar cuando el cliente no conteste o abandone la conversación.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "{\"customerId\":\"ID del cliente\",\"phoneNumber\":\"Número de teléfono para contacto\",\"saleId\":\"ID de la venta pendiente (si aplica)\",\"followUpType\":\"Tipo: 'abandoned_cart', 'price_negotiation', 'delivery_improvement', 'stock_available'\",\"scheduledAt\":\"Fecha y hora programada (ISO 8601)\",\"attemptNumber\":\"Número de intento (1-3)\",\"maxAttempts\":\"Máximo número de intentos\",\"reason\":\"Razón del seguimiento\",\"productInterest\":\"Productos de interés del cliente\",\"lastInteractionDate\":\"Fecha de última interacción\",\"priority\":\"Prioridad: 'high', 'medium', 'low'\"}",
-          "requestsPostBodySchema": "{\n  \"customerId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"phoneNumber\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Número de teléfono para contacto\"\n  },\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de la venta pendiente (si aplica)\"\n  },\n  \"followUpType\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tipo de seguimiento: 'abandoned_cart', 'price_negotiation', 'delivery_improvement', 'stock_available'\"\n  },\n  \"scheduledAt\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha y hora programada (ISO 8601)\"\n  },\n  \"attemptNumber\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Número de intento (1-3)\"\n  },\n  \"maxAttempts\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Máximo número de intentos\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón del seguimiento\"\n  },\n  \"productInterest\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Productos de interés del cliente\"\n  },\n  \"lastInteractionDate\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha de última interacción (ISO 8601)\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad: 'high', 'medium', 'low'\"\n  }\n}\n",
+          "requestsPostBodySchema": "{\n  \"customerId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente (si no existe, usar mismo valor que phoneNumber)\"\n  },\n  \"phoneNumber\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Número de teléfono del cliente\"\n  },\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de la venta pendiente (si aplica)\"\n  },\n  \"followUpType\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Tipo de seguimiento: 'abandoned_cart', 'price_negotiation', 'delivery_improvement', 'stock_available', 'inventory_reservation'\"\n  },\n  \"scheduledAt\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha y hora programada (ISO 8601)\"\n  },\n  \"attemptNumber\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Número de intento (1-3)\"\n  },\n  \"maxAttempts\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Máximo número de intentos\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón del seguimiento\"\n  },\n  \"productInterest\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Productos de interés del cliente\"\n  },\n  \"lastInteractionDate\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Fecha de última interacción (ISO 8601)\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad: 'high', 'medium', 'low'\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -3679,15 +3684,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 2894.463977134237,
-        "y": 2655.2339142585124
+        "x": 3874.761019416615,
+        "y": 2367.2848910394987
       }
     },
     {
       "id": "requestsGet_9",
       "position": {
-        "x": 2534.560494886665,
-        "y": 2655.564513181918
+        "x": 3447.1048258233923,
+        "y": 2373.967306651559
       },
       "type": "customNode",
       "data": {
@@ -3800,16 +3805,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2534.560494886665,
-        "y": 2655.564513181918
+        "x": 3447.1048258233923,
+        "y": 2373.967306651559
       },
       "dragging": false
     },
     {
       "id": "requestsGet_10",
       "position": {
-        "x": 3285.9734527252385,
-        "y": 2681.6400809404854
+        "x": 4306.498667369096,
+        "y": 2378.870152114611
       },
       "type": "customNode",
       "data": {
@@ -3922,16 +3927,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3285.9734527252385,
-        "y": 2681.6400809404854
+        "x": 4306.498667369096,
+        "y": 2378.870152114611
       },
       "dragging": false
     },
     {
       "id": "requestsPost_12",
       "position": {
-        "x": 2606.9614397710648,
-        "y": 3208.029661500702
+        "x": 2180.1461277878807,
+        "y": 2589.147459125085
       },
       "type": "customNode",
       "data": {
@@ -4059,15 +4064,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 2606.9614397710648,
-        "y": 3208.029661500702
+        "x": 2180.1461277878807,
+        "y": 2589.147459125085
       }
     },
     {
       "id": "requestsPost_13",
       "position": {
-        "x": 4045.652395414206,
-        "y": 2727.397176232625
+        "x": 4691.4204254274355,
+        "y": 2369.578169438409
       },
       "type": "customNode",
       "data": {
@@ -4195,15 +4200,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4045.652395414206,
-        "y": 2727.397176232625
+        "x": 4691.4204254274355,
+        "y": 2369.578169438409
       }
     },
     {
       "id": "requestsPost_14",
       "position": {
-        "x": 3367.6775911620875,
-        "y": 3227.4225201189497
+        "x": 1281.6177538442757,
+        "y": 2971.3333329290394
       },
       "type": "customNode",
       "data": {
@@ -4331,15 +4336,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3367.6775911620875,
-        "y": 3227.4225201189497
+        "x": 1281.6177538442757,
+        "y": 2971.3333329290394
       }
     },
     {
       "id": "requestsPost_15",
       "position": {
-        "x": 2981.1080463375565,
-        "y": 3223.4447725706796
+        "x": 1748.6788329861129,
+        "y": 2823.3054175864445
       },
       "type": "customNode",
       "data": {
@@ -4467,15 +4472,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 2981.1080463375565,
-        "y": 3223.4447725706796
+        "x": 1748.6788329861129,
+        "y": 2823.3054175864445
       }
     },
     {
       "id": "requestsPost_16",
       "position": {
-        "x": 4118.216273107693,
-        "y": 3219.4412241042655
+        "x": 7452.710897976318,
+        "y": -904.6617279332497
       },
       "type": "customNode",
       "data": {
@@ -4603,15 +4608,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4118.216273107693,
-        "y": 3219.4412241042655
+        "x": 7452.710897976318,
+        "y": -904.6617279332497
       }
     },
     {
       "id": "requestsPost_17",
       "position": {
-        "x": 3763.8896358638785,
-        "y": 3209.3731511118344
+        "x": 6895.646987540491,
+        "y": -861.3778869277828
       },
       "type": "customNode",
       "data": {
@@ -4739,15 +4744,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3763.8896358638785,
-        "y": 3209.3731511118344
+        "x": 6895.646987540491,
+        "y": -861.3778869277828
       }
     },
     {
       "id": "requestsGet_11",
       "position": {
-        "x": 3433.078505298349,
-        "y": 4465.6328960904075
+        "x": 8896.314498683103,
+        "y": -272.01706692293465
       },
       "type": "customNode",
       "data": {
@@ -4860,16 +4865,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3433.078505298349,
-        "y": 4465.6328960904075
+        "x": 8896.314498683103,
+        "y": -272.01706692293465
       },
       "dragging": false
     },
     {
       "id": "requestsGet_12",
       "position": {
-        "x": 2999.1287983436873,
-        "y": 4432.8899432557455
+        "x": 6434.992059808319,
+        "y": -880.9606909348954
       },
       "type": "customNode",
       "data": {
@@ -4982,16 +4987,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2999.1287983436873,
-        "y": 4432.8899432557455
+        "x": 6434.992059808319,
+        "y": -880.9606909348954
       },
       "dragging": false
     },
     {
       "id": "requestsGet_14",
       "position": {
-        "x": 3820.507800031358,
-        "y": 4470.835432790329
+        "x": 9443.799535409806,
+        "y": 762.877409936418
       },
       "type": "customNode",
       "data": {
@@ -5104,16 +5109,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3820.507800031358,
-        "y": 4470.835432790329
+        "x": 9443.799535409806,
+        "y": 762.877409936418
       },
       "dragging": false
     },
     {
       "id": "requestsGet_15",
       "position": {
-        "x": 2584.5228684111225,
-        "y": 4037.2273031979557
+        "x": 8688.026354986185,
+        "y": 2501.2685513450906
       },
       "type": "customNode",
       "data": {
@@ -5226,16 +5231,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2584.5228684111225,
-        "y": 4037.2273031979557
+        "x": 8688.026354986185,
+        "y": 2501.2685513450906
       },
       "dragging": false
     },
     {
       "id": "requestsPost_19",
       "position": {
-        "x": 3030.2128298399925,
-        "y": 4004.9198747510145
+        "x": 8061.570054180778,
+        "y": 2442.0734423405497
       },
       "type": "customNode",
       "data": {
@@ -5363,15 +5368,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3030.2128298399925,
-        "y": 4004.9198747510145
+        "x": 8061.570054180778,
+        "y": 2442.0734423405497
       }
     },
     {
       "id": "requestsGet_16",
       "position": {
-        "x": 3472.717044535279,
-        "y": 3992.6960179740945
+        "x": 7586.532169847986,
+        "y": 2409.6838251454296
       },
       "type": "customNode",
       "data": {
@@ -5484,16 +5489,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3472.717044535279,
-        "y": 3992.6960179740945
+        "x": 7586.532169847986,
+        "y": 2409.6838251454296
       },
       "dragging": false
     },
     {
       "id": "requestsPost_20",
       "position": {
-        "x": 4305.594884397654,
-        "y": 4003.668682989506
+        "x": 7848.161973858081,
+        "y": -846.020299419422
       },
       "type": "customNode",
       "data": {
@@ -5621,15 +5626,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4305.594884397654,
-        "y": 4003.668682989506
+        "x": 7848.161973858081,
+        "y": -846.020299419422
       }
     },
     {
       "id": "requestsGet_17",
       "position": {
-        "x": 3904.5328586158494,
-        "y": 3992.500021363945
+        "x": 7084.001084551977,
+        "y": 2362.434387559482
       },
       "type": "customNode",
       "data": {
@@ -5742,16 +5747,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3904.5328586158494,
-        "y": 3992.500021363945
+        "x": 7084.001084551977,
+        "y": 2362.434387559482
       },
       "dragging": false
     },
     {
       "id": "requestsPost_21",
       "position": {
-        "x": 3037.903555308126,
-        "y": 6034.962679759389
+        "x": 3021.8979811087565,
+        "y": 1500.0499899380588
       },
       "type": "customNode",
       "data": {
@@ -5879,15 +5884,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3037.903555308126,
-        "y": 6034.962679759389
+        "x": 3021.8979811087565,
+        "y": 1500.0499899380588
       }
     },
     {
       "id": "requestsGet_18",
       "position": {
-        "x": 2556.235357737295,
-        "y": 6017.565360659501
+        "x": 630.2312624131775,
+        "y": -672.7646546769085
       },
       "type": "customNode",
       "data": {
@@ -6000,16 +6005,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 2556.235357737295,
-        "y": 6017.565360659501
+        "x": 630.2312624131775,
+        "y": -672.7646546769085
       },
       "dragging": false
     },
     {
       "id": "requestsPost_22",
       "position": {
-        "x": 4257.167054108144,
-        "y": 5962.7431853833705
+        "x": 9517.665774300887,
+        "y": 2201.4332485315617
       },
       "type": "customNode",
       "data": {
@@ -6137,15 +6142,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 4257.167054108144,
-        "y": 5962.7431853833705
+        "x": 9517.665774300887,
+        "y": 2201.4332485315617
       }
     },
     {
       "id": "requestsGet_19",
       "position": {
-        "x": 3830.577438869432,
-        "y": 5985.474359250264
+        "x": 9560.573002243676,
+        "y": 1749.3323878171627
       },
       "type": "customNode",
       "data": {
@@ -6258,16 +6263,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3830.577438869432,
-        "y": 5985.474359250264
+        "x": 9560.573002243676,
+        "y": 1749.3323878171627
       },
       "dragging": false
     },
     {
       "id": "requestsPost_23",
       "position": {
-        "x": 2972.1634678929704,
-        "y": 5533.2581253493345
+        "x": 3062.861721689397,
+        "y": 928.9879473307367
       },
       "type": "customNode",
       "data": {
@@ -6375,7 +6380,7 @@
           "requestsPostDescription": "Crea el registro de venta cuando el cliente confirma la compra. Usar al finalizar el proceso de venta.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customer_id\": {\n      \"type\": \"integer\",\n      \"description\": \"ID del cliente (opcional si existe en la base de datos)\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Número de teléfono del cliente (requerido)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"SKU del producto (opcional si se usan chatflowid, sessionId, chatId)\"\n    },\n    \"product_brand\": {\n      \"type\": \"string\",\n      \"description\": \"Marca del producto\"\n    },\n    \"product_model\": {\n      \"type\": \"string\",\n      \"description\": \"Modelo del producto\"\n    },\n    \"wheel_size\": {\n      \"type\": \"string\",\n      \"description\": \"Tamaño de rueda\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad de productos (default: 1)\"\n    },\n    \"unit_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio unitario\"\n    },\n    \"total_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio total antes de descuentos\"\n    },\n    \"discount_percentage\": {\n      \"type\": \"number\",\n      \"description\": \"Porcentaje de descuento aplicado (default: 0)\"\n    },\n    \"final_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio final después de descuentos\"\n    },\n    \"payment_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de pago (cash, debit, credit, transfer, mercado_pago, etc.)\"\n    },\n    \"delivery_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de entrega (pickup | delivery)\"\n    },\n    \"delivery_address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección de entrega si aplica\"\n    },\n    \"sale_status\": {\n      \"type\": \"string\",\n      \"description\": \"Estado de la venta (pending, confirmed, completed, cancelled, default: pending)\"\n    },\n    \"agent_notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas del agente sobre la venta\"\n    },\n    \"chatflowid\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chatflow para detección automática de producto\"\n    },\n    \"sessionId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de sesión para detección automática de producto\"\n    },\n    \"chatId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chat para detección automática de producto\"\n    }\n  },\n  \"required\": [\n    \"phone_number\",\n    \"payment_method\",\n    \"delivery_method\",\n    \"sale_status\",\n    \"agent_notes\",\n    \"chatflowid\",\n    \"sessionId\",\n    \"chatId\"\n  ],\n  \"additionalProperties\": false\n}",
+          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customer_id\": {\n      \"type\": \"integer\",\n      \"description\": \"ID del cliente (opcional si existe en la base de datos)\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\",\n      \"description\": \"Número de teléfono del cliente (requerido)\"\n    },\n    \"product_sku\": {\n      \"type\": \"string\",\n      \"description\": \"SKU del producto (opcional si se usan chatflowid, sessionId, chatId)\"\n    },\n    \"product_brand\": {\n      \"type\": \"string\",\n      \"description\": \"Marca del producto\"\n    },\n    \"product_model\": {\n      \"type\": \"string\",\n      \"description\": \"Modelo del producto\"\n    },\n    \"wheel_size\": {\n      \"type\": \"string\",\n      \"description\": \"Tamaño de rueda\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"description\": \"Cantidad de productos (default: 1)\"\n    },\n    \"unit_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio unitario\"\n    },\n    \"total_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio total antes de descuentos\"\n    },\n    \"discount_percentage\": {\n      \"type\": \"number\",\n      \"description\": \"Porcentaje de descuento aplicado (default: 0)\"\n    },\n    \"final_price\": {\n      \"type\": \"number\",\n      \"description\": \"Precio final después de descuentos\"\n    },\n    \"payment_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de pago (cash, debit, credit, transfer, mercado_pago, etc.)\"\n    },\n    \"delivery_method\": {\n      \"type\": \"string\",\n      \"description\": \"Método de entrega (pickup | delivery)\"\n    },\n    \"delivery_address\": {\n      \"type\": \"string\",\n      \"description\": \"Dirección de entrega si aplica\"\n    },\n    \"sale_status\": {\n      \"type\": \"string\",\n      \"description\": \"Estado de la venta (pending, confirmed, completed, cancelled, default: pending)\"\n    },\n    \"agent_notes\": {\n      \"type\": \"string\",\n      \"description\": \"Notas del agente sobre la venta\"\n    },\n    \"chatflowid\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chatflow para detección automática de producto\"\n    },\n    \"sessionId\": {\n      \"type\": \"string\",\n      \"description\": \"ID de sesión para detección automática de producto\"\n    },\n    \"chatId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del chat para detección automática de producto\"\n    }\n  },\n  \"required\": [\n    \"phone_number\"\n  ],\n  \"additionalProperties\": false\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -6395,15 +6400,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 2972.1634678929704,
-        "y": 5533.2581253493345
+        "x": 3062.861721689397,
+        "y": 928.9879473307367
       }
     },
     {
       "id": "requestsPost_24",
       "position": {
-        "x": 3401.9834469386888,
-        "y": 5552.916799076707
+        "x": 9489.436834098851,
+        "y": 1327.4452104431853
       },
       "type": "customNode",
       "data": {
@@ -6511,7 +6516,7 @@
           "requestsPostDescription": "Genera número de pedido único para la venta. Usar después de confirmar la venta.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la venta creada\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"saleDate\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Fecha de la venta (ISO 8601)\"\n  }\n}\n",
+          "requestsPostBodySchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"sale_id\": {\n      \"type\": \"string\",\n      \"description\": \"ID numérico de la venta registrada en /sales/create\"\n    },\n    \"clientId\": {\n      \"type\": \"string\",\n      \"description\": \"ID del cliente (opcional, solo informativo)\"\n    },\n    \"saleDate\": {\n      \"type\": \"string\",\n      \"description\": \"Fecha de la venta en ISO 8601 (opcional)\"\n    }\n  },\n  \"required\": [\n    \"sale_id\"\n  ],\n  \"additionalProperties\": false\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -6531,15 +6536,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3401.9834469386888,
-        "y": 5552.916799076707
+        "x": 9489.436834098851,
+        "y": 1327.4452104431853
       }
     },
     {
       "id": "requestsPost_25",
       "position": {
-        "x": 2558.3828687905293,
-        "y": 5488.391034083018
+        "x": 3017.209329172452,
+        "y": 270.57384508859366
       },
       "type": "customNode",
       "data": {
@@ -6667,15 +6672,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 2558.3828687905293,
-        "y": 5488.391034083018
+        "x": 3017.209329172452,
+        "y": 270.57384508859366
       }
     },
     {
       "id": "requestsPost_26",
       "position": {
-        "x": 3417.6354908642647,
-        "y": 6004.898379985608
+        "x": 760.7101737689442,
+        "y": 3059.872727301638
       },
       "type": "customNode",
       "data": {
@@ -6783,7 +6788,7 @@
           "requestsPostDescription": "Solicita aprobación de descuento especial al administrador. Usar cuando el cliente no acepta el precio con descuentos automáticos.",
           "requestsPostHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{FREIA_API_KEY}}\"\n}\n",
           "requestPostBody": "",
-          "requestsPostBodySchema": "{\n  \"quoteId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la cotización\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente\"\n  },\n  \"requestedDiscount\": {\n    \"type\": \"number\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Porcentaje de descuento solicitado\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Razón del cliente para pedir el descuento especial\"\n  },\n  \"clientPhone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente para contacto\"\n  },\n  \"estimatedResponseTime\": {\n    \"type\": \"integer\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Tiempo estimado de respuesta en horas\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad de la solicitud: 'high', 'medium', 'low'\"\n  },\n  \"required\": [\n    \"quoteId\",\n    \"clientId\",\n    \"requestedDiscount\",\n    \"reason\",\n    \"clientPhone\",\n    \"estimatedResponseTime\",\n    \"priority\"\n  ]\n}",
+          "requestsPostBodySchema": "{\n  \"quoteId\": {\n    \"type\": \"string\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"ID de la cotización\"\n  },\n  \"saleId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID de la venta asociada (si existe)\"\n  },\n  \"clientId\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"ID del cliente (omitir si no está disponible)\"\n  },\n  \"requestedDiscount\": {\n    \"type\": \"number\",\n    \"required\": true,\n    \"in\": \"body\",\n    \"description\": \"Porcentaje de descuento solicitado\"\n  },\n  \"requestedTotal\": {\n    \"type\": \"number\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Total propuesto con descuento (opcional)\"\n  },\n  \"reason\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Justificación del cliente para el descuento\"\n  },\n  \"clientPhone\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Teléfono del cliente para contacto (formato internacional sin espacios)\"\n  },\n  \"estimatedResponseTime\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Tiempo estimado de respuesta (horas). Ej: 48 o \\\"48\\\"\"\n  },\n  \"priority\": {\n    \"type\": \"string\",\n    \"required\": false,\n    \"in\": \"body\",\n    \"description\": \"Prioridad de la solicitud: 'high', 'medium', 'low'\"\n  }\n}",
           "requestsPostMaxOutputLength": "2000"
         },
         "outputAnchors": [
@@ -6803,15 +6808,15 @@
       "selected": false,
       "dragging": false,
       "positionAbsolute": {
-        "x": 3417.6354908642647,
-        "y": 6004.898379985608
+        "x": 760.7101737689442,
+        "y": 3059.872727301638
       }
     },
     {
       "id": "requestsGet_20",
       "position": {
-        "x": 3839.7611503667185,
-        "y": 5517.205228665837
+        "x": 8369.338648788258,
+        "y": -632.1363787318851
       },
       "type": "customNode",
       "data": {
@@ -6924,16 +6929,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 3839.7611503667185,
-        "y": 5517.205228665837
+        "x": 8369.338648788258,
+        "y": -632.1363787318851
       },
       "dragging": false
     },
     {
       "id": "requestsGet_21",
       "position": {
-        "x": 4280.109625979327,
-        "y": 5469.745671989737
+        "x": 9145.804182587623,
+        "y": 2487.3736795072396
       },
       "type": "customNode",
       "data": {
@@ -7046,16 +7051,16 @@
       "height": 339,
       "selected": false,
       "positionAbsolute": {
-        "x": 4280.109625979327,
-        "y": 5469.745671989737
+        "x": 9145.804182587623,
+        "y": 2487.3736795072396
       },
       "dragging": false
     },
     {
       "id": "retrieverTool_0",
       "position": {
-        "x": 2292.7703903189586,
-        "y": 804.6005807511955
+        "x": 2267.3631246392283,
+        "y": 796.1314921912855
       },
       "type": "customNode",
       "data": {
@@ -7147,8 +7152,8 @@
       "height": 662,
       "selected": false,
       "positionAbsolute": {
-        "x": 2292.7703903189586,
-        "y": 804.6005807511955
+        "x": 2267.3631246392283,
+        "y": 796.1314921912855
       },
       "dragging": false
     }
@@ -7537,6 +7542,46 @@
       "targetHandle": "retrieverTool_0-input-retriever-BaseRetriever",
       "type": "buttonedge",
       "id": "pinecone_1-pinecone_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-retrieverTool_0-retrieverTool_0-input-retriever-BaseRetriever"
+    },
+    {
+      "source": "requestsPost_7",
+      "sourceHandle": "requestsPost_7-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
+      "target": "toolAgent_1",
+      "targetHandle": "toolAgent_1-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "requestsPost_7-requestsPost_7-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
+    },
+    {
+      "source": "requestsGet_7",
+      "sourceHandle": "requestsGet_7-output-requestsGet-RequestsGet|DynamicStructuredTool|StructuredTool|Runnable|Tool",
+      "target": "toolAgent_1",
+      "targetHandle": "toolAgent_1-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "requestsGet_7-requestsGet_7-output-requestsGet-RequestsGet|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
+    },
+    {
+      "source": "requestsPost_4",
+      "sourceHandle": "requestsPost_4-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
+      "target": "toolAgent_1",
+      "targetHandle": "toolAgent_1-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "requestsPost_4-requestsPost_4-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
+    },
+    {
+      "source": "requestsPost_6",
+      "sourceHandle": "requestsPost_6-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
+      "target": "toolAgent_1",
+      "targetHandle": "toolAgent_1-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "requestsPost_6-requestsPost_6-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
+    },
+    {
+      "source": "requestsPost_1",
+      "sourceHandle": "requestsPost_1-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool",
+      "target": "toolAgent_1",
+      "targetHandle": "toolAgent_1-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "requestsPost_1-requestsPost_1-output-requestsPost-RequestsPost|DynamicStructuredTool|StructuredTool|Runnable|Tool-toolAgent_1-toolAgent_1-input-tools-Tool"
     }
   ]
 }

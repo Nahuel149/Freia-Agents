@@ -517,7 +517,6 @@ const scheduleFollowUp = async (req: Request, res: Response, next: NextFunction)
                         'SELECT phone_number FROM customers WHERE id = $1',
                         [parseInt(customerIdStr)]
                     )
-                    
                     if (lookup.length > 0 && lookup[0].phone_number) {
                         resolvedPhone = lookup[0].phone_number
                     }
@@ -534,14 +533,29 @@ const scheduleFollowUp = async (req: Request, res: Response, next: NextFunction)
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'phoneNumber or a customer with phone_number is required')
         }
 
+        const trimmedPhone = resolvedPhone.trim()
+        let normalizedPhone = trimmedPhone
+        try {
+            const parsedPhone = normalizePhoneNumber(trimmedPhone)
+            if (parsedPhone && isValidPhoneNumber(parsedPhone)) {
+                normalizedPhone = parsedPhone
+            }
+        } catch {
+            const digits = extractDigits(trimmedPhone)
+            if (digits) normalizedPhone = digits
+        }
+
+        const normalizedCustomerId = parseNullableNumber(resolvedCustomerId)
+        const normalizedSaleId = parseNullableNumber(saleId)
+
         // Use date field if provided, otherwise use scheduledAt
         const finalScheduledAt = date ?? scheduledAt ?? lastInteractionDate ?? new Date().toISOString()
         const finalReason = note ?? reason ?? null
 
         const result = await insertFollowUpRecord({
-            customer_id: resolvedCustomerId ? parseInt(resolvedCustomerId) : null,
-            phone_number: resolvedPhone,
-            sale_id: saleId ? parseInt(saleId) : null,
+            customer_id: normalizedCustomerId,
+            phone_number: normalizedPhone,
+            sale_id: normalizedSaleId,
             follow_up_type: followUpType ?? 'sales_follow_up',
             scheduled_at: finalScheduledAt,
             status: 'pending',
