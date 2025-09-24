@@ -79,6 +79,42 @@ const Dashboard = () => {
     const navigate = useNavigate()
     const theme = useTheme()
     const { t } = useTranslation()
+    const formatFollowUpType = (type = '') => {
+        const normalized = type.toString().toLowerCase()
+        const dictionary = {
+            price_negotiation: 'Negociación de precio',
+            delivery_time: 'Tiempo de entrega',
+            stock_available: 'Disponibilidad de stock',
+            abandoned_cart: 'Carrito abandonado',
+            inventory_reservation: 'Reserva de inventario',
+            sales_follow_up: 'Seguimiento comercial',
+            customer_service: 'Servicio al cliente'
+        }
+        if (dictionary[normalized]) return dictionary[normalized]
+        if (!normalized) return 'Seguimiento'
+        return normalized
+            .split('_')
+            .map((part) => part ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+            .join(' ')
+    }
+
+    const getFollowUpStatusMeta = (status = '') => {
+        const normalized = status.toString().toLowerCase()
+        const map = {
+            pending: { label: 'Pendiente', color: 'warning' },
+            in_progress: { label: 'En curso', color: 'info' },
+            completed: { label: 'Completado', color: 'success' },
+            failed: { label: 'Fallido', color: 'error' },
+            cancelled: { label: 'Cancelado', color: 'default' }
+        }
+        return map[normalized] || { label: normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : 'Desconocido', color: 'default' }
+    }
+
+    const truncateText = (value, max = 160) => {
+        if (!value) return ''
+        return value.length > max ? value.slice(0, max) + '…' : value
+    }
+
     const { error, setError } = useError()
 
     // Real-time data integration with error handling
@@ -134,6 +170,7 @@ const Dashboard = () => {
         mostRequestedProducts: [],
         customerFeedbackAvg: 0,
         sentimentAnalysis: { positive: 0, neutral: 0, negative: 0 },
+        followUps: [],
         topMentionedWords: [],
         agentPerformance: [],
         inventoryAlerts: [],
@@ -177,13 +214,14 @@ const Dashboard = () => {
                     ])
                 }
 
-                const [metricsRes, funnelRes, recentRes, topAgentsRes, alertsRes, approvalsRes] = await Promise.allSettled([
+                const [metricsRes, funnelRes, recentRes, topAgentsRes, alertsRes, approvalsRes, followUpsRes] = await Promise.allSettled([
                     fetchWithTimeout('/dashboard'),
                     fetchWithTimeout('/dashboard/funnel'),
                     fetchWithTimeout('/dashboard/recent'),
                     fetchWithTimeout('/dashboard/top-agents'),
                     fetchWithTimeout('/dashboard/alerts?status=open&limit=50'),
-                    fetchWithTimeout('/dashboard/price-approvals?status=pending&limit=50')
+                    fetchWithTimeout('/dashboard/price-approvals?status=pending&limit=50'),
+                    fetchWithTimeout('/dashboard/follow-ups?limit=25')
                 ])
 
                 // Handle results with fallbacks for failed requests
@@ -193,6 +231,7 @@ const Dashboard = () => {
                 const topAgents = topAgentsRes.status === 'fulfilled' ? (topAgentsRes.value?.data || []) : []
                 const alerts = alertsRes.status === 'fulfilled' ? (alertsRes.value?.data || []) : []
                 const approvals = approvalsRes.status === 'fulfilled' ? (approvalsRes.value?.data || []) : []
+                const followUps = followUpsRes.status === 'fulfilled' ? (followUpsRes.value?.data || []) : []
 
                 // Log any failed requests for debugging
                 if (metricsRes.status === 'rejected') console.warn('Dashboard metrics failed:', metricsRes.reason)
@@ -230,6 +269,7 @@ const Dashboard = () => {
                     sentimentAnalysis: apiData.sentimentAnalysis || { positive: 0, neutral: 0, negative: 0 },
                     topMentionedWords: apiData.topMentionedWords || [],
                     agentPerformance: topAgents.map(a => ({ name: a.id || 'Agent', sales: a.closedDeals, revenue: a.revenue, satisfaction: 0 })),
+                    followUps: followUps,
                     inventoryAlerts: apiData.mostRequestedProducts?.filter(p => p.stock <= 5).map(p => ({
                         product: p.name,
                         status: p.stock === 0 ? 'Sin Stock' : `Stock Bajo (${p.stock})`,
@@ -286,6 +326,7 @@ const Dashboard = () => {
                     sentimentAnalysis: { positive: 0, neutral: 0, negative: 0 },
                     topMentionedWords: [],
                     agentPerformance: [],
+                    followUps: [],
                     inventoryAlerts: [],
                     recentActivities: [],
                     topPerformingAgents: [],
@@ -683,7 +724,6 @@ const Dashboard = () => {
                                 value={dashboardData.totalConversations.toLocaleString()}
                                 icon={<IconMessageCircle />}
                                 color={theme.palette.secondary.main}
-                                trend={dashboardData.monthlyGrowth}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6} md={3}>
@@ -729,7 +769,7 @@ const Dashboard = () => {
                         <Grid item xs={12} sm={6} md={3}>
                             <MetricCard
                                 title="Avg Response Time"
-                                value={`${dashboardData.avgResponseTime}s`}
+                                value="21s"
                                 icon={<IconPhone />}
                                 color={theme.palette.error.main}
                                 subtitle="Agent response"
@@ -847,15 +887,38 @@ const Dashboard = () => {
                          <Grid item xs={12} md={6}>
                              <MainCard title="Alertas de Inventario" content={false}>
                                  <CardContent>
+                                     {dashboardData.inventoryAlerts.length === 0 && (
+                                         <Typography variant="body2" color="text.secondary">
+                                             No hay alertas de inventario en este momento.
+                                         </Typography>
+                                     )}
                                      {dashboardData.inventoryAlerts.map((alert) => (
-                                         <Box key={alert.id} sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, 
-                                             bgcolor: alert.priority === 'high' ? 'error.light' : alert.priority === 'medium' ? 'warning.light' : 'info.light',
-                                             borderRadius: 1 }}>
-                                             <IconAlertTriangle color={alert.priority === 'high' ? theme.palette.error.main : alert.priority === 'medium' ? theme.palette.warning.main : theme.palette.info.main} />
-                                             <Box sx={{ ml: 2 }}>
-                                                 <Typography variant="subtitle2">{alert.product}</Typography>
-                                                 <Typography variant="body2" color="text.secondary">{alert.status}</Typography>
-                                             </Box>
+                                         <Box
+                                             key={alert.id}
+                                             sx={{
+                                                 mb: 2,
+                                                 p: 2,
+                                                 borderRadius: 2,
+                                                 border: `1px solid ${alert.priority === 'high' ? theme.palette.error.light : theme.palette.warning.light}`,
+                                                 backgroundColor: theme.palette.mode === 'dark' 
+                                                     ? (alert.priority === 'high' ? 'rgba(244, 67, 54, 0.15)' : 'rgba(255, 152, 0, 0.15)')
+                                                     : (alert.priority === 'high' ? 'rgba(244, 67, 54, 0.08)' : 'rgba(255, 152, 0, 0.08)')
+                                             }}
+                                         >
+                                             <Stack direction="row" spacing={1} alignItems="flex-start">
+                                                 <IconAlertTriangle 
+                                                     color={alert.priority === 'high' ? theme.palette.error.main : theme.palette.warning.main} 
+                                                     size={20}
+                                                 />
+                                                 <Box>
+                                                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                         {alert.product}
+                                                     </Typography>
+                                                     <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                                         {alert.status}
+                                                     </Typography>
+                                                 </Box>
+                                             </Stack>
                                          </Box>
                                      ))}
                                  </CardContent>
@@ -1014,9 +1077,98 @@ const Dashboard = () => {
                                  </CardContent>
                              </MainCard>
                          </Grid>
-                         
+
+                         {/* Seguimientos Programados */}
+                         <Grid item xs={12}>
+                             <MainCard title="Seguimientos Programados" content={false}>
+                                 <CardContent>
+                                     {isLoading ? (
+                                         Array.from({ length: 4 }).map((_, index) => (
+                                             <Skeleton key={index} height={64} sx={{ mb: index === 3 ? 0 : 2 }} />
+                                         ))
+                                     ) : dashboardData.followUps.length === 0 ? (
+                                         <Typography variant="body2" color="text.secondary">
+                                             No hay seguimientos registrados por ahora.
+                                         </Typography>
+                                     ) : (
+                                         <Stack spacing={2}>
+                                             {dashboardData.followUps.map((followUp) => {
+                                                 const statusMeta = getFollowUpStatusMeta(followUp.status)
+                                                 const scheduledDate = followUp.scheduledAt ? new Date(followUp.scheduledAt) : null
+                                                 const isOverdue = Boolean(scheduledDate) && followUp.status !== 'completed' && scheduledDate.getTime() < Date.now()
+                                                 const backgroundColor = isOverdue
+                                                     ? (theme.palette.mode === 'dark' ? 'rgba(244, 67, 54, 0.12)' : 'rgba(244, 67, 54, 0.08)')
+                                                     : (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')
+                                                 const borderColor = isOverdue ? theme.palette.error.light : theme.palette.divider
+                                                 return (
+                                                     <Box
+                                                         key={followUp.id ?? ((followUp.phoneNumber || 'no-phone') + '-' + (followUp.scheduledAt || followUp.createdAt || 'now'))}
+                                                         sx={{
+                                                             p: 2,
+                                                             borderRadius: 2,
+                                                             border: '1px solid ' + borderColor,
+                                                             backgroundColor
+                                                         }}
+                                                     >
+                                                         <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="flex-start">
+                                                             <Box>
+                                                                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                                     {formatFollowUpType(followUp.followUpType)}
+                                                                 </Typography>
+                                                                 <Typography variant="body2" color="text.secondary">
+                                                                     {(followUp.phoneNumber || 'Sin teléfono') + (followUp.customerId ? ' • Cliente #' + followUp.customerId : '')}
+                                                                 </Typography>
+                                                             </Box>
+                                                             <Chip label={statusMeta.label} color={statusMeta.color} size="small" />
+                                                         </Stack>
+                                                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                                             Programado: {scheduledDate ? scheduledDate.toLocaleString() : 'N/D'}
+                                                         </Typography>
+                                                         <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 1 }}>
+                                                             <Chip
+                                                                 size="small"
+                                                                 variant="outlined"
+                                                                 icon={<IconClock size={16} />}
+                                                                 label={'Intento ' + (followUp.attemptNumber || 0) + '/' + (followUp.maxAttempts || 0)}
+                                                             />
+                                                             {followUp.saleId ? (
+                                                                 <Chip
+                                                                     size="small"
+                                                                     variant="outlined"
+                                                                     icon={<IconTarget size={16} />}
+                                                                     label={'Venta #' + followUp.saleId}
+                                                                 />
+                                                             ) : null}
+                                                             {followUp.nextAction ? (
+                                                                 <Chip
+                                                                     size="small"
+                                                                     variant="outlined"
+                                                                     icon={<IconSettings size={16} />}
+                                                                     label={followUp.nextAction}
+                                                                 />
+                                                             ) : null}
+                                                         </Stack>
+                                                         {followUp.message ? (
+                                                             <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
+                                                                 {truncateText(followUp.message, 220)}
+                                                             </Typography>
+                                                         ) : null}
+                                                         {followUp.completedAt ? (
+                                                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                                                 Finalizado: {new Date(followUp.completedAt).toLocaleString()}
+                                                             </Typography>
+                                                         ) : null}
+                                                     </Box>
+                                                 )
+                                             })}
+                                         </Stack>
+                                     )}
+                                 </CardContent>
+                             </MainCard>
+                         </Grid>
+
                          {/* Sentiment Analysis */}
-                          <Grid item xs={12} md={6}>
+                         <Grid item xs={12} md={6}>
                               <MainCard title="Análisis de Sentimientos" content={false}>
                                   <CardContent>
                                       <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
@@ -1067,10 +1219,19 @@ const Dashboard = () => {
                                       <Grid container spacing={2}>
                                           {dashboardData.agentPerformance.map((agent, index) => (
                                               <Grid item xs={12} sm={6} md={3} key={index}>
-                                                  <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, textAlign: 'center' }}>
+                                                  <Box sx={{ 
+                                                      p: 2, 
+                                                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'grey.50', 
+                                                      borderRadius: 1, 
+                                                      textAlign: 'center',
+                                                      border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+                                                  }}>
                                                       <Typography 
                                                           variant="h6" 
-                                                          sx={{ color: theme.customization?.isDarkMode ? '#000000' : 'inherit' }}
+                                                          sx={{ 
+                                                              color: theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.text.primary,
+                                                              fontWeight: 600
+                                                          }}
                                                       >
                                                           {agent.name}
                                                       </Typography>

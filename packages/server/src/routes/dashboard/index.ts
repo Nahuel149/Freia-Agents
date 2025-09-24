@@ -15,6 +15,7 @@ router.get('/sales', dashboardController.getSalesStats)
 // Agent performance view
 router.get('/funnel', dashboardController.getFunnel)
 router.get('/recent', dashboardController.getRecentActivities)
+router.get('/follow-ups', dashboardController.getFollowUps)
 router.get('/top-agents', dashboardController.getTopAgents)
 router.get('/alerts', dashboardController.getToolAlerts)
 router.patch('/alerts/:id', dashboardController.resolveToolAlert)

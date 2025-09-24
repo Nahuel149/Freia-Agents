@@ -11,9 +11,15 @@ import { ProductInventory } from '../database/entities/ProductInventory'
 import { ClientAccount } from '../database/entities/ClientAccount'
 import { ToolAlert } from '../database/entities/ToolAlert'
 import { PriceApprovalRequest } from '../database/entities/PriceApprovalRequest'
+import { FollowUp } from '../database/entities/FollowUp'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 
 type SentimentBuckets = { positive: number; neutral: number; negative: number }
+
+const STOP_WORDS = new Set(
+    ['de', 'la', 'en', 'el', 'los', 'las', 'y', 'que', 'por', 'para', 'con', 'se', 'del', 'al', 'un', 'una', 'uno', 'lo', 'su', 'sus', 'te', 'tu', 'vos', 'mi', 'si', 'no', 'es', 'son', 'gracias', 'hola', 'buenas', 'ok', 'dale', 'bien', 'perfecto', 'listo', 'entonces', 'pero', 'solo', 'más', 'menos', 'porque', 'cuando', 'este', 'esta', 'estas', 'estos', 'ser', 'tener', 'hacer', 'vez', 'ahora', 'cliente', 'muchas', 'muchos', 'día', 'dias', 'mañana', 'tarde', 'noche', 'list', '00', '000', '0']
+        .map((word) => word.toLowerCase())
+)
 
 export class DashboardService {
     private dataSource: DataSource
@@ -23,6 +29,7 @@ export class DashboardService {
     private clientAccountRepo: Repository<ClientAccount>
     private toolAlertRepo: Repository<ToolAlert>
     private priceApprovalRepo: Repository<PriceApprovalRequest>
+    private followUpRepo: Repository<FollowUp>
 
     constructor() {
         const app = getRunningExpressApp()
@@ -33,6 +40,7 @@ export class DashboardService {
         this.clientAccountRepo = this.dataSource.getRepository(ClientAccount)
         this.toolAlertRepo = this.dataSource.getRepository(ToolAlert)
         this.priceApprovalRepo = this.dataSource.getRepository(PriceApprovalRequest)
+        this.followUpRepo = this.dataSource.getRepository(FollowUp)
     }
 
     private daysAgo(days: number): Date {
@@ -183,18 +191,32 @@ export class DashboardService {
             const topWords = metadata?.topWords
             if (Array.isArray(topWords)) {
                 topWords.forEach((entry: any) => {
-                    const word = typeof entry?.word === 'string' ? entry.word.toLowerCase() : null
-                    if (!word || word.length < 2) return
+                    const rawWord = typeof entry?.word === 'string' ? entry.word.trim().toLowerCase() : null
+                    if (!rawWord || rawWord.length < 2) return
+                    if (STOP_WORDS.has(rawWord)) return
+
+                    const hasLetter = /[a-záéíóúñ]/.test(rawWord)
+                    const isTireSize = /\d+\/\d+/.test(rawWord)
+                    const isAlphaNumeric = /[a-z0-9]/.test(rawWord)
+                    const onlyDigits = /^[0-9]+$/.test(rawWord)
+                    const onlySymbols = /^[^a-z0-9]+$/.test(rawWord)
+
+                    if ((onlyDigits && !isTireSize) || onlySymbols || (!hasLetter && !isTireSize && !isAlphaNumeric)) return
+
+                    const key = rawWord
                     const countValue = this.normaliseNumber(entry?.count)
                     const increment = typeof countValue === 'number' && Number.isFinite(countValue) ? countValue : 1
-                    wordCounts.set(word, (wordCounts.get(word) ?? 0) + increment)
+                    wordCounts.set(key, (wordCounts.get(key) ?? 0) + increment)
                 })
             }
         })
         const topMentionedWords = Array.from(wordCounts.entries())
             .sort((a, b) => b[1] - a[1])
             .slice(0, 10)
-            .map(([word, count]) => ({ word, count }))
+            .map(([word, count]) => ({
+                word: /[a-z]/.test(word) ? word.charAt(0).toUpperCase() + word.slice(1) : word.toUpperCase(),
+                count
+            }))
 
         const feedbackScores = feedbackMetadataRows
             .map(row => this.parseMetadata(row.metadata)?.score)
@@ -390,6 +412,40 @@ export class DashboardService {
             status: 'pending'
         })
         return this.priceApprovalRepo.save(request)
+    }
+
+    async getRecentFollowUps(limit = 15, status?: string) {
+        const numericLimit = Number(limit)
+        const safeLimit = Number.isFinite(numericLimit) ? Math.min(Math.max(Math.trunc(numericLimit), 1), 100) : 15
+
+        const qb = this.followUpRepo
+            .createQueryBuilder('follow')
+            .orderBy('follow.scheduledAt', 'DESC')
+            .addOrderBy('follow.createdAt', 'DESC')
+            .take(safeLimit)
+
+        if (status) {
+            qb.where('follow.status = :status', { status })
+        }
+
+        const rows = await qb.getMany()
+
+        return rows.map(row => ({
+            id: row.id,
+            customerId: row.customerId,
+            phoneNumber: row.phoneNumber,
+            saleId: row.saleId,
+            followUpType: row.followUpType,
+            status: row.status,
+            scheduledAt: row.scheduledAt ? row.scheduledAt.toISOString() : null,
+            attemptNumber: row.attemptNumber,
+            maxAttempts: row.maxAttempts,
+            message: row.messageSent,
+            nextAction: row.nextAction,
+            completedAt: row.completedAt ? row.completedAt.toISOString() : null,
+            createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+            updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null
+        }))
     }
 
     static async recordToolAlert(params: {

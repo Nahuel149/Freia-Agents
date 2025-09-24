@@ -69,6 +69,21 @@ const getRecentActivities = async (req: Request, res: Response) => {
     }
 }
 
+const getFollowUps = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const limit = parseInt((req.query.limit as string) || '15', 10)
+        const status = typeof req.query.status === 'string' ? req.query.status : undefined
+        const data = await dashboardService.getRecentFollowUps(limit, status)
+        return res.json(data)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.getFollowUps - ${error}`
+        )
+    }
+}
+
 const getTopAgents = async (req: Request, res: Response) => {
     try {
         const dashboardService = new DashboardService()
@@ -173,6 +188,7 @@ export default {
     getSalesStats,
     getFunnel,
     getRecentActivities,
+    getFollowUps,
     getTopAgents,
     getToolAlerts,
     resolveToolAlert,
