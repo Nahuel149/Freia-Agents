@@ -416,28 +416,86 @@ const getSalesByStatus = async (req: Request, res: Response, next: NextFunction)
 // Generate sale quote
 const createSaleQuote = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { product_sku, quantity = 1 } = req.body
-        if (!product_sku) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Product SKU is required')
+        const { 
+            product_sku, 
+            quantity = 1,
+            // New parameters for conversation analysis
+            chatflowid,
+            sessionId,
+            chatId
+        } = req.body
+
+        let finalProductSku = product_sku
+        let analysisNotes = ''
+
+        // If product_sku is not provided, try to detect it from conversation
+        if (!finalProductSku && (chatflowid || sessionId || chatId)) {
+            logger.info('Product SKU not provided for quote, analyzing conversation for product information...')
+            
+            const analysisResult = await analyzeConversationForProduct(
+                chatflowid,
+                sessionId,
+                chatId
+            )
+
+            if (analysisResult.productInfo && analysisResult.productInfo.confidence > 0.5) {
+                finalProductSku = analysisResult.productInfo.product_sku
+                analysisNotes = `Auto-detected from conversation (confidence: ${(analysisResult.productInfo.confidence * 100).toFixed(1)}%). Keywords: ${analysisResult.analysisDetails.keywordsFound.join(', ')}`
+                
+                logger.info('Product SKU detected from conversation for quote:', {
+                    product_sku: finalProductSku,
+                    confidence: analysisResult.productInfo.confidence,
+                    keywords: analysisResult.analysisDetails.keywordsFound
+                })
+            } else {
+                logger.warn('Could not detect product SKU from conversation with sufficient confidence for quote', {
+                    confidence: analysisResult.analysisDetails.confidenceScore,
+                    messagesAnalyzed: analysisResult.analysisDetails.messagesAnalyzed
+                })
+            }
         }
+
+        if (!finalProductSku) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Product SKU is required or could not be detected from conversation')
+        }
+
         const appServer = getRunningExpressApp()
+        
         // Try to fetch price from inventory table if available
-        const inventoryQuery = 'SELECT price FROM product_inventory WHERE "productId" = $1 LIMIT 1'
+        const inventoryQuery = 'SELECT price FROM product_inventory WHERE product_sku = $1 LIMIT 1'
         let unitPrice = 0
         try {
-            const priceResult = await appServer.AppDataSource.query(inventoryQuery, [product_sku])
+            const priceResult = await appServer.AppDataSource.query(inventoryQuery, [finalProductSku])
             if (priceResult.length > 0) {
                 unitPrice = parseFloat(priceResult[0].price)
             }
         } catch {
             // Ignore if table not present yet
         }
+        
         // Fallback unit price
         if (!unitPrice || isNaN(unitPrice)) {
             unitPrice = 100 // default placeholder price
         }
+        
         const totalPrice = unitPrice * quantity
-        return res.json({ product_sku, quantity, unit_price: unitPrice, total_price: totalPrice })
+        
+        const response = { 
+            product_sku: finalProductSku, 
+            quantity, 
+            unit_price: unitPrice, 
+            total_price: totalPrice 
+        }
+
+        // Add analysis info if product was auto-detected
+        if (analysisNotes) {
+            response.analysis_info = {
+                auto_detected: true,
+                analysis_notes: analysisNotes
+            }
+        }
+        
+        return res.json(response)
     } catch (error) {
         logger.error('Error generating sale quote:', error)
         return next(error)

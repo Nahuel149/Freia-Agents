@@ -419,64 +419,303 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/create" \
 **Nota**: El sistema almacena las notificaciones en la tabla `follow_ups` con el tipo `notification_{type}`. Si se proporciona `clientId`, el sistema intentará resolver el número de teléfono del cliente automáticamente.
 
 ## 9. Enviar mensaje de WhatsApp
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
+### Ejemplo básico de mensaje de texto
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/whatsapp/send" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "to": "+5491155566677",
-    "template": "pedido_listo",
-    "parameters": ["Juan"]
+    "text": "Hola Juan, tu pedido está listo para retiro. ¡Podés pasar cuando quieras!"
   }'
 ```
 
+### Ejemplo de notificación de stock disponible
+```bash
+curl -X POST "https://freia-agents.onrender.com/api/v1/whatsapp/send" \
+  -H "Authorization: Bearer ${FREIA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+5491123456789",
+    "text": "¡Buenas noticias! Ya tenemos disponible el neumático Bridgestone 205/55 R16 que estabas buscando. ¿Te interesa coordinar la compra?"
+  }'
+```
+
+### Ejemplo de seguimiento post-venta
+```bash
+curl -X POST "https://freia-agents.onrender.com/api/v1/whatsapp/send" \
+  -H "Authorization: Bearer ${FREIA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+5491166677788",
+    "text": "Hola Ana, ¿cómo anduvieron los neumáticos que te instalamos la semana pasada? ¿Todo bien con el balanceado?"
+  }'
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "ok": true,
+  "data": {
+    "message_id": "wamid.HBgNNTQ5MTE1NTU2NjY3NxUCABIYFjNBMzMzODMzMzMzMzMzMzMzMzMzAA==",
+    "status": "sent"
+  }
+}
+```
+
+**Respuesta de error (campos faltantes):**
+```json
+{
+  "message": "to and text are required"
+}
+```
+
+**Respuesta de error (autorización):**
+```json
+{
+  "error": "Unauthorized Access"
+}
+```
+
+**Campos requeridos:**
+- `to`: Número de teléfono de destino con código de país (string, ej: "+5491155566677")
+- `text`: Contenido del mensaje de texto (string)
+
+**Campos NO soportados:**
+- ❌ `template`: No se usa en este endpoint
+- ❌ `parameters`: No se usa en este endpoint
+- ❌ `type`: No se usa en este endpoint
+
+**Notas importantes:**
+- El endpoint espera únicamente los campos `to` y `text`
+- El sistema utiliza el servicio Wasender para el envío de mensajes
+- Los mensajes se envían como texto plano, no como plantillas
+- El número de teléfono debe incluir el código de país (ej: +54 para Argentina)
+- El sistema valida automáticamente el formato del número de teléfono
+
 ## 10. Programar seguimiento (follow-up)
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/followup/schedule" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "clientId": 123,
-    "date": "2025-10-10T18:00:00Z",
-    "note": "Llamar para confirmar satisfacción"
+    "clientId": 1,
+    "followUpType": "price_negotiation",
+    "scheduledAt": "2025-01-25T18:00:00Z",
+    "reason": "Llamar para confirmar satisfacción",
+    "priority": "medium"
   }'
 ```
 
+**Respuesta exitosa:**
+```json
+{
+  "id": 36,
+  "customer_id": 1,
+  "phone_number": "+54935161234567",
+  "sale_id": null,
+  "follow_up_type": "price_negotiation",
+  "scheduled_at": "2025-01-25T18:00:00.000Z",
+  "completed_at": null,
+  "status": "pending",
+  "attempt_number": 1,
+  "max_attempts": 3,
+  "message_sent": null,
+  "customer_response": null,
+  "next_action": null,
+  "created_at": "2025-01-24T17:45:30.123Z",
+  "updated_at": "2025-01-24T17:45:30.123Z"
+}
+```
+
+**Campos requeridos:**
+- `clientId`: ID del cliente (number) **O** `phoneNumber` (string)
+- `followUpType`: Tipo de seguimiento (string, ej: "price_negotiation", "abandoned_cart", "stock_available", "delivery_improvement")
+
+**Campos opcionales:**
+- `phoneNumber`: Número de teléfono (si no se proporciona clientId)
+- `saleId`: ID de la venta relacionada (number)
+- `scheduledAt`: Fecha y hora programada (ISO 8601 string, default: ahora)
+- `reason`: Razón del seguimiento (string)
+- `priority`: Prioridad (string, default: "medium", opciones: "low", "medium", "high")
+- `attemptNumber`: Número de intento (number, default: 1)
+- `maxAttempts`: Máximo número de intentos (number, default: 3)
+- `productInterest`: Productos de interés (string)
+- `lastInteractionDate`: Fecha de última interacción (ISO 8601 string)
+
+**Nota**: El sistema puede resolver automáticamente el número de teléfono del cliente usando el `clientId`. Si solo se proporciona `phoneNumber`, el sistema intentará encontrar o crear el cliente correspondiente.
+
 ## 11. Actualizar estado de seguimiento
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/followup/update-status" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "followupId": 789,
+    "followUpId": 38,
     "status": "completed",
-    "result": "Cliente satisfecho"
+    "result": "Cliente contactado exitosamente"
   }'
 ```
 
+**Respuesta exitosa (ejemplo real probado):**
+```json
+{
+  "followUp": [
+    {
+      "id": 38,
+      "customer_id": 1,
+      "phone_number": "+54935161234567",
+      "sale_id": null,
+      "follow_up_type": "notification_order_ready",
+      "scheduled_at": "2025-09-23T23:55:35.130Z",
+      "completed_at": "2025-09-24T00:15:37.556Z",
+      "status": "completed",
+      "attempt_number": 1,
+      "max_attempts": 1,
+      "message_sent": "Cliente contactado exitosamente",
+      "customer_response": null,
+      "next_action": "pickup_confirmation",
+      "created_at": "2025-09-23T23:55:35.130Z",
+      "updated_at": "2025-09-24T00:15:37.556Z"
+    }
+  ]
+}
+```
+
+**Campos requeridos:**
+- `followUpId`: ID del seguimiento (number, ej: 789)
+- `status`: Nuevo estado (string, opciones: "pending", "in_progress", "completed", "cancelled", "failed")
+
+**Campos opcionales:**
+- `result`: Resultado o notas del seguimiento (string, se guarda en `message_sent`)
+- `customerResponse`: Respuesta del cliente (string)
+- `nextAction`: Próxima acción requerida (string)
+- `rescheduleDate`: Nueva fecha programada (ISO 8601 string)
+- `notes`: Notas adicionales (string, se combina con `message_sent`)
+
+**Nota importante**: El campo correcto es `followUpId` (con "U" mayúscula), no `followupId`. El endpoint actualiza automáticamente `completed_at` cuando el status es "completed".
+
 ## 12. Aplicar código promocional
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/promotions/apply-code" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "clientId": 123,
-    "code": "BIENVENIDA10"
+    "promoCode": "FREIA10",
+    "products": ["PIR-C7-2055516", "PIR-PZERO-2454518"]
   }'
 ```
 
+**Respuesta exitosa:**
+```json
+{
+  "promoCode": "FREIA10",
+  "subtotal": 465000.5,
+  "discountAmount": 46500.05,
+  "total": 418500.45
+}
+```
+
+**Campos requeridos:**
+- `promoCode`: Código promocional (string, ej: "FREIA10", "FREIA20", "ENVIOGRATIS", "COMBOAUTO")
+
+**Campos opcionales:**
+- `products`: Array de IDs de productos para calcular el subtotal (array de strings)
+
+**Códigos promocionales disponibles:**
+- `FREIA10`: 10% de descuento
+- `FREIA20`: 20% de descuento  
+- `ENVIOGRATIS`: $15,000 de descuento fijo
+- `COMBOAUTO`: 15% de descuento
+
+**Nota**: Si no se proporcionan productos, el subtotal será 0 y solo se validará que el código promocional existe.
+
 ## 13. Generar cotización de venta
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
+**✅ NUEVA FUNCIONALIDAD: DETECCIÓN AUTOMÁTICA DE PRODUCTO**
+
+El endpoint ahora puede detectar automáticamente el `product_sku` basándose en la conversación entre el cliente y el agente. Si no se proporciona `product_sku` en el request, el sistema analizará el historial de chat para identificar el producto discutido.
+
+### Ejemplo 1: Con product_sku explícito (método tradicional)
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/sales/quote" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "clientId": 123,
-    "items": [
-      { "productId": 45, "quantity": 2 }
-    ]
+    "product_sku": "MIC-P4-1956015",
+    "quantity": 2
   }'
 ```
+
+### Ejemplo 2: Con detección automática de producto (NUEVO)
+```bash
+curl -X POST "https://freia-agents.onrender.com/api/v1/sales/quote" \
+  -H "Authorization: Bearer ${FREIA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "quantity": 2,
+    "chatflowid": "d8b0ebde-60d8-461c-9f5d-0fcc28729ebe",
+    "sessionId": "session-123-abc",
+    "chatId": "chat-456-def"
+  }'
+```
+
+**Respuesta exitosa (método tradicional):**
+```json
+{
+  "product_sku": "MIC-P4-1956015",
+  "quantity": 2,
+  "unit_price": 199500,
+  "total_price": 399000
+}
+```
+
+**Respuesta exitosa (con detección automática):**
+```json
+{
+  "product_sku": "MIC-P4-1956015",
+  "quantity": 2,
+  "unit_price": 199500,
+  "total_price": 399000,
+  "analysis_info": {
+    "auto_detected": true,
+    "analysis_notes": "Auto-detected from conversation (confidence: 85.2%). Keywords: tire_size:225/60R16, brand:Michelin, intent_keywords:2"
+  }
+}
+```
+
+**Campos requeridos:**
+- `product_sku`: SKU del producto (string, ej: "MIC-P4-1956015") **O** contexto de conversación (`chatflowid`, `sessionId`, `chatId`)
+
+**Campos para detección automática (alternativos a product_sku):**
+- `chatflowid`: ID del chatflow donde ocurrió la conversación
+- `sessionId`: ID de la sesión de chat
+- `chatId`: ID específico del chat
+
+**Campos opcionales:**
+- `quantity`: Cantidad deseada (number, default: 1)
+
+**Cómo funciona la detección automática:**
+1. El sistema analiza los mensajes de la conversación buscando patrones de productos (marcas, modelos, medidas de neumáticos)
+2. Si no encuentra información suficiente en el chat, busca en el historial de compras del cliente
+3. Valida que el producto detectado existe en el inventario
+4. Si no puede detectar un producto válido, devuelve un error solicitando el `product_sku` explícito
+
+**Nota**: El endpoint busca el producto por su SKU en la tabla `product_inventory` y calcula el precio total basado en la cantidad solicitada. Con la nueva funcionalidad, también puede inferir el producto desde el contexto de la conversación.
 
 ## 14. Solicitar aprobación de precio
 ```bash
