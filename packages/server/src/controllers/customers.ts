@@ -3,6 +3,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
+import { normalizePhoneNumber, isValidPhoneNumber } from '../utils/phoneNormalizer'
 
 type ResolvedCustomer = {
     customer: any
@@ -175,7 +176,16 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
         } = req.body
 
         // Normalize incoming fields to server schema
-        const normalizedPhone = phone_number || phone
+        const normalizedPhone = normalizePhoneNumber(phone_number || phone)
+        
+        // Validate the normalized phone number
+        if (!normalizedPhone) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required (use phone or phone_number)')
+        }
+        
+        if (!isValidPhoneNumber(normalizedPhone)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid phone number format')
+        }
         let normalizedFirstName = first_name
         let normalizedLastName = last_name
 
@@ -186,10 +196,6 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
         }
 
         const normalizedAddress = default_address || address
-
-        if (!normalizedPhone) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required (use phone or phone_number)')
-        }
 
         const appServer = getRunningExpressApp()
         

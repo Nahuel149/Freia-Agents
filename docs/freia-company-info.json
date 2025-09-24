@@ -1,0 +1,51 @@
+{
+  "company": {
+    "name": "Freia - Especialistas en Neumáticos",
+    "business_type": "Gomería especializada",
+    "description": "Empresa especializada en venta de neumáticos y servicios de gomería"
+  },
+  "locations": [
+    {
+      "id": "freia_main",
+      "name": "Freia - Sede Principal",
+      "type": "gomería_propia",
+      "address": "Av. San Martín 1234, Buenos Aires, Argentina",
+      "phone": "+54 11 4567-8900",
+      "email": "info@freia.com.ar",
+      "services": [
+        "Venta de neumáticos",
+        "Montaje y balanceado",
+        "Alineación",
+        "Reparación de neumáticos",
+        "Asesoramiento técnico"
+      ],
+      "hours": {
+        "monday_friday": "8:00 - 18:00",
+        "saturday": "8:00 - 13:00",
+        "sunday": "Cerrado"
+      },
+      "payment_methods": [
+        "Efectivo",
+        "Tarjeta de débito",
+        "Tarjeta de crédito",
+        "Transferencia bancaria"
+      ]
+    }
+  ],
+  "contact": {
+    "main_phone": "+54 11 4567-8900",
+    "whatsapp": "+54 9 11 4567-8900",
+    "email": "info@freia.com.ar",
+    "website": "www.freia.com.ar"
+  },
+  "business_info": {
+    "cuit": "20-12345678-9",
+    "established": "2010",
+    "specialties": [
+      "Neumáticos para autos",
+      "Neumáticos para camionetas",
+      "Neumáticos para motos",
+      "Neumáticos industriales"
+    ]
+  }
+}

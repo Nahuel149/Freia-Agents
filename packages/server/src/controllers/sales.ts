@@ -4,6 +4,7 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
 import { analyzeConversationForProduct, validateProductSKU } from '../utils/conversationAnalyzer'
+import { normalizePhoneNumber, isValidPhoneNumber } from '../utils/phoneNormalizer'
 
 // Get all sales
 const getAllSales = async (req: Request, res: Response, next: NextFunction) => {
@@ -129,6 +130,14 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required')
         }
 
+        // Normalize phone number to international format
+        const normalizedPhoneNumber = normalizePhoneNumber(phone_number)
+        
+        // Validate the normalized phone number
+        if (!isValidPhoneNumber(normalizedPhoneNumber)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid phone number format')
+        }
+
         let finalProductSku = product_sku
         let finalProductBrand = product_brand
         let finalProductModel = product_model
@@ -143,7 +152,7 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
                 chatflowid,
                 sessionId,
                 chatId,
-                phone_number
+                normalizedPhoneNumber
             )
 
             if (analysisResult.productInfo && analysisResult.productInfo.confidence > 0.5) {
@@ -200,7 +209,7 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         `
         
         const result = await appServer.AppDataSource.query(query, [
-            customer_id, phone_number, finalProductSku, finalProductBrand, finalProductModel,
+            customer_id, normalizedPhoneNumber, finalProductSku, finalProductBrand, finalProductModel,
             finalWheelSize, quantity, unit_price, total_price, discount_percentage,
             final_price, payment_method, delivery_method, delivery_address,
             sale_status, 0, combinedNotes
@@ -462,7 +471,7 @@ const createSaleQuote = async (req: Request, res: Response, next: NextFunction) 
         const appServer = getRunningExpressApp()
         
         // Try to fetch price from inventory table if available
-        const inventoryQuery = 'SELECT price FROM product_inventory WHERE product_sku = $1 LIMIT 1'
+        const inventoryQuery = 'SELECT price FROM product_inventory WHERE "productId" = $1 LIMIT 1'
         let unitPrice = 0
         try {
             const priceResult = await appServer.AppDataSource.query(inventoryQuery, [finalProductSku])

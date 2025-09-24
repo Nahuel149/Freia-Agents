@@ -242,7 +242,7 @@ async function getProductFromPreviousSales(phoneNumber: string): Promise<Partial
 export const validateProductSKU = async (productSku: string): Promise<boolean> => {
     try {
         const appServer = getRunningExpressApp()
-        const query = 'SELECT id FROM product_inventory WHERE product_sku = $1 LIMIT 1'
+        const query = 'SELECT "productId" FROM product_inventory WHERE "productId" = $1 LIMIT 1'
         const result = await appServer.AppDataSource.query(query, [productSku])
         return result.length > 0
     } catch (error) {

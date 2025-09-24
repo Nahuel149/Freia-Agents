@@ -7,6 +7,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
+import { OutputParserException } from '@langchain/core/output_parsers'
 import {
     extractOutputFromArray,
     getBaseClasses,
@@ -29,6 +30,7 @@ import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
+import { ToolValidator } from './toolValidator'
 
 class ToolAgent_Agents implements INode {
     label: string
@@ -364,6 +366,9 @@ const prepareAgent = async (
         new ToolCallingAgentOutputParser()
     ])
 
+    // Tool validator uses static methods, no instantiation needed
+
+    // Create custom executor with validation
     const executor = AgentExecutor.fromAgentAndTools({
         agent: runnableAgent,
         tools,
@@ -373,6 +378,95 @@ const prepareAgent = async (
         verbose: process.env.DEBUG === 'true' ? true : false,
         maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
+
+    // Helper function to convert ToolsAgentStep[] to IUsedTool[]
+    const convertAgentStepsToUsedTools = (steps: ToolsAgentStep[]): IUsedTool[] => {
+        return steps.map(step => ({
+            tool: step.action.tool,
+            toolInput: typeof step.action.toolInput === 'string' 
+                ? { input: step.action.toolInput } 
+                : step.action.toolInput,
+            toolOutput: step.observation || '',
+            sourceDocuments: undefined,
+            error: undefined
+        }))
+    }
+
+    // Override the _takeNextStep method to add validation
+    const originalTakeNextStep = executor._takeNextStep.bind(executor)
+    executor._takeNextStep = async function(nameToolMap, inputs, intermediateSteps: ToolsAgentStep[], runManager, config) {
+        // Get the planned actions first
+        let output
+        try {
+            output = await this.agent.plan(intermediateSteps, inputs, runManager?.getChild(), config)
+        } catch (e) {
+            // Handle parsing errors as in original implementation
+            if (e instanceof OutputParserException) {
+                let observation
+                let text = e.message
+                if (this.handleParsingErrors === true) {
+                    if (e.sendToLLM) {
+                        observation = e.observation
+                        text = e.llmOutput ?? ''
+                    } else {
+                        observation = 'Invalid or incomplete response'
+                    }
+                } else if (typeof this.handleParsingErrors === 'string') {
+                    observation = this.handleParsingErrors
+                } else if (typeof this.handleParsingErrors === 'function') {
+                    observation = this.handleParsingErrors(e)
+                } else {
+                    throw e
+                }
+                output = {
+                    tool: '_Exception',
+                    toolInput: observation,
+                    log: text
+                }
+            } else {
+                throw e
+            }
+        }
+
+        if ('returnValues' in output) {
+            return output
+        }
+
+        let actions
+        if (Array.isArray(output)) {
+            actions = output
+        } else {
+            actions = [output]
+        }
+
+        // Convert intermediateSteps to IUsedTool[] for validation
+        const usedTools = convertAgentStepsToUsedTools(intermediateSteps)
+
+        // Validate each action before execution
+        for (const action of actions) {
+            const validationResult = ToolValidator.validateToolCall(
+                action.tool,
+                inputs.input || flowObj?.input || '',
+                usedTools,
+                tools
+            )
+
+            if (!validationResult.isValid) {
+                // If validation fails, force the use of gomeria_consultation
+                console.log(`Tool validation failed for ${action.tool}: ${validationResult.reason}`)
+                
+                // Replace the action with gomeria_consultation
+                action.tool = 'gomeria_consultation'
+                action.toolInput = { query: inputs.input || flowObj?.input || '' }
+                action.log = `Redirecting to gomeria_consultation: ${validationResult.reason}`
+                
+                console.log(`Redirected to gomeria_consultation for query: ${inputs.input || flowObj?.input}`)
+            }
+        }
+
+        // Now execute the (potentially modified) actions using the original method
+        return originalTakeNextStep(nameToolMap, inputs, intermediateSteps, runManager, config)
+    }
 
     return executor
 }

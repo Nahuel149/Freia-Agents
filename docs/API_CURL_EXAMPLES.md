@@ -136,7 +136,23 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/sales/create" \
   }'
 ```
 
-### Ejemplo 2: Con detección automática de producto (NUEVO)
+### Ejemplo 2: Con número local (se normaliza automáticamente)
+
+```bash
+curl -X POST "https://freia-agents.onrender.com/api/v1/sales/create" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "phone_number": "1155566677",
+    "product_sku": "MICH-22560R16-AS",
+    "quantity": 4,
+    "unit_price": 25000,
+    "final_price": 100000,
+    "payment_method": "efectivo"
+  }'
+```
+
+### Ejemplo 3: Con detección automática de producto y número local
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/sales/create" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
@@ -157,8 +173,15 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/sales/create" \
   }'
 ```
 
+**Formato de números de teléfono:** La API acepta números de teléfono en múltiples formatos y los normaliza automáticamente al formato internacional argentino (+549...):
+- Formato local: `1145436567` → se convierte a `+5491145436567`
+- Con área: `01145436567` → se convierte a `+5491145436567`
+- Con prefijo móvil: `91145436567` → se convierte a `+5491145436567`
+- Formato internacional: `+5491145436567` → se mantiene igual
+- Con código de país sin +: `5491145436567` → se convierte a `+5491145436567`
+
 **Campos requeridos:**
-- `phone_number`: Número de teléfono del cliente (NOT NULL)
+- `phone_number`: Número de teléfono del cliente (se normaliza automáticamente)
 - `product_sku`: SKU del producto (NOT NULL) **O** contexto de conversación (`chatflowid`, `sessionId`, `chatId`)
 
 **Campos para detección automática (alternativos a product_sku):**
@@ -789,7 +812,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/delivery-im
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "deliveryRequestId": "456",
+    "deliveryRequestId": "4",
     "clientId": "123",
     "phoneNumber": "+5491123456789",
     "improved": true,
@@ -805,21 +828,21 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/delivery-im
 {
   "message": "Delivery notification registered",
   "followUp": {
-    "id": 42,
-    "customer_id": 123,
+    "id": 49,
+    "customer_id": null,
     "phone_number": "+5491123456789",
-    "sale_id": 456,
+    "sale_id": 4,
     "follow_up_type": "delivery_improvement",
-    "scheduled_at": "2025-01-24T18:30:45.123Z",
+    "scheduled_at": "2025-09-23T16:16:46.678Z",
     "completed_at": null,
     "status": "completed",
     "attempt_number": 1,
     "max_attempts": 1,
     "message_sent": "Se mejoró la entrega a 3 días",
-    "customer_response": null,
+    "customer_response": "{\"improved\":true,\"newDeliveryTime\":\"3\",\"originalDeliveryTime\":\"7\",\"reason\":\"Disponibilidad de stock mejorada\",\"additionalCost\":5000}",
     "next_action": "confirm_delivery",
-    "created_at": "2025-01-24T18:30:45.123Z",
-    "updated_at": "2025-01-24T18:30:45.123Z"
+    "created_at": "2025-09-23T16:16:47.769Z",
+    "updated_at": "2025-09-23T16:16:47.769Z"
   }
 }
 ```
