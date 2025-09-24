@@ -308,7 +308,209 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/notify" \
 
 **Nota**: El endpoint registra notificaciones de disponibilidad de stock. El sistema programa automáticamente el seguimiento basándose en el `estimatedTime` proporcionado. Si se proporciona `clientId`, el sistema resuelve automáticamente la información del cliente. El `next_action` se establece según el `notifyChannel` especificado.
 
-## 6. Actualizar inventario
+## 6. Verificar stock de producto
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
+```bash
+curl -X GET "https://freia-agents.onrender.com/api/v1/inventory/check?productId=PIR-C7-2055516" \
+  -H "Authorization: Bearer ${FREIA_API_KEY}" \
+  -H "Content-Type: application/json"
+
+# Ejemplo con código de producto:
+curl -X GET "https://freia-agents.onrender.com/api/v1/inventory/check?productCode=TIRE-BRIDGESTONE-205-55-R16" \
+  -H "Authorization: Bearer ${FREIA_API_KEY}" \
+  -H "Content-Type: application/json"
+
+# Ejemplo con medida de neumático:
+curl -X GET "https://freia-agents.onrender.com/api/v1/inventory/check?tire_number=185/65R14" \
+  -H "Authorization: Bearer ${FREIA_API_KEY}" \
+  -H "Content-Type: application/json"
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "available": true,
+  "product": {
+    "productId": "PIR-C7-2055516",
+    "name": "Pirelli Cinturato P7 205/55 R16",
+    "brand": "Pirelli",
+    "stock": 45,
+    "price": "45000.50"
+  }
+}
+```
+
+**Respuesta cuando no hay stock:**
+```json
+{
+  "available": false,
+  "product": {
+    "productId": "PIR-C7-2055516",
+    "name": "Pirelli Cinturato P7 205/55 R16",
+    "brand": "Pirelli",
+    "stock": 0,
+    "price": "45000.50"
+  }
+}
+```
+
+**Parámetros de consulta (al menos uno requerido):**
+- `productId`: ID del producto (string, ej: "PIR-C7-2055516")
+- `productCode`: Código alternativo o SKU del producto (string)
+- `tire_number`: Número o medida de neumático (string, ej: "185/65R14")
+
+**Nota**: Usá esta herramienta únicamente para confirmar stock y precio en la base operativa (Postgres). Primero identificá el producto con `gomeria_consultation`, que consulta el catálogo completo cargado en el catálogo vectorial "Gomeria-v1.2" (incluye neumáticos, accesorios, químicos y servicios). Si la API devuelve vacío o `available:false`, avisá al cliente que en el sistema todavía no está cargado pero el producto existe en el catálogo y ofrecé registrar seguimiento o alternativas.
+
+## 7. Obtener información del cliente
+
+**Endpoint**: `GET /api/v1/customers/{clientId}`
+
+**Descripción**: Obtiene información completa de un cliente existente por su ID.
+
+### Ejemplo de cURL:
+
+```bash
+# Obtener información de un cliente específico
+curl -X GET "https://freia-agents.onrender.com/api/v1/customers/123" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${FREIA_API_KEY}"
+```
+
+### Respuesta exitosa:
+```json
+{
+  "id": 123,
+  "first_name": "Juan",
+  "last_name": "Pérez",
+  "email": "juan.perez@email.com",
+  "phone_number": "+5491123456789",
+  "default_address": "Av. Corrientes 1234, CABA",
+  "default_payment_method": "efectivo",
+  "previous_purchases": 5,
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-20T14:45:00Z"
+}
+```
+
+### Parámetros de ruta:
+- `clientId` (requerido): ID único del cliente
+
+### Notas de uso:
+- Usar cuando se necesite consultar datos completos del cliente
+- El ID debe ser un número entero válido
+- Retorna error 404 si el cliente no existe
+
+## 8. Verificar productos con stock bajo
+
+### Descripción
+Obtiene una lista de productos que tienen stock por debajo del umbral especificado.
+
+### cURL Examples
+
+**Con umbral personalizado:**
+```bash
+curl -X GET "https://freia-agents.onrender.com/api/v1/inventory/low-stock?threshold=15" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+**Con umbral por defecto (10 unidades):**
+```bash
+curl -X GET "https://freia-agents.onrender.com/api/v1/inventory/low-stock" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Respuesta exitosa
+```json
+[
+  {
+    "productId": "PROD123",
+    "name": "Neumático Michelin 205/55R16",
+    "brand": "Michelin",
+    "stock": 5,
+    "price": 85000,
+    "updatedDate": "2024-01-15T10:30:00Z"
+  },
+  {
+    "productId": "PROD456", 
+    "name": "Llanta Aleación 16\"",
+    "brand": "OEM",
+    "stock": 2,
+    "price": 120000,
+    "updatedDate": "2024-01-14T15:45:00Z"
+  }
+]
+```
+
+### Query Parameters
+- `threshold` (opcional): Umbral de stock bajo. Por defecto es 10 unidades.
+
+### Notas de uso
+- Útil para alertas de inventario y reposición de stock
+- Los productos se ordenan por stock ascendente y fecha de actualización descendente
+- Ideal para generar reportes de productos que necesitan reposición
+
+## 9. Buscar productos alternativos
+
+**Endpoint**: `GET /api/v1/inventory/alternatives`
+
+**Descripción**: Busca productos alternativos cuando el producto solicitado no tiene stock o el cliente busca opciones similares.
+
+### Ejemplo de cURL:
+
+```bash
+# Buscar alternativas para un producto específico
+curl -X GET "https://freia-agents.onrender.com/api/v1/inventory/alternatives?productId=TIRE001&maxResults=5" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+# Buscar alternativas por marca y categoría
+curl -X GET "https://freia-agents.onrender.com/api/v1/inventory/alternatives?brand=Michelin&category=neumático&maxPriceDelta=0.3" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Respuesta exitosa:
+```json
+{
+  "alternatives": [
+    {
+      "productId": "TIRE002",
+      "name": "Neumático Michelin Energy XM2",
+      "brand": "Michelin",
+      "price": 85000,
+      "stock": 15,
+      "priceDifference": 5000,
+      "similarityScore": 0.8
+    },
+    {
+      "productId": "TIRE003", 
+      "name": "Neumático Bridgestone Ecopia",
+      "brand": "Bridgestone",
+      "price": 82000,
+      "stock": 8,
+      "priceDifference": 2000,
+      "similarityScore": 0.7
+    }
+  ]
+}
+```
+
+### Parámetros de consulta:
+- `productId` (string, opcional): ID del producto de referencia
+- `brand` (string, opcional): Marca preferida para filtrar
+- `category` (string, opcional): Categoría del producto
+- `maxPriceDelta` (string, opcional): Diferencia máxima de precio relativa (default: 0.2)
+- `maxResults` (string, opcional): Número máximo de resultados (default: 5)
+
+### Notas de uso:
+- Si se proporciona `productId`, busca alternativas similares al producto de referencia
+- Sin `productId`, busca productos disponibles según los filtros especificados
+- El `similarityScore` indica qué tan similar es el producto alternativo al de referencia
+- Solo devuelve productos con stock disponible
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -347,7 +549,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/update" \
 
 **Nota**: Debes proporcionar al menos `stock` o `price`. Puedes actualizar ambos campos en la misma request.
 
-## 7. Crear/actualizar preferencias del cliente
+## 9. Crear/actualizar preferencias del cliente
 
 ```bash
 clientId=1
@@ -389,7 +591,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/customers/${clientId}/pre
 }
 ```
 
-## 8. Crear notificación personalizada
+## 10. Crear notificación personalizada
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -446,7 +648,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/create" \
 
 **Nota**: El sistema almacena las notificaciones en la tabla `follow_ups` con el tipo `notification_{type}`. Si se proporciona `clientId`, el sistema intentará resolver el número de teléfono del cliente automáticamente.
 
-## 9. Enviar mensaje de WhatsApp
+## 11. Enviar mensaje de WhatsApp
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -524,7 +726,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/whatsapp/send" \
 - El número de teléfono debe incluir el código de país (ej: +54 para Argentina)
 - El sistema valida automáticamente el formato del número de teléfono
 
-## 10. Programar seguimiento (follow-up)
+## 11. Programar seguimiento (follow-up)
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -579,7 +781,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/followup/schedule" \
 
 **Nota**: El sistema puede resolver automáticamente el número de teléfono del cliente usando el `clientId`. Si solo se proporciona `phoneNumber`, el sistema intentará encontrar o crear el cliente correspondiente.
 
-## 11. Actualizar estado de seguimiento
+## 12. Actualizar estado de seguimiento
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -632,7 +834,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/followup/update-status" \
 
 **Nota importante**: El campo correcto es `followUpId` (con "U" mayúscula), no `followupId`. El endpoint actualiza automáticamente `completed_at` cuando el status es "completed".
 
-## 12. Aplicar código promocional
+## 13. Aplicar código promocional
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -670,7 +872,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/promotions/apply-code" \
 
 **Nota**: Si no se proporcionan productos, el subtotal será 0 y solo se validará que el código promocional existe.
 
-## 13. Generar cotización de venta
+## 14. Generar cotización de venta
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -745,7 +947,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/sales/quote" \
 
 **Nota**: El endpoint busca el producto por su SKU en la tabla `product_inventory` y calcula el precio total basado en la cantidad solicitada. Con la nueva funcionalidad, también puede inferir el producto desde el contexto de la conversación.
 
-## 14. Notificar aprobación de precio
+## 15. Notificar aprobación de precio
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
@@ -803,7 +1005,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/price-appro
 
 **Nota**: El endpoint registra la notificación de aprobación/rechazo de precio, actualiza la venta correspondiente si el `approvalRequestId` es un ID de venta válido que existe en la base de datos, y crea un seguimiento en la tabla `follow_ups`. Si el `approvalRequestId` no corresponde a una venta existente, el seguimiento se creará sin referencia a una venta específica.
 
-## 15. Mejorar entrega
+## 16. Mejorar entrega
 
 **✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
