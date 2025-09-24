@@ -1,0 +1,121 @@
+{
+  "name": "Wasender Freia Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wasender-webhook",
+        "options": {}
+      },
+      "name": "Webhook (from Wasender)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        400,
+        300
+      ],
+      "webhookId": "d8b0ebde-60d8-461c-9f5d-0fcc28729ebe"
+    },
+    {
+      "parameters": {
+        "url": "https://freia-agents.onrender.com/api/v1/prediction/d8b0ebde-60d8-461c-9f5d-0fcc28729ebe",
+        "options": {},
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "input",
+              "value": "{{$node[\"Webhook (from Wasender)\"].json.body.data[0].message.conversation}}"
+            },
+            {
+              "name": "sessionId",
+              "value": "{{$node[\"Webhook (from Wasender)\"].json.body.data[0].key.remoteJid}}"
+            }
+          ]
+        }
+      },
+      "name": "Call Freia Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "headerAuth",
+        "options": {},
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 2762050c45841a1daa7e50fc7ba40b35d9c816be5e207c55acced0c6f70c09ad"
+            }
+          ]
+        },
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "{{$node[\"Webhook (from Wasender)\"].json.body.data[0].key.remoteJid}}"
+            },
+            {
+              "name": "text",
+              "value": "{{$node[\"Call Freia Agent\"].json.text}}"
+            }
+          ]
+        }
+      },
+      "name": "Send Reply via Wasender",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        800,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Webhook (from Wasender)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Webhook (from Wasender)": {
+      "main": [
+        [
+          {
+            "node": "Call Freia Agent",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Call Freia Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Reply via Wasender",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  }
+}

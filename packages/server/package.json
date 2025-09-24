@@ -50,7 +50,8 @@
         "e2e": "start-server-and-test dev http://localhost:3000 cypress:run",
         "cypress:ci": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start https-get://localhost:3000 cypress:run",
         "test": "jest --runInBand --detectOpenHandles --forceExit",
-        "generate:db-docs": "ts-node src/scripts/generateDbDocs.ts"
+        "generate:db-docs": "ts-node src/scripts/generateDbDocs.ts",
+        "analytics:backfill": "ts-node src/scripts/backfillChatHistory.ts"
     },
     "keywords": [],
     "homepage": "https://flowiseai.com",
