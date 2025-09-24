@@ -1,5 +1,7 @@
 import { Response } from 'express'
 import { IServerSideEventStreamer } from 'flowise-components'
+import logger from './logger'
+import { DashboardService } from '../services/dashboard'
 
 // define a new type that has a client type (INTERNAL or EXTERNAL) and Response type
 type Client = {
@@ -42,6 +44,23 @@ export class SSEStreamer implements IServerSideEventStreamer {
                 data: data
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+
+        if (eventType === 'agent_trace' && data && data.step === 'tool_error') {
+            const toolName = data.toolName || data.name || 'unknown-tool'
+            const errorMessage = data.error || data.message || 'Tool execution error'
+            DashboardService.recordToolAlert({
+                toolName: String(toolName),
+                errorMessage: String(errorMessage),
+                chatId,
+                runId: data.runId ? String(data.runId) : undefined,
+                metadata: {
+                    ...(typeof data === 'object' ? data : {}),
+                    streamedAt: new Date().toISOString()
+                }
+            }).catch(err => {
+                logger.warn('Failed to record tool alert', err)
+            })
         }
     }
 

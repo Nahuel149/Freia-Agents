@@ -43,6 +43,7 @@ import { AddSupportTicketEntity1757800000002 } from './1757800000002-AddSupportT
 import { AddAgentAnalyticsEntities1757800000003 } from './1757800000003-AddAgentAnalyticsEntities'
 import { AddIconSrcToAssistant1757800000004 } from './1757800000004-AddIconSrcToAssistant'
 import { AddWorkspaceIdToExecution1758539817000 } from './1758539817000-AddWorkspaceIdToExecution'
+import { AddToolAlertsAndPriceApprovals1759100000000 } from './1759100000000-AddToolAlertsAndPriceApprovals'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -89,5 +90,6 @@ export const postgresMigrations = [
     AddSupportTicketEntity1757800000002,
     AddAgentAnalyticsEntities1757800000003,
     AddIconSrcToAssistant1757800000004,
-    AddWorkspaceIdToExecution1758539817000
+    AddWorkspaceIdToExecution1758539817000,
+    AddToolAlertsAndPriceApprovals1759100000000
 ]

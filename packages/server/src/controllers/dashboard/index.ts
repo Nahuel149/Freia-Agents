@@ -83,11 +83,99 @@ const getTopAgents = async (req: Request, res: Response) => {
     }
 }
 
+const getToolAlerts = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const status = typeof req.query.status === 'string' ? req.query.status : undefined
+        const limit = parseInt((req.query.limit as string) || '50', 10)
+        const alerts = await dashboardService.getToolAlerts(status, limit)
+        return res.json(alerts)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.getToolAlerts - ${error}`
+        )
+    }
+}
+
+const resolveToolAlert = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const id = parseInt(req.params.id, 10)
+        if (Number.isNaN(id)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid alert id')
+        }
+        const payload = {
+            status: typeof req.body?.status === 'string' ? req.body.status : undefined,
+            resolvedBy: typeof req.body?.resolvedBy === 'string' ? req.body.resolvedBy : undefined,
+            resolvedNotes: typeof req.body?.resolvedNotes === 'string' ? req.body.resolvedNotes : undefined
+        }
+        const alert = await dashboardService.resolveToolAlert(id, payload)
+        return res.json(alert)
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('not found')) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, error.message)
+        }
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.resolveToolAlert - ${error}`
+        )
+    }
+}
+
+const getPriceApprovalRequests = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const status = typeof req.query.status === 'string' ? req.query.status : undefined
+        const limit = parseInt((req.query.limit as string) || '50', 10)
+        const requests = await dashboardService.getPriceApprovalRequests(status, limit)
+        return res.json(requests)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.getPriceApprovalRequests - ${error}`
+        )
+    }
+}
+
+const updatePriceApprovalRequest = async (req: Request, res: Response) => {
+    try {
+        const dashboardService = new DashboardService()
+        const id = parseInt(req.params.id, 10)
+        if (Number.isNaN(id)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid price approval id')
+        }
+
+        const payload = {
+            status: typeof req.body?.status === 'string' ? req.body.status : undefined,
+            reviewer: typeof req.body?.reviewer === 'string' ? req.body.reviewer : undefined,
+            approvedDiscount:
+                req.body?.approvedDiscount !== undefined ? Number(req.body.approvedDiscount) : undefined,
+            decisionNotes: typeof req.body?.decisionNotes === 'string' ? req.body.decisionNotes : undefined
+        }
+
+        const updated = await dashboardService.updatePriceApprovalRequest(id, payload)
+        return res.json(updated)
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('not found')) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, error.message)
+        }
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: dashboardController.updatePriceApprovalRequest - ${error}`
+        )
+    }
+}
+
 export default {
     getDashboardMetrics,
     getCustomerStats,
     getSalesStats,
     getFunnel,
     getRecentActivities,
-    getTopAgents
+    getTopAgents,
+    getToolAlerts,
+    resolveToolAlert,
+    getPriceApprovalRequests,
+    updatePriceApprovalRequest
 }

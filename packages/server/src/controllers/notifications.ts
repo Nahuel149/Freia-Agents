@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import logger from '../utils/logger'
+import { DashboardService } from '../services/dashboard'
 
 type NotificationPayload = {
     customerId?: number | null
@@ -168,41 +169,10 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
         }
 
         const { customerId, phone } = await resolveCustomerContext(clientId, phoneNumber)
-        const parsedSaleId = approvalRequestId && /^\d+$/.test(String(approvalRequestId)) ? parseInt(approvalRequestId) : null
+        const parsedRequestId = approvalRequestId && /^\d+$/.test(String(approvalRequestId)) ? parseInt(approvalRequestId) : null
+        const saleIdentifier = req.body?.saleId ?? req.body?.sale_id ?? null
+        const parsedSaleId = saleIdentifier && /^\d+$/.test(String(saleIdentifier)) ? parseInt(saleIdentifier) : null
 
-        if (parsedSaleId) {
-            try {
-                const appServer = getRunningExpressApp()
-                const noteParts: string[] = []
-                noteParts.push(approved ? 'Descuento aprobado' : 'Descuento rechazado')
-                if (newPrice !== undefined) {
-                    noteParts.push(`Nuevo precio: ${newPrice}`)
-                }
-                if (discountPercentage !== undefined) {
-                    noteParts.push(`Descuento: ${discountPercentage}%`)
-                }
-                if (reason) {
-                    noteParts.push(`Motivo: ${reason}`)
-                }
-
-                const updateFields: string[] = ["agent_notes = COALESCE(agent_notes, '') || $2", 'updated_at = NOW()']
-                const params: any[] = [parsedSaleId, `\n${noteParts.join(' - ')}`]
-                if (newPrice !== undefined) {
-                    updateFields.push('final_price = $' + (params.length + 1))
-                    params.push(newPrice)
-                }
-
-                await appServer.AppDataSource.query(
-                    `UPDATE sales SET ${updateFields.join(', ')} WHERE id = $1`,
-                    params
-                )
-            } catch (error) {
-                logger.warn('Unable to update sale with price approval details', { approvalRequestId, error })
-            }
-        }
-
-        // Only include saleId if it exists in the sales table
-        let validSaleId = null
         if (parsedSaleId) {
             try {
                 const appServer = getRunningExpressApp()
@@ -211,10 +181,26 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
                     [parsedSaleId]
                 )
                 if (saleExists && saleExists.length > 0) {
-                    validSaleId = parsedSaleId
+                    const noteParts: string[] = []
+                    noteParts.push(approved ? 'Descuento aprobado' : 'Descuento rechazado')
+                    if (newPrice !== undefined) noteParts.push(`Nuevo precio: ${newPrice}`)
+                    if (discountPercentage !== undefined) noteParts.push(`Descuento: ${discountPercentage}%`)
+                    if (reason) noteParts.push(`Motivo: ${reason}`)
+
+                    const updateFields: string[] = ["agent_notes = COALESCE(agent_notes, '') || $2", 'updated_at = NOW()']
+                    const params: any[] = [parsedSaleId, `\n${noteParts.join(' - ')}`]
+                    if (newPrice !== undefined) {
+                        updateFields.push('final_price = $' + (params.length + 1))
+                        params.push(newPrice)
+                    }
+
+                    await appServer.AppDataSource.query(
+                        `UPDATE sales SET ${updateFields.join(', ')} WHERE id = $1`,
+                        params
+                    )
                 }
             } catch (error) {
-                logger.warn('Error checking sale existence', { saleId: parsedSaleId, error })
+                logger.warn('Unable to update sale with price approval details', { saleId: parsedSaleId, error })
             }
         }
 
@@ -225,7 +211,7 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
             status: approved ? 'completed' : 'pending',
             message: approved ? 'Solicitud de descuento aprobada' : 'Solicitud de descuento rechazada',
             nextAction: approved ? 'confirm_sale' : 'continue_negotiation',
-            saleId: validSaleId,
+            saleId: parsedSaleId,
             scheduledAt: validUntil ?? null,
             metadata: {
                 approved,
@@ -235,6 +221,19 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
                 originalApprovalRequestId: approvalRequestId
             }
         })
+
+        if (parsedRequestId !== null) {
+            try {
+                const dashboardService = new DashboardService()
+                await dashboardService.updatePriceApprovalRequest(parsedRequestId, {
+                    status: approved ? 'approved' : 'declined',
+                    approvedDiscount: discountPercentage !== undefined ? Number(discountPercentage) : undefined,
+                    decisionNotes: reason ?? null
+                })
+            } catch (error) {
+                logger.warn('Unable to update price approval request status', { approvalRequestId, error })
+            }
+        }
 
         return res.json({
             message: 'Price approval notification registered',

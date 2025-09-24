@@ -25,6 +25,8 @@ import { SaleRecord } from './SaleRecord'
 import { ProductInventory } from './ProductInventory'
 import { ClientAccount } from './ClientAccount'
 import { FollowUp } from './FollowUp'
+import { ToolAlert } from './ToolAlert'
+import { PriceApprovalRequest } from './PriceApprovalRequest'
 // OSS mode: import all entities from OSS directory
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../oss/database/entities/EnterpriseEntities'
 import { User } from '../../oss/database/entities/user.entity'
@@ -84,5 +86,7 @@ export const entities = {
     ProductInventory,
     ClientAccount,
     FollowUp,
+    ToolAlert,
+    PriceApprovalRequest,
     ...additionalEntities
 }

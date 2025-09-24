@@ -1812,6 +1812,7 @@ export class CustomStreamingHandler extends BaseCallbackHandler {
 
     private sseStreamer: IServerSideEventStreamer
     private chatId: string
+    private activeToolRuns: Map<string, { name: string; startedAt: number }> = new Map()
 
     constructor(sseStreamer: IServerSideEventStreamer, chatId: string) {
         super()
@@ -1827,6 +1828,8 @@ export class CustomStreamingHandler extends BaseCallbackHandler {
 
         const toolName = typeof tool === 'object' && tool.name ? tool.name : 'unknown-tool'
         const toolInput = typeof input === 'string' ? input : JSON.stringify(input, null, 2)
+
+        this.activeToolRuns.set(runId, { name: toolName, startedAt: Date.now() })
 
         // Stream the tool invocation details using the agent_trace event type for consistency
         this.sseStreamer.streamCustomEvent(this.chatId, 'agent_trace', {
@@ -1853,6 +1856,8 @@ export class CustomStreamingHandler extends BaseCallbackHandler {
             runId,
             parentRunId: parentRunId || null
         })
+
+        this.activeToolRuns.delete(runId)
     }
 
     /**
@@ -1862,12 +1867,17 @@ export class CustomStreamingHandler extends BaseCallbackHandler {
         if (!this.sseStreamer) return
 
         // Stream the tool error details using the agent_trace event type for consistency
+        const activeRun = this.activeToolRuns.get(runId)
+
         this.sseStreamer.streamCustomEvent(this.chatId, 'agent_trace', {
             step: 'tool_error',
             error: error.message,
+            toolName: activeRun?.name,
             runId,
             parentRunId: parentRunId || null
         })
+
+        this.activeToolRuns.delete(runId)
     }
 
     /**

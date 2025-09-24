@@ -144,8 +144,16 @@ const Dashboard = () => {
             qualified: 0,
             proposals: 0,
             closed: 0
-        }
+        },
+        openToolAlerts: 0,
+        pendingPriceApprovals: 0
     })
+
+    const [toolAlerts, setToolAlerts] = useState([])
+    const [toolAlertLoading, setToolAlertLoading] = useState({})
+    const [priceApprovals, setPriceApprovals] = useState([])
+    const [priceApprovalLoading, setPriceApprovalLoading] = useState({})
+    const [approvalEdits, setApprovalEdits] = useState({})
 
     // WhatsApp Ping state
     const [waTo, setWaTo] = useState('+542557645497')
@@ -169,11 +177,13 @@ const Dashboard = () => {
                     ])
                 }
 
-                const [metricsRes, funnelRes, recentRes, topAgentsRes] = await Promise.allSettled([
+                const [metricsRes, funnelRes, recentRes, topAgentsRes, alertsRes, approvalsRes] = await Promise.allSettled([
                     fetchWithTimeout('/dashboard'),
                     fetchWithTimeout('/dashboard/funnel'),
                     fetchWithTimeout('/dashboard/recent'),
-                    fetchWithTimeout('/dashboard/top-agents')
+                    fetchWithTimeout('/dashboard/top-agents'),
+                    fetchWithTimeout('/dashboard/alerts?status=open&limit=50'),
+                    fetchWithTimeout('/dashboard/price-approvals?status=pending&limit=50')
                 ])
 
                 // Handle results with fallbacks for failed requests
@@ -181,13 +191,17 @@ const Dashboard = () => {
                 const funnel = funnelRes.status === 'fulfilled' ? (funnelRes.value?.data || { leads: 0, qualified: 0, proposals: 0, closed: 0 }) : { leads: 0, qualified: 0, proposals: 0, closed: 0 }
                 const recent = recentRes.status === 'fulfilled' ? (recentRes.value?.data || []) : []
                 const topAgents = topAgentsRes.status === 'fulfilled' ? (topAgentsRes.value?.data || []) : []
-                
+                const alerts = alertsRes.status === 'fulfilled' ? (alertsRes.value?.data || []) : []
+                const approvals = approvalsRes.status === 'fulfilled' ? (approvalsRes.value?.data || []) : []
+
                 // Log any failed requests for debugging
                 if (metricsRes.status === 'rejected') console.warn('Dashboard metrics failed:', metricsRes.reason)
                 if (funnelRes.status === 'rejected') console.warn('Funnel data failed:', funnelRes.reason)
                 if (recentRes.status === 'rejected') console.warn('Recent data failed:', recentRes.reason)
                 if (topAgentsRes.status === 'rejected') console.warn('Top agents data failed:', topAgentsRes.reason)
-                
+                if (alertsRes.status === 'rejected') console.warn('Tool alerts fetch failed:', alertsRes.reason)
+                if (approvalsRes.status === 'rejected') console.warn('Price approvals fetch failed:', approvalsRes.reason)
+
                 // Map API data to dashboard state with fallbacks for missing data
                 setDashboardData({
                     totalConversations: apiData.totalConversations || 0,
@@ -230,8 +244,13 @@ const Dashboard = () => {
                         time: new Date(r.ts).toLocaleString()
                     })),
                     topPerformingAgents: apiData.topPerformingAgents || [],
-                    salesFunnel: funnel
+                    salesFunnel: funnel,
+                    openToolAlerts: apiData.openToolAlerts ?? alerts.length,
+                    pendingPriceApprovals: apiData.pendingPriceApprovals ?? approvals.length
                 })
+
+                setToolAlerts(alerts)
+                setPriceApprovals(approvals)
 
                 // Try to connect to real-time data after successful API load
                 try {
@@ -270,8 +289,12 @@ const Dashboard = () => {
                     inventoryAlerts: [],
                     recentActivities: [],
                     topPerformingAgents: [],
-                    salesFunnel: { leads: 0, qualified: 0, proposals: 0, closed: 0 }
+                    salesFunnel: { leads: 0, qualified: 0, proposals: 0, closed: 0 },
+                    openToolAlerts: 0,
+                    pendingPriceApprovals: 0
                 })
+                setToolAlerts([])
+                setPriceApprovals([])
             } finally {
                 setLoading(false)
             }
@@ -306,7 +329,9 @@ const Dashboard = () => {
                 totalCallbacks: metrics.totalCallbacks || prev.totalCallbacks,
                 newClientContacts: metrics.newClientContacts || prev.newClientContacts,
                 followUpsSent: metrics.followUpsSent || prev.followUpsSent,
-                outOfStockAlerts: metrics.outOfStockAlerts || prev.outOfStockAlerts
+                outOfStockAlerts: metrics.outOfStockAlerts || prev.outOfStockAlerts,
+                openToolAlerts: metrics.openToolAlerts ?? prev.openToolAlerts,
+                pendingPriceApprovals: metrics.pendingPriceApprovals ?? prev.pendingPriceApprovals
             }))
         }
     }, [metrics])
@@ -341,6 +366,74 @@ const Dashboard = () => {
             setError(err)
         } finally {
             setWaSending(false)
+        }
+    }
+
+    const handleResolveAlert = async (alertId) => {
+        setToolAlertLoading((prev) => ({ ...prev, [alertId]: true }))
+        try {
+            await client.patch(`/dashboard/alerts/${alertId}`, { status: 'closed' })
+            setToolAlerts((prev) => prev.filter((alert) => alert.id !== alertId))
+            setDashboardData((prev) => ({
+                ...prev,
+                openToolAlerts: Math.max((prev.openToolAlerts || 0) - 1, 0)
+            }))
+        } catch (err) {
+            setError(err)
+        } finally {
+            setToolAlertLoading((prev) => {
+                const next = { ...prev }
+                delete next[alertId]
+                return next
+            })
+        }
+    }
+
+    const handleApprovalInputChange = (id, field, value) => {
+        setApprovalEdits((prev) => ({
+            ...prev,
+            [id]: {
+                ...(prev[id] || {}),
+                [field]: value
+            }
+        }))
+    }
+
+    const handleApprovalDecision = async (requestId, decision) => {
+        setPriceApprovalLoading((prev) => ({ ...prev, [requestId]: decision }))
+        try {
+            const edit = approvalEdits[requestId] || {}
+            const parsedDiscount = edit.discount !== undefined && edit.discount !== '' ? Number(edit.discount) : undefined
+            const approvedDiscount =
+                decision === 'approved' && parsedDiscount !== undefined && Number.isFinite(parsedDiscount)
+                    ? parsedDiscount
+                    : undefined
+
+            const approvalPayload = {
+                status: decision,
+                approvedDiscount,
+                decisionNotes: edit.notes ?? undefined
+            }
+
+            await client.patch(`/dashboard/price-approvals/${requestId}`, approvalPayload)
+            setPriceApprovals((prev) => prev.filter((req) => req.id !== requestId))
+            setApprovalEdits((prev) => {
+                const next = { ...prev }
+                delete next[requestId]
+                return next
+            })
+            setDashboardData((prev) => ({
+                ...prev,
+                pendingPriceApprovals: Math.max((prev.pendingPriceApprovals || 0) - 1, 0)
+            }))
+        } catch (err) {
+            setError(err)
+        } finally {
+            setPriceApprovalLoading((prev) => {
+                const next = { ...prev }
+                delete next[requestId]
+                return next
+            })
         }
     }
 
@@ -723,6 +816,24 @@ const Dashboard = () => {
                                 subtitle="This week"
                             />
                         </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <MetricCard
+                                title="Alertas de Herramientas"
+                                value={dashboardData.openToolAlerts}
+                                icon={<IconAlertTriangle />}
+                                color={theme.palette.error.main}
+                                subtitle="Pendientes"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <MetricCard
+                                title="Solicitudes de Precio"
+                                value={dashboardData.pendingPriceApprovals}
+                                icon={<IconCurrencyDollar />}
+                                color={theme.palette.warning.main}
+                                subtitle="Esperando revisión"
+                            />
+                        </Grid>
                          
                          {/* Inventory Alerts Section */}
                          <Grid item xs={12} md={6}>
@@ -764,6 +875,134 @@ const Dashboard = () => {
                                              />
                                          </Box>
                                      ))}
+                                 </CardContent>
+                             </MainCard>
+                         </Grid>
+
+                         {/* Tool Alerts */}
+                         <Grid item xs={12} md={6}>
+                             <MainCard title="Alertas de Herramientas" content={false}>
+                                 <CardContent>
+                                     {toolAlerts.length === 0 && (
+                                         <Typography variant="body2" color="text.secondary">
+                                             No hay alertas pendientes en este momento.
+                                         </Typography>
+                                     )}
+                                     {toolAlerts.map((alert) => (
+                                         <Box
+                                             key={alert.id}
+                                             sx={{
+                                                 mb: 2,
+                                                 p: 2,
+                                                 borderRadius: 2,
+                                                 border: `1px solid ${theme.palette.error.light}`,
+                                                 backgroundColor: theme.palette.mode === 'dark' ? 'rgba(244, 67, 54, 0.15)' : 'rgba(244, 67, 54, 0.08)'
+                                             }}
+                                         >
+                                             <Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="space-between">
+                                                 <Box>
+                                                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                         {alert.toolName || 'Herramienta desconocida'}
+                                                     </Typography>
+                                                     <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                                         {alert.errorMessage}
+                                                     </Typography>
+                                                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                                         Último incidente: {alert.lastSeen ? new Date(alert.lastSeen).toLocaleString() : 'N/D'} — apariciones: {alert.occurrences}
+                                                     </Typography>
+                                                 </Box>
+                                                 <Button
+                                                     size="small"
+                                                     variant="outlined"
+                                                     color="success"
+                                                     onClick={() => handleResolveAlert(alert.id)}
+                                                     disabled={Boolean(toolAlertLoading[alert.id])}
+                                                 >
+                                                     {toolAlertLoading[alert.id] ? 'Resolviendo...' : 'Marcar resuelto'}
+                                                 </Button>
+                                             </Stack>
+                                         </Box>
+                                     ))}
+                                 </CardContent>
+                             </MainCard>
+                         </Grid>
+
+                         {/* Price Approval Requests */}
+                         <Grid item xs={12} md={6}>
+                             <MainCard title="Solicitudes de Descuento" content={false}>
+                                 <CardContent>
+                                     {priceApprovals.length === 0 && (
+                                         <Typography variant="body2" color="text.secondary">
+                                             No hay solicitudes pendientes.
+                                         </Typography>
+                                     )}
+                                     {priceApprovals.map((request) => {
+                                         const edit = approvalEdits[request.id] || {}
+                                         const discountValue = edit.discount !== undefined
+                                             ? edit.discount
+                                             : request.requestedDiscount
+                                         return (
+                                             <Box
+                                                 key={request.id}
+                                                 sx={{
+                                                     mb: 2,
+                                                     p: 2,
+                                                     borderRadius: 2,
+                                                     border: `1px solid ${theme.palette.warning.light}`,
+                                                     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 152, 0, 0.12)' : 'rgba(255, 152, 0, 0.08)'
+                                                 }}
+                                             >
+                                                 <Stack spacing={1.5}>
+                                                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                         Cotización {request.quoteId}
+                                                     </Typography>
+                                                     <Typography variant="body2" color="text.secondary">
+                                                         Descuento solicitado: {request.requestedDiscount}% — Prioridad: {request.priority}
+                                                     </Typography>
+                                                     <Typography variant="caption" color="text.secondary">
+                                                         Creado: {request.createdAt ? new Date(request.createdAt).toLocaleString() : 'N/D'}
+                                                     </Typography>
+                                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'stretch', sm: 'center' }}>
+                                                         <TextField
+                                                             label="Descuento aprobado (%)"
+                                                             size="small"
+                                                             type="number"
+                                                             value={discountValue ?? ''}
+                                                             onChange={(e) => handleApprovalInputChange(request.id, 'discount', e.target.value)}
+                                                             sx={{ minWidth: 140 }}
+                                                         />
+                                                         <TextField
+                                                             label="Notas"
+                                                             size="small"
+                                                             value={edit.notes ?? ''}
+                                                             onChange={(e) => handleApprovalInputChange(request.id, 'notes', e.target.value)}
+                                                             sx={{ flexGrow: 1 }}
+                                                         />
+                                                     </Stack>
+                                                     <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                                         <Button
+                                                             size="small"
+                                                             color="error"
+                                                             variant="outlined"
+                                                             onClick={() => handleApprovalDecision(request.id, 'declined')}
+                                                             disabled={Boolean(priceApprovalLoading[request.id])}
+                                                         >
+                                                             {priceApprovalLoading[request.id] === 'declined' ? 'Procesando...' : 'Declinar'}
+                                                         </Button>
+                                                         <Button
+                                                             size="small"
+                                                             color="success"
+                                                             variant="contained"
+                                                             onClick={() => handleApprovalDecision(request.id, 'approved')}
+                                                             disabled={Boolean(priceApprovalLoading[request.id])}
+                                                         >
+                                                             {priceApprovalLoading[request.id] === 'approved' ? 'Procesando...' : 'Aprobar'}
+                                                         </Button>
+                                                     </Stack>
+                                                 </Stack>
+                                             </Box>
+                                         )
+                                     })}
                                  </CardContent>
                              </MainCard>
                          </Grid>

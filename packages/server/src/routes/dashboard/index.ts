@@ -16,5 +16,9 @@ router.get('/sales', dashboardController.getSalesStats)
 router.get('/funnel', dashboardController.getFunnel)
 router.get('/recent', dashboardController.getRecentActivities)
 router.get('/top-agents', dashboardController.getTopAgents)
+router.get('/alerts', dashboardController.getToolAlerts)
+router.patch('/alerts/:id', dashboardController.resolveToolAlert)
+router.get('/price-approvals', dashboardController.getPriceApprovalRequests)
+router.patch('/price-approvals/:id', dashboardController.updatePriceApprovalRequest)
 
 export default router

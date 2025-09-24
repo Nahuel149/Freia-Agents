@@ -5,6 +5,8 @@ import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
 import { analyzeConversationForProduct, validateProductSKU } from '../utils/conversationAnalyzer'
 import { normalizePhoneNumber, isValidPhoneNumber } from '../utils/phoneNormalizer'
+import { DashboardService } from '../services/dashboard'
+import { recordSaleAnalytics } from '../services/agent-events'
 
 // Get all sales
 const getAllSales = async (req: Request, res: Response, next: NextFunction) => {
@@ -105,6 +107,8 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {
             customer_id,
+            customer_name,
+            client_name,
             phone_number,
             product_sku,
             product_brand,
@@ -117,7 +121,7 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             final_price,
             payment_method,
             delivery_method,
-            delivery_address,
+            delivery_address: deliveryAddress,
             sale_status = 'pending',
             agent_notes,
             // New parameters for conversation analysis
@@ -138,18 +142,51 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid phone number format')
         }
 
+        let resolvedChatflowId = chatflowid
+        const appServer = getRunningExpressApp()
+
+        if (!resolvedChatflowId && sessionId) {
+            try {
+                const chatflowLookup = await appServer.AppDataSource.query(
+                    'SELECT "chatflowid" FROM chat_message WHERE "sessionId" = $1 ORDER BY "createdDate" DESC LIMIT 1',
+                    [sessionId]
+                )
+                if (chatflowLookup.length > 0 && chatflowLookup[0].chatflowid) {
+                    resolvedChatflowId = chatflowLookup[0].chatflowid
+                }
+            } catch (error) {
+                logger.warn('Unable to resolve chatflow id from session', { sessionId, error })
+            }
+        }
+
         let finalProductSku = product_sku
         let finalProductBrand = product_brand
         let finalProductModel = product_model
         let finalWheelSize = wheel_size
         let analysisNotes = ''
 
+        const parseNumeric = (value: any): number | null => {
+            if (typeof value === 'number' && Number.isFinite(value)) return value
+            if (typeof value === 'string') {
+                const trimmed = value.replace(/[^0-9.,-]/g, '').replace(/,/g, '.')
+                const parsed = Number(trimmed)
+                if (Number.isFinite(parsed)) return parsed
+            }
+            return null
+        }
+
+        const quantityNumber = parseNumeric(quantity) ?? 1
+        const unitPriceNumber = parseNumeric(unit_price)
+        const totalPriceNumber = parseNumeric(total_price)
+        const discountPercentageNumber = parseNumeric(discount_percentage) ?? 0
+        const finalPriceNumber = parseNumeric(final_price)
+
         // If product_sku is not provided, try to detect it from conversation
-        if (!finalProductSku && (chatflowid || sessionId || chatId)) {
+        if (!finalProductSku && (resolvedChatflowId || sessionId || chatId)) {
             logger.info('Product SKU not provided, analyzing conversation for product information...')
             
             const analysisResult = await analyzeConversationForProduct(
-                chatflowid,
+                resolvedChatflowId ?? '',
                 sessionId,
                 chatId,
                 normalizedPhoneNumber
@@ -177,6 +214,62 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             }
         }
 
+        if (!finalProductSku && (finalProductBrand || finalProductModel || finalWheelSize)) {
+            try {
+                logger.info('Attempting inventory fallback for product detection', {
+                    brand: finalProductBrand,
+                    model: finalProductModel,
+                    wheelSize: finalWheelSize
+                })
+                let fallbackQuery = 'SELECT "productId", name, brand, price FROM product_inventory WHERE 1=1'
+                const params: any[] = []
+
+                if (finalProductBrand) {
+                    fallbackQuery += ` AND brand ILIKE $${params.length + 1}`
+                    params.push(`%${finalProductBrand}%`)
+                }
+
+                if (finalProductModel) {
+                    fallbackQuery += ` AND name ILIKE $${params.length + 1}`
+                    params.push(`%${finalProductModel}%`)
+                }
+
+                if (finalWheelSize) {
+                    const sanitizedSize = finalWheelSize.replace(/\s+/g, '').toUpperCase()
+                    fallbackQuery += ` AND REPLACE(UPPER(REPLACE(REPLACE(name, '/', ''), ' ', '')), '-', '') LIKE $${params.length + 1}`
+                    params.push(`%${sanitizedSize.replace(/[^0-9A-Z]/g, '')}%`)
+                }
+
+                fallbackQuery += ' ORDER BY "updatedDate" DESC LIMIT 1'
+
+                const candidates = await appServer.AppDataSource.query(fallbackQuery, params)
+                const candidate = candidates?.[0]
+
+                if (candidate) {
+                    finalProductSku = candidate.productId
+                    finalProductBrand = finalProductBrand || candidate.brand
+                    finalProductModel = finalProductModel || candidate.name
+                    analysisNotes = [analysisNotes, 'SKU matched from inventory by brand/medida'].filter(Boolean).join(' | ')
+                    logger.info('Matched product from inventory fallback lookup', {
+                        product_sku: finalProductSku,
+                        brand: finalProductBrand,
+                        wheel_size: finalWheelSize,
+                        candidate
+                    })
+                } else {
+                    logger.warn('No inventory match found for conversation fallback', {
+                        brand: finalProductBrand,
+                        model: finalProductModel,
+                        wheelSize: finalWheelSize,
+                        params,
+                        fallbackQuery
+                    })
+                }
+            } catch (error) {
+                logger.warn('Failed to match product from inventory fallback lookup', { error, finalProductBrand, finalWheelSize })
+            }
+        }
+
         // Validate that we have a product SKU
         if (!finalProductSku) {
             throw new InternalFlowiseError(
@@ -192,8 +285,6 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             // Don't throw error, just log warning - the sale can still be created for manual review
         }
 
-        const appServer = getRunningExpressApp()
-        
         // Combine agent notes with analysis notes
         const combinedNotes = [agent_notes, analysisNotes].filter(Boolean).join(' | ')
         
@@ -209,12 +300,64 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         `
         
         const result = await appServer.AppDataSource.query(query, [
-            customer_id, normalizedPhoneNumber, finalProductSku, finalProductBrand, finalProductModel,
-            finalWheelSize, quantity, unit_price, total_price, discount_percentage,
-            final_price, payment_method, delivery_method, delivery_address,
-            sale_status, 0, combinedNotes
+            customer_id,
+            normalizedPhoneNumber,
+            finalProductSku,
+            finalProductBrand,
+            finalProductModel,
+            finalWheelSize,
+            quantityNumber,
+            unitPriceNumber,
+            totalPriceNumber,
+            discountPercentageNumber,
+            finalPriceNumber,
+            payment_method,
+            delivery_method,
+            deliveryAddress,
+            sale_status,
+            0,
+            combinedNotes
         ])
-        
+
+        const resolvedCustomerName = customer_name || client_name || undefined
+        const fallbackAmount = unitPriceNumber !== null && Number.isFinite(unitPriceNumber)
+            ? unitPriceNumber * quantityNumber
+            : null
+        const analyticsTotal = [finalPriceNumber, totalPriceNumber, fallbackAmount]
+            .find((value) => typeof value === 'number' && Number.isFinite(value)) || 0
+
+        await recordSaleAnalytics(
+            {
+                saleId: result[0]?.id,
+                agentId: resolvedChatflowId,
+                clientId: customer_id ? String(customer_id) : undefined,
+                clientName: resolvedCustomerName,
+                contactPhone: normalizedPhoneNumber,
+                totalAmount: analyticsTotal,
+                discountPercentage: discountPercentageNumber,
+                quantity: quantityNumber,
+                paymentMethod: payment_method,
+                deliveryMethod: delivery_method,
+                deliveryAddress,
+                notes: combinedNotes || undefined,
+                sessionId: sessionId || undefined,
+                chatId: chatId || undefined,
+                chatflowId: resolvedChatflowId || undefined,
+                products: [
+                    {
+                        sku: finalProductSku,
+                        brand: finalProductBrand,
+                        model: finalProductModel,
+                        wheelSize: finalWheelSize,
+                        unitPrice: unitPriceNumber ?? undefined,
+                        quantity: quantityNumber,
+                        totalPrice: finalPriceNumber ?? totalPriceNumber ?? fallbackAmount ?? undefined
+                    }
+                ]
+            },
+            appServer.AppDataSource
+        )
+
         return res.status(StatusCodes.CREATED).json({
             ...result[0],
             analysis_info: analysisNotes ? {
@@ -556,12 +699,110 @@ const applyDiscount = async (req: Request, res: Response, next: NextFunction) =>
 // Request price approval (stub)
 const requestPriceApproval = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { sale_id, proposed_price } = req.body
-        if (!sale_id || proposed_price === undefined) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Sale ID and proposed price are required')
+        const {
+            quoteId,
+            clientId,
+            saleId,
+            requestedDiscount,
+            requestedTotal,
+            reason,
+            clientPhone,
+            estimatedResponseTime,
+            priority = 'medium'
+        } = req.body
+
+        if (!quoteId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'quoteId is required')
         }
-        // Here you would trigger internal approval workflow
-        return res.json({ sale_id, proposed_price, status: 'pending_approval' })
+        if (requestedDiscount === undefined) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'requestedDiscount is required')
+        }
+
+        const toNumber = (value: unknown): number | null => {
+            if (typeof value === 'number' && Number.isFinite(value)) return value
+            if (typeof value === 'string') {
+                const trimmed = value.trim()
+                if (!trimmed) return null
+                const cleaned = trimmed.replace(/[^0-9.,-]/g, '').replace(/,/g, '.')
+                if (!cleaned) return null
+                const parsed = Number(cleaned)
+                return Number.isFinite(parsed) ? parsed : null
+            }
+            return null
+        }
+
+        const sanitisePhone = (value: unknown): string | null => {
+            if (!value) return null
+            if (typeof value !== 'string') return null
+
+            const trimmed = value.trim()
+            if (!trimmed) return null
+
+            try {
+                const normalised = normalizePhoneNumber(trimmed)
+                if (normalised && isValidPhoneNumber(normalised)) {
+                    return normalised
+                }
+                return normalised
+            } catch {
+                const digits = trimmed.replace(/[^0-9+]/g, '')
+                return digits || null
+            }
+        }
+
+        const discountValue = toNumber(requestedDiscount)
+        if (discountValue === null || discountValue <= 0) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'requestedDiscount must be a positive number')
+        }
+
+        const maxSelfServeDiscount = 5
+        if (discountValue <= maxSelfServeDiscount) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `La aprobación manual solo se solicita para descuentos mayores al ${maxSelfServeDiscount}%`
+            )
+        }
+
+        const requestedTotalNumber = requestedTotal !== undefined ? toNumber(requestedTotal) : null
+        const estimatedResponseNumber = estimatedResponseTime !== undefined ? toNumber(estimatedResponseTime) : null
+        const saleIdNumber = saleId !== undefined ? toNumber(saleId) : null
+
+        if (saleId !== undefined && saleIdNumber === null) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'saleId debe ser numérico')
+        }
+        if (estimatedResponseNumber !== null && estimatedResponseNumber <= 0) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'estimatedResponseTime debe ser un número positivo en horas')
+        }
+        if (requestedTotalNumber !== null && requestedTotalNumber <= 0) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'requestedTotal debe ser mayor a cero')
+        }
+
+        const priorityValueRaw = typeof priority === 'string' ? priority.toLowerCase() : 'medium'
+        const allowedPriorities = ['low', 'medium', 'high']
+        const priorityValue = allowedPriorities.includes(priorityValueRaw) ? priorityValueRaw : 'medium'
+
+        const resolvedClientPhone = sanitisePhone(clientPhone)
+
+        const dashboardService = new DashboardService()
+
+        const request = await dashboardService.createPriceApprovalRequest({
+            quoteId: String(quoteId),
+            clientId: clientId ? String(clientId) : null,
+            saleId: saleIdNumber !== null ? Math.round(saleIdNumber) : null,
+            requestedDiscount: discountValue,
+            requestedTotal: requestedTotalNumber,
+            reason: reason ?? null,
+            clientPhone: resolvedClientPhone,
+            priority: priorityValue,
+            estimatedResponseTime: estimatedResponseNumber !== null ? Math.round(estimatedResponseNumber) : null
+        })
+
+        return res.status(StatusCodes.CREATED).json({
+            approvalRequestId: request.id,
+            status: request.status,
+            priority: request.priority,
+            requestedDiscount: request.requestedDiscount
+        })
     } catch (error) {
         logger.error('Error requesting price approval:', error)
         return next(error)

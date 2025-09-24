@@ -1,4 +1,3 @@
-import { getRunningExpressApp } from '../utils'
 import {
     DataSource,
     Repository,
@@ -10,6 +9,9 @@ import { AgentEvent } from '../database/entities/AgentEvent'
 import { SaleRecord } from '../database/entities/SaleRecord'
 import { ProductInventory } from '../database/entities/ProductInventory'
 import { ClientAccount } from '../database/entities/ClientAccount'
+import { ToolAlert } from '../database/entities/ToolAlert'
+import { PriceApprovalRequest } from '../database/entities/PriceApprovalRequest'
+import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 
 type SentimentBuckets = { positive: number; neutral: number; negative: number }
 
@@ -19,6 +21,8 @@ export class DashboardService {
     private saleRecordRepo: Repository<SaleRecord>
     private inventoryRepo: Repository<ProductInventory>
     private clientAccountRepo: Repository<ClientAccount>
+    private toolAlertRepo: Repository<ToolAlert>
+    private priceApprovalRepo: Repository<PriceApprovalRequest>
 
     constructor() {
         const app = getRunningExpressApp()
@@ -27,6 +31,8 @@ export class DashboardService {
         this.saleRecordRepo = this.dataSource.getRepository(SaleRecord)
         this.inventoryRepo = this.dataSource.getRepository(ProductInventory)
         this.clientAccountRepo = this.dataSource.getRepository(ClientAccount)
+        this.toolAlertRepo = this.dataSource.getRepository(ToolAlert)
+        this.priceApprovalRepo = this.dataSource.getRepository(PriceApprovalRequest)
     }
 
     private daysAgo(days: number): Date {
@@ -73,7 +79,9 @@ export class DashboardService {
             responseMetadataRows,
             sentimentMetadataRows,
             feedbackMetadataRows,
-            lowStock
+            lowStock,
+            openToolAlertsCount,
+            pendingPriceApprovalsCount
         ] = await Promise.all([
             this.agentEventRepo
                 .createQueryBuilder('event')
@@ -144,12 +152,16 @@ export class DashboardService {
                 where: { stock: LessThan(20) },
                 order: { stock: 'ASC', updatedDate: 'DESC' },
                 take: 20
-            })
+            }),
+            this.toolAlertRepo.count({ where: { status: 'open' } }),
+            this.priceApprovalRepo.count({ where: { status: 'pending' } })
         ])
 
         const closedClients = Number(closedClientsRow?.count || 0)
         const totalRevenue = Number(totalRevenueRow?.sum || 0)
         const activeAgents = Number(activeAgentsRow?.count || 0)
+        const openToolAlerts = Number(openToolAlertsCount || 0)
+        const pendingPriceApprovals = Number(pendingPriceApprovalsCount || 0)
 
         const responseTimes = responseMetadataRows
             .map(row => this.parseMetadata(row.metadata)?.responseTime)
@@ -222,6 +234,8 @@ export class DashboardService {
             salesData,
             conversionRate,
             totalRevenue,
+            openToolAlerts,
+            pendingPriceApprovals,
             inventoryAlerts: lowStock.map(item => ({
                 productId: item.productId,
                 name: item.name,
@@ -234,6 +248,174 @@ export class DashboardService {
             customerSatisfaction: feedbackAvg,
             lastUpdated: new Date().toISOString()
         }
+    }
+
+    async getToolAlerts(status?: string, limit = 50) {
+        const where = status ? { status } : {}
+        return this.toolAlertRepo.find({
+            where,
+            order: { lastSeen: 'DESC' },
+            take: limit
+        })
+    }
+
+    async resolveToolAlert(
+        id: number,
+        updates: { status?: string; resolvedBy?: string; resolvedNotes?: string }
+    ) {
+        const alert = await this.toolAlertRepo.findOne({ where: { id } })
+        if (!alert) {
+            throw new Error('Tool alert not found')
+        }
+
+        if (updates.status) {
+            alert.status = updates.status
+        } else {
+            alert.status = 'closed'
+        }
+
+        alert.resolvedBy = updates.resolvedBy ?? alert.resolvedBy ?? null
+        alert.resolvedNotes = updates.resolvedNotes ?? alert.resolvedNotes ?? null
+        alert.resolvedAt = new Date()
+        alert.updatedAt = new Date()
+
+        return this.toolAlertRepo.save(alert)
+    }
+
+    async getPriceApprovalRequests(status?: string, limit = 50) {
+        const where = status ? { status } : {}
+        return this.priceApprovalRepo.find({
+            where,
+            order: { createdAt: 'DESC' },
+            take: limit
+        })
+    }
+
+    async updatePriceApprovalRequest(
+        id: number,
+        updates: {
+            status?: 'approved' | 'declined' | 'pending'
+            reviewer?: string
+            approvedDiscount?: number | null
+            decisionNotes?: string | null
+        }
+    ) {
+        const request = await this.priceApprovalRepo.findOne({ where: { id } })
+        if (!request) {
+            throw new Error('Price approval request not found')
+        }
+
+        if (updates.status) {
+            request.status = updates.status
+        }
+        if (updates.reviewer !== undefined) {
+            request.reviewer = updates.reviewer
+        }
+        if (updates.approvedDiscount !== undefined) {
+            request.approvedDiscount = updates.approvedDiscount
+        }
+        if (updates.decisionNotes !== undefined) {
+            request.decisionNotes = updates.decisionNotes
+        }
+
+        if (updates.status && updates.status !== 'pending') {
+            request.resolvedAt = new Date()
+        }
+
+        request.updatedAt = new Date()
+
+        return this.priceApprovalRepo.save(request)
+    }
+
+    async createPriceApprovalRequest(
+        payload: {
+            quoteId: string
+            clientId?: string | null
+            saleId?: number | null
+            requestedDiscount: number
+            requestedTotal?: number | null
+            reason?: string | null
+            clientPhone?: string | null
+            priority?: string
+            estimatedResponseTime?: number | null
+        }
+    ) {
+        const requestedDiscount = Number(payload.requestedDiscount)
+        if (!Number.isFinite(requestedDiscount) || requestedDiscount <= 0) {
+            throw new Error('Invalid requested discount')
+        }
+
+        const requestedTotalRaw = payload.requestedTotal === null || payload.requestedTotal === undefined ? null : Number(payload.requestedTotal)
+        const requestedTotal = requestedTotalRaw !== null && Number.isFinite(requestedTotalRaw) ? requestedTotalRaw : null
+        const estimatedResponseTimeRaw =
+            payload.estimatedResponseTime === null || payload.estimatedResponseTime === undefined
+                ? null
+                : Number(payload.estimatedResponseTime)
+        const estimatedResponseTime =
+            estimatedResponseTimeRaw !== null && Number.isFinite(estimatedResponseTimeRaw)
+                ? Math.round(estimatedResponseTimeRaw)
+                : null
+        const saleId = payload.saleId === null || payload.saleId === undefined ? null : Number(payload.saleId)
+
+        const request = this.priceApprovalRepo.create({
+            quoteId: payload.quoteId,
+            clientId: payload.clientId ?? null,
+            saleId: saleId !== null && Number.isFinite(saleId) ? Math.round(saleId) : null,
+            requestedDiscount,
+            requestedTotal,
+            reason: payload.reason ?? null,
+            clientPhone: payload.clientPhone ?? null,
+            priority: payload.priority ?? 'medium',
+            estimatedResponseTime,
+            status: 'pending'
+        })
+        return this.priceApprovalRepo.save(request)
+    }
+
+    static async recordToolAlert(params: {
+        toolName: string
+        errorMessage: string
+        chatId?: string
+        runId?: string
+        metadata?: Record<string, any>
+    }) {
+        const app = getRunningExpressApp()
+        const repo = app.AppDataSource.getRepository(ToolAlert)
+
+        const existing = await repo.findOne({
+            where: {
+                toolName: params.toolName,
+                errorMessage: params.errorMessage,
+                status: 'open'
+            }
+        })
+
+        if (existing) {
+            existing.occurrences += 1
+            existing.lastSeen = new Date()
+            existing.chatId = params.chatId ?? existing.chatId ?? null
+            existing.runId = params.runId ?? existing.runId ?? null
+            if (params.metadata) {
+                existing.metadata = {
+                    ...(existing.metadata || {}),
+                    ...params.metadata
+                }
+            }
+            return repo.save(existing)
+        }
+
+        const alert = repo.create({
+            toolName: params.toolName,
+            errorMessage: params.errorMessage,
+            chatId: params.chatId ?? null,
+            runId: params.runId ?? null,
+            metadata: params.metadata ?? null,
+            status: 'open',
+            occurrences: 1,
+            firstSeen: new Date(),
+            lastSeen: new Date()
+        })
+        return repo.save(alert)
     }
 
     async getCustomerStats(): Promise<any> {

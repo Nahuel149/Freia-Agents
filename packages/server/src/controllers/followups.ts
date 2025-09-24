@@ -3,6 +3,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from '../utils/logger'
+import { normalizePhoneNumber, isValidPhoneNumber } from '../utils/phoneNormalizer'
 
 type FollowUpInsertPayload = {
     customer_id?: number | null
@@ -17,6 +18,24 @@ type FollowUpInsertPayload = {
     customer_response?: string | null
     next_action?: string | null
     completed_at?: string | null
+}
+
+const extractDigits = (value?: string | null): string | null => {
+    if (!value) return null
+    const digits = value.replace(/[^0-9]/g, '')
+    return digits.length >= 7 ? digits : null
+}
+
+const parseNullableNumber = (value?: string | number | null): number | null => {
+    if (value === null || value === undefined) return null
+    if (typeof value === 'number' && Number.isFinite(value)) return value
+    if (typeof value === 'string') {
+        const cleaned = value.trim()
+        if (!cleaned) return null
+        const parsed = Number(cleaned)
+        return Number.isFinite(parsed) ? parsed : null
+    }
+    return null
 }
 
 const insertFollowUpRecord = async (payload: FollowUpInsertPayload) => {
@@ -210,38 +229,127 @@ const createFollowUp = async (req: Request, res: Response, next: NextFunction) =
     try {
         const {
             customer_id,
+            customerId,
+            client_id,
+            clientId,
             phone_number,
+            phoneNumber,
+            phone,
+            contact_phone,
+            client_phone,
+            clientPhone,
             follow_up_type,
+            followUpType,
+            reason,
             scheduled_at,
-            status = 'pending',
+            scheduledAt,
+            scheduled_date,
+            date,
+            status,
             sale_id,
+            related_sale_id,
             message_sent,
             customer_response,
             next_action,
-            attempt_number = 1,
-            max_attempts = 3,
+            notes,
+            contact_method,
+            priority,
+            assigned_to,
+            attempt_number,
+            max_attempts,
             completed_at
         } = req.body
 
-        if (!phone_number || !follow_up_type || !scheduled_at) {
+        const rawCustomerIdentifier = customer_id ?? customerId ?? client_id ?? clientId ?? null
+        const numericCustomerId = parseNullableNumber(rawCustomerIdentifier)
+
+        let resolvedPhone =
+            phone_number ??
+            phoneNumber ??
+            phone ??
+            contact_phone ??
+            client_phone ??
+            clientPhone ??
+            null
+
+        if (!resolvedPhone) {
+            const digitsFromId = typeof rawCustomerIdentifier === 'string' ? extractDigits(rawCustomerIdentifier) : null
+            if (digitsFromId) {
+                resolvedPhone = digitsFromId
+            }
+        }
+
+        if (!resolvedPhone && typeof notes === 'string') {
+            const digitsFromNotes = extractDigits(notes)
+            if (digitsFromNotes) {
+                resolvedPhone = digitsFromNotes
+            }
+        }
+
+        if (!resolvedPhone) {
             throw new InternalFlowiseError(
                 StatusCodes.BAD_REQUEST,
-                'Phone number, follow-up type, and scheduled date are required'
+                'Phone number is required (provide phone_number, clientPhone o incluye el teléfono en customer_id/notes)'
             )
         }
 
+        let normalisedPhone = resolvedPhone
+        try {
+            const normalised = normalizePhoneNumber(resolvedPhone)
+            if (normalised && isValidPhoneNumber(normalised)) {
+                normalisedPhone = normalised
+            }
+        } catch {
+            const digits = extractDigits(resolvedPhone)
+            if (digits) normalisedPhone = digits
+        }
+
+        const resolvedFollowUpType = (follow_up_type || followUpType || reason || 'general').toString()
+
+        const scheduledRaw = scheduled_at || scheduledAt || scheduled_date || date || null
+        let resolvedScheduledAt: string
+        if (scheduledRaw) {
+            const dateObj = new Date(scheduledRaw)
+            resolvedScheduledAt = Number.isNaN(dateObj.getTime()) ? new Date().toISOString() : dateObj.toISOString()
+        } else {
+            resolvedScheduledAt = new Date().toISOString()
+        }
+
+        const resolvedSaleId = (() => {
+            const direct = parseNullableNumber(sale_id)
+            if (direct !== null) return direct
+            const digits = typeof related_sale_id === 'string' ? extractDigits(related_sale_id) : null
+            return digits ? parseNullableNumber(digits) : null
+        })()
+
+        const messageParts: string[] = []
+        if (notes) messageParts.push(String(notes))
+        if (reason && reason !== resolvedFollowUpType) messageParts.push(`Motivo: ${reason}`)
+        if (contact_method) messageParts.push(`Canal: ${contact_method}`)
+        if (priority) messageParts.push(`Prioridad: ${priority}`)
+        if (related_sale_id && resolvedSaleId === null) {
+            messageParts.push(`Referencia venta: ${related_sale_id}`)
+        }
+
+        const followUpNotes = messageParts.length ? messageParts.join(' | ') : message_sent ?? null
+
+        const nextActionParts: string[] = []
+        if (assigned_to) nextActionParts.push(`Asignado a: ${assigned_to}`)
+        if (next_action) nextActionParts.push(String(next_action))
+        const resolvedNextAction = nextActionParts.length ? nextActionParts.join(' | ') : null
+
         const result = await insertFollowUpRecord({
-            customer_id: customer_id ?? null,
-            phone_number,
-            sale_id: sale_id ?? null,
-            follow_up_type,
-            scheduled_at,
-            status,
-            attempt_number,
-            max_attempts,
-            message_sent: message_sent ?? null,
+            customer_id: numericCustomerId,
+            phone_number: normalisedPhone,
+            sale_id: resolvedSaleId,
+            follow_up_type: resolvedFollowUpType,
+            scheduled_at: resolvedScheduledAt,
+            status: status ?? 'pending',
+            attempt_number: attempt_number ?? 1,
+            max_attempts: max_attempts ?? 3,
+            message_sent: followUpNotes,
             customer_response: customer_response ?? null,
-            next_action: next_action ?? null,
+            next_action: resolvedNextAction,
             completed_at: completed_at ?? null
         })
 
