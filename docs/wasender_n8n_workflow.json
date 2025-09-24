@@ -34,11 +34,11 @@
           "parameters": [
             {
               "name": "input",
-              "value": "{{$node[\"Webhook (from Wasender)\"].json.body.data[0].message.conversation}}"
+              "value": "{{$node[\"Webhook (from Wasender)\"].json.body.data.messages[0].message.conversation}}"
             },
             {
               "name": "sessionId",
-              "value": "{{$node[\"Webhook (from Wasender)\"].json.body.data[0].key.remoteJid}}"
+              "value": "{{$node[\"Webhook (from Wasender)\"].json.body.data.messages[0].key.remoteJid}}"
             }
           ]
         }

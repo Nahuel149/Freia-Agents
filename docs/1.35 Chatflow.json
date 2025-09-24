@@ -1192,7 +1192,7 @@
         "inputs": {
           "databaseName": "eternum",
           "collectionName": "chat_history",
-          "sessionId": "",
+          "sessionId": "{{sessionId}}",
           "memoryKey": "chat_history"
         },
         "outputAnchors": [

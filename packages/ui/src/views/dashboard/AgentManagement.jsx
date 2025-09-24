@@ -79,6 +79,7 @@ const AgentManagement = () => {
     const [agents, setAgents] = useState([])
     const [selectedAgent, setSelectedAgent] = useState(null)
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [toggleLoading, setToggleLoading] = useState({})
     const [agentStats, setAgentStats] = useState({
         totalAgents: 0,
         activeAgents: 0,
@@ -164,23 +165,26 @@ const AgentManagement = () => {
     }, [])
 
     const handleAgentToggle = async (agentId, currentStatus) => {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+        setToggleLoading((prev) => ({ ...prev, [agentId]: true }))
+        const rollback = () => {
+            setAgents((prev) => prev.map((agent) => (agent.id === agentId ? { ...agent, status: currentStatus } : agent)))
+        }
         try {
-            // Toggle agent status
-            const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
-            
-            // Update local state
-            setAgents(prev => prev.map(agent => 
-                agent.id === agentId ? { ...agent, status: newStatus } : agent
-            ))
-            
-            // Here you would make an API call to update the agent status
-            // await client.patch(`/chatflows/${agentId}`, { deployed: newStatus === 'active' })
-            
+            setAgents((prev) => prev.map((agent) => (agent.id === agentId ? { ...agent, status: newStatus } : agent)))
+            await client.patch(`/chatflows/${agentId}`, { deployed: newStatus === 'active' })
+            setAgentStats((prev) => ({
+                ...prev,
+                activeAgents: Math.max(0, prev.activeAgents + (newStatus === 'active' ? 1 : -1)),
+                inactiveAgents: Math.max(0, prev.inactiveAgents + (newStatus === 'active' ? -1 : 1))
+            }))
         } catch (error) {
             console.error('Error toggling agent:', error)
+            rollback()
+        } finally {
+            setToggleLoading((prev) => ({ ...prev, [agentId]: false }))
         }
     }
-
     const handleViewAgent = (agentId) => {
         navigate(`/chatflows/${agentId}`)
     }
@@ -421,6 +425,7 @@ const AgentManagement = () => {
                                                         size="small"
                                                         onClick={() => handleAgentToggle(agent.id, agent.status)}
                                                         color={agent.status === 'active' ? 'error' : 'success'}
+                                                        disabled={Boolean(toggleLoading[agent.id])}
                                                     >
                                                         {agent.status === 'active' ? 
                                                             <IconPlayerPause size={16} /> : 

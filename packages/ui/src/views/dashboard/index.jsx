@@ -603,18 +603,26 @@ const Dashboard = () => {
     )
 
     return (
-        <MainCard 
+        <Box
             sx={{
+                minHeight: '100vh',
                 background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 200, 120, 0.1) 100%)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '20px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                padding: 3
             }}
         >
-            {error ? (
-                <ErrorBoundary error={error} />
-            ) : (
+            <MainCard
+                contentSX={{ padding: 5 }}
+                sx={{
+                    background: 'transparent',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '20px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                }}
+            >
+                {error ? (
+                    <ErrorBoundary error={error} />
+                ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <ViewHeader
                         title="B2B Agent Performance Dashboard"
@@ -668,7 +676,7 @@ const Dashboard = () => {
                         <Stack spacing={3}>
 
                     {/* Key Metrics */}
-                    <Grid container spacing={gridSpacing}>
+                    <Grid container spacing={gridSpacing} justifyContent="center">
                         <Grid item xs={12} sm={6} md={3}>
                             <MetricCard
                                 title="Total Conversations"
@@ -708,7 +716,7 @@ const Dashboard = () => {
                     </Grid>
 
                     {/* Secondary Metrics */}
-                    <Grid container spacing={gridSpacing}>
+                    <Grid container spacing={gridSpacing} justifyContent="center">
                         <Grid item xs={12} sm={6} md={3}>
                             <MetricCard
                                 title="Active Agents"
@@ -748,7 +756,7 @@ const Dashboard = () => {
                     </Grid>
 
                     {/* Additional Metrics */}
-                    <Grid container spacing={gridSpacing}>
+                    <Grid container spacing={gridSpacing} justifyContent="center">
                         <Grid item xs={12} sm={6} md={3}>
                             <MetricCard
                                 title="Meetings Scheduled"
@@ -788,7 +796,7 @@ const Dashboard = () => {
                     </Grid>
 
                     {/* B2B Tire Sales Specific Metrics */}
-                    <Grid container spacing={gridSpacing}>
+                    <Grid container spacing={gridSpacing} justifyContent="center">
                         <Grid item xs={12} sm={6} md={3}>
                             <MetricCard
                                 title="Total Callbacks"
@@ -1239,6 +1247,7 @@ const Dashboard = () => {
         </Stack>
     )}
 </MainCard>
+</Box>
 )
 }
 

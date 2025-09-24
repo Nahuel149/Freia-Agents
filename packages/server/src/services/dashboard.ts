@@ -177,6 +177,25 @@ export class DashboardService {
             return acc
         }, { positive: 0, neutral: 0, negative: 0 })
 
+        const wordCounts = new Map<string, number>()
+        responseMetadataRows.forEach(row => {
+            const metadata = this.parseMetadata(row.metadata)
+            const topWords = metadata?.topWords
+            if (Array.isArray(topWords)) {
+                topWords.forEach((entry: any) => {
+                    const word = typeof entry?.word === 'string' ? entry.word.toLowerCase() : null
+                    if (!word || word.length < 2) return
+                    const countValue = this.normaliseNumber(entry?.count)
+                    const increment = typeof countValue === 'number' && Number.isFinite(countValue) ? countValue : 1
+                    wordCounts.set(word, (wordCounts.get(word) ?? 0) + increment)
+                })
+            }
+        })
+        const topMentionedWords = Array.from(wordCounts.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([word, count]) => ({ word, count }))
+
         const feedbackScores = feedbackMetadataRows
             .map(row => this.parseMetadata(row.metadata)?.score)
             .map(value => this.normaliseNumber(value))
@@ -236,6 +255,7 @@ export class DashboardService {
             totalRevenue,
             openToolAlerts,
             pendingPriceApprovals,
+            topMentionedWords,
             inventoryAlerts: lowStock.map(item => ({
                 productId: item.productId,
                 name: item.name,
