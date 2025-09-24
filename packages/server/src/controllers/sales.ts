@@ -480,7 +480,16 @@ const createSaleQuote = async (req: Request, res: Response, next: NextFunction) 
         
         const totalPrice = unitPrice * quantity
         
-        const response = { 
+        const response: {
+            product_sku: any;
+            quantity: any;
+            unit_price: number;
+            total_price: number;
+            analysis_info?: {
+                auto_detected: boolean;
+                analysis_notes: string;
+            };
+        } = { 
             product_sku: finalProductSku, 
             quantity, 
             unit_price: unitPrice, 

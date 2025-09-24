@@ -62,10 +62,26 @@ const insertNotificationFollowUp = async (payload: NotificationPayload) => {
         metadata = null
     } = payload
 
+    logger.info('insertNotificationFollowUp called with payload', { 
+        customerId, 
+        phoneNumber, 
+        saleId, 
+        followUpType 
+    })
+
     // Ensure scheduled_at is never null - use current timestamp if not provided
     const finalScheduledAt = scheduledAt || new Date().toISOString()
 
     const appServer = getRunningExpressApp()
+
+    logger.info('About to execute INSERT query', { 
+        customerId, 
+        phoneNumber, 
+        saleId, 
+        followUpType, 
+        finalScheduledAt, 
+        status 
+    })
 
     const result = await appServer.AppDataSource.query(
         `INSERT INTO follow_ups (
@@ -95,6 +111,8 @@ const insertNotificationFollowUp = async (payload: NotificationPayload) => {
             nextAction
         ]
     )
+
+    logger.info('INSERT query executed successfully', { insertedId: result[0]?.id })
 
     return result[0]
 }
@@ -183,6 +201,23 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
             }
         }
 
+        // Only include saleId if it exists in the sales table
+        let validSaleId = null
+        if (parsedSaleId) {
+            try {
+                const appServer = getRunningExpressApp()
+                const saleExists = await appServer.AppDataSource.query(
+                    'SELECT id FROM sales WHERE id = $1',
+                    [parsedSaleId]
+                )
+                if (saleExists && saleExists.length > 0) {
+                    validSaleId = parsedSaleId
+                }
+            } catch (error) {
+                logger.warn('Error checking sale existence', { saleId: parsedSaleId, error })
+            }
+        }
+
         const followUp = await insertNotificationFollowUp({
             customerId,
             phoneNumber: phone ?? 'internal',
@@ -190,13 +225,14 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
             status: approved ? 'completed' : 'pending',
             message: approved ? 'Solicitud de descuento aprobada' : 'Solicitud de descuento rechazada',
             nextAction: approved ? 'confirm_sale' : 'continue_negotiation',
-            saleId: parsedSaleId,
+            saleId: validSaleId,
             scheduledAt: validUntil ?? null,
             metadata: {
                 approved,
                 newPrice,
                 discountPercentage,
-                reason
+                reason,
+                originalApprovalRequestId: approvalRequestId
             }
         })
 
@@ -230,20 +266,56 @@ const notifyDeliveryImprovement = async (req: Request, res: Response, next: Next
         const { customerId, phone } = await resolveCustomerContext(clientId, phoneNumber)
         const parsedSaleId = deliveryRequestId && /^\d+$/.test(String(deliveryRequestId)) ? parseInt(deliveryRequestId) : null
 
+        // Validate that the sale exists before proceeding
+        let validSaleId = null
         if (parsedSaleId) {
             try {
                 const appServer = getRunningExpressApp()
-                const note = improved
-                    ? `Entrega mejorada a ${newDeliveryTime ?? originalDeliveryTime} días`
-                    : 'No se pudo mejorar el tiempo de entrega'
-                await appServer.AppDataSource.query(
-                    `UPDATE sales SET agent_notes = COALESCE(agent_notes, '') || $2, updated_at = NOW() WHERE id = $1`,
-                    [parsedSaleId, `\n${note}${additionalCost ? ` - Costo adicional: ${additionalCost}` : ''}`]
+                const saleExists = await appServer.AppDataSource.query(
+                    `SELECT id FROM sales WHERE id = $1`,
+                    [parsedSaleId]
                 )
+                
+                logger.info('Sale validation result', { 
+                    parsedSaleId, 
+                    saleExists: saleExists?.length || 0,
+                    foundSale: saleExists?.[0] || null 
+                })
+                
+                if (saleExists && saleExists.length > 0) {
+                    validSaleId = parsedSaleId
+                    logger.info('Sale exists, setting validSaleId', { validSaleId })
+                    const note = improved
+                        ? `Entrega mejorada a ${newDeliveryTime ?? originalDeliveryTime} días`
+                        : 'No se pudo mejorar el tiempo de entrega'
+                    await appServer.AppDataSource.query(
+                        `UPDATE sales SET agent_notes = COALESCE(agent_notes, '') || $2, updated_at = NOW() WHERE id = $1`,
+                        [parsedSaleId, `\n${note}${additionalCost ? ` - Costo adicional: ${additionalCost}` : ''}`]
+                    )
+                } else {
+                    validSaleId = null
+                    logger.warn('Sale ID does not exist, setting validSaleId to null', { 
+                        deliveryRequestId: parsedSaleId,
+                        validSaleId 
+                    })
+                }
             } catch (error) {
-                logger.warn('Unable to update sale with delivery notes', { deliveryRequestId, error })
+                validSaleId = null
+                logger.warn('Unable to update sale with delivery notes, setting validSaleId to null', { 
+                    deliveryRequestId, 
+                    error,
+                    validSaleId 
+                })
             }
+        } else {
+            logger.info('No parsedSaleId provided, validSaleId remains null', { parsedSaleId, validSaleId })
         }
+
+        logger.info('About to call insertNotificationFollowUp', { 
+            validSaleId, 
+            customerId, 
+            phoneNumber: phone ?? 'internal' 
+        })
 
         const followUp = await insertNotificationFollowUp({
             customerId,
@@ -254,7 +326,7 @@ const notifyDeliveryImprovement = async (req: Request, res: Response, next: Next
                 ? `Se mejoró la entrega a ${newDeliveryTime ?? originalDeliveryTime} días`
                 : 'Sin mejoras disponibles para la entrega',
             nextAction: improved ? 'confirm_delivery' : 'offer_alternative',
-            saleId: parsedSaleId,
+            saleId: validSaleId,
             metadata: {
                 improved,
                 newDeliveryTime,

@@ -233,7 +233,7 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/reserve" \
 
 ## 5. Avisar llegada de stock
 
-**⚠️ ENDPOINT CON PROBLEMAS CONOCIDOS**
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
 
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/notify" \
@@ -241,44 +241,49 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/inventory/notify" \
   -H "Content-Type: application/json" \
   -d '{
     "productId": "PIR-PZERO-2454518",
-    "clientId": "12345",
+    "clientId": "1",
     "phone_number": "+1234567890",
     "estimatedTime": "2024-01-15T10:00:00Z",
     "notifyChannel": "whatsapp"
   }'
 ```
 
-**⚠️ PROBLEMA CONOCIDO - Error 500:**
+**Respuesta exitosa:**
 ```json
 {
-  "statusCode": 500,
-  "success": false,
-  "message": "null value in column \"phone_number\" of relation \"follow_ups\" violates not-null constraint",
-  "stack": {}
+  "message": "Notification registered",
+  "followUp": {
+    "id": 48,
+    "customer_id": 1,
+    "phone_number": "+1234567890",
+    "sale_id": null,
+    "follow_up_type": "stock_available",
+    "scheduled_at": "2025-09-25T01:15:20.725Z",
+    "completed_at": null,
+    "status": "pending",
+    "attempt_number": 1,
+    "max_attempts": 3,
+    "message_sent": "Notificar disponibilidad de P Zero 245/45 R18",
+    "customer_response": null,
+    "next_action": "phone",
+    "created_at": "2025-09-24T01:15:20.725Z",
+    "updated_at": "2025-09-24T01:15:20.725Z"
+  }
 }
 ```
 
-**Detalles del problema:**
-- **Error**: `null value in column "phone_number" of relation "follow_ups" violates not-null constraint`
-- **Causa**: El endpoint no está procesando correctamente el campo `phone_number` del request body
-- **Estado**: Bug persistente - requiere investigación adicional del código del controlador
-- **Parámetros SQL observados**: `[null,null,"stock_available",null,"pending","Notificar disponibilidad de P Zero 245/45 R18","phone"]`
-- **Observaciones**: 
-  - Los valores `customer_id`, `phone_number` y `scheduled_at` llegan como `null` a la base de datos
-  - El debug logging agregado no aparece en los logs, sugiriendo problemas de recarga de código
-  - El servidor se reinició múltiples veces pero el problema persiste
-
-**Campos requeridos (según esquema DB):**
-- `productId`: ID del producto (string)
-- `phone_number`: Número de teléfono (VARCHAR(20) NOT NULL)
-- `scheduled_at`: Fecha programada (TIMESTAMP NOT NULL)
+**Campos requeridos:**
+- `productId`: ID del producto (string, ej: "PIR-PZERO-2454518")
+- `phone_number`: Número de teléfono del cliente (string, ej: "+1234567890")
 
 **Campos opcionales:**
-- `clientId`: ID del cliente
+- `clientId`: ID del cliente (string o number)
 - `customerId`: ID del cliente (alternativo)
-- `estimatedTime`: Tiempo estimado (se mapea a scheduled_at)
-- `notifyChannel`: Canal de notificación
-- `notificationType`: Tipo de notificación (default: "stock_available")
+- `estimatedTime`: Tiempo estimado de llegada (ISO 8601 string)
+- `notifyChannel`: Canal de notificación (string, ej: "whatsapp", "phone")
+- `notificationType`: Tipo de notificación (string, default: "stock_available")
+
+**Nota**: El endpoint registra notificaciones de disponibilidad de stock. El sistema programa automáticamente el seguimiento basándose en el `estimatedTime` proporcionado. Si se proporciona `clientId`, el sistema resuelve automáticamente la información del cliente. El `next_action` se establece según el `notifyChannel` especificado.
 
 ## 6. Actualizar inventario
 
@@ -717,28 +722,121 @@ curl -X POST "https://freia-agents.onrender.com/api/v1/sales/quote" \
 
 **Nota**: El endpoint busca el producto por su SKU en la tabla `product_inventory` y calcula el precio total basado en la cantidad solicitada. Con la nueva funcionalidad, también puede inferir el producto desde el contexto de la conversación.
 
-## 14. Solicitar aprobación de precio
+## 14. Notificar aprobación de precio
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/price-approval" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "saleId": 456,
-    "approverId": 321,
-    "discountPercent": 5
+    "approvalRequestId": "20",
+    "approved": true,
+    "clientId": "321",
+    "phoneNumber": "+5491123456789",
+    "newPrice": 95000,
+    "discountPercentage": 5,
+    "validUntil": "2025-12-31T23:59:59Z",
+    "reason": "Cliente frecuente"
   }'
 ```
 
+**Respuesta exitosa:**
+```json
+{
+  "message": "Price approval notification registered",
+  "followUp": {
+    "id": 40,
+    "customer_id": null,
+    "phone_number": "+5491123456789",
+    "sale_id": 20,
+    "follow_up_type": "price_approval",
+    "scheduled_at": "2025-12-31T23:59:59.000Z",
+    "completed_at": null,
+    "status": "completed",
+    "attempt_number": 1,
+    "max_attempts": 1,
+    "message_sent": "Solicitud de descuento aprobada",
+    "customer_response": "{\"approved\":true,\"newPrice\":95000,\"discountPercentage\":5,\"reason\":\"Cliente frecuente\"}",
+    "next_action": "confirm_sale",
+    "created_at": "2025-09-24T00:47:07.629Z",
+    "updated_at": "2025-09-24T00:47:07.629Z"
+  }
+}
+```
+
+**Campos requeridos:**
+- `approvalRequestId`: ID de la solicitud de aprobación (string)
+- `approved`: Si la solicitud fue aprobada o no (boolean)
+
+**Campos opcionales:**
+- `clientId`: ID del cliente (string)
+- `phoneNumber`: Teléfono del cliente (string)
+- `newPrice`: Nuevo precio aprobado (number)
+- `discountPercentage`: Porcentaje de descuento otorgado (number)
+- `validUntil`: Validez de la oferta en formato ISO 8601 (string)
+- `reason`: Razón de la decisión (string)
+
+**Nota**: El endpoint registra la notificación de aprobación/rechazo de precio, actualiza la venta correspondiente si el `approvalRequestId` es un ID de venta válido que existe en la base de datos, y crea un seguimiento en la tabla `follow_ups`. Si el `approvalRequestId` no corresponde a una venta existente, el seguimiento se creará sin referencia a una venta específica.
+
 ## 15. Mejorar entrega
+
+**✅ ENDPOINT FUNCIONANDO CORRECTAMENTE**
+
 ```bash
 curl -X POST "https://freia-agents.onrender.com/api/v1/notifications/delivery-improvement" \
   -H "Authorization: Bearer ${FREIA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "saleId": 456,
-    "newDeliveryDate": "2025-10-07"
+    "deliveryRequestId": "456",
+    "clientId": "123",
+    "phoneNumber": "+5491123456789",
+    "improved": true,
+    "newDeliveryTime": "3",
+    "originalDeliveryTime": "7",
+    "reason": "Disponibilidad de stock mejorada",
+    "additionalCost": 5000
   }'
 ```
+
+**Respuesta exitosa:**
+```json
+{
+  "message": "Delivery notification registered",
+  "followUp": {
+    "id": 42,
+    "customer_id": 123,
+    "phone_number": "+5491123456789",
+    "sale_id": 456,
+    "follow_up_type": "delivery_improvement",
+    "scheduled_at": "2025-01-24T18:30:45.123Z",
+    "completed_at": null,
+    "status": "completed",
+    "attempt_number": 1,
+    "max_attempts": 1,
+    "message_sent": "Se mejoró la entrega a 3 días",
+    "customer_response": null,
+    "next_action": "confirm_delivery",
+    "created_at": "2025-01-24T18:30:45.123Z",
+    "updated_at": "2025-01-24T18:30:45.123Z"
+  }
+}
+```
+
+**Campos requeridos:**
+- `deliveryRequestId`: ID de la solicitud de mejora de entrega (string o number)
+- `improved`: Si se mejoró el tiempo de entrega (boolean)
+- `originalDeliveryTime`: Tiempo original de entrega en días (string o number)
+
+**Campos opcionales:**
+- `clientId`: ID del cliente (string)
+- `phoneNumber`: Número de teléfono del cliente (string)
+- `newDeliveryTime`: Nuevo tiempo de entrega en días (string o number)
+- `reason`: Razón de la mejora o falta de mejora (string)
+- `additionalCost`: Costo adicional por entrega express (number)
+
+**Nota**: El endpoint registra notificaciones sobre mejoras en tiempos de entrega. Si `improved` es `true`, se considera que la entrega fue mejorada y se marca como completada. Si es `false`, queda pendiente para ofrecer alternativas. El sistema actualiza automáticamente las notas de la venta si el `deliveryRequestId` corresponde a una venta existente.
 
 ---
 ## Script de testing versátil (opcional)
@@ -790,3 +888,119 @@ node test-endpoints.js
 ```
 
 ¡Listo! Ahora todos los ejemplos están adaptados para Git Bash en Windows 11.
+
+---
+
+## Flujo Completo de Aprobación de Precios
+
+### Resumen del Flujo
+El sistema de aprobación de precios de Freia permite que el agente conversacional solicite descuentos especiales y notifique las decisiones de aprobación. Este flujo involucra dos endpoints principales:
+
+1. **Solicitud de Aprobación** (`/api/v1/sales/price-approval`) - El agente solicita aprobación para un descuento
+2. **Notificación de Decisión** (`/api/v1/notifications/price-approval`) - Se notifica la decisión de aprobación
+
+### Capacidades del Agente Conversacional
+
+#### Extracción de Información
+El agente (Lautaro) está configurado para extraer automáticamente la siguiente información durante conversaciones naturales:
+
+- **Información del Cliente**: Nombre, teléfono, email, tipo de cliente
+- **Detalles del Producto**: Marca, modelo, medida de neumáticos, cantidad
+- **Contexto de Negociación**: Razones para descuento, historial de compras, segmento del cliente
+- **Parámetros de Precio**: Precio original, descuento solicitado, precio final propuesto
+
+#### Herramientas Disponibles para el Agente
+
+**1. `request_price_approval`**
+- **Endpoint**: `POST /api/v1/sales/price-approval`
+- **Propósito**: Solicitar aprobación para descuentos especiales
+- **Campos Extraídos**:
+  - `quoteId`: ID de la cotización
+  - `clientId`: ID del cliente
+  - `requestedDiscount`: Porcentaje de descuento solicitado
+  - `reason`: Justificación del descuento
+  - `clientPhone`: Teléfono del cliente
+  - `estimatedResponseTime`: Tiempo estimado de respuesta
+  - `priority`: Prioridad de la solicitud
+
+**2. `Notify_Price_Approval`**
+- **Endpoint**: `POST /api/v1/notifications/price-approval`
+- **Propósito**: Notificar decisión de aprobación al sistema
+- **Campos Procesados**:
+  - `approvalRequestId`: ID de la solicitud de aprobación
+  - `approved`: Decisión (true/false)
+  - `clientId`: ID del cliente
+  - `phoneNumber`: Teléfono del cliente
+  - `newPrice`: Nuevo precio aprobado
+  - `discountPercentage`: Porcentaje de descuento aplicado
+  - `validUntil`: Fecha de vencimiento de la oferta
+  - `reason`: Razón de la decisión
+
+### Estrategia de Precios Dinámicos
+
+El agente utiliza un sistema inteligente de cálculo de precios que considera:
+
+#### Descuentos por Volumen
+- **10+ unidades**: 5% de descuento automático
+- **20+ unidades**: 8% de descuento automático
+
+#### Descuentos por Lealtad del Cliente
+- **Cliente VIP**: 10% de descuento adicional
+- **Cliente Regular**: 5% de descuento adicional
+
+#### Descuentos por Liquidación de Stock
+- **Stock > 100 unidades**: 3% de descuento adicional
+
+#### Límites de Aprobación
+- **Hasta 15%**: Aprobación automática del agente
+- **Más de 15%**: Requiere aprobación manual (usa `request_price_approval`)
+
+### Flujo de Conversación Típico
+
+1. **Cliente expresa interés** en un producto
+2. **Agente extrae información** del vehículo y necesidades
+3. **Sistema calcula precio** con descuentos automáticos
+4. **Si descuento > 15%**: Agente usa `request_price_approval`
+5. **Supervisor revisa** y toma decisión
+6. **Sistema notifica** usando `Notify_Price_Approval`
+7. **Agente informa** al cliente la decisión final
+
+### Estado Actual del Sistema
+
+#### Funcionalidades Implementadas ✅
+- **Endpoint de notificación** (`/api/v1/notifications/price-approval`) - Completamente funcional
+- **Extracción de información** del agente - Configurada en V2CHATFLOW.json
+- **Cálculo de precios dinámicos** - Implementado en sales-agent.js
+- **Validación de datos** - Backend procesa todos los campos requeridos
+
+#### Funcionalidades Pendientes ⚠️
+- **Endpoint de solicitud** (`/api/v1/sales/price-approval`) - Actualmente es un stub
+- **Tabla price_approval_requests** - No existe en la base de datos
+- **Flujo de aprobación interno** - Requiere implementación completa
+
+### Recomendaciones para Implementación Completa
+
+1. **Crear tabla `price_approval_requests`** en PostgreSQL
+2. **Implementar lógica completa** en `/api/v1/sales/price-approval`
+3. **Agregar sistema de notificaciones** para supervisores
+4. **Implementar dashboard** para gestión de aprobaciones
+5. **Configurar reglas de negocio** personalizables por producto/cliente
+
+### Ejemplo de Conversación Exitosa
+
+```
+Cliente: "Hola, necesito 4 neumáticos 205/55R16 para mi Corolla"
+Agente: "Perfecto, tengo excelentes opciones. ¿Cuál es su nombre y teléfono?"
+Cliente: "Juan Pérez, +5491123456789"
+Agente: "Gracias Juan. Para 4 neumáticos Bridgestone 205/55R16, el precio es $95,000"
+Cliente: "¿No hay descuento? Soy cliente hace 3 años"
+Agente: "Como cliente regular, puedo ofrecerle 5% de descuento. ¿Le parece bien $90,250?"
+Cliente: "¿Y si compro 8 neumáticos?"
+Agente: "Excelente! Por volumen (8 unidades) + cliente regular = 10% descuento total: $85,500"
+```
+
+En este ejemplo, el agente:
+- ✅ Extrajo información del cliente (nombre, teléfono)
+- ✅ Identificó el producto específico (205/55R16)
+- ✅ Aplicó descuentos automáticos (cliente regular + volumen)
+- ✅ Mantuvo el descuento dentro del límite del 15%
