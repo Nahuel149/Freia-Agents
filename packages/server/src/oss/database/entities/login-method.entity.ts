@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 /**
  * Minimal LoginMethod entity stub for open-source mode.
@@ -13,21 +13,27 @@ export class LoginMethod {
     @PrimaryGeneratedColumn('uuid')
     id!: string
 
-    @Column({ type: 'text' })
-    organizationId!: string
+    @Column({ type: 'uuid', nullable: true })
+    organizationId!: string | null
 
     @Column({ type: 'text' })
     name!: string
 
-    @Column({ type: 'json', nullable: true })
-    config?: Record<string, any> | null
+    @Column({ type: 'text' })
+    config!: string
 
     @Column({ type: 'enum', enum: LoginMethodStatus, default: LoginMethodStatus.DISABLE })
     status!: LoginMethodStatus
 
-    @UpdateDateColumn()
+    @CreateDateColumn()
     createdDate!: Date
 
     @UpdateDateColumn()
     updatedDate!: Date
+
+    @Column({ type: 'uuid', nullable: true })
+    createdBy?: string | null
+
+    @Column({ type: 'uuid', nullable: true })
+    updatedBy?: string | null
 }

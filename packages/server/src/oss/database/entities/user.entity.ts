@@ -19,6 +19,9 @@ export class User {
     @Column({ type: 'text', nullable: true })
     credential?: string | null
 
+    @Column({ name: 'user_type', type: 'varchar', length: 50, nullable: true })
+    userType?: string | null
+
     // Optional personal workspace reference (nullable in OSS)
     @Column({ type: 'uuid', nullable: true })
     activeWorkspaceId?: string | null

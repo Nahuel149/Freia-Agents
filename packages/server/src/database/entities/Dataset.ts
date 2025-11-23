@@ -19,6 +19,6 @@ export class Dataset implements IDataset {
     @UpdateDateColumn()
     updatedDate: Date
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: true, type: 'uuid' })
     workspaceId?: string
 }

@@ -1,0 +1,645 @@
+{
+  "name": "DEMO Hoteles - Agente Monolítico (A–F)",
+  "description": "Un solo Agentflow V2 con router de intentos y subflujos inline para reservas, cambios, cancelaciones, pre-estadia, durante estadía y backoffice. Reemplaza placeholders de credenciales y DocStore IDs.",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "Start",
+      "label": "Start",
+      "data": {
+        "inputType": "chat",
+        "ephemeralMemory": false,
+        "flowState": {
+          "hotel": "Gran Sol",
+          "sede": "",
+          "intent": "",
+          "reservaId": "",
+          "idioma": "es",
+          "checkIn": "",
+          "checkOut": "",
+          "noches": 0,
+          "huespedes": 0,
+          "habitacionTipo": "",
+          "tarifaTipo": "",
+          "precio": "",
+          "moneda": "USD",
+          "penalidad": "",
+          "penalidadTipo": "",
+          "solicitudTipo": "",
+          "detalleSolicitud": "",
+          "prioridad": "media",
+          "nuevaFechaCheckout": "",
+          "accion": "",
+          "minNoches": 0,
+          "feriadoFlag": false
+        }
+      },
+      "position": [0, 0]
+    },
+    {
+      "id": "memory",
+      "type": "MongoDBAtlasChatMemory",
+      "label": "Memory MongoDB",
+      "data": {
+        "credential": "{{MONGO_CREDENTIAL_ID}}",
+        "databaseName": "freia_demo",
+        "collectionName": "chat_memory_hoteles",
+        "sessionId": "{{ $flow.chatId }}",
+        "memoryKey": "history"
+      },
+      "position": [0, 140]
+    },
+    {
+      "id": "llm_intent",
+      "type": "LLM",
+      "label": "LLM Intent",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Clasifica la intención del usuario en una de: reservas, cambios, cancelaciones, pre, durante, backoffice. Devuelve SOLO JSON {intent, notas}."
+          },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": { "intent": { "type": "string" }, "notas": { "type": "string" } }
+        },
+        "updateFlowState": { "intent": "{{ json.intent }}" }
+      },
+      "position": [240, 0]
+    },
+    {
+      "id": "switch",
+      "type": "ConditionAgent",
+      "label": "Router IA",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "instructions": "Elige el escenario más adecuado: reservas, cambios, cancelaciones, pre, durante, backoffice.",
+        "input": "{{ $flow.input }}",
+        "scenarios": ["reservas", "cambios", "cancelaciones", "pre", "durante", "backoffice"]
+      },
+      "position": [500, 0]
+    },
+
+    
+    {
+      "id": "a_llm_norm",
+      "type": "LLM",
+      "label": "A - Normalizar",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Eres asistente de reservas. Devuelve SOLO JSON con sede, checkIn, checkOut, noches, huespedes, habitacionTipo, email, nombre, preferencias, needsClarification, missingFields."
+          },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "sede": { "type": "string" },
+            "checkIn": { "type": "string" },
+            "checkOut": { "type": "string" },
+            "noches": { "type": "number" },
+            "huespedes": { "type": "number" },
+            "habitacionTipo": { "type": "string" },
+            "email": { "type": "string" },
+            "nombre": { "type": "string" },
+            "preferencias": { "type": "string" },
+            "needsClarification": { "type": "boolean" },
+            "missingFields": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "updateFlowState": {
+          "sede": "{{ json.sede }}",
+          "checkIn": "{{ json.checkIn }}",
+          "checkOut": "{{ json.checkOut }}",
+          "noches": "{{ json.noches }}",
+          "huespedes": "{{ json.huespedes }}",
+          "habitacionTipo": "{{ json.habitacionTipo }}",
+          "email": "{{ json.email }}",
+          "nombre": "{{ json.nombre }}",
+          "preferencias": "{{ json.preferencias }}",
+          "needsClarification": "{{ json.needsClarification }}",
+          "missingFields": "{{ json.missingFields }}"
+        }
+      },
+      "position": [760, -180]
+    },
+    {
+      "id": "a_cond_missing",
+      "type": "Condition",
+      "label": "A - faltan datos?",
+      "data": {
+        "conditions": [
+          { "type": "Boolean", "value1": "{{ $flow.state.needsClarification }}", "operation": "equal", "value2": true }
+        ]
+      },
+      "position": [1000, -180]
+    },
+    {
+      "id": "a_reply_missing",
+      "type": "DirectReply",
+      "label": "A - pedir datos",
+      "data": { "message": "Faltan: {{ $flow.state.missingFields }}. Por favor sede, fechas, huéspedes y tipo de habitación." },
+      "position": [1240, -220]
+    },
+    {
+      "id": "a_custom_noches",
+      "type": "CustomFunction",
+      "label": "A - noches",
+      "data": {
+        "inputVariables": [
+          { "name": "checkIn", "value": "{{ $flow.state.checkIn }}" },
+          { "name": "checkOut", "value": "{{ $flow.state.checkOut }}" }
+        ],
+        "code": "const s=new Date($checkIn);\nconst e=new Date($checkOut);\nif(isNaN(s)||isNaN(e)||e<=s){return JSON.stringify({noches:0,minNoches:0,feriado:false});}\nconst noches=Math.max(1,Math.round((e-s)/(1000*60*60*24)));\nconst feriadoInicio=new Date('2024-08-09');\nconst feriadoFin=new Date('2024-08-12');\nconst feriado = s<=feriadoFin && e>=feriadoInicio;\nconst minNoches = feriado ? 3 : 1;\nreturn JSON.stringify({noches,minNoches,feriado});",
+        "updateFlowState": { "noches": "{{ functionOutput.noches }}", "minNoches": "{{ functionOutput.minNoches }}", "feriadoFlag": "{{ functionOutput.feriado }}" }
+      },
+      "position": [1240, -140]
+    },
+    {
+      "id": "a_ret_reglas",
+      "type": "Retriever",
+      "label": "A - Reglas",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_REGLAS_ID}}",
+        "query": "{{ $flow.state.checkIn }} reglas minimas noches cancelacion cambios early late {{ $flow.state.sede }}",
+        "outputFormat": "text"
+      },
+      "position": [1480, -200]
+    },
+    {
+      "id": "a_ret_inv",
+      "type": "Retriever",
+      "label": "A - Inventario",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_INV_ID}}",
+        "query": "{{ $flow.state.sede }} {{ $flow.state.habitacionTipo }} tarifa base capacidad amenities",
+        "outputFormat": "text"
+      },
+      "position": [1480, -160]
+    },
+    {
+      "id": "a_ret_disp",
+      "type": "Retriever",
+      "label": "A - Disponibilidad",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_DISP_ID}}",
+        "query": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos",
+        "outputFormat": "text"
+      },
+      "position": [1480, -120]
+    },
+    {
+      "id": "a_llm_tarifa",
+      "type": "LLM",
+      "label": "A - Tarifa",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Usa tarifa base del inventario, reglas comerciales y disponibilidad. Si encuentras tarifa base en el texto de inventario, úsala; si no, informa 'estimado'. Devuelve JSON { precioNoche, precioTotal, moneda, tarifaTipo, politica, notas }." },
+          { "role": "user", "content": "{{ a_ret_inv.output }} {{ a_ret_reglas.output }} {{ a_ret_disp.output }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "precioNoche": { "type": "number" },
+            "precioTotal": { "type": "number" },
+            "moneda": { "type": "string" },
+            "tarifaTipo": { "type": "string" },
+            "politica": { "type": "string" },
+            "notas": { "type": "string" }
+          }
+        },
+        "updateFlowState": { "precio": "{{ json }}", "moneda": "{{ json.moneda }}", "tarifaTipo": "{{ json.tarifaTipo }}" }
+      },
+      "position": [1720, -160]
+    },
+    {
+      "id": "a_human_confirm",
+      "type": "HumanInput",
+      "label": "A - Confirmar",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Reserva: {{ $flow.state.sede }} | {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} ({{ $flow.state.noches }} noches)\nHab: {{ $flow.state.habitacionTipo }}\nTotal: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}\nPolítica: {{ $flow.state.precio.politica }}\n¿Confirmas?"
+      },
+      "position": [1960, -160]
+    },
+    {
+      "id": "a_custom_reserva",
+      "type": "CustomFunction",
+      "label": "A - Generar reserva",
+      "data": {
+        "inputVariables": [],
+        "code": "const id=`GRS-${Date.now()}`;return JSON.stringify({id,status:'ok'});",
+        "updateFlowState": { "reservaId": "{{ functionOutput.id }}", "reserva": "{{ functionOutput }}" }
+      },
+      "position": [2200, -160]
+    },
+    {
+      "id": "a_reply_final",
+      "type": "DirectReply",
+      "label": "A - Reply",
+      "data": { "message": "Reserva confirmada: {{ $flow.state.reservaId }} | {{ $flow.state.sede }} | {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} | {{ $flow.state.habitacionTipo }} | Total {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}. ¿Añadimos traslado o spa?" },
+      "position": [2440, -160]
+    },
+
+    
+    {
+      "id": "b_llm_ident",
+      "type": "LLM",
+      "label": "B - Identificar cambio",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Detecta cambio: fechas | habitacion | huespedes | early_checkin. Devuelve JSON { reservaId, cambioTipo, nuevasFechas:{checkIn,checkOut}, nuevoHabitacionTipo, nuevoHuespedes }." },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "reservaId": { "type": "string" },
+            "cambioTipo": { "type": "string" },
+            "nuevasFechas": { "type": "object", "properties": { "checkIn": { "type": "string" }, "checkOut": { "type": "string" } } },
+            "nuevoHabitacionTipo": { "type": "string" },
+            "nuevoHuespedes": { "type": "number" }
+          }
+        },
+        "updateFlowState": {
+          "reservaId": "{{ json.reservaId }}",
+          "cambioTipo": "{{ json.cambioTipo }}",
+          "checkIn": "{{ json.nuevasFechas.checkIn }}",
+          "checkOut": "{{ json.nuevasFechas.checkOut }}",
+          "habitacionTipo": "{{ json.nuevoHabitacionTipo }}",
+          "huespedes": "{{ json.nuevoHuespedes }}"
+        }
+      },
+      "position": [760, 120]
+    },
+    {
+      "id": "b_ret_reserva",
+      "type": "Retriever",
+      "label": "B - Reserva actual",
+      "data": { "documentStoreId": "{{DOCSTORE_RESERVAS_ID}}", "query": "{{ $flow.state.reservaId }}", "outputFormat": "text" },
+      "position": [1000, 120]
+    },
+    {
+      "id": "b_ret_disp",
+      "type": "Retriever",
+      "label": "B - Disponibilidad",
+      "data": { "documentStoreId": "{{DOCSTORE_DISP_ID}}", "query": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos", "outputFormat": "text" },
+      "position": [1240, 120]
+    },
+    {
+      "id": "b_llm_tarifa",
+      "type": "LLM",
+      "label": "B - Tarifa",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Recalcula tarifa con penalidad si aplica. Devuelve JSON { precioNoche, precioTotal, moneda, tarifaTipo, politica, notas }." },
+          { "role": "user", "content": "{{ b_ret_disp.output }} {{ b_ret_reserva.output }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "precioNoche": { "type": "number" },
+            "precioTotal": { "type": "number" },
+            "moneda": { "type": "string" },
+            "tarifaTipo": { "type": "string" },
+            "politica": { "type": "string" },
+            "notas": { "type": "string" }
+          }
+        },
+        "updateFlowState": { "precio": "{{ json }}", "moneda": "{{ json.moneda }}", "tarifaTipo": "{{ json.tarifaTipo }}" }
+      },
+      "position": [1480, 120]
+    },
+    {
+      "id": "b_human",
+      "type": "HumanInput",
+      "label": "B - Confirmar",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Cambio {{ $flow.state.cambioTipo }}\nFechas: {{ $flow.state.checkIn }} -> {{ $flow.state.checkOut }}\nHab: {{ $flow.state.habitacionTipo }}\nTotal nuevo: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}\n¿Confirmas?"
+      },
+      "position": [1720, 120]
+    },
+    {
+      "id": "b_reply",
+      "type": "DirectReply",
+      "label": "B - Reply",
+      "data": { "message": "Cambio aplicado para {{ $flow.state.reservaId }}. Total: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}." },
+      "position": [1960, 120]
+    },
+
+    
+    {
+      "id": "c_llm",
+      "type": "LLM",
+      "label": "C - Cancelación",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Extrae reservaId y motivoCancel. Devuelve JSON {reservaId, motivoCancel}." },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": { "type": "object", "properties": { "reservaId": { "type": "string" }, "motivoCancel": { "type": "string" } } },
+        "updateFlowState": { "reservaId": "{{ json.reservaId }}", "motivoCancel": "{{ json.motivoCancel }}" }
+      },
+      "position": [760, 340]
+    },
+    {
+      "id": "c_ret_reserva",
+      "type": "Retriever",
+      "label": "C - Reserva",
+      "data": { "documentStoreId": "{{DOCSTORE_RESERVAS_ID}}", "query": "{{ $flow.state.reservaId }}", "outputFormat": "text" },
+      "position": [1000, 340]
+    },
+    {
+      "id": "c_custom_penalidad",
+      "type": "CustomFunction",
+      "label": "C - Penalidad",
+      "data": {
+        "inputVariables": [],
+        "code": "const hoy=new Date();\nconst ci=new Date($flow.state.checkIn||Date.now());\nconst dias=Math.ceil((ci-hoy)/(1000*60*60*24));\nconst tarifa=$flow.state.tarifaTipo||'refundable';\nlet penalidad=0;let tipo='porcentaje';\nif(tarifa==='no_reembolsable'){penalidad=100;} else {penalidad = dias<=3 ? 50 : 0;}\nreturn JSON.stringify({penalidad,penalidadTipo:tipo,dias});",
+        "updateFlowState": { "penalidad": "{{ functionOutput.penalidad }}", "penalidadTipo": "{{ functionOutput.penalidadTipo }}" }
+      },
+      "position": [1240, 340]
+    },
+    {
+      "id": "c_human",
+      "type": "HumanInput",
+      "label": "C - Confirmar",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Cancelación {{ $flow.state.reservaId }}.\nPenalidad: {{ $flow.state.penalidad }} ({{ $flow.state.penalidadTipo }}).\n¿Confirmas?",
+        "feedback": true
+      },
+      "position": [1480, 340]
+    },
+    {
+      "id": "c_reply",
+      "type": "DirectReply",
+      "label": "C - Reply",
+      "data": { "message": "Reserva {{ $flow.state.reservaId }} cancelada. Penalidad: {{ $flow.state.penalidad }}. ¿Reprogramamos otra fecha?" },
+      "position": [1720, 340]
+    },
+
+    
+    {
+      "id": "d_llm",
+      "type": "LLM",
+      "label": "D - Clasificar pre",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Mapea a solicitudTipo: early_checkin | late_checkout | traslado | amenities | spa | cuna | estacionamiento | info | recomendaciones. Devuelve JSON {solicitudTipo, detalleSolicitud}." },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": { "type": "object", "properties": { "solicitudTipo": { "type": "string" }, "detalleSolicitud": { "type": "string" } } },
+        "updateFlowState": { "solicitudTipo": "{{ json.solicitudTipo }}", "detalleSolicitud": "{{ json.detalleSolicitud }}" }
+      },
+      "position": [760, 520]
+    },
+    {
+      "id": "d_ret_reglas",
+      "type": "Retriever",
+      "label": "D - Reglas",
+      "data": { "documentStoreId": "{{DOCSTORE_REGLAS_ID}}", "query": "{{ $flow.state.solicitudTipo }} early late {{ $flow.state.sede }}", "outputFormat": "text" },
+      "position": [1000, 480]
+    },
+    {
+      "id": "d_ret_faq",
+      "type": "Retriever",
+      "label": "D - FAQ",
+      "data": { "documentStoreId": "{{DOCSTORE_FAQ_ID}}", "query": "horarios {{ $flow.state.solicitudTipo }} {{ $flow.state.sede }}", "outputFormat": "text" },
+      "position": [1000, 560]
+    },
+    {
+      "id": "d_human",
+      "type": "HumanInput",
+      "label": "D - Confirmar",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Solicitud: {{ $flow.state.solicitudTipo }}\nDetalle: {{ $flow.state.detalleSolicitud }}\nInfo: {{ d_ret_reglas.output }} {{ d_ret_faq.output }}\n¿Confirmas?"
+      },
+      "position": [1240, 520]
+    },
+    {
+      "id": "d_reply",
+      "type": "DirectReply",
+      "label": "D - Reply",
+      "data": { "message": "Solicitud {{ $flow.state.solicitudTipo }} registrada. Te confirmaremos disponibilidad. ¿Algo más antes de tu llegada?" },
+      "position": [1480, 520]
+    },
+
+    
+    {
+      "id": "e_llm",
+      "type": "LLM",
+      "label": "E - Clasificar durante",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Mapea a solicitudTipo: toallas | limpieza | amenities | room_service | recepcion | incidente | extender_estadia | info_servicio. Si incidente, asigna prioridad (alta/media/baja). Si extender_estadia, extrae nuevaFechaCheckout. Devuelve JSON {solicitudTipo, detalleSolicitud, prioridad, nuevaFechaCheckout}." },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "solicitudTipo": { "type": "string" },
+            "detalleSolicitud": { "type": "string" },
+            "prioridad": { "type": "string" },
+            "nuevaFechaCheckout": { "type": "string" }
+          }
+        },
+        "updateFlowState": { "solicitudTipo": "{{ json.solicitudTipo }}", "detalleSolicitud": "{{ json.detalleSolicitud }}", "prioridad": "{{ json.prioridad }}", "nuevaFechaCheckout": "{{ json.nuevaFechaCheckout }}" }
+      },
+      "position": [760, 700]
+    },
+    {
+      "id": "e_ret_faq",
+      "type": "Retriever",
+      "label": "E - FAQ",
+      "data": { "documentStoreId": "{{DOCSTORE_FAQ_ID}}", "query": "servicios horarios {{ $flow.state.solicitudTipo }}", "outputFormat": "text" },
+      "position": [1000, 660]
+    },
+    {
+      "id": "e_ret_disp",
+      "type": "Retriever",
+      "label": "E - Disp extensión",
+      "data": { "documentStoreId": "{{DOCSTORE_DISP_ID}}", "query": "{{ $flow.state.sede }} {{ $flow.state.nuevaFechaCheckout }} disponibilidad", "outputFormat": "text" },
+      "position": [1000, 740]
+    },
+    {
+      "id": "e_llm_tarifa",
+      "type": "LLM",
+      "label": "E - Tarifa extensión",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Calcula tarifa de noches extra. Devuelve JSON { precioNoche, precioTotal, moneda, politica }." },
+          { "role": "user", "content": "{{ e_ret_disp.output }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "precioNoche": { "type": "number" },
+            "precioTotal": { "type": "number" },
+            "moneda": { "type": "string" },
+            "politica": { "type": "string" }
+          }
+        },
+        "updateFlowState": { "precio": "{{ json }}" }
+      },
+      "position": [1240, 740]
+    },
+    {
+      "id": "e_human",
+      "type": "HumanInput",
+      "label": "E - Confirmar",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Solicitud: {{ $flow.state.solicitudTipo }}\nDetalle: {{ $flow.state.detalleSolicitud }}\nTarifa extra: {{ $flow.state.precio.precioTotal || 'N/A' }} {{ $flow.state.precio.moneda || '' }}\n¿Confirmas?"
+      },
+      "position": [1480, 700]
+    },
+    {
+      "id": "e_reply",
+      "type": "DirectReply",
+      "label": "E - Reply",
+      "data": { "message": "Solicitud {{ $flow.state.solicitudTipo }} registrada. Prioridad: {{ $flow.state.prioridad }}. {{ $flow.state.precio ? `Tarifa extra: ${$flow.state.precio.precioTotal} ${$flow.state.precio.moneda}` : '' }}" },
+      "position": [1720, 700]
+    },
+
+    
+    {
+      "id": "f_llm",
+      "type": "LLM",
+      "label": "F - Backoffice",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Clasifica intención: lead | notificar | reporte. Devuelve JSON {accion, nombre, contacto, interes, motivo, area, prioridad, reporteTipo}." },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "accion": { "type": "string" },
+            "reporteTipo": { "type": "string" }
+          }
+        },
+        "updateFlowState": { "accion": "{{ json.accion }}", "reporteTipo": "{{ json.reporteTipo }}" }
+      },
+      "position": [760, 900]
+    },
+    {
+      "id": "f_ret_reporte",
+      "type": "Retriever",
+      "label": "F - Reporte",
+      "data": { "documentStoreId": "{{DOCSTORE_REPORTE_ID}}", "query": "{{ $flow.state.reporteTipo }} ocupacion cancelaciones upsell", "outputFormat": "text" },
+      "position": [1000, 900]
+    },
+    {
+      "id": "f_llm_resumen",
+      "type": "LLM",
+      "label": "F - Resumen",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Resume en bullets y destaca 1 cifra clave." },
+          { "role": "user", "content": "{{ f_ret_reporte.output }}" }
+        ]
+      },
+      "position": [1240, 900]
+    },
+    {
+      "id": "f_reply",
+      "type": "DirectReply",
+      "label": "F - Reply",
+      "data": { "message": "Backoffice {{ $flow.state.accion }}: {{ f_llm_resumen.output || 'registrado' }}", "return": "assistant" },
+      "position": [1480, 900]
+    }
+  ],
+  "edges": [
+    { "source": "start", "sourceHandle": "output", "target": "llm_intent", "targetHandle": "input" },
+    { "source": "memory", "sourceHandle": "output", "target": "llm_intent", "targetHandle": "memory" },
+    { "source": "llm_intent", "sourceHandle": "output", "target": "switch", "targetHandle": "input" },
+
+    { "source": "switch", "sourceHandle": "reservas", "target": "a_llm_norm", "targetHandle": "input" },
+    { "source": "a_llm_norm", "sourceHandle": "output", "target": "a_cond_missing", "targetHandle": "input" },
+    { "source": "a_cond_missing", "sourceHandle": "true", "target": "a_reply_missing", "targetHandle": "input" },
+    { "source": "a_cond_missing", "sourceHandle": "false", "target": "a_custom_noches", "targetHandle": "input" },
+    { "source": "a_custom_noches", "sourceHandle": "output", "target": "a_ret_reglas", "targetHandle": "input" },
+    { "source": "a_custom_noches", "sourceHandle": "output", "target": "a_ret_inv", "targetHandle": "input" },
+    { "source": "a_custom_noches", "sourceHandle": "output", "target": "a_ret_disp", "targetHandle": "input" },
+    { "source": "a_ret_reglas", "sourceHandle": "output", "target": "a_llm_tarifa", "targetHandle": "input" },
+    { "source": "a_ret_inv", "sourceHandle": "output", "target": "a_llm_tarifa", "targetHandle": "input" },
+    { "source": "a_ret_disp", "sourceHandle": "output", "target": "a_llm_tarifa", "targetHandle": "input" },
+    { "source": "a_llm_tarifa", "sourceHandle": "output", "target": "a_human_confirm", "targetHandle": "input" },
+    { "source": "a_human_confirm", "sourceHandle": "proceed", "target": "a_custom_reserva", "targetHandle": "input" },
+    { "source": "a_custom_reserva", "sourceHandle": "output", "target": "a_reply_final", "targetHandle": "input" },
+
+    { "source": "switch", "sourceHandle": "cambios", "target": "b_llm_ident", "targetHandle": "input" },
+    { "source": "b_llm_ident", "sourceHandle": "output", "target": "b_ret_reserva", "targetHandle": "input" },
+    { "source": "b_llm_ident", "sourceHandle": "output", "target": "b_ret_disp", "targetHandle": "input" },
+    { "source": "b_ret_disp", "sourceHandle": "output", "target": "b_llm_tarifa", "targetHandle": "input" },
+    { "source": "b_llm_tarifa", "sourceHandle": "output", "target": "b_human", "targetHandle": "input" },
+    { "source": "b_human", "sourceHandle": "proceed", "target": "b_reply", "targetHandle": "input" },
+
+    { "source": "switch", "sourceHandle": "cancelaciones", "target": "c_llm", "targetHandle": "input" },
+    { "source": "c_llm", "sourceHandle": "output", "target": "c_ret_reserva", "targetHandle": "input" },
+    { "source": "c_ret_reserva", "sourceHandle": "output", "target": "c_custom_penalidad", "targetHandle": "input" },
+    { "source": "c_custom_penalidad", "sourceHandle": "output", "target": "c_human", "targetHandle": "input" },
+    { "source": "c_human", "sourceHandle": "proceed", "target": "c_reply", "targetHandle": "input" },
+
+    { "source": "switch", "sourceHandle": "pre", "target": "d_llm", "targetHandle": "input" },
+    { "source": "d_llm", "sourceHandle": "output", "target": "d_ret_reglas", "targetHandle": "input" },
+    { "source": "d_llm", "sourceHandle": "output", "target": "d_ret_faq", "targetHandle": "input" },
+    { "source": "d_ret_reglas", "sourceHandle": "output", "target": "d_human", "targetHandle": "input" },
+    { "source": "d_ret_faq", "sourceHandle": "output", "target": "d_human", "targetHandle": "input" },
+    { "source": "d_human", "sourceHandle": "proceed", "target": "d_reply", "targetHandle": "input" },
+
+    { "source": "switch", "sourceHandle": "durante", "target": "e_llm", "targetHandle": "input" },
+    { "source": "e_llm", "sourceHandle": "output", "target": "e_ret_faq", "targetHandle": "input" },
+    { "source": "e_llm", "sourceHandle": "output", "target": "e_ret_disp", "targetHandle": "input" },
+    { "source": "e_ret_disp", "sourceHandle": "output", "target": "e_llm_tarifa", "targetHandle": "input" },
+    { "source": "e_llm_tarifa", "sourceHandle": "output", "target": "e_human", "targetHandle": "input" },
+    { "source": "e_ret_faq", "sourceHandle": "output", "target": "e_human", "targetHandle": "input" },
+    { "source": "e_human", "sourceHandle": "proceed", "target": "e_reply", "targetHandle": "input" },
+
+    { "source": "switch", "sourceHandle": "backoffice", "target": "f_llm", "targetHandle": "input" },
+    { "source": "f_llm", "sourceHandle": "output", "target": "f_ret_reporte", "targetHandle": "input" },
+    { "source": "f_ret_reporte", "sourceHandle": "output", "target": "f_llm_resumen", "targetHandle": "input" },
+    { "source": "f_llm_resumen", "sourceHandle": "output", "target": "f_reply", "targetHandle": "input" }
+  ],
+  "placeholders": {
+    "LLM_CREDENTIAL_ID": "tu_llm_cred",
+    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+    "DOCSTORE_REGLAS_ID": "docstore_reglas_id",
+    "DOCSTORE_DISP_ID": "docstore_disp_id",
+    "DOCSTORE_RESERVAS_ID": "docstore_reservas_id",
+    "DOCSTORE_FAQ_ID": "docstore_faq_id",
+    "DOCSTORE_REPORTE_ID": "docstore_reporte_id",
+    "DOCSTORE_INV_ID": "docstore_inventario_id"
+  },
+  "notes": "Router IA envía a subflujos inline. Completa los placeholders con credenciales y IDs de Document Stores. Ajusta prompts y penalidades si necesitas más precisión."
+}

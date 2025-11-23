@@ -6,7 +6,7 @@ const initialState = {
     user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
     isAuthenticated: 'true' === localStorage.getItem('isAuthenticated'),
     isGlobal: 'true' === localStorage.getItem('isGlobal'),
-    token: null,
+    token: localStorage.getItem('token'),
     permissions:
         localStorage.getItem('permissions') && localStorage.getItem('permissions') !== 'undefined'
             ? JSON.parse(localStorage.getItem('permissions'))

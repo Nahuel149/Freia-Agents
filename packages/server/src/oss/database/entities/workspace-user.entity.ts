@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm'
 import { Workspace } from './workspace.entity'
 
 /**
@@ -12,29 +12,32 @@ export enum WorkspaceUserStatus {
 
 @Entity('workspace_user')
 export class WorkspaceUser {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string
-
-    @Column({ type: 'text', nullable: true })
-    workspaceId?: string | null
+    @PrimaryColumn({ type: 'uuid' })
+    workspaceId!: string
 
     // Relation to Workspace (optional in OSS mode)
     @ManyToOne(() => Workspace, (workspace) => workspace.id, { eager: true, onDelete: 'CASCADE', nullable: true })
     @JoinColumn({ name: 'workspaceId' })
     workspace?: Workspace | null
 
-    @Column({ type: 'text' })
+    @PrimaryColumn({ type: 'uuid' })
     userId!: string
 
-    @Column({ type: 'text', nullable: true })
+    @Column({ type: 'uuid', nullable: true })
     roleId?: string | null
 
     @Column({ type: 'enum', enum: WorkspaceUserStatus, default: WorkspaceUserStatus.INVITED })
     status!: WorkspaceUserStatus
 
-    @UpdateDateColumn()
+    @CreateDateColumn()
     createdDate!: Date
 
     @UpdateDateColumn()
     updatedDate!: Date
+
+    @Column({ type: 'uuid', nullable: true })
+    createdBy?: string | null
+
+    @Column({ type: 'uuid', nullable: true })
+    updatedBy?: string | null
 }

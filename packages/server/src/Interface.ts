@@ -352,6 +352,7 @@ export interface IApiKey {
     apiSecret: string
     updatedDate: Date
     workspaceId?: string
+    createdDate?: Date
 }
 
 export interface ICustomTemplate {
@@ -366,6 +367,25 @@ export interface ICustomTemplate {
     framework?: string
     usecases?: string
     workspaceId?: string
+}
+
+export interface ILandingTemplate {
+    id: string
+    slug: string
+    name: string
+    config: Record<string, any>
+    ownerWorkspaceId?: string | null
+    createdAt: Date
+    updatedAt: Date
+}
+
+export interface IUserTemplate {
+    id: string
+    userId?: string | null
+    templateId: string
+    workspaceId?: string | null
+    createdAt: Date
+    updatedAt: Date
 }
 
 export interface IFlowConfig {

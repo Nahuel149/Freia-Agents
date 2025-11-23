@@ -1,0 +1,91 @@
+{
+  "minimasNoches": [
+    {
+      "rango": ["2024-08-09", "2024-08-12"],
+      "motivo": "Feriado largo",
+      "minNoches": 3
+    },
+    {
+      "rango": ["2024-12-20", "2025-01-05"],
+      "motivo": "Temporada alta",
+      "minNoches": 2
+    }
+  ],
+  "cancelacion": [
+    {
+      "tarifa": "refundable",
+      "diasLimite": 3,
+      "penalidadPorc": 0,
+      "nota": "Cancelacion sin cargo hasta 3 dias antes"
+    },
+    {
+      "tarifa": "refundable",
+      "diasLimite": 0,
+      "penalidadPorc": 50,
+      "nota": "Dentro de los 3 dias previos, 50% de penalidad"
+    },
+    {
+      "tarifa": "no_reembolsable",
+      "diasLimite": 365,
+      "penalidadPorc": 100,
+      "nota": "No reembolsable en cualquier momento"
+    }
+  ],
+  "cambios": [
+    {
+      "tarifa": "refundable",
+      "diasLimite": 2,
+      "penalidadPorc": 0,
+      "nota": "Cambios sin cargo hasta 48h antes"
+    },
+    {
+      "tarifa": "refundable",
+      "diasLimite": 0,
+      "penalidadPorc": 20,
+      "nota": "Dentro de 48h antes, recargo 20% por cambio"
+    },
+    {
+      "tarifa": "no_reembolsable",
+      "diasLimite": 365,
+      "penalidadPorc": 100,
+      "nota": "No se permiten cambios en tarifas no reembolsables cerca de la fecha"
+    }
+  ],
+  "earlyLate": {
+    "earlyCheckin": {
+      "desde": "11:00",
+      "fee": 30,
+      "moneda": "USD",
+      "nota": "Sujeto a disponibilidad el mismo dia"
+    },
+    "lateCheckout": {
+      "hasta": "14:00",
+      "fee": 25,
+      "moneda": "USD",
+      "nota": "Sujeto a disponibilidad; despues de 14:00 se cobra media estadia"
+    }
+  },
+  "bloqueos": [
+    {
+      "sede": "Centro",
+      "fecha": "2024-09-01",
+      "motivo": "Evento turistico",
+      "nota": "Capacidad reducida, no overbooking"
+    }
+  ],
+  "horarios": {
+    "checkin": "15:00",
+    "checkout": "11:00"
+  },
+  "notasTarifas": [
+    {
+      "tarifaTipo": "refundable",
+      "politica": "Flexible: reembolso total hasta 3 dias antes, 50% dentro de 3 dias"
+    },
+    {
+      "tarifaTipo": "no_reembolsable",
+      "politica": "Ahorro: no admite reembolso ni cambio, puede ofrecer credito si hotel lo aprueba"
+    }
+  ]
+}
+}

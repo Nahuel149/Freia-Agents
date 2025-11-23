@@ -37,6 +37,8 @@ import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpe
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
 import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
+import { AddLandingTemplates1761000000000 } from './1761000000000-AddLandingTemplates'
+import { AddWorkspaceOrgPrimaryKeys1761000000002 } from './1761000000002-AddWorkspaceOrgPrimaryKeys'
 
 export const mariadbMigrations = [
     Init1693840429259,
@@ -80,5 +82,7 @@ export const mariadbMigrations = [
     AddErrorToEvaluationRun1744964560174,
 
     ModifyExecutionDataColumnType1747902489801,
-    ModifyChatflowType1755066758601
+    ModifyChatflowType1755066758601,
+    AddLandingTemplates1761000000000,
+    AddWorkspaceOrgPrimaryKeys1761000000002
 ]

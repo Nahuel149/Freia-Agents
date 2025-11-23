@@ -20,6 +20,10 @@ apiClient.interceptors.request.use((config) => {
             if (!config.headers) config.headers = {}
             config.headers['x-request-id'] = id
         }
+        const token = localStorage.getItem('token')
+        if (token && config.headers) {
+            config.headers['Authorization'] = `Bearer ${token}`
+        }
     } catch (_e) {
         // no-op
     }

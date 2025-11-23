@@ -1,5 +1,6 @@
 import { GeneralSuccessMessage } from '../../utils/constants'
 import { getHash } from '../utils/encryption.util'
+import { v4 as uuidv4 } from 'uuid'
 
 interface RegisterBody {
     name: string
@@ -9,7 +10,7 @@ interface RegisterBody {
 
 /**
  * Minimal AccountService for OSS build.
- * Handles basic user registration using local database-less approach.
+ * Handles basic user registration using local database-backed approach.
  */
 export class AccountService {
     /**
@@ -31,7 +32,7 @@ export class AccountService {
         
         const email = rawEmail.trim().toLowerCase()
         // Store password as-is or hashed based on preference (OSS mode flexibility)
-        const credential = password || undefined
+        const credential = getHash(password)
 
         // Access the running Express app to retrieve the configured DataSource
         const app = require('../../utils/getRunningExpressApp').getRunningExpressApp()
@@ -49,13 +50,14 @@ export class AccountService {
             if (existingUser) {
                 throw new Error('Email already registered')
             }
-            const user = userRepo.create({ name, email, credential })
+            const isFirstUser = (await userRepo.count()) === 0
+            const user = userRepo.create({ name, email, credential, userType: isFirstUser ? 'admin' : 'user' })
             await userRepo.save(user)
 
             /* --------------------------- Account & Role --------------------------- */
             const AccountEntity = require('../database/entities/account.entity').Account
             const accRepo = queryRunner.manager.getRepository(AccountEntity)
-            const account = accRepo.create({ name: `${name}'s Account`, createdBy: user.id })
+            const account = accRepo.create({ id: uuidv4(), name: `${name}'s Account`, createdBy: user.id })
             await accRepo.save(account)
 
             const RoleEntity = require('../database/entities/role.entity').Role
@@ -67,8 +69,10 @@ export class AccountService {
             const WorkspaceEntity = require('../database/entities/workspace.entity').Workspace
             const workspaceRepo = queryRunner.manager.getRepository(WorkspaceEntity)
             const workspace = workspaceRepo.create({
+                id: uuidv4(),
                 name: 'Personal Workspace',
-                createdBy: user.id
+                createdBy: user.id,
+                organizationId: null
             })
             await workspaceRepo.save(workspace)
 

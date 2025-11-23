@@ -38,6 +38,6 @@ export class DocumentStore implements IDocumentStore {
     @Column({ nullable: true, type: 'text' })
     recordManagerConfig: string | null
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: true, type: 'uuid' })
     workspaceId?: string
 }

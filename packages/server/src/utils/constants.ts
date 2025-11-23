@@ -50,6 +50,7 @@ export const WHITELIST_URLS = [
     '/api/v1/customers',
     '/api/v1/sales',
     '/api/v1/followups',
+    '/api/v1/templates',
     AzureSSO.LOGIN_URI,
     AzureSSO.LOGOUT_URI,
     AzureSSO.CALLBACK_URI,

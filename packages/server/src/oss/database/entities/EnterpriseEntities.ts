@@ -10,11 +10,11 @@ export class WorkspaceUsers {
     @PrimaryGeneratedColumn('uuid')
     id!: string
 
-    @Column({ type: 'text', nullable: true })
-    workspaceId?: string | null
+    @Column({ type: 'uuid', nullable: true })
+    workspaceId!: string | null
 
-    @Column({ type: 'text' })
-    userId!: string
+    @Column({ type: 'uuid', nullable: true })
+    userId!: string | null
 
     // Simplified role text column (no FK to Role)
     @Column({ type: 'text' })
@@ -26,8 +26,8 @@ export class WorkspaceShared {
     @PrimaryGeneratedColumn('uuid')
     id!: string
 
-    @Column({ type: 'text', nullable: true })
-    workspaceId?: string | null
+    @Column({ type: 'uuid' })
+    workspaceId!: string
 
     @Column({ type: 'text' })
     sharedItemId!: string
@@ -50,15 +50,15 @@ export class LoginActivity {
     @Column({ type: 'text' })
     username!: string
 
-    @Column({ type: 'int' })
+    @Column({ name: 'activity_code', type: 'int' })
     activityCode!: number
 
-    @Column({ type: 'text' })
-    loginMode!: string
+    @Column({ name: 'login_mode', type: 'text', nullable: true })
+    loginMode!: string | null
 
     @Column({ type: 'text' })
     message!: string
 
-    @UpdateDateColumn()
+    @Column({ name: 'attemptedDateTime', type: 'timestamp' })
     attemptedDateTime!: Date
 }

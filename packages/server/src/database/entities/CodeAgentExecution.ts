@@ -37,6 +37,6 @@ export class CodeAgentExecution {
     @Column({ type: 'timestamp', nullable: true })
     endTime?: Date
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: true, type: 'uuid' })
     workspaceId?: string
 }

@@ -16,6 +16,8 @@ import { Evaluation } from './Evaluation'
 import { Evaluator } from './Evaluator'
 import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
+import { LandingTemplate } from './LandingTemplate'
+import { UserTemplate } from './UserTemplate'
 import { Execution } from './Execution'
 import { CodeAgent } from './CodeAgent'
 import { CodeAgentExecution } from './CodeAgentExecution'
@@ -77,6 +79,8 @@ export const entities = {
     Evaluator,
     ApiKey,
     CustomTemplate,
+    LandingTemplate,
+    UserTemplate,
     Execution,
     CodeAgent,
     CodeAgentExecution,

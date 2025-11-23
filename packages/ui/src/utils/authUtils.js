@@ -23,6 +23,7 @@ const _removeFromStorage = () => {
     localStorage.removeItem('permissions')
     localStorage.removeItem('features')
     localStorage.removeItem('isSSO')
+    localStorage.removeItem('token')
 }
 
 const clearAllCookies = () => {
@@ -62,6 +63,9 @@ const updateStateAndLocalStorage = (state, payload) => {
     localStorage.setItem('user', JSON.stringify(user))
     localStorage.setItem('permissions', JSON.stringify(payload.permissions))
     localStorage.setItem('features', JSON.stringify(payload.features))
+    if (payload.token) {
+        localStorage.setItem('token', payload.token)
+    }
 }
 
 const AuthUtils = {

@@ -1,0 +1,109 @@
+{
+  "name": "DEMO Hoteles - Epic C (Cancelaciones)",
+  "description": "Cancelación con políticas y penalidades.",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "Start",
+      "label": "Start",
+      "data": { "inputType": "chat", "ephemeralMemory": false, "flowState": { "reservaId": "", "reserva": "", "tarifaTipo": "", "penalidad": "", "penalidadTipo": "", "motivoCancel": "" } },
+      "position": [0, 0]
+    },
+    {
+      "id": "memory",
+      "type": "MongoDBAtlasChatMemory",
+      "label": "Memory",
+      "data": { "credential": "{{MONGO_CREDENTIAL_ID}}", "databaseName": "freia_demo", "collectionName": "chat_memory_hoteles", "sessionId": "{{ $flow.chatId }}", "memoryKey": "history" },
+      "position": [0, 140]
+    },
+    {
+      "id": "llm_identificar",
+      "type": "LLM",
+      "label": "LLM Cancelación",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          { "role": "system", "content": "Extrae reservaId y motivoCancel. Devuelve JSON {reservaId, motivoCancel, needsClarification, missingFields}. Si falta ID, pide email y fechas." },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "reservaId": { "type": "string" },
+            "motivoCancel": { "type": "string" },
+            "needsClarification": { "type": "boolean" },
+            "missingFields": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "updateFlowState": { "reservaId": "{{ json.reservaId }}", "motivoCancel": "{{ json.motivoCancel }}" }
+      },
+      "position": [240, 0]
+    },
+    {
+      "id": "retriever_reserva",
+      "type": "Retriever",
+      "label": "Reserva",
+      "data": { "documentStoreId": "{{DOCSTORE_RESERVAS_ID}}", "query": "{{ $flow.state.reservaId }}", "outputFormat": "text" },
+      "position": [480, 0]
+    },
+    {
+      "id": "custom_penalidad",
+      "type": "CustomFunction",
+      "label": "Penalidad cancel",
+      "data": {
+        "inputVariables": [
+          { "name": "tarifaTipo", "value": "{{ $flow.state.tarifaTipo }}" }
+        ],
+        "code": "return JSON.stringify({penalidad:50, penalidadTipo:'porcentaje'});",
+        "updateFlowState": { "penalidad": "{{ functionOutput.penalidad }}", "penalidadTipo": "{{ functionOutput.penalidadTipo }}" }
+      },
+      "position": [720, -20]
+    },
+    {
+      "id": "human_confirm",
+      "type": "HumanInput",
+      "label": "Confirmar cancel",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Cancelación de {{ $flow.state.reservaId }}.\nPenalidad: {{ $flow.state.penalidad }} ({{ $flow.state.penalidadTipo }}).\nMotivo: {{ $flow.state.motivoCancel }}.\n¿Confirmas?",
+        "feedback": true
+      },
+      "position": [960, 0]
+    },
+    {
+      "id": "custom_exec",
+      "type": "CustomFunction",
+      "label": "Ejecutar cancel",
+      "data": {
+        "inputVariables": [],
+        "code": "return JSON.stringify({status:'cancelled'});",
+        "updateFlowState": { "reserva": "{{ functionOutput }}" }
+      },
+      "position": [1200, 0]
+    },
+    {
+      "id": "reply_final",
+      "type": "DirectReply",
+      "label": "Reply",
+      "data": {
+        "message": "Reserva {{ $flow.state.reservaId }} cancelada. Penalidad: {{ $flow.state.penalidad }}. Estado: {{ $flow.state.reserva.status || 'ok' }}. ¿Quieres reprogramar otra fecha?"
+      },
+      "position": [1440, 0]
+    }
+  ],
+  "edges": [
+    { "source": "start", "sourceHandle": "output", "target": "llm_identificar", "targetHandle": "input" },
+    { "source": "memory", "sourceHandle": "output", "target": "llm_identificar", "targetHandle": "memory" },
+    { "source": "llm_identificar", "sourceHandle": "output", "target": "retriever_reserva", "targetHandle": "input" },
+    { "source": "retriever_reserva", "sourceHandle": "output", "target": "custom_penalidad", "targetHandle": "input" },
+    { "source": "custom_penalidad", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
+    { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_exec", "targetHandle": "input" },
+    { "source": "custom_exec", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
+  ],
+  "placeholders": {
+    "LLM_CREDENTIAL_ID": "tu_llm_cred",
+    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+    "DOCSTORE_RESERVAS_ID": "docstore_reservas_id"
+  }
+}

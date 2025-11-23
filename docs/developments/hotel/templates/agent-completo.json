@@ -1,0 +1,178 @@
+{
+  "name": "DEMO Hoteles - Agente Completo (Router + Subflujos)",
+  "description": "Entrada única que enruta a los subflujos Epic A–F usando Execute Flow. Reemplaza placeholders de credenciales, docstores y flow IDs.",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "Start",
+      "label": "Start",
+      "data": {
+        "inputType": "chat",
+        "ephemeralMemory": false,
+        "flowState": {
+          "hotel": "Gran Sol",
+          "sede": "",
+          "intent": "",
+          "reservaId": "",
+          "idioma": "es"
+        }
+      },
+      "position": [0, 0]
+    },
+    {
+      "id": "memory",
+      "type": "MongoDBAtlasChatMemory",
+      "label": "Memory MongoDB",
+      "data": {
+        "credential": "{{MONGO_CREDENTIAL_ID}}",
+        "databaseName": "freia_demo",
+        "collectionName": "chat_memory_hoteles",
+        "sessionId": "{{ $flow.chatId }}",
+        "memoryKey": "history"
+      },
+      "position": [0, 140]
+    },
+    {
+      "id": "llm_intent",
+      "type": "LLM",
+      "label": "LLM Intent",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Clasifica la intención del usuario en una de: reservas, cambios, cancelaciones, pre, durante, backoffice. Devuelve SOLO JSON {intent, notas}. Ejemplos: 'Reservar...'→reservas; 'Cambiar fecha...'→cambios; 'Cancelar...'→cancelaciones; 'Early check-in, traslados...'→pre; 'toallas, room service, extender estadía'→durante; 'registrar lead, reporte'→backoffice."
+          },
+          { "role": "user", "content": "{{ $flow.input }}" }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "intent": { "type": "string" },
+            "notas": { "type": "string" }
+          }
+        },
+        "updateFlowState": {
+          "intent": "{{ json.intent }}"
+        }
+      },
+      "position": [240, 0]
+    },
+    {
+      "id": "condition_intent",
+      "type": "Condition",
+      "label": "Ruta por intent",
+      "data": {
+        "conditions": [
+          { "type": "String", "value1": "{{ $flow.state.intent }}", "operation": "equal", "value2": "reservas" }
+        ]
+      },
+      "position": [480, 0]
+    },
+    {
+      "id": "condition_switch",
+      "type": "ConditionAgent",
+      "label": "Switch (IA)",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "instructions": "Elige el escenario más adecuado: reservas, cambios, cancelaciones, pre, durante, backoffice.",
+        "input": "{{ $flow.input }}",
+        "scenarios": ["reservas", "cambios", "cancelaciones", "pre", "durante", "backoffice"]
+      },
+      "position": [480, 140]
+    },
+    {
+      "id": "exec_reservas",
+      "type": "ExecuteFlow",
+      "label": "Subflow Reservas (Epic A)",
+      "data": {
+        "flowId": "{{FLOW_EPIC_A_ID}}",
+        "input": "{{ $flow.input }}",
+        "returnResponseAs": "assistant"
+      },
+      "position": [760, -120]
+    },
+    {
+      "id": "exec_cambios",
+      "type": "ExecuteFlow",
+      "label": "Subflow Cambios (Epic B)",
+      "data": {
+        "flowId": "{{FLOW_EPIC_B_ID}}",
+        "input": "{{ $flow.input }}",
+        "returnResponseAs": "assistant"
+      },
+      "position": [760, -40]
+    },
+    {
+      "id": "exec_cancel",
+      "type": "ExecuteFlow",
+      "label": "Subflow Cancelaciones (Epic C)",
+      "data": {
+        "flowId": "{{FLOW_EPIC_C_ID}}",
+        "input": "{{ $flow.input }}",
+        "returnResponseAs": "assistant"
+      },
+      "position": [760, 40]
+    },
+    {
+      "id": "exec_pre",
+      "type": "ExecuteFlow",
+      "label": "Subflow Pre-Estadia (Epic D)",
+      "data": {
+        "flowId": "{{FLOW_EPIC_D_ID}}",
+        "input": "{{ $flow.input }}",
+        "returnResponseAs": "assistant"
+      },
+      "position": [760, 120]
+    },
+    {
+      "id": "exec_durante",
+      "type": "ExecuteFlow",
+      "label": "Subflow Durante (Epic E)",
+      "data": {
+        "flowId": "{{FLOW_EPIC_E_ID}}",
+        "input": "{{ $flow.input }}",
+        "returnResponseAs": "assistant"
+      },
+      "position": [760, 200]
+    },
+    {
+      "id": "exec_backoffice",
+      "type": "ExecuteFlow",
+      "label": "Subflow Backoffice (Epic F)",
+      "data": {
+        "flowId": "{{FLOW_EPIC_F_ID}}",
+        "input": "{{ $flow.input }}",
+        "returnResponseAs": "assistant"
+      },
+      "position": [760, 280]
+    }
+  ],
+  "edges": [
+    { "source": "start", "sourceHandle": "output", "target": "llm_intent", "targetHandle": "input" },
+    { "source": "memory", "sourceHandle": "output", "target": "llm_intent", "targetHandle": "memory" },
+    { "source": "llm_intent", "sourceHandle": "output", "target": "condition_intent", "targetHandle": "input" },
+    { "source": "llm_intent", "sourceHandle": "output", "target": "condition_switch", "targetHandle": "input" },
+    { "source": "condition_intent", "sourceHandle": "true", "target": "exec_reservas", "targetHandle": "input" },
+    { "source": "condition_intent", "sourceHandle": "false", "target": "condition_switch", "targetHandle": "input" },
+    { "source": "condition_switch", "sourceHandle": "reservas", "target": "exec_reservas", "targetHandle": "input" },
+    { "source": "condition_switch", "sourceHandle": "cambios", "target": "exec_cambios", "targetHandle": "input" },
+    { "source": "condition_switch", "sourceHandle": "cancelaciones", "target": "exec_cancel", "targetHandle": "input" },
+    { "source": "condition_switch", "sourceHandle": "pre", "target": "exec_pre", "targetHandle": "input" },
+    { "source": "condition_switch", "sourceHandle": "durante", "target": "exec_durante", "targetHandle": "input" },
+    { "source": "condition_switch", "sourceHandle": "backoffice", "target": "exec_backoffice", "targetHandle": "input" }
+  ],
+  "placeholders": {
+    "LLM_CREDENTIAL_ID": "tu_llm_cred",
+    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+    "FLOW_EPIC_A_ID": "flow_id_epicA_reservas",
+    "FLOW_EPIC_B_ID": "flow_id_epicB_cambios",
+    "FLOW_EPIC_C_ID": "flow_id_epicC_cancelaciones",
+    "FLOW_EPIC_D_ID": "flow_id_epicD_pre",
+    "FLOW_EPIC_E_ID": "flow_id_epicE_durante",
+    "FLOW_EPIC_F_ID": "flow_id_epicF_backoffice"
+  },
+  "notes": "Crea/importa primero los subflujos de cada épico (archivos epicA…F) y obtén sus flowId para pegarlos aquí. Luego importa este router para tener un único punto de entrada."
+}

@@ -44,6 +44,9 @@ import { AddAgentAnalyticsEntities1757800000003 } from './1757800000003-AddAgent
 import { AddIconSrcToAssistant1757800000004 } from './1757800000004-AddIconSrcToAssistant'
 import { AddWorkspaceIdToExecution1758539817000 } from './1758539817000-AddWorkspaceIdToExecution'
 import { AddToolAlertsAndPriceApprovals1759100000000 } from './1759100000000-AddToolAlertsAndPriceApprovals'
+import { AddLandingTemplates1761000000000 } from './1761000000000-AddLandingTemplates'
+import { UnifyApiKeyAndRelaxOrg1761000000001 } from './1761000000001-UnifyApiKeyAndRelaxOrg'
+import { AddWorkspaceOrgPrimaryKeys1761000000002 } from './1761000000002-AddWorkspaceOrgPrimaryKeys'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -91,5 +94,8 @@ export const postgresMigrations = [
     AddAgentAnalyticsEntities1757800000003,
     AddIconSrcToAssistant1757800000004,
     AddWorkspaceIdToExecution1758539817000,
-    AddToolAlertsAndPriceApprovals1759100000000
+    AddToolAlertsAndPriceApprovals1759100000000,
+    AddLandingTemplates1761000000000,
+    UnifyApiKeyAndRelaxOrg1761000000001,
+    AddWorkspaceOrgPrimaryKeys1761000000002
 ]

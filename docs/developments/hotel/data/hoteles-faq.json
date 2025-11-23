@@ -1,0 +1,59 @@
+{
+  "faq": [
+    {
+      "intent": "checkin_checkout",
+      "pregunta": "A que hora es el check-in y check-out?",
+      "respuesta": "Check-in a las 15:00, check-out a las 11:00. Early check-in sujeto a disponibilidad y fee; late check-out hasta 14:00 con fee."
+    },
+    {
+      "intent": "desayuno",
+      "pregunta": "Horario de desayuno",
+      "respuesta": "Desayuno de 07:00 a 10:30 en restaurante planta baja."
+    },
+    {
+      "intent": "gimnasio",
+      "pregunta": "Donde esta el gimnasio?",
+      "respuesta": "El gimnasio esta en piso 2, abierto 06:00-22:00."
+    },
+    {
+      "intent": "mascotas",
+      "pregunta": "Aceptan mascotas?",
+      "respuesta": "En Palermo si, con cargo unico; en Centro y Aeropuerto no se admiten mascotas."
+    },
+    {
+      "intent": "transporte",
+      "pregunta": "Traslados",
+      "respuesta": "Aeropuerto incluye shuttle cada 30 minutos. Palermo ofrece traslado con costo; Centro no incluye pero coordinamos taxi."
+    },
+    {
+      "intent": "servicios",
+      "pregunta": "Servicios incluidos",
+      "respuesta": "Wifi, desayuno, limpieza diaria. Spa y room service son adicionales segun sede."
+    },
+    {
+      "intent": "actividades",
+      "pregunta": "Que actividades recomiendan",
+      "respuesta": "Centro: city tour y museos; Palermo: parques y gastronomia; Aeropuerto: shopping y salidas express al centro."
+    },
+    {
+      "intent": "clima",
+      "pregunta": "Como es el clima en agosto",
+      "respuesta": "Invierno suave, 8-18°C; se recomienda abrigo ligero y paraguas."
+    },
+    {
+      "intent": "equipaje",
+      "pregunta": "Donde puedo dejar el equipaje",
+      "respuesta": "Guardamos equipaje sin costo en conserjeria el dia de entrada y salida."
+    },
+    {
+      "intent": "parking",
+      "pregunta": "Tienen estacionamiento",
+      "respuesta": "Centro: parking tercerizado con costo; Palermo: cochera limitada, reservar; Aeropuerto: parking propio incluido."
+    },
+    {
+      "intent": "room_service",
+      "pregunta": "Room service",
+      "respuesta": "Disponible 12:00-23:00 en Centro y Palermo; Aeropuerto 11:00-22:00."
+    }
+  ]
+}

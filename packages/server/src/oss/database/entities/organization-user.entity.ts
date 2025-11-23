@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm'
 
 /**
  * Minimal OrganizationUser entity stub for OSS mode.
@@ -11,24 +11,27 @@ export enum OrganizationUserStatus {
 
 @Entity('organization_user')
 export class OrganizationUser {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string
-
-    @Column({ type: 'text' })
+    @PrimaryColumn({ type: 'uuid' })
     organizationId!: string
 
-    @Column({ type: 'text' })
+    @PrimaryColumn({ type: 'uuid' })
     userId!: string
 
-    @Column({ type: 'text', nullable: true })
+    @Column({ type: 'uuid', nullable: true })
     roleId?: string | null
 
     @Column({ type: 'enum', enum: OrganizationUserStatus, default: OrganizationUserStatus.INVITED })
     status!: OrganizationUserStatus
 
-    @UpdateDateColumn()
+    @CreateDateColumn()
     createdDate!: Date
 
     @UpdateDateColumn()
     updatedDate!: Date
+
+    @Column({ type: 'uuid', nullable: true })
+    createdBy?: string | null
+
+    @Column({ type: 'uuid', nullable: true })
+    updatedBy?: string | null
 }
