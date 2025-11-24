@@ -288,10 +288,35 @@ Nombre, email, fechas (check-in/out), noches, huéspedes, tipo de habitación, s
 
 
 
-    Conectado a la misma DB, correr: pnpm --filter "./packages/server" typeorm migration:run (o equivalente) para   
-     aplicar 1761000000001-UnifyApiKeyAndRelaxOrg y 1761000000000-AddLandingTemplates si no se aplicó antes.         
-      - Si prefieres SQL directo, usa lo que está en esa migración: añadir createdDate a apikey, copiar filas        
-        desde api_key (generando UUID si hace falta), y DROP TABLE api_key; luego hacer organizationId nullable en   
-        workspace y soltar NOT NULL en createdBy/updatedBy de workspace_user y organization_user.                    
-  2. Después de la migración, usa solo la tabla apikey; la vieja api_key quedará eliminada.                          
-                                      
+     ### 8) .env.example                                                                                                
+                                                                                                                     
+  # DB                                                                                                               
+  DATABASE_TYPE=postgres                                                                                             
+  DATABASE_HOST=localhost                                                                                            
+  DATABASE_PORT=5432                                                                                                 
+  DATABASE_NAME=app_db                                                                                               
+  DATABASE_USER=app_user                                                                                             
+  DATABASE_PASSWORD=secret                                                                                           
+                                                                                                                     
+  # Webhooks / providers                                                                                             
+  MOBBEX_API_KEY=xxxxx                                                                                               
+  MOBBEX_ACCESS_TOKEN=yyyyy                                                                                          
+  MOBBEX_WEBHOOK_SECRET=zzzzz                                                                                        
+                                                                                                                     
+  DLOCAL_API_KEY=xxxxx                                                                                               
+  DLOCAL_API_SECRET=yyyyy                                                                                            
+  DLOCAL_WEBHOOK_SECRET=zzzzz                                                                                        
+
+  CHECKOUT_RETURN_URL=https://tu-app.com/checkout/return
+  DLOCAL_CALLBACK_URL=https://tu-app.com/webhooks/dlocal                                                             
+                                                                                                                     
+  ### Notas de seguridad y decisiones                                                                                
+                                                                                                                     
+  - HMAC en webhooks: se usa rawBody y crypto.createHmac con el secreto. Si no coincide, 400.                        
+  - Idempotencia: UNIQUE(provider, externalRef) y lógica que no reprocesa COMPLETED.                                 
+  - Validación: Zod en checkout y en webhooks antes de tocar la BD.
+  - Montos en centavos (integer) para evitar problemas de float.                                                     
+  - Logger redaction para evitar PII/tarjetas en logs.                                                               
+  - UUIDs para IDs y refs no predecibles.                                                                            
+  - Secrets via .env; nunca hardcodeados.                                                                            
+                                                          
