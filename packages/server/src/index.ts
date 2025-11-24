@@ -31,6 +31,7 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
+import helmet from 'helmet'
 // Enforce OSS mode at startup regardless of environment variables
 process.env.OSS_MODE = 'true'
 process.env.FORCE_OSS = 'true'
@@ -179,8 +180,28 @@ export class App {
 
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
-        this.app.use(express.json({ limit: flowise_file_size_limit }))
-        this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
+        const rawSaver = (req: any, _res: any, buf: Buffer) => {
+            if (buf && buf.length) req.rawBody = buf
+        }
+        this.app.use(express.json({ limit: flowise_file_size_limit, verify: rawSaver }))
+        this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true, verify: rawSaver }))
+
+        // Security headers
+        this.app.use(
+            helmet({
+                crossOriginResourcePolicy: { policy: 'cross-origin' }
+            })
+        )
+
+        // Optional HTTPS redirect (behind proxy)
+        if (process.env.FORCE_HTTPS === 'true') {
+            this.app.use((req, res, next) => {
+                const forwardedProto = (req.headers['x-forwarded-proto'] as string) || ''
+                if (req.secure || forwardedProto.startsWith('https')) return next()
+                const host = req.headers.host
+                return res.redirect(301, `https://${host}${req.originalUrl}`)
+            })
+        }
 
         // Enhanced trust proxy settings for load balancer
         this.app.set('trust proxy', true) // Trust all proxies

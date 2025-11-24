@@ -47,6 +47,7 @@ import { AddToolAlertsAndPriceApprovals1759100000000 } from './1759100000000-Add
 import { AddLandingTemplates1761000000000 } from './1761000000000-AddLandingTemplates'
 import { UnifyApiKeyAndRelaxOrg1761000000001 } from './1761000000001-UnifyApiKeyAndRelaxOrg'
 import { AddWorkspaceOrgPrimaryKeys1761000000002 } from './1761000000002-AddWorkspaceOrgPrimaryKeys'
+import { AddPaymentTransaction1761000000003 } from './1761000000003-AddPaymentTransaction'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -97,5 +98,6 @@ export const postgresMigrations = [
     AddToolAlertsAndPriceApprovals1759100000000,
     AddLandingTemplates1761000000000,
     UnifyApiKeyAndRelaxOrg1761000000001,
-    AddWorkspaceOrgPrimaryKeys1761000000002
+    AddWorkspaceOrgPrimaryKeys1761000000002,
+    AddPaymentTransaction1761000000003
 ]

@@ -39,6 +39,7 @@ import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-Modi
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 import { AddLandingTemplates1761000000000 } from './1761000000000-AddLandingTemplates'
 import { AddWorkspaceOrgPrimaryKeys1761000000002 } from './1761000000002-AddWorkspaceOrgPrimaryKeys'
+import { AddPaymentTransaction1761000000003 } from './1761000000003-AddPaymentTransaction'
 
 export const mariadbMigrations = [
     Init1693840429259,
@@ -84,5 +85,6 @@ export const mariadbMigrations = [
     ModifyExecutionDataColumnType1747902489801,
     ModifyChatflowType1755066758601,
     AddLandingTemplates1761000000000,
-    AddWorkspaceOrgPrimaryKeys1761000000002
+    AddWorkspaceOrgPrimaryKeys1761000000002,
+    AddPaymentTransaction1761000000003
 ]

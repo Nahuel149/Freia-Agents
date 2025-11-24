@@ -1,5 +1,7 @@
 import 'reflect-metadata'
 import path from 'path'
+import dotenv from 'dotenv'
+dotenv.config()
 import * as fs from 'fs'
 import { DataSource } from 'typeorm'
 import { getUserHome } from './utils'
@@ -12,7 +14,7 @@ import logger from './utils/logger'
 
 let appDataSource: DataSource
 
-export const init = async (): Promise<void> => {
+export const init = (): void => {
     logger.info(`[DataSource] Initializing database with type: ${process.env.DATABASE_TYPE || 'postgres (default)'}`)
 
     let flowisePath = path.join(getUserHome(), '.flowise')
@@ -34,9 +36,9 @@ export const init = async (): Promise<void> => {
         case 'mysql':
             appDataSource = new DataSource({
                 type: 'mysql',
-                host: process.env.DATABASE_HOST,
+                host: process.env.DATABASE_HOST || process.env.PGHOST,
                 port: parseInt(process.env.DATABASE_PORT || '3306'),
-                username: process.env.DATABASE_USER,
+                username: process.env.DATABASE_USER || process.env.PGUSER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
                 charset: 'utf8mb4',
@@ -50,7 +52,7 @@ export const init = async (): Promise<void> => {
         case 'mariadb':
             appDataSource = new DataSource({
                 type: 'mariadb',
-                host: process.env.DATABASE_HOST,
+                host: process.env.DATABASE_HOST || process.env.PGHOST,
                 port: parseInt(process.env.DATABASE_PORT || '3306'),
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
@@ -66,11 +68,11 @@ export const init = async (): Promise<void> => {
         case 'postgres':
             appDataSource = new DataSource({
                 type: 'postgres',
-                host: process.env.DATABASE_HOST,
-                port: parseInt(process.env.DATABASE_PORT || '5432'),
-                username: process.env.DATABASE_USER,
-                password: process.env.DATABASE_PASSWORD,
-                database: process.env.DATABASE_NAME,
+                host: process.env.DATABASE_HOST || process.env.PGHOST,
+                port: parseInt(process.env.DATABASE_PORT || process.env.PGPORT || '5432'),
+                username: process.env.DATABASE_USER || process.env.PGUSER,
+                password: process.env.DATABASE_PASSWORD || process.env.PGPASSWORD,
+                database: process.env.DATABASE_NAME || process.env.PGDATABASE,
                 ssl: getDatabaseSSLFromEnv(),
                 synchronize: false,
                 migrationsRun: false,
@@ -96,7 +98,7 @@ export const init = async (): Promise<void> => {
             logger.info(`[DataSource] Using default Postgres configuration (DATABASE_TYPE not set or invalid)`)
             appDataSource = new DataSource({
                 type: 'postgres',
-                host: process.env.DATABASE_HOST || 'localhost',
+                host: process.env.DATABASE_HOST || process.env.PGHOST || 'localhost',
                 port: parseInt(process.env.DATABASE_PORT || '5432'),
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,

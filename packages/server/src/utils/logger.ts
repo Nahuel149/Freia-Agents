@@ -203,22 +203,41 @@ requestLogger = createLogger({
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
     const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
 
-    if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
-        // Create a sanitized copy of the request body
-        const sanitizedBody = { ...req.body }
-        if (sanitizedBody.password) {
-            sanitizedBody.password = '********'
-        }
+    const redactValue = (val: any) => {
+        if (typeof val !== 'string') return val
+        if (val.length > 8 && /\d{10,}/.test(val)) return '***redacted***'
+        if (/bearer\s+/i.test(val)) return '***redacted***'
+        return val
+    }
 
-        // Use the shared requestLogger with request-specific metadata
+    const sanitizeObject = (obj: any) => {
+        if (!obj || typeof obj !== 'object') return obj
+        const out: any = Array.isArray(obj) ? [] : {}
+        for (const key of Object.keys(obj)) {
+            const v = (obj as any)[key]
+            if (/password|token|authorization|apiKey/i.test(key)) {
+                out[key] = '***redacted***'
+            } else if (typeof v === 'object') {
+                out[key] = sanitizeObject(v)
+            } else {
+                out[key] = redactValue(v)
+            }
+        }
+        return out
+    }
+
+    if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
+        const sanitizedBody = sanitizeObject(req.body)
+        const sanitizedHeaders = sanitizeObject(req.headers)
+
         const requestMetadata = {
             request: {
                 method: req.method,
                 url: req.url,
-                body: sanitizedBody, // Use sanitized body instead of raw body
-                query: req.query,
-                params: req.params,
-                headers: req.headers
+                body: sanitizedBody,
+                query: sanitizeObject(req.query),
+                params: sanitizeObject(req.params),
+                headers: sanitizedHeaders
             }
         }
 

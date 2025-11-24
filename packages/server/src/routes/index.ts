@@ -74,6 +74,8 @@ import salesRouter from './sales'
 import followupRouter from './followup'
 import followupsRouter from './followups'
 import templatesRouter from './templates'
+import paymentsRouter from './payments'
+import webhooksRouter from './webhooks'
 
 import { IdentityManager } from '../IdentityManager'
 
@@ -153,6 +155,8 @@ router.use('/promotions', promotionsRouter)
 router.use('/followup', followupRouter)
 router.use('/followups', followupsRouter)
 router.use('/templates', templatesRouter)
+router.use('/payments', paymentsRouter)
+router.use('/webhooks', webhooksRouter)
 
 router.use('/loginmethod', loginmethodRouter)
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
