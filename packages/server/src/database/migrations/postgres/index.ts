@@ -48,6 +48,9 @@ import { AddLandingTemplates1761000000000 } from './1761000000000-AddLandingTemp
 import { UnifyApiKeyAndRelaxOrg1761000000001 } from './1761000000001-UnifyApiKeyAndRelaxOrg'
 import { AddWorkspaceOrgPrimaryKeys1761000000002 } from './1761000000002-AddWorkspaceOrgPrimaryKeys'
 import { AddPaymentTransaction1761000000003 } from './1761000000003-AddPaymentTransaction'
+import { AddPaymentQuote1761000000004 } from './1761000000004-AddPaymentQuote'
+import { AddPaymentQuoteIndex1761000000005 } from './1761000000005-AddPaymentQuoteIndex'
+import { AddSalesUuidAndAmountCents1761000000006 } from './1761000000006-AddSalesUuidAndAmountCents'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -99,5 +102,8 @@ export const postgresMigrations = [
     AddLandingTemplates1761000000000,
     UnifyApiKeyAndRelaxOrg1761000000001,
     AddWorkspaceOrgPrimaryKeys1761000000002,
-    AddPaymentTransaction1761000000003
+    AddPaymentTransaction1761000000003,
+    AddPaymentQuote1761000000004,
+    AddPaymentQuoteIndex1761000000005,
+    AddSalesUuidAndAmountCents1761000000006
 ]
