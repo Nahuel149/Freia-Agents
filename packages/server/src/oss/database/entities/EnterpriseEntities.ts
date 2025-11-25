@@ -5,20 +5,32 @@ import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeor
  * These entities intentionally include only the fields accessed in OSS modules.
  */
 
-@Entity('workspace_users')
+@Entity('workspace_user')
 export class WorkspaceUsers {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string
+    @PrimaryColumn({ type: 'uuid' })
+    workspaceId!: string
+
+    @PrimaryColumn({ type: 'uuid' })
+    userId!: string
 
     @Column({ type: 'uuid', nullable: true })
-    workspaceId!: string | null
+    roleId!: string | null
 
-    @Column({ type: 'uuid', nullable: true })
-    userId!: string | null
-
-    // Simplified role text column (no FK to Role)
+    // Keep status text to match varchar column
     @Column({ type: 'text' })
-    role!: string
+    status!: string
+
+    @CreateDateColumn()
+    createdDate!: Date
+
+    @UpdateDateColumn()
+    updatedDate!: Date
+
+    @Column({ type: 'uuid', nullable: true })
+    createdBy?: string | null
+
+    @Column({ type: 'uuid', nullable: true })
+    updatedBy?: string | null
 }
 
 @Entity('workspace_shared')

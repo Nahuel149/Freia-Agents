@@ -3,6 +3,8 @@ import rateLimit from 'express-rate-limit'
 import { PaymentStrategyFactory } from '../../payments/PaymentStrategyFactory'
 import { z } from 'zod'
 import { OrderValidationService } from '../../payments/orderValidation.service'
+import quotesRouter from './quotes'
+import { allowedCurrencies } from '../../payments/types'
 
 const router = express.Router()
 const orderValidation = new OrderValidationService()
@@ -17,7 +19,7 @@ const checkoutLimiter = rateLimit({
 
 const checkoutSchema = z.object({
     amountCents: z.number().int().positive(),
-    currency: z.string().min(3).max(4),
+    currency: z.enum(allowedCurrencies as [string, ...string[]]),
     countryCode: z.string().length(2),
     orderId: z.string().min(1),
     customerEmail: z.string().email()
@@ -26,7 +28,7 @@ const checkoutSchema = z.object({
 router.post('/checkout', checkoutLimiter, async (req, res) => {
     try {
         const data = checkoutSchema.parse(req.body)
-        await orderValidation.validateAmount(data.orderId, data.amountCents)
+        await orderValidation.validateAmount(data.orderId, data.amountCents, data.currency, req.user)
         const provider = PaymentStrategyFactory.forCountry(data.countryCode)
         const result = await provider.createCheckout(data)
         return res.json(result)
@@ -34,5 +36,7 @@ router.post('/checkout', checkoutLimiter, async (req, res) => {
         return res.status(400).json({ error: err?.message || 'Invalid payload' })
     }
 })
+
+router.use('/quotes', quotesRouter)
 
 export default router

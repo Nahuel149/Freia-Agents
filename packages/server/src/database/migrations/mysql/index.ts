@@ -41,6 +41,8 @@ import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowT
 import { AddLandingTemplates1761000000000 } from './1761000000000-AddLandingTemplates'
 import { AddWorkspaceOrgPrimaryKeys1761000000002 } from './1761000000002-AddWorkspaceOrgPrimaryKeys'
 import { AddPaymentTransaction1761000000003 } from './1761000000003-AddPaymentTransaction'
+import { AddPaymentQuote1761000000004 } from './1761000000004-AddPaymentQuote'
+import { AddPaymentQuoteIndex1761000000005 } from './1761000000005-AddPaymentQuoteIndex'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -86,5 +88,7 @@ export const mysqlMigrations = [
     ModifyChatflowType1755066758601,
     AddLandingTemplates1761000000000,
     AddWorkspaceOrgPrimaryKeys1761000000002,
-    AddPaymentTransaction1761000000003
+    AddPaymentTransaction1761000000003,
+    AddPaymentQuote1761000000004,
+    AddPaymentQuoteIndex1761000000005
 ]

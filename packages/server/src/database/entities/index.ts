@@ -30,6 +30,7 @@ import { FollowUp } from './FollowUp'
 import { ToolAlert } from './ToolAlert'
 import { PriceApprovalRequest } from './PriceApprovalRequest'
 import { PaymentTransaction } from './PaymentTransaction'
+import { PaymentQuote } from './PaymentQuote'
 // OSS mode: import all entities from OSS directory
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../oss/database/entities/EnterpriseEntities'
 import { User } from '../../oss/database/entities/user.entity'
@@ -94,5 +95,6 @@ export const entities = {
     ToolAlert,
     PriceApprovalRequest,
     PaymentTransaction,
+    PaymentQuote,
     ...additionalEntities
 }

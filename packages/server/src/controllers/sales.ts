@@ -8,6 +8,32 @@ import { normalizePhoneNumber, isValidPhoneNumber } from '../utils/phoneNormaliz
 import { DashboardService } from '../services/dashboard'
 import { recordSaleAnalytics } from '../services/agent-events'
 
+const parseNumberish = (value: any): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value
+    if (typeof value === 'string') {
+        const trimmed = value.replace(/[^0-9.,-]/g, '').replace(/,/g, '.')
+        const parsed = Number(trimmed)
+        if (Number.isFinite(parsed)) return parsed
+    }
+    return null
+}
+
+const computeAmountCents = (
+    finalPrice?: number | null,
+    totalPrice?: number | null,
+    unitPrice?: number | null,
+    quantity?: number | null
+): number => {
+    const resolvedQuantity = typeof quantity === 'number' && Number.isFinite(quantity) ? quantity : 1
+    const candidates = [
+        finalPrice,
+        totalPrice,
+        typeof unitPrice === 'number' && Number.isFinite(unitPrice) ? unitPrice * resolvedQuantity : null
+    ]
+    const chosen = candidates.find((val) => typeof val === 'number' && Number.isFinite(val)) ?? 0
+    return Math.max(0, Math.round(chosen * 100))
+}
+
 // Get all sales
 const getAllSales = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -164,22 +190,15 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         let finalProductModel = product_model
         let finalWheelSize = wheel_size
         let analysisNotes = ''
-
-        const parseNumeric = (value: any): number | null => {
-            if (typeof value === 'number' && Number.isFinite(value)) return value
-            if (typeof value === 'string') {
-                const trimmed = value.replace(/[^0-9.,-]/g, '').replace(/,/g, '.')
-                const parsed = Number(trimmed)
-                if (Number.isFinite(parsed)) return parsed
-            }
-            return null
-        }
-
-        const quantityNumber = parseNumeric(quantity) ?? 1
-        const unitPriceNumber = parseNumeric(unit_price)
-        const totalPriceNumber = parseNumeric(total_price)
-        const discountPercentageNumber = parseNumeric(discount_percentage) ?? 0
-        const finalPriceNumber = parseNumeric(final_price)
+        const quantityNumber = parseNumberish(quantity) ?? 1
+        const unitPriceNumber = parseNumberish(unit_price)
+        const totalPriceNumber = parseNumberish(total_price)
+        const discountPercentageNumber = parseNumberish(discount_percentage) ?? 0
+        const finalPriceNumber = parseNumberish(final_price)
+        const currency =
+            typeof req.body.currency === 'string' && req.body.currency.trim()
+                ? req.body.currency.trim().toUpperCase().slice(0, 10)
+                : 'USD'
 
         // If product_sku is not provided, try to detect it from conversation
         if (!finalProductSku && (resolvedChatflowId || sessionId || chatId)) {
@@ -287,15 +306,16 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
 
         // Combine agent notes with analysis notes
         const combinedNotes = [agent_notes, analysisNotes].filter(Boolean).join(' | ')
+        const amountCents = computeAmountCents(finalPriceNumber, totalPriceNumber, unitPriceNumber, quantityNumber)
         
         const query = `
             INSERT INTO sales (
                 customer_id, phone_number, product_sku, product_brand, product_model,
                 wheel_size, quantity, unit_price, total_price, discount_percentage,
-                final_price, payment_method, delivery_method, delivery_address,
+                final_price, amount_cents, currency, payment_method, delivery_method, delivery_address,
                 sale_status, negotiation_attempts, agent_notes, created_at, updated_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW(), NOW())
             RETURNING *
         `
         
@@ -311,6 +331,8 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             totalPriceNumber,
             discountPercentageNumber,
             finalPriceNumber,
+            amountCents,
+            currency,
             payment_method,
             delivery_method,
             deliveryAddress,
@@ -407,6 +429,31 @@ const updateSale = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Sale not found')
         }
 
+        const existing = existingSale[0]
+        const existingQuantity = parseNumberish(existing.quantity) ?? 1
+        const quantityNumber = quantity !== undefined ? parseNumberish(quantity) ?? existingQuantity : existingQuantity
+        const unitPriceNumber =
+            unit_price !== undefined ? parseNumberish(unit_price) : parseNumberish(existing.unit_price ?? existing.unitPrice)
+        const totalPriceNumber =
+            total_price !== undefined ? parseNumberish(total_price) : parseNumberish(existing.total_price ?? existing.totalPrice)
+        const finalPriceNumber =
+            final_price !== undefined ? parseNumberish(final_price) : parseNumberish(existing.final_price ?? existing.finalPrice)
+        const discountPercentageNumber =
+            discount_percentage !== undefined
+                ? parseNumberish(discount_percentage)
+                : parseNumberish(existing.discount_percentage ?? existing.discountPercentage)
+        const shouldUpdateAmountCents =
+            quantity !== undefined || unit_price !== undefined || total_price !== undefined || final_price !== undefined
+        const amountCents = shouldUpdateAmountCents
+            ? computeAmountCents(finalPriceNumber, totalPriceNumber, unitPriceNumber, quantityNumber)
+            : undefined
+        const currencyValue =
+            req.body.currency !== undefined
+                ? typeof req.body.currency === 'string' && req.body.currency.trim()
+                    ? req.body.currency.trim().toUpperCase().slice(0, 10)
+                    : existing.currency || 'USD'
+                : undefined
+
         // Build update query dynamically
         let updateQuery = 'UPDATE sales SET updated_at = NOW()'
         const params: any[] = []
@@ -414,31 +461,31 @@ const updateSale = async (req: Request, res: Response, next: NextFunction) => {
 
         if (quantity !== undefined) {
             updateQuery += `, quantity = $${paramIndex}`
-            params.push(quantity)
+            params.push(quantityNumber)
             paramIndex++
         }
 
         if (unit_price !== undefined) {
             updateQuery += `, unit_price = $${paramIndex}`
-            params.push(unit_price)
+            params.push(unitPriceNumber)
             paramIndex++
         }
 
         if (total_price !== undefined) {
             updateQuery += `, total_price = $${paramIndex}`
-            params.push(total_price)
+            params.push(totalPriceNumber)
             paramIndex++
         }
 
         if (discount_percentage !== undefined) {
             updateQuery += `, discount_percentage = $${paramIndex}`
-            params.push(discount_percentage)
+            params.push(discountPercentageNumber)
             paramIndex++
         }
 
         if (final_price !== undefined) {
             updateQuery += `, final_price = $${paramIndex}`
-            params.push(final_price)
+            params.push(finalPriceNumber)
             paramIndex++
         }
 
@@ -475,6 +522,18 @@ const updateSale = async (req: Request, res: Response, next: NextFunction) => {
         if (agent_notes !== undefined) {
             updateQuery += `, agent_notes = $${paramIndex}`
             params.push(agent_notes)
+            paramIndex++
+        }
+
+        if (currencyValue !== undefined) {
+            updateQuery += `, currency = $${paramIndex}`
+            params.push(currencyValue)
+            paramIndex++
+        }
+
+        if (shouldUpdateAmountCents) {
+            updateQuery += `, amount_cents = $${paramIndex}`
+            params.push(amountCents ?? 0)
             paramIndex++
         }
 

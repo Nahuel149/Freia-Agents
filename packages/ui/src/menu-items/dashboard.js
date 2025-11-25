@@ -110,6 +110,15 @@ const dashboard = {
                     breadcrumbs: true,
                     permission: 'executions:view'
                 },
+                {
+                    id: 'payments',
+                    title: 'Payments',
+                    type: 'item',
+                    url: '/payments',
+                    icon: icons.IconBuildingStore,
+                    breadcrumbs: true,
+                    permission: 'chatflows:view'
+                },
 
                 {
                     id: 'document-stores',
