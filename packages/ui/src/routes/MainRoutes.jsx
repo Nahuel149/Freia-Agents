@@ -61,6 +61,7 @@ const EvalDatasetRows = Loadable(lazy(() => import('@/views/datasets/DatasetItem
 const EvalDatasets = Loadable(lazy(() => import('@/views/datasets')))
 const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
 const Payments = Loadable(lazy(() => import('@/views/payments')))
+const LandingTemplates = Loadable(lazy(() => import('@/views/templates')))
 
 // account routing
 const Account = Loadable(lazy(() => import('@/views/account')))
@@ -168,6 +169,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'templates:marketplace,templates:custom'}>
                     <Marketplaces />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/templates',
+            element: (
+                <RequireAuth permission={'templates:marketplace,templates:custom'}>
+                    <LandingTemplates />
                 </RequireAuth>
             )
         },

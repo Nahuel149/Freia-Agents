@@ -187,8 +187,8 @@ const SignInPage = () => {
                 top: 0,
                 left: 0,
                 background: customization.isDarkMode
-                    ? 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)'
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    ? 'linear-gradient(135deg, #0B1021 0%, #0E1529 45%, #0A56F0 100%)'
+                    : 'linear-gradient(135deg, #F8FAFF 0%, #E8F0FF 45%, #FF7A18 100%)',
                 overflow: 'auto',
                 '&::before': {
                     content: '""',
@@ -198,8 +198,8 @@ const SignInPage = () => {
                     right: 0,
                     bottom: 0,
                     background: customization.isDarkMode
-                        ? 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%)'
-                        : 'radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
+                        ? 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.16) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.18) 0%, transparent 50%)'
+                        : 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.14) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.16) 0%, transparent 50%)',
                     pointerEvents: 'none'
                 }
             }}
@@ -210,17 +210,13 @@ const SignInPage = () => {
                         width: '100%',
                         maxWidth: '480px',
                         mx: 'auto',
-                        background: customization.isDarkMode
-                            ? 'rgba(30, 30, 46, 0.8)'
-                            : 'rgba(255, 255, 255, 0.9)',
+                        background: customization.isDarkMode ? 'rgba(14, 21, 41, 0.9)' : 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(20px)',
-                        border: customization.isDarkMode
-                            ? '1px solid rgba(255, 255, 255, 0.1)'
-                            : '1px solid rgba(255, 255, 255, 0.2)',
+                        border: customization.isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
                         borderRadius: '24px',
                         boxShadow: customization.isDarkMode
-                            ? '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                            : '0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                            ? '0 25px 60px rgba(0, 0, 0, 0.45)'
+                            : '0 25px 60px rgba(10, 86, 240, 0.18)'
                     }}
                 >
                     <CardContent sx={{ p: 4 }}>
@@ -243,14 +239,14 @@ const SignInPage = () => {
                         </Stack>
                     )}
                     <Stack sx={{ gap: 2, textAlign: 'center', mb: 1 }}>
-                        <Typography 
-                            variant='h3' 
-                            sx={{ 
+                        <Typography
+                            variant='h3'
+                            sx={{
                                 fontWeight: 700,
                                 fontSize: { xs: '2rem', sm: '2.5rem' },
                                 background: customization.isDarkMode
-                                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    ? 'linear-gradient(135deg, #FF7A18 0%, #0A56F0 100%)'
+                                    : 'linear-gradient(135deg, #FF7A18 0%, #0A56F0 100%)',
                                 backgroundClip: 'text',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',

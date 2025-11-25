@@ -4,6 +4,16 @@
 // third-party (CSS import)
 @import url('react-perfect-scrollbar/dist/css/styles.css');
 
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#root {
+    min-height: 100vh;
+}
+
 // ==============================|| LIGHT BOX ||============================== //
 .fullscreen .react-images__blanket {
     z-index: 1200;

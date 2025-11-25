@@ -93,8 +93,8 @@ const ForgotPasswordPage = () => {
                 right: 0,
                 bottom: 0,
                 background: customization.isDarkMode
-                    ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                    ? 'linear-gradient(135deg, #0B1021 0%, #0E1529 45%, #0A56F0 100%)'
+                    : 'linear-gradient(135deg, #F8FAFF 0%, #E8F0FF 45%, #FF7A18 100%)',
                 '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -103,8 +103,8 @@ const ForgotPasswordPage = () => {
                     right: 0,
                     bottom: 0,
                     background: customization.isDarkMode
-                        ? 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%)'
-                        : 'radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 50%)',
+                        ? 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.16) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.18) 0%, transparent 50%)'
+                        : 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.14) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.16) 0%, transparent 50%)',
                     pointerEvents: 'none'
                 },
                 display: 'flex',
@@ -114,20 +114,16 @@ const ForgotPasswordPage = () => {
                 overflow: 'auto'
             }}
         >
-            <Container maxWidth="sm">
+            <Container maxWidth='sm'>
                 <Card
                     sx={{
                         backdropFilter: 'blur(20px)',
-                        background: customization.isDarkMode
-                            ? 'rgba(255, 255, 255, 0.05)'
-                            : 'rgba(255, 255, 255, 0.25)',
-                        border: customization.isDarkMode
-                            ? '1px solid rgba(255, 255, 255, 0.1)'
-                            : '1px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: 4,
+                        background: customization.isDarkMode ? 'rgba(14, 21, 41, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+                        border: customization.isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
+                        borderRadius: '24px',
                         boxShadow: customization.isDarkMode
-                            ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-                            : '0 8px 32px rgba(0, 0, 0, 0.1)',
+                            ? '0 25px 60px rgba(0, 0, 0, 0.45)'
+                            : '0 25px 60px rgba(10, 86, 240, 0.18)',
                         position: 'relative',
                         zIndex: 1
                     }}

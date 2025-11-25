@@ -191,8 +191,8 @@ const RegisterPage = () => {
                     minHeight: '100vh',
                     width: '100%',
                     background: customization.isDarkMode
-                        ? 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)'
-                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        ? 'linear-gradient(135deg, #0B1021 0%, #0E1529 45%, #0A56F0 100%)'
+                        : 'linear-gradient(135deg, #F8FAFF 0%, #E8F0FF 45%, #FF7A18 100%)',
                     position: 'relative',
                     '&::before': {
                         content: '""',
@@ -202,8 +202,8 @@ const RegisterPage = () => {
                         right: 0,
                         bottom: 0,
                         background: customization.isDarkMode
-                            ? 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%)'
-                            : 'radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%)',
+                            ? 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.16) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.18) 0%, transparent 50%)'
+                            : 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.14) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.16) 0%, transparent 50%)',
                         pointerEvents: 'none'
                     }
                 }}
@@ -216,24 +216,23 @@ const RegisterPage = () => {
                         justifyContent: 'center',
                         minHeight: '100vh',
                         py: 4,
-                        px: { xs: 2, sm: 4, md: 6, lg: 8 }
+                        px: 0,
+                        width: '100%'
                     }}
                 >
                     <Card
                         sx={{
                             width: '100%',
-                            maxWidth: { xs: '100%', sm: 600, md: 700, lg: 800 },
-                            background: customization.isDarkMode
-                                ? 'rgba(255, 255, 255, 0.05)'
-                                : 'rgba(255, 255, 255, 0.9)',
+                            maxWidth: { xs: '100%', sm: 620, md: 760 },
+                            background: customization.isDarkMode ? 'rgba(14, 21, 41, 0.9)' : 'rgba(255, 255, 255, 0.95)',
                             backdropFilter: 'blur(20px)',
                             border: customization.isDarkMode
                                 ? '1px solid rgba(255, 255, 255, 0.1)'
-                                : '1px solid rgba(255, 255, 255, 0.2)',
-                            borderRadius: 3,
+                                : '1px solid rgba(0, 0, 0, 0.08)',
+                            borderRadius: '24px',
                             boxShadow: customization.isDarkMode
-                                ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-                                : '0 8px 32px rgba(0, 0, 0, 0.1)',
+                                ? '0 25px 60px rgba(0, 0, 0, 0.45)'
+                                : '0 25px 60px rgba(10, 86, 240, 0.18)',
                             overflow: 'visible'
                         }}
                     >

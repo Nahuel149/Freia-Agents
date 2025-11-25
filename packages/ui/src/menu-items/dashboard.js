@@ -119,6 +119,15 @@ const dashboard = {
                     breadcrumbs: true,
                     permission: 'chatflows:view'
                 },
+                {
+                    id: 'templates',
+                    title: 'Templates',
+                    type: 'item',
+                    url: '/templates',
+                    icon: icons.IconBuildingStore,
+                    breadcrumbs: true,
+                    permission: 'templates:marketplace,templates:custom'
+                },
 
                 {
                     id: 'document-stores',
