@@ -1,0 +1,76 @@
+{
+  "rulesVersion": "2025-11",
+  "general": {
+    "music": {
+      "day": "musica moderada hasta las 20:00",
+      "night": "sin musica amplificada despues de las 22:00"
+    },
+    "rainInsurance": false,
+    "airConditioning": false,
+    "mitigation": [
+      "ofrecer carpa opcional en caso de lluvia",
+      "ventiladores disponibles en quincho"
+    ]
+  },
+  "minStayRules": [
+    {
+      "start": "2025-12-20",
+      "end": "2026-01-05",
+      "minNights": 3,
+      "reason": "fiestas"
+    },
+    {
+      "start": "2025-12-06",
+      "end": "2025-12-09",
+      "minNights": 3,
+      "reason": "fin de semana largo"
+    }
+  ],
+  "payment": {
+    "holdHours": 24,
+    "depositPct": 30,
+    "depositDeadlineHours": 24,
+    "fullPaymentDaysBefore": 7,
+    "acceptedMethods": [
+      "transferencia",
+      "efectivo"
+    ],
+    "penaltyLatePayment": "liberar fecha si no se paga dentro del plazo"
+  },
+  "discounts": {
+    "enabled": true,
+    "habitualPct": 10,
+    "requiresFlag": true,
+    "notes": "solo aplicar a clientes habituales marcados en la conversacion"
+  },
+  "visits": {
+    "availableSlots": [
+      {
+        "day": "saturday",
+        "slots": [
+          "10:00",
+          "12:00",
+          "15:00"
+        ]
+      },
+      {
+        "day": "wednesday",
+        "slots": [
+          "17:00",
+          "18:00"
+        ]
+      }
+    ],
+    "requirements": [
+      "coordinar con administrador",
+      "limite 1 visita por dia"
+    ]
+  },
+  "catalog": {
+    "link": "https://example.com/catalogo-quintas",
+    "filters": [
+      "fecha",
+      "capacidad"
+    ]
+  }
+}

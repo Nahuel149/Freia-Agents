@@ -1,0 +1,57 @@
+{
+  "catalogLink": "https://example.com/catalogo-quintas",
+  "properties": [
+    {
+      "id": "rincon-principal",
+      "name": "Rincon Principal",
+      "capacity": 25,
+      "basePricePerNight": 280,
+      "currency": "USD",
+      "minNights": 2,
+      "amenities": [
+        "pileta",
+        "quincho cerrado",
+        "parrilla",
+        "habitaciones con bano",
+        "estacionamiento"
+      ],
+      "restrictions": {
+        "rainInsurance": false,
+        "airConditioning": false,
+        "musicNight": "sin musica amplificada despues de las 22:00"
+      },
+      "notes": [
+        "musica moderada de dia",
+        "ofrecer carpa opcional si llueve",
+        "minimo 2 noches fuera de feriados"
+      ],
+      "map": "https://maps.example.com/rincon-principal"
+    },
+    {
+      "id": "rincon-bosque",
+      "name": "Rincon Bosque",
+      "capacity": 18,
+      "basePricePerNight": 220,
+      "currency": "USD",
+      "minNights": 2,
+      "amenities": [
+        "pileta",
+        "quincho abierto",
+        "parrilla",
+        "fogata",
+        "cochera cubierta"
+      ],
+      "restrictions": {
+        "rainInsurance": false,
+        "airConditioning": false,
+        "musicNight": "sin musica despues de las 22:00"
+      },
+      "notes": [
+        "acepta mascotas con aviso",
+        "ideal eventos pequenos"
+      ],
+      "map": "https://maps.example.com/rincon-bosque"
+    }
+  ],
+  "pricingNotes": "precios base, ajustar por temporada alta/feriados segun restricciones"
+}

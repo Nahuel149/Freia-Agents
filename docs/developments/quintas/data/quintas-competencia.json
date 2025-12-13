@@ -1,0 +1,20 @@
+{
+  "referenceDate": "2025-11-25",
+  "competitors": [
+    {
+      "name": "Quinta Los Arces",
+      "location": "Zona Norte",
+      "pricePerNight": 260,
+      "currency": "USD",
+      "notes": "incluye aire acondicionado en salon"
+    },
+    {
+      "name": "Quinta La Laguna",
+      "location": "Zona Oeste",
+      "pricePerNight": 200,
+      "currency": "USD",
+      "notes": "sin pileta, pero gran parque"
+    }
+  ],
+  "comments": "usar solo como referencia manual para KPI; ajustar con datos reales cuando se disponga"
+}

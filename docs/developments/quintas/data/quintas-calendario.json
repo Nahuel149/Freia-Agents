@@ -1,0 +1,82 @@
+{
+  "lastUpdated": "2025-11-25",
+  "properties": [
+    {
+      "id": "rincon-principal",
+      "name": "Rincon Principal",
+      "location": "Zona Norte",
+      "defaultMinNights": 2,
+      "holdsHours": 24,
+      "events": [
+        {
+          "start": "2025-12-07",
+          "end": "2025-12-09",
+          "status": "booked",
+          "source": "whatsapp",
+          "notes": "fin de semana largo"
+        },
+        {
+          "start": "2025-12-20",
+          "end": "2025-12-22",
+          "status": "booked",
+          "source": "instagram"
+        },
+        {
+          "start": "2025-12-29",
+          "end": "2026-01-02",
+          "status": "hold",
+          "holdExpires": "2025-12-10T18:00:00Z",
+          "notes": "espera de pago"
+        },
+        {
+          "start": "2026-01-15",
+          "end": "2026-01-16",
+          "status": "visit",
+          "notes": "visita guiada"
+        }
+      ],
+      "blockedDates": [
+        "2025-12-24",
+        "2025-12-25"
+      ]
+    },
+    {
+      "id": "rincon-bosque",
+      "name": "Rincon Bosque",
+      "location": "Zona Oeste",
+      "defaultMinNights": 2,
+      "holdsHours": 12,
+      "events": [
+        {
+          "start": "2025-12-12",
+          "end": "2025-12-13",
+          "status": "booked"
+        },
+        {
+          "start": "2025-12-31",
+          "end": "2026-01-02",
+          "status": "booked"
+        },
+        {
+          "start": "2025-12-17",
+          "end": "2025-12-17",
+          "status": "visit",
+          "notes": "16:00"
+        }
+      ],
+      "blockedDates": []
+    }
+  ],
+  "blackoutDates": [
+    {
+      "start": "2025-12-24",
+      "end": "2025-12-25",
+      "reason": "navidad"
+    },
+    {
+      "start": "2026-01-01",
+      "end": "2026-01-01",
+      "reason": "mantenimiento"
+    }
+  ]
+}

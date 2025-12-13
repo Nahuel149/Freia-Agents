@@ -1,0 +1,58 @@
+{
+  "leads": [
+    {
+      "id": "L-2025-001",
+      "name": "Maria Perez",
+      "channel": "whatsapp",
+      "phone": "+5491100000001",
+      "dateRequested": "2025-12-22",
+      "property": "rincon-principal",
+      "people": 20,
+      "interest": "alquiler",
+      "status": "open",
+      "reasonNotClosed": null,
+      "notes": "pidio hold de 24h; volver a contactar con promocion si baja ocupacion"
+    },
+    {
+      "id": "L-2025-002",
+      "name": "Jorge Ramirez",
+      "channel": "instagram",
+      "phone": "+5491100000002",
+      "dateRequested": "2025-12-28",
+      "property": "rincon-bosque",
+      "people": 15,
+      "interest": "visita",
+      "status": "scheduled",
+      "visitDate": "2026-01-05",
+      "reasonNotClosed": null,
+      "notes": "prefiere sabado 12:00"
+    },
+    {
+      "id": "L-2025-003",
+      "name": "Lucia Gomez",
+      "channel": "referido",
+      "phone": "+5491100000003",
+      "dateRequested": "2025-12-10",
+      "property": "rincon-principal",
+      "people": 25,
+      "interest": "alquiler",
+      "status": "lost",
+      "reasonNotClosed": "precio",
+      "notes": "cliente habitual, aplicar descuento si recontacta"
+    }
+  ],
+  "outreachTemplates": [
+    {
+      "id": "promo-baja",
+      "text": "Hola {{nombre}}, liberamos fechas y tenemos un beneficio para clientes habituales. Avisame si queres confirmar."
+    },
+    {
+      "id": "follow-up",
+      "text": "Hola {{nombre}}, seguimos con disponibilidad para {{fecha}}. Confirmas si queres que sostengamos la fecha?"
+    }
+  ],
+  "kpiConfig": {
+    "lowSeasonThresholdPct": 50,
+    "occupancyTargetPct": 70
+  }
+}

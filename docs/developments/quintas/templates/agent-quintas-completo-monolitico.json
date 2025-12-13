@@ -1,0 +1,867 @@
+{
+  "name": "DEMO Quintas - Agente Monolitico",
+  "description": "Agentflow V2 monolitico para quintas: disponibilidad, reserva, visitas, FAQ, follow-up y KPI.",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "Start",
+      "label": "Start",
+      "data": {
+        "inputType": "chat",
+        "ephemeralMemory": false,
+        "flowState": {
+          "intent": "",
+          "idioma": "es",
+          "fechaSolicitada": "",
+          "checkOut": "",
+          "diasSolicitados": 0,
+          "personas": 0,
+          "quintaId": "",
+          "quintasDisponibles": [],
+          "catalogoLink": "",
+          "precioBase": 0,
+          "precioTotal": 0,
+          "moneda": "USD",
+          "descuentoPct": 0,
+          "clienteHabitualFlag": false,
+          "cotizacionVigencia": "",
+          "estadoCalendario": "",
+          "holdExpires": "",
+          "lead": {},
+          "citaVisita": {},
+          "kpi": {},
+          "alternativas": [],
+          "minNights": 0,
+          "depositPct": 0,
+          "depositDeadlineHours": 0,
+          "musicRules": "",
+          "paymentNote": ""
+        }
+      },
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "memory",
+      "type": "MongoDBAtlasChatMemory",
+      "label": "Memory Mongo",
+      "data": {
+        "credential": "{{MONGO_CREDENTIAL_ID}}",
+        "databaseName": "freia_demo",
+        "collectionName": "chat_memory_quintas",
+        "sessionId": "{{ $flow.chatId }}",
+        "memoryKey": "history"
+      },
+      "position": [
+        0,
+        140
+      ]
+    },
+    {
+      "id": "llm_intent",
+      "type": "LLM",
+      "label": "LLM Intent",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Clasifica la intencion en: disponibilidad, reserva, visita, faq, followup, kpi. Devuelve solo JSON {intent, notas}."
+          },
+          {
+            "role": "user",
+            "content": "{{ $flow.input }}"
+          }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "intent": {
+              "type": "string"
+            },
+            "notas": {
+              "type": "string"
+            }
+          }
+        },
+        "updateFlowState": {
+          "intent": "{{ json.intent }}"
+        }
+      },
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "id": "router",
+      "type": "ConditionAgent",
+      "label": "Router IA",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "instructions": "Elige el escenario mas adecuado: disponibilidad, reserva, visita, faq, followup, kpi.",
+        "input": "{{ $flow.input }}",
+        "scenarios": [
+          "disponibilidad",
+          "reserva",
+          "visita",
+          "faq",
+          "followup",
+          "kpi"
+        ]
+      },
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "id": "q_norm",
+      "type": "LLM",
+      "label": "Q - Normalizar",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Extrae de la consulta: fechaSolicitada, checkOut o diasSolicitados, personas, quintaId, clienteHabitualFlag, preferenciaVisita. Si falta algo, needsClarification=true y missingFields. Devuelve solo JSON."
+          },
+          {
+            "role": "user",
+            "content": "{{ $flow.input }}"
+          }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "fechaSolicitada": {
+              "type": "string"
+            },
+            "checkOut": {
+              "type": "string"
+            },
+            "diasSolicitados": {
+              "type": "number"
+            },
+            "personas": {
+              "type": "number"
+            },
+            "quintaId": {
+              "type": "string"
+            },
+            "clienteHabitualFlag": {
+              "type": "boolean"
+            },
+            "preferenciaVisita": {
+              "type": "string"
+            },
+            "missingFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "needsClarification": {
+              "type": "boolean"
+            }
+          }
+        },
+        "updateFlowState": {
+          "fechaSolicitada": "{{ json.fechaSolicitada }}",
+          "checkOut": "{{ json.checkOut }}",
+          "diasSolicitados": "{{ json.diasSolicitados }}",
+          "personas": "{{ json.personas }}",
+          "quintaId": "{{ json.quintaId }}",
+          "clienteHabitualFlag": "{{ json.clienteHabitualFlag }}",
+          "missingFields": "{{ json.missingFields }}",
+          "needsClarification": "{{ json.needsClarification }}"
+        }
+      },
+      "position": [
+        780,
+        -160
+      ]
+    },
+    {
+      "id": "q_cond_missing",
+      "type": "Condition",
+      "label": "Q - faltan datos?",
+      "data": {
+        "conditions": [
+          {
+            "type": "Boolean",
+            "value1": "{{ $flow.state.needsClarification }}",
+            "operation": "equal",
+            "value2": true
+          }
+        ]
+      },
+      "position": [
+        1020,
+        -160
+      ]
+    },
+    {
+      "id": "q_reply_missing",
+      "type": "DirectReply",
+      "label": "Q - pedir datos",
+      "data": {
+        "response": "Necesito datos: {{ $flow.state.missingFields }} (fecha, noches, personas, quinta)."
+      },
+      "position": [
+        1260,
+        -200
+      ]
+    },
+    {
+      "id": "q_custom_calc",
+      "type": "CustomFunction",
+      "label": "Q - calcular",
+      "data": {
+        "inputVariables": [
+          {
+            "name": "diasSolicitados",
+            "value": "{{ $flow.state.diasSolicitados }}"
+          },
+          {
+            "name": "precioBase",
+            "value": "{{ $flow.state.precioBase }}"
+          },
+          {
+            "name": "descuentoPct",
+            "value": "{{ $flow.state.descuentoPct }}"
+          },
+          {
+            "name": "clienteHabitualFlag",
+            "value": "{{ $flow.state.clienteHabitualFlag }}"
+          }
+        ],
+        "code": "const dias=Number($diasSolicitados)||1;const base=Number($precioBase)||0;const descFlag=String($clienteHabitualFlag)==='true';const desc=descFlag?(Number($descuentoPct)||0):0;const total=base*dias*(1-(desc/100));return JSON.stringify({noches:dias,precioTotal:total,descuentoPct:desc});",
+        "updateFlowState": {
+          "diasSolicitados": "{{ json.noches }}",
+          "precioTotal": "{{ json.precioTotal }}",
+          "descuentoPct": "{{ json.descuentoPct }}"
+        }
+      },
+      "position": [
+        1260,
+        -120
+      ]
+    },
+    {
+      "id": "q_ret_restr",
+      "type": "Retriever",
+      "label": "Q - Restricciones",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_RESTRICCIONES_ID}}",
+        "query": "{{ $flow.state.fechaSolicitada }} minimos musica pagos visitas {{ $flow.state.quintaId }}",
+        "outputFormat": "text"
+      },
+      "position": [
+        1500,
+        -200
+      ]
+    },
+    {
+      "id": "q_ret_cal",
+      "type": "Retriever",
+      "label": "Q - Calendario",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_CALENDARIO_ID}}",
+        "query": "{{ $flow.state.fechaSolicitada }} {{ $flow.state.diasSolicitados }} {{ $flow.state.personas }} {{ $flow.state.quintaId }}",
+        "outputFormat": "text"
+      },
+      "position": [
+        1500,
+        -160
+      ]
+    },
+    {
+      "id": "q_ret_cat",
+      "type": "Retriever",
+      "label": "Q - Catalogo",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_CATALOGO_ID}}",
+        "query": "{{ $flow.state.personas }} capacidad amenities precio {{ $flow.state.fechaSolicitada }}",
+        "outputFormat": "text"
+      },
+      "position": [
+        1500,
+        -120
+      ]
+    },
+    {
+      "id": "q_llm_tarifa",
+      "type": "LLM",
+      "label": "Q - Tarifa",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Con inventario/catalogo, restricciones (minimos, musica, pagos) y calendario, calcula precio por noche y total. Si noches < minNights, marca alternativaNecesaria=true y propone extender (texto en notas). Incluye deposito y plazo de pago. Devuelve JSON {precioNoche, precioTotal, moneda, notas, alternativaNecesaria, minNights, minNightsOk, depositPct, depositDeadlineHours, musicRules, paymentNote}."
+          },
+          {
+            "role": "user",
+            "content": "{{ q_ret_cat.output }} {{ q_ret_restr.output }} {{ q_ret_cal.output }}"
+          }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "precioNoche": {
+              "type": "number"
+            },
+            "precioTotal": {
+              "type": "number"
+            },
+            "moneda": {
+              "type": "string"
+            },
+            "notas": {
+              "type": "string"
+            },
+            "alternativaNecesaria": {
+              "type": "boolean"
+            },
+            "minNights": {
+              "type": "number"
+            },
+            "minNightsOk": {
+              "type": "boolean"
+            },
+            "depositPct": {
+              "type": "number"
+            },
+            "depositDeadlineHours": {
+              "type": "number"
+            },
+            "musicRules": {
+              "type": "string"
+            },
+            "paymentNote": {
+              "type": "string"
+            }
+          }
+        },
+        "updateFlowState": {
+          "precioTotal": "{{ json.precioTotal }}",
+          "moneda": "{{ json.moneda }}",
+          "alternativas": "{{ json.notas }}",
+          "minNights": "{{ json.minNights }}",
+          "depositPct": "{{ json.depositPct }}",
+          "depositDeadlineHours": "{{ json.depositDeadlineHours }}",
+          "musicRules": "{{ json.musicRules }}",
+          "paymentNote": "{{ json.paymentNote }}"
+        }
+      },
+      "position": [
+        1760,
+        -140
+      ]
+    },
+    {
+      "id": "q_human_cot",
+      "type": "HumanInput",
+      "label": "Q - Cotizacion",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Quinta: {{ $flow.state.quintaId }}\nFecha: {{ $flow.state.fechaSolicitada }} (+{{ $flow.state.diasSolicitados }} noches)\nPersonas: {{ $flow.state.personas }}\nTotal: {{ $flow.state.precioTotal }} {{ $flow.state.moneda }}\nMin noches requeridas: {{ $flow.state.minNights }}\nDeposito: {{ $flow.state.depositPct }}% en {{ $flow.state.depositDeadlineHours }}h\nMusica: {{ $flow.state.musicRules }}\nDescuento habitual: {{ $flow.state.descuentoPct }}%\n?Confirmar hold/confirmacion?"
+      },
+      "position": [
+        2000,
+        -140
+      ]
+    },
+    {
+      "id": "q_custom_calendario",
+      "type": "CustomFunction",
+      "label": "Q - Calendario",
+      "data": {
+        "inputVariables": [
+          {
+            "name": "estado",
+            "value": "hold"
+          },
+          {
+            "name": "fecha",
+            "value": "{{ $flow.state.fechaSolicitada }}"
+          },
+          {
+            "name": "dias",
+            "value": "{{ $flow.state.diasSolicitados }}"
+          }
+        ],
+        "code": "const holdHours=24;const now=new Date();const exp=new Date(now.getTime()+holdHours*60*60*1000).toISOString();return JSON.stringify({estadoCalendario:$estado||'hold',holdExpires:exp,reservaId:'QTA-'+Date.now()});",
+        "updateFlowState": {
+          "estadoCalendario": "{{ json.estadoCalendario }}",
+          "holdExpires": "{{ json.holdExpires }}",
+          "reservaId": "{{ json.reservaId }}"
+        }
+      },
+      "position": [
+        2240,
+        -140
+      ]
+    },
+    {
+      "id": "q_reply_final",
+      "type": "DirectReply",
+      "label": "Q - Confirmacion",
+      "data": {
+        "response": "Reserva {{ $flow.state.reservaId }}: {{ $flow.state.quintaId }} del {{ $flow.state.fechaSolicitada }} por {{ $flow.state.diasSolicitados }} noches. Total {{ $flow.state.precioTotal }} {{ $flow.state.moneda }}. Min noches {{ $flow.state.minNights }}. Deposito {{ $flow.state.depositPct }}% en {{ $flow.state.depositDeadlineHours }}h; luego se libera si no se paga. Musica: {{ $flow.state.musicRules }}. Sin seguro de lluvia/AC. Vigencia hold hasta {{ $flow.state.holdExpires }}."
+      },
+      "position": [
+        2480,
+        -140
+      ]
+    },
+    {
+      "id": "v_norm",
+      "type": "LLM",
+      "label": "Visita - Normalizar",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Extrae fechaSolicitada, persona contacto y horario preferido para visita. Devuelve JSON."
+          },
+          {
+            "role": "user",
+            "content": "{{ $flow.input }}"
+          }
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "fechaSolicitada": {
+              "type": "string"
+            },
+            "preferenciaVisita": {
+              "type": "string"
+            },
+            "persona": {
+              "type": "string"
+            }
+          }
+        },
+        "updateFlowState": {
+          "fechaSolicitada": "{{ json.fechaSolicitada }}",
+          "citaVisita": "{{ json }}"
+        }
+      },
+      "position": [
+        820,
+        120
+      ]
+    },
+    {
+      "id": "v_ret_slots",
+      "type": "Retriever",
+      "label": "Visita - slots",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_RESTRICCIONES_ID}}",
+        "query": "visitas slots {{ $flow.state.fechaSolicitada }} {{ $flow.state.quintaId }}",
+        "outputFormat": "text"
+      },
+      "position": [
+        1060,
+        120
+      ]
+    },
+    {
+      "id": "v_human",
+      "type": "HumanInput",
+      "label": "Visita - confirmar",
+      "data": {
+        "descriptionType": "Fixed",
+        "description": "Visita para {{ $flow.state.quintaId || 'cualquier quinta' }} el {{ $flow.state.fechaSolicitada }}. Slots sugeridos: {{ v_ret_slots.output }}. Confirma hora?"
+      },
+      "position": [
+        1300,
+        120
+      ]
+    },
+    {
+      "id": "v_reply",
+      "type": "DirectReply",
+      "label": "Visita - Reply",
+      "data": {
+        "response": "Visita agendada para {{ $flow.state.quintaId }} el {{ $flow.state.fechaSolicitada }}. Confirma slot: {{ v_ret_slots.output }}"
+      },
+      "position": [
+        1540,
+        120
+      ]
+    },
+    {
+      "id": "faq_ret",
+      "type": "Retriever",
+      "label": "FAQ - Restricciones",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_RESTRICCIONES_ID}}",
+        "query": "lluvia aire musica pagos {{ $flow.state.quintaId }}",
+        "outputFormat": "text"
+      },
+      "position": [
+        820,
+        280
+      ]
+    },
+    {
+      "id": "faq_llm",
+      "type": "LLM",
+      "label": "FAQ - Reply",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Responde breve sobre lluvia, aire, musica y pagos con el texto provisto."
+          },
+          {
+            "role": "user",
+            "content": "{{ faq_ret.output }}"
+          }
+        ],
+        "responseFormat": "text"
+      },
+      "position": [
+        1060,
+        280
+      ]
+    },
+    {
+      "id": "faq_reply",
+      "type": "DirectReply",
+      "label": "FAQ - Direct",
+      "data": {
+        "response": "{{ faq_llm.output }}"
+      },
+      "position": [
+        1300,
+        280
+      ]
+    },
+    {
+      "id": "f_ret",
+      "type": "Retriever",
+      "label": "Followup - Leads",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_LEADS_ID}}",
+        "query": "leads abiertos o perdidos promociones",
+        "outputFormat": "text"
+      },
+      "position": [
+        820,
+        440
+      ]
+    },
+    {
+      "id": "f_llm",
+      "type": "LLM",
+      "label": "Followup - Texto",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Genera un mensaje corto de follow-up o promo con los leads listados."
+          },
+          {
+            "role": "user",
+            "content": "{{ f_ret.output }}"
+          }
+        ]
+      },
+      "position": [
+        1060,
+        440
+      ]
+    },
+    {
+      "id": "f_reply",
+      "type": "DirectReply",
+      "label": "Followup - Reply",
+      "data": {
+        "response": "Mensajes sugeridos:\n{{ f_llm.output }}"
+      },
+      "position": [
+        1300,
+        440
+      ]
+    },
+    {
+      "id": "k_ret_leads",
+      "type": "Retriever",
+      "label": "KPI - Leads",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_LEADS_ID}}",
+        "query": "ocupacion consultas visitas reservas",
+        "outputFormat": "text"
+      },
+      "position": [
+        820,
+        600
+      ]
+    },
+    {
+      "id": "k_ret_comp",
+      "type": "Retriever",
+      "label": "KPI - Competencia",
+      "data": {
+        "documentStoreId": "{{DOCSTORE_COMPETENCIA_ID}}",
+        "query": "precios referencia competencia",
+        "outputFormat": "text"
+      },
+      "position": [
+        1060,
+        600
+      ]
+    },
+    {
+      "id": "k_llm",
+      "type": "LLM",
+      "label": "KPI - Reply",
+      "data": {
+        "model": "gpt-4.1-mini",
+        "credential": "{{LLM_CREDENTIAL_ID}}",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Resume ocupacion mock, ratio consultas->visitas->reservas y precios de referencia."
+          },
+          {
+            "role": "user",
+            "content": "{{ k_ret_leads.output }} {{ k_ret_comp.output }}"
+          }
+        ],
+        "responseFormat": "text"
+      },
+      "position": [
+        1300,
+        600
+      ]
+    },
+    {
+      "id": "k_reply",
+      "type": "DirectReply",
+      "label": "KPI - Direct",
+      "data": {
+        "response": "{{ k_llm.output }}"
+      },
+      "position": [
+        1540,
+        600
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "start",
+      "sourceHandle": "output",
+      "target": "llm_intent",
+      "targetHandle": "input"
+    },
+    {
+      "source": "memory",
+      "sourceHandle": "output",
+      "target": "llm_intent",
+      "targetHandle": "memory"
+    },
+    {
+      "source": "llm_intent",
+      "sourceHandle": "output",
+      "target": "router",
+      "targetHandle": "input"
+    },
+    {
+      "source": "router",
+      "sourceHandle": "disponibilidad",
+      "target": "q_norm",
+      "targetHandle": "input"
+    },
+    {
+      "source": "router",
+      "sourceHandle": "reserva",
+      "target": "q_norm",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_norm",
+      "sourceHandle": "output",
+      "target": "q_cond_missing",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_cond_missing",
+      "sourceHandle": "true",
+      "target": "q_reply_missing",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_cond_missing",
+      "sourceHandle": "false",
+      "target": "q_custom_calc",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_custom_calc",
+      "sourceHandle": "output",
+      "target": "q_ret_restr",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_custom_calc",
+      "sourceHandle": "output",
+      "target": "q_ret_cal",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_custom_calc",
+      "sourceHandle": "output",
+      "target": "q_ret_cat",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_ret_restr",
+      "sourceHandle": "output",
+      "target": "q_llm_tarifa",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_ret_cal",
+      "sourceHandle": "output",
+      "target": "q_llm_tarifa",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_ret_cat",
+      "sourceHandle": "output",
+      "target": "q_llm_tarifa",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_llm_tarifa",
+      "sourceHandle": "output",
+      "target": "q_human_cot",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_human_cot",
+      "sourceHandle": "proceed",
+      "target": "q_custom_calendario",
+      "targetHandle": "input"
+    },
+    {
+      "source": "q_custom_calendario",
+      "sourceHandle": "output",
+      "target": "q_reply_final",
+      "targetHandle": "input"
+    },
+    {
+      "source": "router",
+      "sourceHandle": "visita",
+      "target": "v_norm",
+      "targetHandle": "input"
+    },
+    {
+      "source": "v_norm",
+      "sourceHandle": "output",
+      "target": "v_ret_slots",
+      "targetHandle": "input"
+    },
+    {
+      "source": "v_ret_slots",
+      "sourceHandle": "output",
+      "target": "v_human",
+      "targetHandle": "input"
+    },
+    {
+      "source": "v_human",
+      "sourceHandle": "proceed",
+      "target": "v_reply",
+      "targetHandle": "input"
+    },
+    {
+      "source": "router",
+      "sourceHandle": "faq",
+      "target": "faq_ret",
+      "targetHandle": "input"
+    },
+    {
+      "source": "faq_ret",
+      "sourceHandle": "output",
+      "target": "faq_llm",
+      "targetHandle": "input"
+    },
+    {
+      "source": "faq_llm",
+      "sourceHandle": "output",
+      "target": "faq_reply",
+      "targetHandle": "input"
+    },
+    {
+      "source": "router",
+      "sourceHandle": "followup",
+      "target": "f_ret",
+      "targetHandle": "input"
+    },
+    {
+      "source": "f_ret",
+      "sourceHandle": "output",
+      "target": "f_llm",
+      "targetHandle": "input"
+    },
+    {
+      "source": "f_llm",
+      "sourceHandle": "output",
+      "target": "f_reply",
+      "targetHandle": "input"
+    },
+    {
+      "source": "router",
+      "sourceHandle": "kpi",
+      "target": "k_ret_leads",
+      "targetHandle": "input"
+    },
+    {
+      "source": "k_ret_leads",
+      "sourceHandle": "output",
+      "target": "k_ret_comp",
+      "targetHandle": "input"
+    },
+    {
+      "source": "k_ret_comp",
+      "sourceHandle": "output",
+      "target": "k_llm",
+      "targetHandle": "input"
+    },
+    {
+      "source": "k_llm",
+      "sourceHandle": "output",
+      "target": "k_reply",
+      "targetHandle": "input"
+    }
+  ],
+  "placeholders": {
+    "LLM_CREDENTIAL_ID": "tu_llm_cred",
+    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+    "DOCSTORE_CALENDARIO_ID": "docstore_calendario_id",
+    "DOCSTORE_RESTRICCIONES_ID": "docstore_restricciones_id",
+    "DOCSTORE_CATALOGO_ID": "docstore_catalogo_id",
+    "DOCSTORE_LEADS_ID": "docstore_leads_id",
+    "DOCSTORE_COMPETENCIA_ID": "docstore_competencia_id"
+  },
+  "notes": "Reemplaza placeholders de credenciales y DocStores; ajusta prompts y validaciones segun reglas reales."
+}
