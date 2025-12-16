@@ -7,9 +7,9 @@ const ConfigContext = createContext()
 export const ConfigProvider = ({ children }) => {
     const [config, setConfig] = useState({})
     const [loading, setLoading] = useState(true)
-    // OSS mode: Enterprise license state removed
+    // Default to OSS so the UI stays usable even if settings fetch fails
     const [isCloud, setCloudLicensed] = useState(false)
-    const [isOpenSource, setOpenSource] = useState(false)
+    const [isOpenSource, setOpenSource] = useState(true)
 
     useEffect(() => {
         const userSettings = platformsettingsApi.getSettings()
@@ -19,21 +19,22 @@ export const ConfigProvider = ({ children }) => {
                     ...currentSettingsData.data
                 }
                 setConfig(finalData)
-                if (finalData.PLATFORM_TYPE) {
-                    // OSS mode: Enterprise license handling removed
-                    if (finalData.PLATFORM_TYPE === 'cloud') {
-                        setCloudLicensed(true)
-                        setOpenSource(false)
-                    } else {
-                        setOpenSource(true)
-                        setCloudLicensed(false)
-                    }
+                if (finalData.PLATFORM_TYPE === 'cloud') {
+                    setCloudLicensed(true)
+                    setOpenSource(false)
+                } else {
+                    // Treat unknown/oss platform types as open-source
+                    setOpenSource(true)
+                    setCloudLicensed(false)
                 }
 
                 setLoading(false)
             })
             .catch((error) => {
                 console.error('Error fetching data:', error)
+                // Fall back to OSS behaviour when settings cannot be loaded
+                setOpenSource(true)
+                setCloudLicensed(false)
                 setLoading(false)
             })
     }, [])
