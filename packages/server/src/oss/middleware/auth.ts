@@ -45,6 +45,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
         }
 
         const role = decoded.role || user.userType || 'user'
+        const orgId = decoded.orgId || 'oss-mode'
         const permissions = decoded.permissions || (role === 'super-admin' ? ['*'] : [])
 
         req.user = {
@@ -53,8 +54,8 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
             name: user.name,
             roleId: role,
             role,
-            orgId: null,
-            activeOrganizationId: null,
+            orgId,
+            activeOrganizationId: orgId,
             activeOrganizationSubscriptionId: null,
             activeOrganizationCustomerId: null,
             activeOrganizationProductId: null,

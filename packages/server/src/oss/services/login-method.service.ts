@@ -17,7 +17,7 @@ export class LoginMethodService {
             id: '1',
             organizationId: 'default-org',
             name: method,
-            config: {},
+            config: '{}',
             status: LoginMethodStatus.ENABLE,
             createdDate: new Date(),
             updatedDate: new Date()

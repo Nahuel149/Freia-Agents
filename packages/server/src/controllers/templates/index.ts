@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { LoggedInUser } from '../../oss/Interface'
 import templatesService from '../../services/templates'
 
-const getUserContext = (req: Request) => {
+const getUserContext = (req: Request): LoggedInUser => {
     const headerRole = Array.isArray(req.headers['x-user-role'])
         ? req.headers['x-user-role'][0]
         : (req.headers['x-user-role'] as string | undefined)
@@ -14,12 +15,23 @@ const getUserContext = (req: Request) => {
         ? req.headers['x-workspace-id'][0]
         : (req.headers['x-workspace-id'] as string | undefined)
 
+    const user = req.user as LoggedInUser | undefined
+    const id = user?.id || headerUserId
+    if (!user || !id) {
+        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Usuario no autenticado')
+    }
+
+    const roleId = user.roleId || headerRole
+    if (!roleId) {
+        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Rol de usuario no encontrado')
+    }
+
     return {
-        ...req.user,
-        role: (req.user as any)?.role || (req.user as any)?.roleId || headerRole,
-        roleId: (req.user as any)?.roleId || headerRole,
-        id: req.user?.id || headerUserId,
-        activeWorkspaceId: (req.user as any)?.activeWorkspaceId || headerWorkspaceId
+        ...user,
+        role: (user as any)?.role || roleId,
+        roleId,
+        id,
+        activeWorkspaceId: (user as any)?.activeWorkspaceId || headerWorkspaceId
     }
 }
 

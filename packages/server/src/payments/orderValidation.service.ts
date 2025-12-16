@@ -3,11 +3,11 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
 export class OrderValidationService {
-    private skuFixed = {
+    private skuFixed: Record<string, { amountCents: number; currency: string }> = {
         'subscription-monthly': { amountCents: 50000, currency: 'USD' } // $500
     }
 
-    private skuVariablePrefix = {
+    private skuVariablePrefix: Record<string, { unitCents: number; currency: string }> = {
         'add-agent': { unitCents: 20000, currency: 'USD' } // $200 cada agente
     }
 

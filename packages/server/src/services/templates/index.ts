@@ -1,4 +1,4 @@
-import { In } from 'typeorm'
+import { DataSource, In } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { LandingTemplate } from '../../database/entities/LandingTemplate'
@@ -73,26 +73,31 @@ const mapTemplate = (template: LandingTemplate) => {
     }
 }
 
-const fetchTemplatesForContext = async (context: AuthContext) => {
+const fetchTemplatesForContext = async (context: AuthContext): Promise<LandingTemplate[]> => {
     const appServer = getRunningExpressApp()
-    const templateRepo = appServer.AppDataSource.getRepository(LandingTemplate)
+    const dataSource = appServer.AppDataSource as DataSource
+    const templateRepo = dataSource.getRepository(LandingTemplate)
 
     if (context.isSuperAdmin) {
         const templates = await templateRepo.find()
         return templates
     }
 
-    const assignmentRepo = appServer.AppDataSource.getRepository(UserTemplate)
+    const assignmentRepo = dataSource.getRepository(UserTemplate)
     const templateIds = new Set<string>()
 
     if (context.userId) {
         const userAssignments = await assignmentRepo.find({ where: { userId: context.userId } })
-        userAssignments.forEach((assignment) => templateIds.add(assignment.templateId))
+        for (const assignment of userAssignments) {
+            templateIds.add(assignment.templateId)
+        }
     }
 
     if (context.workspaceId) {
         const workspaceAssignments = await assignmentRepo.find({ where: { workspaceId: context.workspaceId } })
-        workspaceAssignments.forEach((assignment) => templateIds.add(assignment.templateId))
+        for (const assignment of workspaceAssignments) {
+            templateIds.add(assignment.templateId)
+        }
     }
 
     const where: any[] = []
@@ -107,7 +112,9 @@ const fetchTemplatesForContext = async (context: AuthContext) => {
 
     const templates = await templateRepo.find({ where })
     const deduped = new Map<string, LandingTemplate>()
-    templates.forEach((template) => deduped.set(template.id, template))
+    for (const template of templates) {
+        deduped.set(template.id, template)
+    }
     return Array.from(deduped.values())
 }
 

@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 /**
  * Minimal stubs for enterprise shared entities reused by OSS code paths.
