@@ -116,7 +116,7 @@ const AccountSettings = () => {
             if (saveProfileResp.data) {
                 store.dispatch(userProfileUpdated(saveProfileResp.data))
                 enqueueSnackbar({
-                    message: 'Profile updated',
+                    message: 'Perfil actualizado',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -131,7 +131,7 @@ const AccountSettings = () => {
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to update profile: ${
+                message: `No se pudo actualizar el perfil: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                 }`,
                 options: {
@@ -152,7 +152,7 @@ const AccountSettings = () => {
         try {
             const validationErrors = []
             if (newPassword !== confirmPassword) {
-                validationErrors.push('New Password and Confirm Password do not match')
+                validationErrors.push('La nueva contraseña y la confirmación no coinciden')
             }
             const passwordErrors = validatePassword(newPassword)
             if (passwordErrors.length > 0) {
@@ -183,7 +183,7 @@ const AccountSettings = () => {
             if (saveProfileResp.data) {
                 store.dispatch(userProfileUpdated(saveProfileResp.data))
                 enqueueSnackbar({
-                    message: 'Password updated',
+                    message: 'Contraseña actualizada',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -198,7 +198,7 @@ const AccountSettings = () => {
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to update password: ${
+                message: `No se pudo actualizar la contraseña: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                 }`,
                 options: {
@@ -223,7 +223,7 @@ const AccountSettings = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 4 }}>
-                    <ViewHeader title='Account Settings' />
+                    <ViewHeader title='Configuración de cuenta' />
                     {isLoading && !getUserByIdApi.data ? (
                         <Box display='flex' flexDirection='column' gap={gridSpacing}>
                             <Skeleton width='25%' height={32} />
@@ -248,10 +248,10 @@ const AccountSettings = () => {
                             <SettingsSection
                                 action={
                                     <StyledButton onClick={saveProfileData} sx={{ borderRadius: 2, height: 40 }} variant='contained'>
-                                        Save
+                                        Guardar
                                     </StyledButton>
                                 }
-                                title='Profile'
+                                title='Perfil'
                             >
                                 <Box
                                     sx={{
@@ -263,24 +263,24 @@ const AccountSettings = () => {
                                     }}
                                 >
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                        <Typography variant='body1'>Name</Typography>
+                                        <Typography variant='body1'>Nombre</Typography>
                                         <OutlinedInput
                                             id='name'
                                             type='string'
                                             fullWidth
-                                            placeholder='Your Name'
+                                            placeholder='Tu nombre'
                                             name='name'
                                             onChange={(e) => setProfileName(e.target.value)}
                                             value={profileName}
                                         />
                                     </Box>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                        <Typography variant='body1'>Email Address</Typography>
+                                        <Typography variant='body1'>Correo electrónico</Typography>
                                         <OutlinedInput
                                             id='email'
                                             type='string'
                                             fullWidth
-                                            placeholder='Email Address'
+                                            placeholder='Correo electrónico'
                                             name='email'
                                             onChange={(e) => setEmail(e.target.value)}
                                             value={email}
@@ -297,10 +297,10 @@ const AccountSettings = () => {
                                             sx={{ borderRadius: 2, height: 40 }}
                                             variant='contained'
                                         >
-                                            Save
+                                            Guardar
                                         </StyledButton>
                                     }
-                                    title='Security'
+                                    title='Seguridad'
                                 >
                                     <Box
                                         sx={{
@@ -319,21 +319,20 @@ const AccountSettings = () => {
                                                 gap: 1
                                             }}
                                         >
-                                            <Typography variant='body1'>New Password</Typography>
+                                            <Typography variant='body1'>Nueva contraseña</Typography>
                                             <OutlinedInput
                                                 id='newPassword'
                                                 type='password'
                                                 fullWidth
-                                                placeholder='New Password'
+                                                placeholder='Nueva contraseña'
                                                 name='newPassword'
                                                 onChange={(e) => setNewPassword(e.target.value)}
                                                 value={newPassword}
                                             />
                                             <Typography variant='caption'>
                                                 <i>
-                                                    Password must be at least 8 characters long and contain at least one lowercase letter,
-                                                    one uppercase letter, one digit, and one special character.
-                                                </i>
+                                                La contraseña debe tener al menos 8 caracteres e incluir una minúscula, una mayúscula, un dígito y un carácter especial.
+                                            </i>
                                             </Typography>
                                         </Box>
                                         <Box
@@ -344,12 +343,12 @@ const AccountSettings = () => {
                                                 gap: 1
                                             }}
                                         >
-                                            <Typography variant='body1'>Confirm Password</Typography>
+                                            <Typography variant='body1'>Confirmar contraseña</Typography>
                                             <OutlinedInput
                                                 id='confirmPassword'
                                                 type='password'
                                                 fullWidth
-                                                placeholder='Confirm Password'
+                                                placeholder='Confirmar contraseña'
                                                 name='confirmPassword'
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 value={confirmPassword}

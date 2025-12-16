@@ -46,13 +46,13 @@ const SignInPage = () => {
     const { t } = useTranslation()
 
     const usernameInput = {
-        label: t('auth.signin.email'),
+        label: 'Correo electrónico',
         name: 'username',
         type: 'email',
         placeholder: 'user@company.com'
     }
     const passwordInput = {
-        label: t('auth.signin.password'),
+        label: 'Contraseña',
         name: 'password',
         type: 'password',
         placeholder: '********'
@@ -253,7 +253,7 @@ const SignInPage = () => {
                                 mb: 1
                             }}
                         >
-                            {t('auth.signin.title')}
+                                Iniciar sesión
                         </Typography>
                         {isCloud && (
                             <Typography 
@@ -263,7 +263,7 @@ const SignInPage = () => {
                                     fontSize: '1rem'
                                 }}
                             >
-                                {t('auth.signin.noAccount')}{' '}
+                                ¿No tienes una cuenta?{' '}
                                 <Link 
                                     style={{ 
                                         color: customization.isDarkMode ? '#667eea' : '#764ba2',
@@ -272,7 +272,7 @@ const SignInPage = () => {
                                     }} 
                                     to='/register'
                                 >
-                                    {t('auth.signin.signUpForFree')}
+                                    Regístrate gratis
                                 </Link>
                                 .
                             </Typography>
@@ -290,7 +290,7 @@ const SignInPage = () => {
                                         mb: 1
                                     }}
                                 >
-                                    {t('auth.signin.email')}<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                    Correo electrónico<span style={{ color: '#f44336' }}>&nbsp;*</span>
                                 </Typography>
                                 <Input
                                     inputParam={usernameInput}
@@ -308,7 +308,7 @@ const SignInPage = () => {
                                         mb: 1
                                     }}
                                 >
-                                    {t('auth.signin.password')}<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                    Contraseña<span style={{ color: '#f44336' }}>&nbsp;*</span>
                                 </Typography>
                                 <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
                                 <Typography 
@@ -327,7 +327,7 @@ const SignInPage = () => {
                                         }} 
                                         to='/forgot-password'
                                     >
-                                        {t('auth.signin.forgotPassword')}
+                                        ¿Olvidaste tu contraseña?
                                     </Link>
                                 </Typography>
                                 <Typography 
@@ -346,7 +346,7 @@ const SignInPage = () => {
                                         }} 
                                         to='/register'
                                     >
-                                        Create Account
+                                        Crear cuenta
                                     </Link>
                                 </Typography>
                                 {isCloud && (
@@ -386,7 +386,7 @@ const SignInPage = () => {
                                     }
                                 }}
                             >
-                                {t('auth.signin.login')}
+                                Acceder
                             </LoadingButton>
                             {configuredSsoProviders && configuredSsoProviders.length > 0 && (
                                 <Divider 

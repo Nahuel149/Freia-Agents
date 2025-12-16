@@ -52,28 +52,28 @@ const RegisterPage = () => {
     const customization = useSelector((state) => state.customization)
 
     const usernameInput = {
-        label: t('auth.register.displayName'),
+        label: 'Nombre para mostrar',
         name: 'username',
         type: 'text',
         placeholder: 'John Doe'
     }
 
     const passwordInput = {
-        label: t('auth.register.password'),
+        label: 'Contraseña',
         name: 'password',
         type: 'password',
         placeholder: '********'
     }
 
     const confirmPasswordInput = {
-        label: t('auth.register.confirmPassword'),
+        label: 'Confirmar contraseña',
         name: 'confirmPassword',
         type: 'password',
         placeholder: '********'
     }
 
     const emailInput = {
-        label: t('auth.register.email'),
+        label: 'Correo electrónico',
         name: 'email',
         type: 'email',
         placeholder: 'user@company.com'
@@ -269,7 +269,7 @@ const RegisterPage = () => {
                                mb: 1
                            }}
                        >
-                           {t('auth.register.title')}
+                           Regístrate
                        </Typography>
                        <Typography 
                            variant='body1' 
@@ -278,7 +278,7 @@ const RegisterPage = () => {
                                fontSize: '1rem'
                            }}
                        >
-                           {t('auth.register.alreadyHaveAccount')}{' '}
+                           ¿Ya tienes una cuenta?{' '}
                            <Link 
                                style={{ 
                                    color: customization.isDarkMode ? '#667eea' : '#764ba2',
@@ -287,7 +287,7 @@ const RegisterPage = () => {
                                }} 
                                to='/signin'
                            >
-                               {t('auth.signin.title')}
+                               Iniciar sesión
                            </Link>
                            .
                        </Typography>
@@ -303,11 +303,11 @@ const RegisterPage = () => {
                                         color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
                                     }}
                                 >
-                                    {t('auth.register.displayName')}<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                    Nombre para mostrar<span style={{ color: '#f44336' }}>&nbsp;*</span>
                                 </Typography>
                                 <Input
                                     inputParam={usernameInput}
-                                    placeholder={t('auth.register.displayName')}
+                                    placeholder='John Doe'
                                     onChange={(newValue) => setUsername(newValue)}
                                     value={username}
                                     showDialog={false}
@@ -320,7 +320,7 @@ const RegisterPage = () => {
                                         fontStyle: 'italic'
                                     }}
                                 >
-                                    {t('auth.register.displayNameHint')}
+                                    Se utiliza solo con fines de visualización.
                                 </Typography>
                             </Box>
                             <Box sx={{ mb: 1 }}>
@@ -332,7 +332,7 @@ const RegisterPage = () => {
                                         color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
                                     }}
                                 >
-                                    {t('auth.register.email')}<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                    Correo electrónico<span style={{ color: '#f44336' }}>&nbsp;*</span>
                                 </Typography>
                                 <Input
                                     inputParam={emailInput}
@@ -348,7 +348,7 @@ const RegisterPage = () => {
                                         fontStyle: 'italic'
                                     }}
                                 >
-                                    Kindly use a valid email address. Will be used as login id.
+                                    Usa un correo válido. Se utilizará como tu ID de inicio de sesión.
                                 </Typography>
                             </Box>
 
@@ -361,7 +361,7 @@ const RegisterPage = () => {
                                         color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
                                     }}
                                 >
-                                    Password<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                    Contraseña<span style={{ color: '#f44336' }}>&nbsp;*</span>
                                 </Typography>
                                 <Input inputParam={passwordInput} onChange={(newValue) => setPassword(newValue)} value={password} />
                                 <Typography 
@@ -372,8 +372,7 @@ const RegisterPage = () => {
                                         fontStyle: 'italic'
                                     }}
                                 >
-                                    Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase
-                                    letter, one digit, and one special character.
+                                    La contraseña debe tener al menos 8 caracteres e incluir una minúscula, una mayúscula, un dígito y un carácter especial.
                                 </Typography>
                             </Box>
                             <Box sx={{ mb: 2 }}>
@@ -385,7 +384,7 @@ const RegisterPage = () => {
                                         color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
                                     }}
                                 >
-                                    Confirm Password<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                    Confirmar contraseña<span style={{ color: '#f44336' }}>&nbsp;*</span>
                                 </Typography>
                                 <Input
                                     inputParam={confirmPasswordInput}
@@ -400,7 +399,7 @@ const RegisterPage = () => {
                                         fontStyle: 'italic'
                                     }}
                                 >
-                                    Confirm your password. Must match the password typed above.
+                                    Debe coincidir con la contraseña anterior.
                                 </Typography>
                             </Box>
                             <Button 
@@ -426,7 +425,7 @@ const RegisterPage = () => {
                                     }
                                 }}
                             >
-                                Create Account
+                                Crear cuenta
                             </Button>
                             {configuredSsoProviders.length > 0 && (
                                 <>
@@ -445,7 +444,7 @@ const RegisterPage = () => {
                                                 fontWeight: 500
                                             }}
                                         >
-                                            {t('auth.register.or')}
+                                            O
                                         </Typography>
                                         <Divider 
                                             sx={{ 

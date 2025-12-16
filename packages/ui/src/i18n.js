@@ -1,4 +1,4 @@
-import i18n from 'i18next'
+﻿import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
 // Persisted language preference (default to browser or 'en')
@@ -16,10 +16,15 @@ const resources = {
         },
         features: {
           title: 'Powerful Features',
-          visualChatflows: {
-            title: 'Visual chatflows',
-            desc: 'Design complex AI workflows with drag-and-drop nodes and connectors.'
-          },
+          visual      chatflows: {
+        addNew: 'Crear nuevo',
+        listView: 'Vista de lista',
+        empty: 'Aún no hay chatflows',
+        title: 'Flujos de chat',
+        description: 'Crea sistemas de un solo agente, chatbots y flujos LLM simples',
+        searchPlaceholder: 'Buscar nombre o categoría',
+        cardView: 'Vista de tarjetas'
+      },
           agentsTools: {
             title: 'Agents & tools',
             desc: 'Compose multi-tool agents and manage execution traces effortlessly.'
@@ -87,14 +92,14 @@ const resources = {
           github: 'Sign In With Github'
         }
       },
-      chatflows: {
-        addNew: 'Add New',
-        listView: 'List View',
-        empty: 'No Chatflows Yet',
-        title: 'Chatflows',
-        description: 'Build single-agent systems, chatbots and simple LLM flows',
-        searchPlaceholder: 'Search Name or Category',
-        cardView: 'Card View'
+            chatflows: {
+        addNew: 'Crear nuevo',
+        listView: 'Vista de lista',
+        empty: 'Aún no hay chatflows',
+        title: 'Flujos de chat',
+        description: 'Crea sistemas de un solo agente, chatbots y flujos LLM simples',
+        searchPlaceholder: 'Buscar nombre o categoría',
+        cardView: 'Vista de tarjetas'
       },
       tools: {
         title: 'Tools',
@@ -146,20 +151,26 @@ const resources = {
         selectRole: 'Select Role',
         roleToAssign: 'Role to Assign'
       },
-        serverLogs: {
-            title: 'Logs',
+                serverLogs: {
+            title: 'Registros',
             timeRanges: {
-                lastHour: 'Last hour',
-                last4Hours: 'Last 4 hours',
-                last24Hours: 'Last 24 hours',
-                last2Days: 'Last 2 days',
-                last7Days: 'Last 7 days',
-                last14Days: 'Last 14 days',
-                last1Month: 'Last 1 month',
-                last2Months: 'Last 2 months',
-                last3Months: 'Last 3 months',
-                custom: 'Custom'
+                lastHour: 'Última hora',
+                last4Hours: 'Últimas 4 horas',
+                last24Hours: 'Últimas 24 horas',
+                last2Days: 'Últimos 2 días',
+                last7Days: 'Últimos 7 días',
+                last14Days: 'Últimos 14 días',
+                last1Month: 'Último mes',
+                last2Months: 'Últimos 2 meses',
+                last3Months: 'Últimos 3 meses',
+                custom: 'Personalizado'
             },
+            dateLabels: {
+                from: 'Desde',
+                to: 'Hasta'
+            },
+            emptyState: 'Aún no hay registros'
+        },
             dateLabels: {
                 from: 'From',
                 to: 'To'
@@ -185,29 +196,63 @@ const resources = {
         uploadCsv: 'Upload CSV',
         firstRowHeaders: 'Treat First Row as headers in the upload file?'
       },
-      docstore: {
-        title: 'Document Store',
-        description: 'Store and upsert documents for LLM retrieval (RAG)',
-        addNew: 'Add New',
-        addNewTitle: 'Add New Document Store',
-        empty: 'No Document Stores Created Yet',
-        searchPlaceholder: 'Search Name',
-        created: 'New Document Store created.',
-        createFailed: 'Failed to add new Document Store',
-        updated: 'Document Store Updated!',
-        updateFailed: 'Failed to update Document Store',
-        refreshDocStore: 'Refresh Document Store',
-        addDocumentLoader: 'Add Document Loader',
-        moreActions: 'More Actions',
-        statusActions: 'Change Status',
+            docstore: {
+        title: 'Almacén de documentos',
+        description: 'Almacena y actualiza documentos para RAG',
+        addNew: 'Agregar nuevo',
+        addNewTitle: 'Agregar nuevo almacén de documentos',
+        empty: 'Aún no hay almacenes de documentos',
+        searchPlaceholder: 'Buscar nombre',
+        created: 'Nuevo almacén de documentos creado.',
+        createFailed: 'Error al agregar nuevo almacén de documentos',
+        updated: 'Almacén de documentos actualizado',
+        updateFailed: 'Error al actualizar almacén de documentos',
+        refreshDocStore: 'Actualizar almacén de documentos',
+        addDocumentLoader: 'Agregar cargador de documentos',
+        moreActions: 'Más acciones',
+        statusActions: 'Cambiar estado',
         statusLabels: {
-          sync: 'Sync',
-          stale: 'Stale',
-          empty: 'Empty',
-          syncing: 'Syncing',
-          upserting: 'Upserting',
-          new: 'New'
+          sync: 'Sincronizado',
+          stale: 'Desactualizado',
+          empty: 'Vacío',
+          syncing: 'Sincronizando',
+          upserting: 'Actualizando',
+          new: 'Nuevo'
         },
+        viewEditChunks: 'Ver y editar fragmentos',
+        upsertAllChunks: 'Insertar todos los fragmentos',
+        retrievalQuery: 'Consulta de recuperación',
+        refresh: 'Actualizar',
+        refreshTooltip: 'Reprocesar todos los cargadores e insertar todos los fragmentos',
+        delete: 'Eliminar',
+        chatflowsUsed: 'Chatflows utilizados:',
+        noDocumentAdded: 'Aún no se ha agregado ningún documento',
+        tableHeaders: {
+          loader: 'Cargador',
+          splitter: 'Divisor',
+          sources: 'Fuente(s)',
+          chunks: 'Fragmentos',
+          chars: 'Caracteres',
+          actions: 'Acciones'
+        },
+        notifications: {
+          storeDeleted: 'Almacén, cargador y fragmentos asociados eliminados',
+          storeDeleteFailed: 'Error al eliminar almacén de documentos',
+          loaderDeleted: 'Cargador y fragmentos asociados eliminados',
+          loaderDeleteFailed: 'Error al eliminar cargador',
+          selectDocumentLoader: 'Seleccionar cargador de documentos',
+          statusUpdated: 'Estado del almacén actualizado.',
+          statusUpdateFailed: 'Error al actualizar el estado del almacén'
+        },
+        statusSyncDisabled: 'Todos los cargadores deben estar sincronizados antes de marcar el almacén como sincronizado',
+        pendingProcessing: 'Algunos archivos están pendientes de procesamiento. Actualiza para obtener el estado más reciente.',
+        none: 'Ninguno',
+        noSource: 'Sin fuente',
+        options: 'Opciones',
+        previewProcess: 'Vista previa y procesar',
+        upsertChunks: 'Insertar fragmentos',
+        viewAPI: 'Ver API'
+      },
         viewEditChunks: 'View & Edit Chunks',
         upsertAllChunks: 'Upsert All Chunks',
         retrievalQuery: 'Retrieval Query',
@@ -272,18 +317,18 @@ const resources = {
         addNew: 'Add New',
         back: 'Back'
       },
-      agentflows: {
-        title: 'Agentflows',
-        description: 'Multi-agent systems, workflow orchestration',
-        searchPlaceholder: 'Search Name or Category',
+                        agentflows: {
+        title: 'Flujos de agentes',
+        description: 'Sistemas multiagente y orquestación de flujos de trabajo',
+        searchPlaceholder: 'Buscar nombre o categoría',
         v1: 'V1',
         v2: 'V2',
-        deprecationNotice: 'V1 Agentflows are deprecated.',
-        migrationRecommendation: 'We recommend migrating to V2 for improved performance and continued support.',
-        noAgentsYet: 'No Agents Yet'
+        deprecationNotice: 'Los flujos de agentes V1 están obsoletos.',
+        migrationRecommendation: 'Recomendamos migrar a V2 para mejorar rendimiento y soporte continuo.',
+        noAgentsYet: 'Aún no hay agentes'
       },
       agentSettings: {
-        viewMessages: 'View Messages',
+        viewmessages: 'View messages',
         viewLeads: 'View Leads',
         configuration: 'Configuration',
         saveAsTemplate: 'Save As Template',
@@ -329,7 +374,7 @@ const resources = {
         runtimeDescription: 'Variable value will be read from .env file',
         howToUseTitle: 'How To Use Variables',
         howToUseText1: 'Variables can be used in Custom Tool, Custom Function, Custom Loader, If Else Function with the $ prefix.',
-        howToUseText2: 'Variables can also be used in Text Field parameter of any node. For example, in System Message of Agent:',
+        howToUseText2: 'Variables can also be used in Text Field parameter of any node. For example, in System message of Agent:',
         howToUseText3: 'If variable type is Static, the value will be retrieved as it is. If variable type is Runtime, the value will be retrieved from .env file.',
         howToUseText4: 'You can also override variable values in API overrideConfig using',
         howToUseText5: 'Read more from',
@@ -341,42 +386,68 @@ const resources = {
           variableSaveFailed: 'Failed to save Variable'
         }
       },
-      apiKeys: {
-        title: 'API Keys',
-        description: 'Freia API & SDK authentication keys',
-        searchPlaceholder: 'Search API Keys',
-        import: 'Import',
-        createKey: 'Create Key',
-        noApiKeys: 'No API Keys Yet',
-        keyName: 'Key Name',
-        apiKey: 'API Key',
-        usage: 'Usage',
-        updated: 'Updated',
-        copy: 'Copy',
-        show: 'Show',
-        copied: 'Copied!',
-        edit: 'Edit',
-        delete: 'Delete',
-        chatflowName: 'Chatflow Name',
-        modifiedOn: 'Modified On',
-        category: 'Category',
-        keyNameLabel: 'Key Name',
-        keyNamePlaceholder: 'My New Key',
-        copyApiKey: 'Copy API Key',
-        newApiKeyAdded: 'New API key added',
-        failedToAddApiKey: 'Failed to add new API key',
-        apiKeySaved: 'API Key saved',
-        failedToSaveApiKey: 'Failed to save API key'
+            apiKeys: {
+        title: 'Claves API',
+        description: 'Claves de autenticación de Freia API y SDK',
+        searchPlaceholder: 'Buscar claves API',
+        import: 'Importar',
+        createKey: 'Crear clave',
+        noApiKeys: 'Aún no hay claves API',
+        keyName: 'Nombre de clave',
+        apiKey: 'Clave API',
+        usage: 'Uso',
+        updated: 'Actualizado',
+        copy: 'Copiar',
+        show: 'Mostrar',
+        copied: '¡Copiado!',
+        edit: 'Editar',
+        delete: 'Eliminar',
+        chatflowName: 'Nombre del chatflow',
+        modifiedOn: 'Modificado el',
+        category: 'Categoría',
+        keyNameLabel: 'Nombre de clave',
+        keyNamePlaceholder: 'Mi nueva clave',
+        copyApiKey: 'Copiar clave API',
+        newApiKeyAdded: 'Nueva clave API agregada',
+        failedToAddApiKey: 'Error al agregar nueva clave API',
+        apiKeySaved: 'Clave API guardada',
+        failedToSaveApiKey: 'Error al guardar clave API'
       },
-      marketplaces: {
+            marketplaces: {
         title: 'Marketplace',
-        description: 'Explore and use pre-built templates',
-        searchPlaceholder: 'Search Name/Description/Node',
+        description: 'Explora y usa plantillas prediseñadas',
+        searchPlaceholder: 'Buscar nombre/descrición/nodo',
         filters: {
-          tag: 'Tag',
-          type: 'Type',
+          tag: 'Etiqueta',
+          type: 'Tipo',
           framework: 'Framework'
         },
+        tabs: {
+          communityTemplates: 'Plantillas de la comunidad',
+          myTemplates: 'Mis plantillas'
+        },
+        views: {
+          cardView: 'Vista de tarjetas',
+          listView: 'Vista de lista'
+        },
+        badges: {
+          popular: 'POPULAR',
+          new: 'NUEVO'
+        },
+        types: {
+          chatflow: 'Flujo de chat',
+          agentflowV2: 'Flujo de agente V2',
+          tool: 'Herramienta'
+        },
+        frameworks: {
+          langchain: 'Langchain',
+          llamaIndex: 'LlamaIndex'
+        },
+        messages: {
+          noMarketplace: 'Aún no hay marketplace',
+          noCustomTemplates: 'Aún no hay plantillas personalizadas guardadas'
+        }
+      },
         tabs: {
           communityTemplates: 'Community Templates',
           myTemplates: 'My Templates'
@@ -468,10 +539,15 @@ const resources = {
         },
         features: {
           title: 'Características Poderosas',
-          visualChatflows: {
-            title: 'Chatflows visuales',
-            desc: 'Diseña flujos de trabajo de IA complejos con nodos y conectores de arrastrar y soltar.'
-          },
+          visual      chatflows: {
+        addNew: 'Crear nuevo',
+        listView: 'Vista de lista',
+        empty: 'Aún no hay chatflows',
+        title: 'Flujos de chat',
+        description: 'Crea sistemas de un solo agente, chatbots y flujos LLM simples',
+        searchPlaceholder: 'Buscar nombre o categoría',
+        cardView: 'Vista de tarjetas'
+      },
           agentsTools: {
             title: 'Agentes y herramientas',
             desc: 'Compón agentes con múltiples herramientas y gestiona fácilmente las trazas de ejecución.'
@@ -539,13 +615,13 @@ const resources = {
           github: 'Iniciar sesión con Github'
         }
       },
-      chatflows: {
+            chatflows: {
         addNew: 'Crear nuevo',
         listView: 'Vista de lista',
-        empty: 'Aún no hay Chatflows',
+        empty: 'Aún no hay chatflows',
         title: 'Flujos de chat',
         description: 'Crea sistemas de un solo agente, chatbots y flujos LLM simples',
-        searchPlaceholder: 'Buscar Nombre o Categoría',
+        searchPlaceholder: 'Buscar nombre o categoría',
         cardView: 'Vista de tarjetas'
       },
       tools: {
@@ -555,30 +631,30 @@ const resources = {
         addNewTool: 'Agregar nueva herramienta',
         editTool: 'Editar herramienta',
         empty: 'Aún no hay herramientas creadas',
-        noToolsYet: 'Aún No Se Han Creado Herramientas',
-        toolName: 'Nombre de la Herramienta',
+        noToolsYet: 'Aún no se han creado herramientas',
+        toolName: 'Nombre de la herramienta',
         toolDescription: 'Descripción de la herramienta',
-        toolIconSource: 'Fuente del Icono de la Herramienta',
-        inputSchema: 'Esquema de Entrada',
+        toolIconSource: 'Fuente del icono de la herramienta',
+        inputSchema: 'Esquema de entrada',
         javascriptFunction: 'Función JavaScript',
-        howToUseFunction: 'Cómo usar la Función',
-        seeExample: 'Ver Ejemplo',
+        howToUseFunction: 'Cómo usar la función',
+        seeExample: 'Ver ejemplo',
         pasteJSON: 'Pegar JSON',
-        addItem: 'Agregar Elemento',
-        useTemplate: 'Usar Plantilla',
+        addItem: 'Agregar elemento',
+        useTemplate: 'Usar plantilla',
         export: 'Exportar',
         delete: 'Eliminar',
-        toolNamePlaceholder: 'Mi Nueva Herramienta',
-        toolDescPlaceholder: 'Descripción de lo que hace la herramienta. Esto es para que ChatGPT determine cuándo usar esta herramienta.',
-        toolIconPlaceholder: 'URL del ícono de la herramienta',
+        toolNamePlaceholder: 'Mi nueva herramienta',
+        toolDescPlaceholder: 'Descripción de lo que hace la herramienta. Esto es para que ChatGPT determine cuándo usarla.',
+        toolIconPlaceholder: 'URL del icono de la herramienta',
         toolNameTooltip: 'El nombre de la herramienta debe ser en minúsculas con guión bajo. Ej: mi_herramienta',
-        toolDescTooltip: 'Descripción de lo que hace la herramienta. Esto es para que ChatGPT determine cuándo usar esta herramienta.',
+        toolDescTooltip: 'Descripción de lo que hace la herramienta. Esto es para que ChatGPT determine cuándo usarla.',
         inputSchemaTooltip: '¿Cuál es el formato de entrada en JSON?',
-        javascriptFunctionTooltip: 'Función a ejecutar cuando se usa la herramienta. Puedes usar propiedades especificadas en el Esquema de Entrada como variables. Por ejemplo, si la propiedad es userid, puedes usar como $userid. El valor de retorno debe ser una cadena.'
+        javascriptFunctionTooltip: 'Función a ejecutar cuando se usa la herramienta. Puedes usar propiedades del esquema de entrada como variables (ej. $userid). El valor de retorno debe ser una cadena.'
       },
       users: {
         title: 'Gestión de Usuarios',
-        description: 'Gestionar usuarios y sus permisos',
+        description: 'Gestionar Usuarios y sus permisos',
         searchPlaceholder: 'Buscar Usuarios',
         inviteUser: 'Invitar Usuario',
         noUsersYet: 'Aún No Hay Usuarios',
@@ -598,7 +674,7 @@ const resources = {
         selectRole: 'Seleccionar Rol',
         roleToAssign: 'Rol a Asignar'
       },
-        serverLogs: {
+                serverLogs: {
             title: 'Registros',
             timeRanges: {
                 lastHour: 'Última hora',
@@ -612,6 +688,12 @@ const resources = {
                 last3Months: 'Últimos 3 meses',
                 custom: 'Personalizado'
             },
+            dateLabels: {
+                from: 'Desde',
+                to: 'Hasta'
+            },
+            emptyState: 'Aún no hay registros'
+        },
             dateLabels: {
                 from: 'Desde',
                 to: 'Hasta'
@@ -637,16 +719,16 @@ const resources = {
         uploadCsv: 'Subir CSV',
         firstRowHeaders: '¿Tratar la primera fila como encabezados en el archivo subido?'
       },
-      docstore: {
+            docstore: {
         title: 'Almacén de documentos',
-        description: 'Almacena y actualiza documentos para recuperación por LLM (RAG)',
+        description: 'Almacena y actualiza documentos para RAG',
         addNew: 'Agregar nuevo',
         addNewTitle: 'Agregar nuevo almacén de documentos',
         empty: 'Aún no hay almacenes de documentos',
         searchPlaceholder: 'Buscar nombre',
         created: 'Nuevo almacén de documentos creado.',
         createFailed: 'Error al agregar nuevo almacén de documentos',
-        updated: '¡Almacén de documentos actualizado!',
+        updated: 'Almacén de documentos actualizado',
         updateFailed: 'Error al actualizar almacén de documentos',
         refreshDocStore: 'Actualizar almacén de documentos',
         addDocumentLoader: 'Agregar cargador de documentos',
@@ -660,6 +742,40 @@ const resources = {
           upserting: 'Actualizando',
           new: 'Nuevo'
         },
+        viewEditChunks: 'Ver y editar fragmentos',
+        upsertAllChunks: 'Insertar todos los fragmentos',
+        retrievalQuery: 'Consulta de recuperación',
+        refresh: 'Actualizar',
+        refreshTooltip: 'Reprocesar todos los cargadores e insertar todos los fragmentos',
+        delete: 'Eliminar',
+        chatflowsUsed: 'Chatflows utilizados:',
+        noDocumentAdded: 'Aún no se ha agregado ningún documento',
+        tableHeaders: {
+          loader: 'Cargador',
+          splitter: 'Divisor',
+          sources: 'Fuente(s)',
+          chunks: 'Fragmentos',
+          chars: 'Caracteres',
+          actions: 'Acciones'
+        },
+        notifications: {
+          storeDeleted: 'Almacén, cargador y fragmentos asociados eliminados',
+          storeDeleteFailed: 'Error al eliminar almacén de documentos',
+          loaderDeleted: 'Cargador y fragmentos asociados eliminados',
+          loaderDeleteFailed: 'Error al eliminar cargador',
+          selectDocumentLoader: 'Seleccionar cargador de documentos',
+          statusUpdated: 'Estado del almacén actualizado.',
+          statusUpdateFailed: 'Error al actualizar el estado del almacén'
+        },
+        statusSyncDisabled: 'Todos los cargadores deben estar sincronizados antes de marcar el almacén como sincronizado',
+        pendingProcessing: 'Algunos archivos están pendientes de procesamiento. Actualiza para obtener el estado más reciente.',
+        none: 'Ninguno',
+        noSource: 'Sin fuente',
+        options: 'Opciones',
+        previewProcess: 'Vista previa y procesar',
+        upsertChunks: 'Insertar fragmentos',
+        viewAPI: 'Ver API'
+      },
         viewEditChunks: 'Ver y editar fragmentos',
         upsertAllChunks: 'Insertar todos los fragmentos',
         retrievalQuery: 'Consulta de recuperación',
@@ -761,14 +877,14 @@ const resources = {
           variableSaveFailed: 'Error al guardar Variable'
         }
       },
-      apiKeys: {
+            apiKeys: {
         title: 'Claves API',
         description: 'Claves de autenticación de Freia API y SDK',
-        searchPlaceholder: 'Buscar Claves API',
+        searchPlaceholder: 'Buscar claves API',
         import: 'Importar',
-        createKey: 'Crear Clave',
-        noApiKeys: 'Aún No Hay Claves API',
-        keyName: 'Nombre de Clave',
+        createKey: 'Crear clave',
+        noApiKeys: 'Aún no hay claves API',
+        keyName: 'Nombre de clave',
         apiKey: 'Clave API',
         usage: 'Uso',
         updated: 'Actualizado',
@@ -777,26 +893,52 @@ const resources = {
         copied: '¡Copiado!',
         edit: 'Editar',
         delete: 'Eliminar',
-        chatflowName: 'Nombre del Chatflow',
+        chatflowName: 'Nombre del chatflow',
         modifiedOn: 'Modificado el',
         category: 'Categoría',
-        keyNameLabel: 'Nombre de Clave',
-        keyNamePlaceholder: 'Mi Nueva Clave',
-        copyApiKey: 'Copiar Clave API',
+        keyNameLabel: 'Nombre de clave',
+        keyNamePlaceholder: 'Mi nueva clave',
+        copyApiKey: 'Copiar clave API',
         newApiKeyAdded: 'Nueva clave API agregada',
         failedToAddApiKey: 'Error al agregar nueva clave API',
         apiKeySaved: 'Clave API guardada',
         failedToSaveApiKey: 'Error al guardar clave API'
       },
-      marketplaces: {
-        title: 'Mercado',
+            marketplaces: {
+        title: 'Marketplace',
         description: 'Explora y usa plantillas prediseñadas',
-        searchPlaceholder: 'Buscar Nombre/Descripción/Nodo',
+        searchPlaceholder: 'Buscar nombre/descrición/nodo',
         filters: {
           tag: 'Etiqueta',
           type: 'Tipo',
           framework: 'Framework'
         },
+        tabs: {
+          communityTemplates: 'Plantillas de la comunidad',
+          myTemplates: 'Mis plantillas'
+        },
+        views: {
+          cardView: 'Vista de tarjetas',
+          listView: 'Vista de lista'
+        },
+        badges: {
+          popular: 'POPULAR',
+          new: 'NUEVO'
+        },
+        types: {
+          chatflow: 'Flujo de chat',
+          agentflowV2: 'Flujo de agente V2',
+          tool: 'Herramienta'
+        },
+        frameworks: {
+          langchain: 'Langchain',
+          llamaIndex: 'LlamaIndex'
+        },
+        messages: {
+          noMarketplace: 'Aún no hay marketplace',
+          noCustomTemplates: 'Aún no hay plantillas personalizadas guardadas'
+        }
+      },
         tabs: {
           communityTemplates: 'Plantillas de la Comunidad',
           myTemplates: 'Mis Plantillas'
@@ -823,20 +965,20 @@ const resources = {
           noCustomTemplates: 'No hay Plantillas Personalizadas Guardadas'
         }
       },
-      agentflows: {
-        title: 'Flujos de Agentes',
-        description: 'Sistemas multi-agente, orquestación de flujos de trabajo',
-        searchPlaceholder: 'Buscar Nombre o Categoría',
+                        agentflows: {
+        title: 'Flujos de agentes',
+        description: 'Sistemas multiagente y orquestación de flujos de trabajo',
+        searchPlaceholder: 'Buscar nombre o categoría',
         v1: 'V1',
         v2: 'V2',
-        deprecationNotice: 'Los Flujos de Agentes V1 están obsoletos.',
-        migrationRecommendation: 'Recomendamos migrar a V2 para mejorar el rendimiento y soporte continuo.',
-        noAgentsYet: 'Aún No Hay Agentes'
+        deprecationNotice: 'Los flujos de agentes V1 están obsoletos.',
+        migrationRecommendation: 'Recomendamos migrar a V2 para mejorar rendimiento y soporte continuo.',
+        noAgentsYet: 'Aún no hay agentes'
       },
       agentSettings: {
-        viewMessages: 'Ver Mensajes',
+        viewmessages: 'Ver Mensajes',
         viewLeads: 'Ver Clientes Potenciales',
-        configuration: 'Configuración',
+        configuration: 'Configuraci?n',
         saveAsTemplate: 'Guardar como Plantilla',
         duplicateAgents: 'Duplicar Agentes',
         loadAgents: 'Cargar Agentes',
@@ -851,7 +993,7 @@ const resources = {
         examples: {
           webSearchReport: 'Un agente que puede buscar autónomamente en la web y generar reportes',
           summarizeDocument: 'Resumir un documento',
-          slackResponse: 'Generar respuesta a consultas de usuarios y enviarla a Slack',
+          slackResponse: 'Generar respuesta a consultas de Usuarios y enviarla a Slack',
           customerQueries: 'Un equipo de agentes que puede manejar todas las consultas de clientes'
         }
       },

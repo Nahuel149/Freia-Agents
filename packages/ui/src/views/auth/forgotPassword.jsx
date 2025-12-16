@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 // material-ui
 import { Alert, Box, Stack, Typography, useTheme, Container, Card, CardContent } from '@mui/material'
@@ -29,10 +30,11 @@ import { IconCircleCheck, IconExclamationCircle } from '@tabler/icons-react'
 const ForgotPasswordPage = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const { t } = useTranslation()
     useNotifier()
 
     const usernameInput = {
-        label: 'Username',
+        label: 'Correo electrónico',
         name: 'username',
         type: 'email',
         placeholder: 'user@company.com'
@@ -64,7 +66,7 @@ const ForgotPasswordPage = () => {
                     : forgotPasswordApi.error.response.data
             setResponseMsg({
                 type: 'error',
-                msg: errMessage ?? 'Failed to send instructions, please contact your administrator.'
+                msg: errMessage ?? 'No se pudieron enviar las instrucciones, contacta a tu administrador.'
             })
             setLoading(false)
         }
@@ -75,7 +77,7 @@ const ForgotPasswordPage = () => {
         if (forgotPasswordApi.data) {
             setResponseMsg({
                 type: 'success',
-                msg: 'Password reset instructions sent to the email.'
+                msg: 'Instrucciones para restablecer la contraseña enviadas al correo.'
             })
             setLoading(false)
         }
@@ -155,7 +157,7 @@ const ForgotPasswordPage = () => {
                                         mb: 1
                                     }}
                                 >
-                                    Forgot Password?
+                                    ¿Olvidaste tu contraseña?
                                 </Typography>
                                 <Typography 
                                     variant='body1' 
@@ -164,7 +166,7 @@ const ForgotPasswordPage = () => {
                                         maxWidth: '400px'
                                     }}
                                 >
-                                    Have a reset password code?{' '}
+                                    ¿Tienes un código de reseteo?{' '}
                                     <Link 
                                         style={{ 
                                             color: customization.isDarkMode ? '#667eea' : '#764ba2',
@@ -173,7 +175,7 @@ const ForgotPasswordPage = () => {
                                         }} 
                                         to='/reset-password'
                                     >
-                                        Change your password here
+                                        Cámbiala aquí
                                     </Link>
                                     .
                                 </Typography>
@@ -189,7 +191,7 @@ const ForgotPasswordPage = () => {
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
                                             }}
                                         >
-                                            Email<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                            Correo electrónico<span style={{ color: '#f44336' }}>&nbsp;*</span>
                                         </Typography>
                                         <Input
                                             inputParam={usernameInput}
@@ -223,7 +225,7 @@ const ForgotPasswordPage = () => {
                                             }
                                         }}
                                     >
-                                        Send Reset Password Instructions
+                                        Enviar instrucciones para restablecer
                                     </StyledButton>
                                 </Stack>
                             </form>
