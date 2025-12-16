@@ -1,0 +1,2893 @@
+{
+  "nodes": [
+    {
+      "id": "start",
+      "type": "agentFlow",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "id": "start",
+        "label": "Start",
+        "version": 1.0,
+        "name": "startAgentflow",
+        "type": "Start",
+        "color": "#7EE787",
+        "inputParams": [
+          {
+            "label": "Input Type",
+            "name": "startInputType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Chat Input",
+                "name": "chatInput"
+              },
+              {
+                "label": "Form Input",
+                "name": "formInput"
+              }
+            ],
+            "default": "chatInput",
+            "display": true
+          },
+          {
+            "label": "Form Title",
+            "name": "formTitle",
+            "type": "string",
+            "show": {
+              "startInputType": "formInput"
+            }
+          },
+          {
+            "label": "Form Description",
+            "name": "formDescription",
+            "type": "string",
+            "show": {
+              "startInputType": "formInput"
+            }
+          },
+          {
+            "label": "Form Input Types",
+            "name": "formInputTypes",
+            "type": "array",
+            "show": {
+              "startInputType": "formInput"
+            },
+            "array": [
+              {
+                "label": "Type",
+                "name": "type",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "String",
+                    "name": "string"
+                  },
+                  {
+                    "label": "Number",
+                    "name": "number"
+                  },
+                  {
+                    "label": "Boolean",
+                    "name": "boolean"
+                  },
+                  {
+                    "label": "Options",
+                    "name": "options"
+                  }
+                ],
+                "default": "string"
+              },
+              {
+                "label": "Label",
+                "name": "label",
+                "type": "string"
+              },
+              {
+                "label": "Variable Name",
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "label": "Add Options",
+                "name": "addOptions",
+                "type": "array",
+                "show": {
+                  "formInputTypes[$index].type": "options"
+                },
+                "array": [
+                  {
+                    "label": "Option",
+                    "name": "option",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "Ephemeral Memory",
+            "name": "startEphemeralMemory",
+            "type": "boolean",
+            "optional": true
+          },
+          {
+            "label": "Flow State",
+            "name": "startState",
+            "type": "array",
+            "optional": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string"
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "label": "Persist State",
+            "name": "startPersistState",
+            "type": "boolean",
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "startInputType": "chat",
+          "formTitle": "",
+          "formDescription": "",
+          "formInputTypes": "",
+          "startEphemeralMemory": false,
+          "startState": [
+            {
+              "key": "intent",
+              "value": ""
+            },
+            {
+              "key": "idioma",
+              "value": "es"
+            },
+            {
+              "key": "fechaSolicitada",
+              "value": ""
+            },
+            {
+              "key": "checkOut",
+              "value": ""
+            },
+            {
+              "key": "diasSolicitados",
+              "value": 0
+            },
+            {
+              "key": "personas",
+              "value": 0
+            },
+            {
+              "key": "quintaId",
+              "value": ""
+            },
+            {
+              "key": "quintasDisponibles",
+              "value": "[]"
+            },
+            {
+              "key": "catalogoLink",
+              "value": ""
+            },
+            {
+              "key": "precioBase",
+              "value": 0
+            },
+            {
+              "key": "precioTotal",
+              "value": 0
+            },
+            {
+              "key": "moneda",
+              "value": "USD"
+            },
+            {
+              "key": "descuentoPct",
+              "value": 0
+            },
+            {
+              "key": "clienteHabitualFlag",
+              "value": false
+            },
+            {
+              "key": "cotizacionVigencia",
+              "value": ""
+            },
+            {
+              "key": "estadoCalendario",
+              "value": ""
+            },
+            {
+              "key": "holdExpires",
+              "value": ""
+            },
+            {
+              "key": "lead",
+              "value": "{}"
+            },
+            {
+              "key": "citaVisita",
+              "value": "{}"
+            },
+            {
+              "key": "kpi",
+              "value": "{}"
+            },
+            {
+              "key": "alternativas",
+              "value": "[]"
+            },
+            {
+              "key": "minNights",
+              "value": 0
+            },
+            {
+              "key": "depositPct",
+              "value": 0
+            },
+            {
+              "key": "depositDeadlineHours",
+              "value": 0
+            },
+            {
+              "key": "musicRules",
+              "value": ""
+            },
+            {
+              "key": "paymentNote",
+              "value": ""
+            }
+          ],
+          "startPersistState": false
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": true
+      }
+    },
+    {
+      "id": "memory",
+      "type": "agentFlow",
+      "position": {
+        "x": 0,
+        "y": 140
+      },
+      "data": {
+        "id": "memory",
+        "label": "Memory Mongo",
+        "version": 1.0,
+        "name": "MongoDBAtlasChatMemory",
+        "type": "MongoDBAtlasChatMemory",
+        "color": "#666666",
+        "inputParams": [
+          {
+            "label": "Database",
+            "name": "databaseName",
+            "type": "string"
+          },
+          {
+            "label": "Collection Name",
+            "name": "collectionName",
+            "type": "string"
+          },
+          {
+            "label": "Session Id",
+            "name": "sessionId",
+            "type": "string",
+            "optional": true
+          },
+          {
+            "label": "Memory Key",
+            "name": "memoryKey",
+            "type": "string",
+            "default": "chat_history"
+          }
+        ],
+        "inputs": {
+          "credential": "{{MONGO_CREDENTIAL_ID}}",
+          "databaseName": "freia_demo",
+          "collectionName": "chat_memory_quintas",
+          "sessionId": "{{ $flow.chatId }}",
+          "memoryKey": "history"
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "llm_intent",
+      "type": "agentFlow",
+      "position": {
+        "x": 240,
+        "y": 0
+      },
+      "data": {
+        "id": "llm_intent",
+        "label": "LLM Intent",
+        "version": 1.0,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "llmModel": "gpt-4.1-mini",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Clasifica la intencion en: disponibilidad, reserva, visita, faq, followup, kpi. Devuelve solo JSON {intent, notas}."
+            },
+            {
+              "role": "user",
+              "content": "{{ $flow.input }}"
+            }
+          ],
+          "llmEnableMemory": true
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "router",
+      "type": "agentFlow",
+      "position": {
+        "x": 520,
+        "y": 0
+      },
+      "data": {
+        "id": "router",
+        "label": "Router IA",
+        "version": 1.0,
+        "name": "conditionAgentAgentflow",
+        "type": "ConditionAgent",
+        "color": "#ff8fab",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "conditionAgentModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Instructions",
+            "name": "conditionAgentInstructions",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Input",
+            "name": "conditionAgentInput",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Scenarios",
+            "name": "conditionAgentScenarios",
+            "type": "array",
+            "array": [
+              {
+                "label": "Scenario",
+                "name": "scenario",
+                "type": "string",
+                "placeholder": "Scenario"
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "conditionAgentModel": "gpt-4.1-mini",
+          "conditionAgentInstructions": "Elige el escenario mas adecuado: disponibilidad, reserva, visita, faq, followup, kpi.",
+          "conditionAgentInput": "{{ $flow.input }}",
+          "conditionAgentScenarios": [
+            {
+              "scenario": "disponibilidad"
+            },
+            {
+              "scenario": "reserva"
+            },
+            {
+              "scenario": "visita"
+            },
+            {
+              "scenario": "faq"
+            },
+            {
+              "scenario": "followup"
+            },
+            {
+              "scenario": "kpi"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "disponibilidad",
+            "name": "disponibilidad",
+            "label": "disponibilidad"
+          },
+          {
+            "id": "faq",
+            "name": "faq",
+            "label": "faq"
+          },
+          {
+            "id": "followup",
+            "name": "followup",
+            "label": "followup"
+          },
+          {
+            "id": "kpi",
+            "name": "kpi",
+            "label": "kpi"
+          },
+          {
+            "id": "reserva",
+            "name": "reserva",
+            "label": "reserva"
+          },
+          {
+            "id": "visita",
+            "name": "visita",
+            "label": "visita"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_norm",
+      "type": "agentFlow",
+      "position": {
+        "x": 780,
+        "y": -160
+      },
+      "data": {
+        "id": "q_norm",
+        "label": "Q - Normalizar",
+        "version": 1.0,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "llmModel": "gpt-4.1-mini",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Extrae de la consulta: fechaSolicitada, checkOut o diasSolicitados, personas, quintaId, clienteHabitualFlag, preferenciaVisita. Si falta algo, needsClarification=true y missingFields. Devuelve solo JSON."
+            },
+            {
+              "role": "user",
+              "content": "{{ $flow.input }}"
+            }
+          ],
+          "llmEnableMemory": true
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_cond_missing",
+      "type": "agentFlow",
+      "position": {
+        "x": 1020,
+        "y": -160
+      },
+      "data": {
+        "id": "q_cond_missing",
+        "label": "Q - faltan datos?",
+        "version": 1.0,
+        "name": "conditionAgentflow",
+        "type": "Condition",
+        "color": "#FFB938",
+        "inputParams": [
+          {
+            "label": "Conditions",
+            "name": "conditions",
+            "type": "array",
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Type",
+                "name": "type",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "String",
+                    "name": "string"
+                  },
+                  {
+                    "label": "Number",
+                    "name": "number"
+                  },
+                  {
+                    "label": "Boolean",
+                    "name": "boolean"
+                  }
+                ],
+                "default": "string"
+              },
+              {
+                "label": "Value 1",
+                "name": "value1",
+                "type": "string",
+                "acceptVariable": true
+              },
+              {
+                "label": "Operation",
+                "name": "operation",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "Contains",
+                    "name": "contains"
+                  },
+                  {
+                    "label": "Ends With",
+                    "name": "endsWith"
+                  },
+                  {
+                    "label": "Equal",
+                    "name": "equal"
+                  },
+                  {
+                    "label": "Not Contains",
+                    "name": "notContains"
+                  },
+                  {
+                    "label": "Not Equal",
+                    "name": "notEqual"
+                  },
+                  {
+                    "label": "Regex",
+                    "name": "regex"
+                  },
+                  {
+                    "label": "Starts With",
+                    "name": "startsWith"
+                  },
+                  {
+                    "label": "Is Empty",
+                    "name": "isEmpty"
+                  },
+                  {
+                    "label": "Not Empty",
+                    "name": "notEmpty"
+                  }
+                ],
+                "default": "equal"
+              },
+              {
+                "label": "Value 2",
+                "name": "value2",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "conditions": [
+            {
+              "type": "Boolean",
+              "value1": "{{ $flow.state.needsClarification }}",
+              "operation": "equal",
+              "value2": true
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "0",
+            "name": "0",
+            "label": "0"
+          },
+          {
+            "id": "1",
+            "name": "1",
+            "label": "1"
+          },
+          {
+            "id": "false",
+            "name": "false",
+            "label": "false"
+          },
+          {
+            "id": "true",
+            "name": "true",
+            "label": "true"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_reply_missing",
+      "type": "agentFlow",
+      "position": {
+        "x": 1260,
+        "y": -200
+      },
+      "data": {
+        "id": "q_reply_missing",
+        "label": "Q - pedir datos",
+        "version": 1.0,
+        "name": "directReplyAgentflow",
+        "type": "DirectReply",
+        "color": "#4DDBBB",
+        "inputParams": [
+          {
+            "label": "Message",
+            "name": "directReplyMessage",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          }
+        ],
+        "inputs": {
+          "directReplyMessage": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_custom_calc",
+      "type": "agentFlow",
+      "position": {
+        "x": 1260,
+        "y": -120
+      },
+      "data": {
+        "id": "q_custom_calc",
+        "label": "Q - calcular",
+        "version": 1.0,
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
+        "inputParams": [
+          {
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "customFunctionInputVariables": [
+            {
+              "name": "diasSolicitados",
+              "value": "{{ $flow.state.diasSolicitados }}"
+            },
+            {
+              "name": "precioBase",
+              "value": "{{ $flow.state.precioBase }}"
+            },
+            {
+              "name": "descuentoPct",
+              "value": "{{ $flow.state.descuentoPct }}"
+            },
+            {
+              "name": "clienteHabitualFlag",
+              "value": "{{ $flow.state.clienteHabitualFlag }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const dias=Number($diasSolicitados)||1;const base=Number($precioBase)||0;const descFlag=String($clienteHabitualFlag)==='true';const desc=descFlag?(Number($descuentoPct)||0):0;const total=base*dias*(1-(desc/100));return JSON.stringify({noches:dias,precioTotal:total,descuentoPct:desc});",
+          "customFunctionUpdateState": {
+            "diasSolicitados": "{{ json.noches }}",
+            "precioTotal": "{{ json.precioTotal }}",
+            "descuentoPct": "{{ json.descuentoPct }}"
+          }
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_ret_restr",
+      "type": "agentFlow",
+      "position": {
+        "x": 1500,
+        "y": -200
+      },
+      "data": {
+        "id": "q_ret_restr",
+        "label": "Q - Restricciones",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_RESTRICCIONES_ID}}"
+            }
+          ],
+          "retrieverQuery": "{{ $flow.state.fechaSolicitada }} minimos musica pagos visitas {{ $flow.state.quintaId }}",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_ret_cal",
+      "type": "agentFlow",
+      "position": {
+        "x": 1500,
+        "y": -160
+      },
+      "data": {
+        "id": "q_ret_cal",
+        "label": "Q - Calendario",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_CALENDARIO_ID}}"
+            }
+          ],
+          "retrieverQuery": "{{ $flow.state.fechaSolicitada }} {{ $flow.state.diasSolicitados }} {{ $flow.state.personas }} {{ $flow.state.quintaId }}",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_ret_cat",
+      "type": "agentFlow",
+      "position": {
+        "x": 1500,
+        "y": -120
+      },
+      "data": {
+        "id": "q_ret_cat",
+        "label": "Q - Catalogo",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_CATALOGO_ID}}"
+            }
+          ],
+          "retrieverQuery": "{{ $flow.state.personas }} capacidad amenities precio {{ $flow.state.fechaSolicitada }}",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_llm_tarifa",
+      "type": "agentFlow",
+      "position": {
+        "x": 1760,
+        "y": -140
+      },
+      "data": {
+        "id": "q_llm_tarifa",
+        "label": "Q - Tarifa",
+        "version": 1.0,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "llmModel": "gpt-4.1-mini",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Con inventario/catalogo, restricciones (minimos, musica, pagos) y calendario, calcula precio por noche y total. Si noches < minNights, marca alternativaNecesaria=true y propone extender (texto en notas). Incluye deposito y plazo de pago. Devuelve JSON {precioNoche, precioTotal, moneda, notas, alternativaNecesaria, minNights, minNightsOk, depositPct, depositDeadlineHours, musicRules, paymentNote}."
+            },
+            {
+              "role": "user",
+              "content": "{{ q_ret_cat.output }} {{ q_ret_restr.output }} {{ q_ret_cal.output }}"
+            }
+          ],
+          "llmEnableMemory": true
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_human_cot",
+      "type": "agentFlow",
+      "position": {
+        "x": 2000,
+        "y": -140
+      },
+      "data": {
+        "id": "q_human_cot",
+        "label": "Q - Cotizacion",
+        "version": 1.0,
+        "name": "humanInputAgentflow",
+        "type": "HumanInput",
+        "color": "#6E6EFD",
+        "inputParams": [
+          {
+            "label": "Description Type",
+            "name": "humanInputDescriptionType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Fixed",
+                "name": "fixed"
+              },
+              {
+                "label": "Dynamic",
+                "name": "dynamic"
+              }
+            ]
+          },
+          {
+            "label": "Description",
+            "name": "humanInputDescription",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true,
+            "show": {
+              "humanInputDescriptionType": "fixed"
+            }
+          },
+          {
+            "label": "Model",
+            "name": "humanInputModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true,
+            "show": {
+              "humanInputDescriptionType": "dynamic"
+            }
+          },
+          {
+            "label": "Prompt",
+            "name": "humanInputModelPrompt",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true,
+            "show": {
+              "humanInputDescriptionType": "dynamic"
+            }
+          },
+          {
+            "label": "Enable Feedback",
+            "name": "humanInputEnableFeedback",
+            "type": "boolean",
+            "default": true
+          }
+        ],
+        "inputs": {
+          "humanInputDescriptionType": "fixed",
+          "humanInputDescription": "",
+          "humanInputEnableFeedback": true
+        },
+        "outputAnchors": [
+          {
+            "id": "0",
+            "name": "0",
+            "label": "0"
+          },
+          {
+            "id": "1",
+            "name": "1",
+            "label": "1"
+          },
+          {
+            "id": "proceed",
+            "name": "proceed",
+            "label": "proceed"
+          },
+          {
+            "id": "reject",
+            "name": "reject",
+            "label": "reject"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_custom_calendario",
+      "type": "agentFlow",
+      "position": {
+        "x": 2240,
+        "y": -140
+      },
+      "data": {
+        "id": "q_custom_calendario",
+        "label": "Q - Calendario",
+        "version": 1.0,
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
+        "inputParams": [
+          {
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "customFunctionInputVariables": [
+            {
+              "name": "estado",
+              "value": "hold"
+            },
+            {
+              "name": "fecha",
+              "value": "{{ $flow.state.fechaSolicitada }}"
+            },
+            {
+              "name": "dias",
+              "value": "{{ $flow.state.diasSolicitados }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const holdHours=24;const now=new Date();const exp=new Date(now.getTime()+holdHours*60*60*1000).toISOString();return JSON.stringify({estadoCalendario:$estado||'hold',holdExpires:exp,reservaId:'QTA-'+Date.now()});",
+          "customFunctionUpdateState": {
+            "estadoCalendario": "{{ json.estadoCalendario }}",
+            "holdExpires": "{{ json.holdExpires }}",
+            "reservaId": "{{ json.reservaId }}"
+          }
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "q_reply_final",
+      "type": "agentFlow",
+      "position": {
+        "x": 2480,
+        "y": -140
+      },
+      "data": {
+        "id": "q_reply_final",
+        "label": "Q - Confirmacion",
+        "version": 1.0,
+        "name": "directReplyAgentflow",
+        "type": "DirectReply",
+        "color": "#4DDBBB",
+        "inputParams": [
+          {
+            "label": "Message",
+            "name": "directReplyMessage",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          }
+        ],
+        "inputs": {
+          "directReplyMessage": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "v_norm",
+      "type": "agentFlow",
+      "position": {
+        "x": 820,
+        "y": 120
+      },
+      "data": {
+        "id": "v_norm",
+        "label": "Visita - Normalizar",
+        "version": 1.0,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "llmModel": "gpt-4.1-mini",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Extrae fechaSolicitada, persona contacto y horario preferido para visita. Devuelve JSON."
+            },
+            {
+              "role": "user",
+              "content": "{{ $flow.input }}"
+            }
+          ],
+          "llmEnableMemory": true
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "v_ret_slots",
+      "type": "agentFlow",
+      "position": {
+        "x": 1060,
+        "y": 120
+      },
+      "data": {
+        "id": "v_ret_slots",
+        "label": "Visita - slots",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_RESTRICCIONES_ID}}"
+            }
+          ],
+          "retrieverQuery": "visitas slots {{ $flow.state.fechaSolicitada }} {{ $flow.state.quintaId }}",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "v_human",
+      "type": "agentFlow",
+      "position": {
+        "x": 1300,
+        "y": 120
+      },
+      "data": {
+        "id": "v_human",
+        "label": "Visita - confirmar",
+        "version": 1.0,
+        "name": "humanInputAgentflow",
+        "type": "HumanInput",
+        "color": "#6E6EFD",
+        "inputParams": [
+          {
+            "label": "Description Type",
+            "name": "humanInputDescriptionType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Fixed",
+                "name": "fixed"
+              },
+              {
+                "label": "Dynamic",
+                "name": "dynamic"
+              }
+            ]
+          },
+          {
+            "label": "Description",
+            "name": "humanInputDescription",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true,
+            "show": {
+              "humanInputDescriptionType": "fixed"
+            }
+          },
+          {
+            "label": "Model",
+            "name": "humanInputModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true,
+            "show": {
+              "humanInputDescriptionType": "dynamic"
+            }
+          },
+          {
+            "label": "Prompt",
+            "name": "humanInputModelPrompt",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true,
+            "show": {
+              "humanInputDescriptionType": "dynamic"
+            }
+          },
+          {
+            "label": "Enable Feedback",
+            "name": "humanInputEnableFeedback",
+            "type": "boolean",
+            "default": true
+          }
+        ],
+        "inputs": {
+          "humanInputDescriptionType": "fixed",
+          "humanInputDescription": "",
+          "humanInputEnableFeedback": true
+        },
+        "outputAnchors": [
+          {
+            "id": "0",
+            "name": "0",
+            "label": "0"
+          },
+          {
+            "id": "1",
+            "name": "1",
+            "label": "1"
+          },
+          {
+            "id": "proceed",
+            "name": "proceed",
+            "label": "proceed"
+          },
+          {
+            "id": "reject",
+            "name": "reject",
+            "label": "reject"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "v_reply",
+      "type": "agentFlow",
+      "position": {
+        "x": 1540,
+        "y": 120
+      },
+      "data": {
+        "id": "v_reply",
+        "label": "Visita - Reply",
+        "version": 1.0,
+        "name": "directReplyAgentflow",
+        "type": "DirectReply",
+        "color": "#4DDBBB",
+        "inputParams": [
+          {
+            "label": "Message",
+            "name": "directReplyMessage",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          }
+        ],
+        "inputs": {
+          "directReplyMessage": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "faq_ret",
+      "type": "agentFlow",
+      "position": {
+        "x": 820,
+        "y": 280
+      },
+      "data": {
+        "id": "faq_ret",
+        "label": "FAQ - Restricciones",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_RESTRICCIONES_ID}}"
+            }
+          ],
+          "retrieverQuery": "lluvia aire musica pagos {{ $flow.state.quintaId }}",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "faq_llm",
+      "type": "agentFlow",
+      "position": {
+        "x": 1060,
+        "y": 280
+      },
+      "data": {
+        "id": "faq_llm",
+        "label": "FAQ - Reply",
+        "version": 1.0,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "llmModel": "gpt-4.1-mini",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Responde breve sobre lluvia, aire, musica y pagos con el texto provisto."
+            },
+            {
+              "role": "user",
+              "content": "{{ faq_ret.output }}"
+            }
+          ],
+          "llmEnableMemory": true
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "faq_reply",
+      "type": "agentFlow",
+      "position": {
+        "x": 1300,
+        "y": 280
+      },
+      "data": {
+        "id": "faq_reply",
+        "label": "FAQ - Direct",
+        "version": 1.0,
+        "name": "directReplyAgentflow",
+        "type": "DirectReply",
+        "color": "#4DDBBB",
+        "inputParams": [
+          {
+            "label": "Message",
+            "name": "directReplyMessage",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          }
+        ],
+        "inputs": {
+          "directReplyMessage": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "f_ret",
+      "type": "agentFlow",
+      "position": {
+        "x": 820,
+        "y": 440
+      },
+      "data": {
+        "id": "f_ret",
+        "label": "Followup - Leads",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_LEADS_ID}}"
+            }
+          ],
+          "retrieverQuery": "leads abiertos o perdidos promociones",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "f_llm",
+      "type": "agentFlow",
+      "position": {
+        "x": 1060,
+        "y": 440
+      },
+      "data": {
+        "id": "f_llm",
+        "label": "Followup - Texto",
+        "version": 1.0,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "llmModel": "gpt-4.1-mini",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Genera un mensaje corto de follow-up o promo con los leads listados."
+            },
+            {
+              "role": "user",
+              "content": "{{ f_ret.output }}"
+            }
+          ],
+          "llmEnableMemory": true
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "f_reply",
+      "type": "agentFlow",
+      "position": {
+        "x": 1300,
+        "y": 440
+      },
+      "data": {
+        "id": "f_reply",
+        "label": "Followup - Reply",
+        "version": 1.0,
+        "name": "directReplyAgentflow",
+        "type": "DirectReply",
+        "color": "#4DDBBB",
+        "inputParams": [
+          {
+            "label": "Message",
+            "name": "directReplyMessage",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          }
+        ],
+        "inputs": {
+          "directReplyMessage": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "k_ret_leads",
+      "type": "agentFlow",
+      "position": {
+        "x": 820,
+        "y": 600
+      },
+      "data": {
+        "id": "k_ret_leads",
+        "label": "KPI - Leads",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_LEADS_ID}}"
+            }
+          ],
+          "retrieverQuery": "ocupacion consultas visitas reservas",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "k_ret_comp",
+      "type": "agentFlow",
+      "position": {
+        "x": 1060,
+        "y": 600
+      },
+      "data": {
+        "id": "k_ret_comp",
+        "label": "KPI - Competencia",
+        "version": 1.0,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "{{DOCSTORE_COMPETENCIA_ID}}"
+            }
+          ],
+          "retrieverQuery": "precios referencia competencia",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "k_llm",
+      "type": "agentFlow",
+      "position": {
+        "x": 1300,
+        "y": 600
+      },
+      "data": {
+        "id": "k_llm",
+        "label": "KPI - Reply",
+        "version": 1.0,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "default": true,
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "llmModel": "gpt-4.1-mini",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Resume ocupacion mock, ratio consultas->visitas->reservas y precios de referencia."
+            },
+            {
+              "role": "user",
+              "content": "{{ k_ret_leads.output }} {{ k_ret_comp.output }}"
+            }
+          ],
+          "llmEnableMemory": true
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    },
+    {
+      "id": "k_reply",
+      "type": "agentFlow",
+      "position": {
+        "x": 1540,
+        "y": 600
+      },
+      "data": {
+        "id": "k_reply",
+        "label": "KPI - Direct",
+        "version": 1.0,
+        "name": "directReplyAgentflow",
+        "type": "DirectReply",
+        "color": "#4DDBBB",
+        "inputParams": [
+          {
+            "label": "Message",
+            "name": "directReplyMessage",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          }
+        ],
+        "inputs": {
+          "directReplyMessage": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "hideInput": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-output-llm_intent-input",
+      "source": "start",
+      "target": "llm_intent",
+      "sourceHandle": "output",
+      "targetHandle": "llm_intent",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "memory-output-llm_intent-memory",
+      "source": "memory",
+      "target": "llm_intent",
+      "sourceHandle": "output",
+      "targetHandle": "llm_intent",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "llm_intent-output-router-input",
+      "source": "llm_intent",
+      "target": "router",
+      "sourceHandle": "output",
+      "targetHandle": "router",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "router-disponibilidad-q_norm-input",
+      "source": "router",
+      "target": "q_norm",
+      "sourceHandle": "disponibilidad",
+      "targetHandle": "q_norm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "router-reserva-q_norm-input",
+      "source": "router",
+      "target": "q_norm",
+      "sourceHandle": "reserva",
+      "targetHandle": "q_norm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_norm-output-q_cond_missing-input",
+      "source": "q_norm",
+      "target": "q_cond_missing",
+      "sourceHandle": "output",
+      "targetHandle": "q_cond_missing",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_cond_missing-true-q_reply_missing-input",
+      "source": "q_cond_missing",
+      "target": "q_reply_missing",
+      "sourceHandle": "true",
+      "targetHandle": "q_reply_missing",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_cond_missing-false-q_custom_calc-input",
+      "source": "q_cond_missing",
+      "target": "q_custom_calc",
+      "sourceHandle": "false",
+      "targetHandle": "q_custom_calc",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_custom_calc-output-q_ret_restr-input",
+      "source": "q_custom_calc",
+      "target": "q_ret_restr",
+      "sourceHandle": "output",
+      "targetHandle": "q_ret_restr",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_custom_calc-output-q_ret_cal-input",
+      "source": "q_custom_calc",
+      "target": "q_ret_cal",
+      "sourceHandle": "output",
+      "targetHandle": "q_ret_cal",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_custom_calc-output-q_ret_cat-input",
+      "source": "q_custom_calc",
+      "target": "q_ret_cat",
+      "sourceHandle": "output",
+      "targetHandle": "q_ret_cat",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_ret_restr-output-q_llm_tarifa-input",
+      "source": "q_ret_restr",
+      "target": "q_llm_tarifa",
+      "sourceHandle": "output",
+      "targetHandle": "q_llm_tarifa",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_ret_cal-output-q_llm_tarifa-input",
+      "source": "q_ret_cal",
+      "target": "q_llm_tarifa",
+      "sourceHandle": "output",
+      "targetHandle": "q_llm_tarifa",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_ret_cat-output-q_llm_tarifa-input",
+      "source": "q_ret_cat",
+      "target": "q_llm_tarifa",
+      "sourceHandle": "output",
+      "targetHandle": "q_llm_tarifa",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_llm_tarifa-output-q_human_cot-input",
+      "source": "q_llm_tarifa",
+      "target": "q_human_cot",
+      "sourceHandle": "output",
+      "targetHandle": "q_human_cot",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_human_cot-proceed-q_custom_calendario-input",
+      "source": "q_human_cot",
+      "target": "q_custom_calendario",
+      "sourceHandle": "proceed",
+      "targetHandle": "q_custom_calendario",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_custom_calendario-output-q_reply_final-input",
+      "source": "q_custom_calendario",
+      "target": "q_reply_final",
+      "sourceHandle": "output",
+      "targetHandle": "q_reply_final",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "router-visita-v_norm-input",
+      "source": "router",
+      "target": "v_norm",
+      "sourceHandle": "visita",
+      "targetHandle": "v_norm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "v_norm-output-v_ret_slots-input",
+      "source": "v_norm",
+      "target": "v_ret_slots",
+      "sourceHandle": "output",
+      "targetHandle": "v_ret_slots",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "v_ret_slots-output-v_human-input",
+      "source": "v_ret_slots",
+      "target": "v_human",
+      "sourceHandle": "output",
+      "targetHandle": "v_human",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "v_human-proceed-v_reply-input",
+      "source": "v_human",
+      "target": "v_reply",
+      "sourceHandle": "proceed",
+      "targetHandle": "v_reply",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "router-faq-faq_ret-input",
+      "source": "router",
+      "target": "faq_ret",
+      "sourceHandle": "faq",
+      "targetHandle": "faq_ret",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "faq_ret-output-faq_llm-input",
+      "source": "faq_ret",
+      "target": "faq_llm",
+      "sourceHandle": "output",
+      "targetHandle": "faq_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "faq_llm-output-faq_reply-input",
+      "source": "faq_llm",
+      "target": "faq_reply",
+      "sourceHandle": "output",
+      "targetHandle": "faq_reply",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "router-followup-f_ret-input",
+      "source": "router",
+      "target": "f_ret",
+      "sourceHandle": "followup",
+      "targetHandle": "f_ret",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "f_ret-output-f_llm-input",
+      "source": "f_ret",
+      "target": "f_llm",
+      "sourceHandle": "output",
+      "targetHandle": "f_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "f_llm-output-f_reply-input",
+      "source": "f_llm",
+      "target": "f_reply",
+      "sourceHandle": "output",
+      "targetHandle": "f_reply",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "router-kpi-k_ret_leads-input",
+      "source": "router",
+      "target": "k_ret_leads",
+      "sourceHandle": "kpi",
+      "targetHandle": "k_ret_leads",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "k_ret_leads-output-k_ret_comp-input",
+      "source": "k_ret_leads",
+      "target": "k_ret_comp",
+      "sourceHandle": "output",
+      "targetHandle": "k_ret_comp",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "k_ret_comp-output-k_llm-input",
+      "source": "k_ret_comp",
+      "target": "k_llm",
+      "sourceHandle": "output",
+      "targetHandle": "k_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "k_llm-output-k_reply-input",
+      "source": "k_llm",
+      "target": "k_reply",
+      "sourceHandle": "output",
+      "targetHandle": "k_reply",
+      "type": "agentFlow",
+      "data": {}
+    }
+  ]
+}

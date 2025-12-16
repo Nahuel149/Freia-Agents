@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2025-11-25",
+  "lastUpdated": "2025-12-16",
   "properties": [
     {
       "id": "rincon-principal",
@@ -65,6 +65,201 @@
         }
       ],
       "blockedDates": []
+    },
+    {
+      "id": "rincon-laguna",
+      "name": "Rincon Laguna",
+      "location": "Zona Norte",
+      "defaultMinNights": 3,
+      "holdsHours": 12,
+      "events": [
+        {
+          "start": "2026-01-07",
+          "end": "2026-01-08",
+          "status": "booked"
+        },
+        {
+          "start": "2026-01-26",
+          "end": "2026-01-28",
+          "status": "booked"
+        },
+        {
+          "start": "2026-01-12",
+          "end": "2026-01-12",
+          "status": "visit",
+          "notes": "16:00"
+        }
+      ],
+      "blockedDates": []
+    },
+    {
+      "id": "rincon-arboleda",
+      "name": "Rincon Arboleda",
+      "location": "Zona Oeste",
+      "defaultMinNights": 2,
+      "holdsHours": 24,
+      "events": [
+        {
+          "start": "2026-01-08",
+          "end": "2026-01-10",
+          "status": "booked",
+          "source": "whatsapp",
+          "notes": "fin de semana largo"
+        },
+        {
+          "start": "2026-01-21",
+          "end": "2026-01-23",
+          "status": "booked",
+          "source": "instagram"
+        },
+        {
+          "start": "2026-01-30",
+          "end": "2026-02-03",
+          "status": "hold",
+          "holdExpires": "2025-12-10T18:00:00Z",
+          "notes": "espera de pago"
+        },
+        {
+          "start": "2026-02-16",
+          "end": "2026-02-17",
+          "status": "visit",
+          "notes": "visita guiada"
+        }
+      ],
+      "blockedDates": [
+        "2026-01-25",
+        "2026-01-26"
+      ]
+    },
+    {
+      "id": "rincon-rio",
+      "name": "Rincon del Rio",
+      "location": "Zona Sur",
+      "defaultMinNights": 3,
+      "holdsHours": 12,
+      "events": [
+        {
+          "start": "2026-01-19",
+          "end": "2026-01-20",
+          "status": "booked"
+        },
+        {
+          "start": "2026-02-07",
+          "end": "2026-02-09",
+          "status": "booked"
+        },
+        {
+          "start": "2026-01-24",
+          "end": "2026-01-24",
+          "status": "visit",
+          "notes": "16:00"
+        }
+      ],
+      "blockedDates": []
+    },
+    {
+      "id": "rincon-montana",
+      "name": "Rincon Monta?a",
+      "location": "Zona Oeste",
+      "defaultMinNights": 2,
+      "holdsHours": 24,
+      "events": [
+        {
+          "start": "2026-01-20",
+          "end": "2026-01-22",
+          "status": "booked",
+          "source": "whatsapp",
+          "notes": "fin de semana largo"
+        },
+        {
+          "start": "2026-02-02",
+          "end": "2026-02-04",
+          "status": "booked",
+          "source": "instagram"
+        },
+        {
+          "start": "2026-02-11",
+          "end": "2026-02-15",
+          "status": "hold",
+          "holdExpires": "2025-12-10T18:00:00Z",
+          "notes": "espera de pago"
+        },
+        {
+          "start": "2026-02-28",
+          "end": "2026-03-01",
+          "status": "visit",
+          "notes": "visita guiada"
+        }
+      ],
+      "blockedDates": [
+        "2026-02-06",
+        "2026-02-07"
+      ]
+    },
+    {
+      "id": "rincon-estanque",
+      "name": "Rincon Estanque",
+      "location": "Zona Norte",
+      "defaultMinNights": 3,
+      "holdsHours": 12,
+      "events": [
+        {
+          "start": "2026-01-31",
+          "end": "2026-02-01",
+          "status": "booked"
+        },
+        {
+          "start": "2026-02-19",
+          "end": "2026-02-21",
+          "status": "booked"
+        },
+        {
+          "start": "2026-02-05",
+          "end": "2026-02-05",
+          "status": "visit",
+          "notes": "16:00"
+        }
+      ],
+      "blockedDates": []
+    },
+    {
+      "id": "rincon-campo",
+      "name": "Rincon del Campo",
+      "location": "Zona Oeste",
+      "defaultMinNights": 2,
+      "holdsHours": 24,
+      "events": [
+        {
+          "start": "2026-02-01",
+          "end": "2026-02-03",
+          "status": "booked",
+          "source": "whatsapp",
+          "notes": "fin de semana largo"
+        },
+        {
+          "start": "2026-02-14",
+          "end": "2026-02-16",
+          "status": "booked",
+          "source": "instagram"
+        },
+        {
+          "start": "2026-02-23",
+          "end": "2026-02-27",
+          "status": "hold",
+          "holdExpires": "2025-12-10T18:00:00Z",
+          "notes": "espera de pago"
+        },
+        {
+          "start": "2026-03-12",
+          "end": "2026-03-13",
+          "status": "visit",
+          "notes": "visita guiada"
+        }
+      ],
+      "blockedDates": [
+        "2026-02-18",
+        "2026-02-19"
+      ]
     }
   ],
   "blackoutDates": [
