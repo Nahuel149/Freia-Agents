@@ -22,6 +22,7 @@ export const WHITELIST_URLS = [
     '/api/v1/ip',
     '/api/v1/ping',
     '/api/v1/version',
+    '/api/v1/app-settings',
     '/api/v1/attachments',
     '/api/v1/metrics',
     '/api/v1/nvidia-nim',

@@ -188,22 +188,21 @@ const RegisterPage = () => {
         <>
             <Box
                 sx={{
+                    position: 'fixed', // pin to viewport
+                    inset: 0,
                     minHeight: '100vh',
-                    width: '100%',
+                    width: '100vw',
+                    overflow: 'auto',
                     background: customization.isDarkMode
                         ? 'linear-gradient(135deg, #0B1021 0%, #0E1529 45%, #0A56F0 100%)'
                         : 'linear-gradient(135deg, #F8FAFF 0%, #E8F0FF 45%, #FF7A18 100%)',
-                    position: 'relative',
                     '&::before': {
                         content: '""',
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
+                        inset: 0,
                         background: customization.isDarkMode
-                            ? 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.16) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.18) 0%, transparent 50%)'
-                            : 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.14) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.16) 0%, transparent 50%)',
+                            ? 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.16) 0%, transparent 58%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.18) 0%, transparent 58%)'
+                            : 'radial-gradient(circle at 20% 80%, rgba(255, 122, 24, 0.14) 0%, transparent 58%), radial-gradient(circle at 80% 20%, rgba(10, 86, 240, 0.16) 0%, transparent 58%)',
                         pointerEvents: 'none'
                     }
                 }}
