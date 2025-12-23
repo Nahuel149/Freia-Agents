@@ -965,14 +965,20 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         const chatId = params.chatId
         const input = params.question
         params.streaming = true
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-request-from': 'internal'
+        }
+        const token = localStorage.getItem('token')
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
         await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
             openWhenHidden: true,
             method: 'POST',
             body: JSON.stringify(params),
-            headers: {
-                'Content-Type': 'application/json',
-                'x-request-from': 'internal'
-            },
+            headers,
+            credentials: 'include',
             async onopen(response) {
                 if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
                     //console.log('EventSource Open')

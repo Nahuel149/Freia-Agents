@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, Fragment } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
-import axios from 'axios'
+import nodesApi from '@/api/nodes'
 
 // Material
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
@@ -37,20 +37,8 @@ const fetchList = async ({ name, nodeData, previousNodes, currentNode }) => {
         credentialId = nodeData.inputs.credential || nodeData.inputs?.['FLOWISE_CREDENTIAL_ID']
     }
 
-    let config = {
-        headers: {
-            'x-request-from': 'internal',
-            'Content-type': 'application/json'
-        },
-        withCredentials: true
-    }
-
-    let lists = await axios
-        .post(
-            `${baseURL}/api/v1/node-load-method/${nodeData.name}`,
-            { ...nodeData, loadMethod, previousNodes, currentNode, credential: credentialId },
-            config
-        )
+    let lists = await nodesApi
+        .executeNodeLoadMethod(nodeData.name, { ...nodeData, loadMethod, previousNodes, currentNode, credential: credentialId })
         .then(async function (response) {
             return response.data
         })

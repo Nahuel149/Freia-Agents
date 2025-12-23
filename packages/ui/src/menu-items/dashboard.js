@@ -133,7 +133,7 @@ const dashboard = {
                             icon: icons.IconBuildingStore,
                             breadcrumbs: true,
                             permission: 'templates:marketplace,templates:custom'
-                        },
+                        }
                     ]
                 }
             ]

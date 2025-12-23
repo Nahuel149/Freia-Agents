@@ -64,6 +64,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     const [savePermission, setSavePermission] = useState(isAgentCanvas ? 'agentflows:create' : 'chatflows:create')
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+    const backUrl = isAgentCanvas ? '/agentflows' : '/chatflows'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -269,7 +270,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 }}
                                 color='inherit'
                                 onClick={() => {
-                                    navigate('/chatflows')
+                                    navigate(backUrl)
                                 }}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />

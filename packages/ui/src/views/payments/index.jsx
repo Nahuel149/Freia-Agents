@@ -144,7 +144,15 @@ const Payments = () => {
                     Elige una opción y se generará un checkout seguro ({providerLabel}).
                 </Typography>
             </Stack>
-            <Card sx={{ mb: 3, borderRadius: 3, px: 3, py: 2, background: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#f5f5f5' }}>
+            <Card
+                sx={{
+                    mb: 3,
+                    borderRadius: 3,
+                    px: 3,
+                    py: 2,
+                    background: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#f5f5f5')
+                }}
+            >
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems='center'>
                     <FormControl sx={{ minWidth: 240 }} size='small'>
                         <InputLabel id='country-select-label'>País</InputLabel>

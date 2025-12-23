@@ -108,7 +108,7 @@ const StyledTreeItemLabelText = styled(Typography)(({ theme }) => ({
     color: theme.palette.text.primary
 }))
 
-function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, metadata, ...other }) {
+function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, metadata, expandable, ...other }) {
     const [openDialog, setOpenDialog] = useState(false)
 
     const handleOpenDialog = (event) => {
@@ -212,13 +212,6 @@ CustomLabel.propTypes = {
 
 CustomLabel.displayName = 'CustomLabel'
 
-const isExpandable = (reactChildren) => {
-    if (Array.isArray(reactChildren)) {
-        return reactChildren.length > 0 && reactChildren.some(isExpandable)
-    }
-    return Boolean(reactChildren)
-}
-
 const getIconFromStatus = (status, theme) => {
     switch (status) {
         case 'FINISHED':
@@ -257,10 +250,13 @@ const CustomTreeItem = forwardRef(function CustomTreeItem(props, ref) {
     } = useTreeItem2({ id, itemId, children, label, disabled, rootRef: ref })
 
     const item = publicAPI.getItem(itemId)
-    const expandable = isExpandable(children)
+    const itemStatus = item?.status
+    const itemName = item?.name || item?.id?.split('_')[0] || ''
+    const itemLabel = item?.label
+    const itemData = item?.data
     let icon
-    if (item.status) {
-        icon = getIconFromStatus(item.status, theme)
+    if (itemStatus) {
+        icon = getIconFromStatus(itemStatus, theme)
     }
 
     return (
@@ -274,12 +270,11 @@ const CustomTreeItem = forwardRef(function CustomTreeItem(props, ref) {
                     <CustomLabel
                         {...getLabelProps({
                             icon,
-                            itemStatus: item.status,
-                            expandable: expandable && status.expanded,
-                            name: item.name || item.id?.split('_')[0],
-                            label: item.label,
+                            itemStatus: itemStatus,
+                            name: itemName,
+                            label: itemLabel,
                             status,
-                            data: item.data,
+                            data: itemData,
                             metadata: { agentflowId, sessionId }
                         })}
                     />
@@ -290,7 +285,7 @@ const CustomTreeItem = forwardRef(function CustomTreeItem(props, ref) {
                         {...getGroupTransitionProps()}
                         style={{
                             borderLeft: `${status.selected ? '3px solid' : '1px dashed'} ${(() => {
-                                const nodeName = item.name || item.id?.split('_')[0]
+                                const nodeName = itemName
                                 const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodeName)
                                 return foundIcon ? foundIcon.color : theme.palette.primary.main
                             })()}`,
