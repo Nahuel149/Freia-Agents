@@ -18,8 +18,8 @@ const MoreItemsTooltip = ({ images, children }) => {
         <Tooltip
             title={
                 <StyledOl>
-                    {images.map((img) => (
-                        <StyledLi key={img.imageSrc || img.label}>
+                    {images.map((img, index) => (
+                        <StyledLi key={`${img.imageSrc || img.label}-${index}`}>
                             <Typography>{img.label}</Typography>
                         </StyledLi>
                     ))}

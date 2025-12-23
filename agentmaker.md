@@ -75,6 +75,13 @@ Notes:
 - Do not JSON-encode placeholders.
 - For JSON-capable fields, prefer actual arrays/objects instead of JSON strings.
 
+## Flowise variables ($vars)
+- `$vars.NAME` resolves from Flowise Variables (Settings > Variables).
+- Variables can be `static` (stored in DB) or `runtime` (read from server env).
+- For `runtime`, set the env var in `packages/server/.env` with the same name.
+- If a flow uses `$vars.NAME`, ensure it exists or the placeholder stays literal at runtime.
+- Example runtime vars: FLOWISE_BASE_URL, FLOWISE_API_KEY, LEADS_DOCSTORE_ID, LEADS_DOC_ID, BOOKING_API_URL, BOOKING_API_KEY.
+
 ## Common sub-structures
 - **Flow state updates** (used by LLM/Agent/Retriever/Tool/ExecuteFlow/CustomFunction):
   ```

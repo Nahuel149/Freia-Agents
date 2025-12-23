@@ -123,12 +123,13 @@ const Agentflows = () => {
     useEffect(() => {
         if (getAllAgentflows.data) {
             try {
-                const agentflows = getAllAgentflows.data?.data
-                setTotal(getAllAgentflows.data?.total)
+                const agentflows = getAllAgentflows.data?.data || []
+                setTotal(getAllAgentflows.data?.total || 0)
                 const images = {}
                 const icons = {}
                 for (let i = 0; i < agentflows.length; i += 1) {
                     const flowDataStr = agentflows[i].flowData
+                    if (!flowDataStr) continue
                     const flowData = JSON.parse(flowDataStr)
                     const nodes = flowData.nodes || []
                     images[agentflows[i].id] = []

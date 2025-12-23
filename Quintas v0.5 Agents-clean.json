@@ -287,6 +287,62 @@
             {
               "key": "reservaId",
               "value": ""
+            },
+            {
+              "key": "notas",
+              "value": ""
+            },
+            {
+              "key": "missingFields",
+              "value": "[]"
+            },
+            {
+              "key": "preferenciaVisita",
+              "value": ""
+            },
+            {
+              "key": "negociacionFlag",
+              "value": false
+            },
+            {
+              "key": "descuentoPctSolicitado",
+              "value": 0
+            },
+            {
+              "key": "canApplyDiscount",
+              "value": false
+            },
+            {
+              "key": "leadId",
+              "value": ""
+            },
+            {
+              "key": "leadText",
+              "value": ""
+            },
+            {
+              "key": "leadCreatedAt",
+              "value": ""
+            },
+            {
+              "key": "precioNoche",
+              "value": 0
+            },
+            {
+              "key": "minNightsOk",
+              "value": false
+            },
+            {
+              "key": "alternativaNecesaria",
+              "value": false
+            },
+            {
+              "key": "tarifaNotas",
+              "value": ""
+            },
+            {
+              "key": "catalogoResumen",
+              "value": ""
             }
           ],
           "startPersistState": false,
@@ -595,7 +651,17 @@
             "reasoning": "",
             "llmModel": "chatOpenAI"
           },
-          "llmReturnResponseAs": "userMessage"
+          "llmReturnResponseAs": "userMessage",
+          "llmUpdateState": [
+            {
+              "key": "intent",
+              "value": "{{ output.intent }}"
+            },
+            {
+              "key": "notas",
+              "value": "{{ output.notas }}"
+            }
+          ]
         },
         "outputAnchors": [
           {
@@ -1070,7 +1136,7 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Extrae de la consulta: fechaSolicitada, checkOut o diasSolicitados, personas, quintaId, clienteHabitualFlag, preferenciaVisita. Si falta algo, needsClarification=true y missingFields. Devuelve solo JSON."
+              "content": "Extrae de la consulta: fechaSolicitada, checkOut o diasSolicitados, personas, quintaId, clienteHabitualFlag, preferenciaVisita, negociacionFlag (true si pide descuento/regateo/precio menor), descuentoPctSolicitado (numero si lo menciona, si no 0). Si falta algo, needsClarification=true y missingFields (array). Devuelve solo JSON."
             },
             {
               "role": "user",
@@ -1097,7 +1163,53 @@
             "reasoning": "",
             "llmModel": "chatOpenAI"
           },
-          "llmReturnResponseAs": "userMessage"
+          "llmReturnResponseAs": "userMessage",
+          "llmUpdateState": [
+            {
+              "key": "fechaSolicitada",
+              "value": "{{ output.fechaSolicitada }}"
+            },
+            {
+              "key": "checkOut",
+              "value": "{{ output.checkOut }}"
+            },
+            {
+              "key": "diasSolicitados",
+              "value": "{{ output.diasSolicitados }}"
+            },
+            {
+              "key": "personas",
+              "value": "{{ output.personas }}"
+            },
+            {
+              "key": "quintaId",
+              "value": "{{ output.quintaId }}"
+            },
+            {
+              "key": "clienteHabitualFlag",
+              "value": "{{ output.clienteHabitualFlag }}"
+            },
+            {
+              "key": "preferenciaVisita",
+              "value": "{{ output.preferenciaVisita }}"
+            },
+            {
+              "key": "needsClarification",
+              "value": "{{ output.needsClarification }}"
+            },
+            {
+              "key": "missingFields",
+              "value": "{{ output.missingFields }}"
+            },
+            {
+              "key": "negociacionFlag",
+              "value": "{{ output.negociacionFlag }}"
+            },
+            {
+              "key": "descuentoPctSolicitado",
+              "value": "{{ output.descuentoPctSolicitado }}"
+            }
+          ]
         },
         "outputAnchors": [
           {
@@ -1261,59 +1373,6 @@
       "positionAbsolute": {
         "x": 1018.7400790638173,
         "y": -160
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_reply_missing",
-      "type": "agentFlow",
-      "position": {
-        "x": 1260,
-        "y": -198.74007906381746
-      },
-      "data": {
-        "id": "q_reply_missing",
-        "label": "Q - pedir datos",
-        "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          }
-        ],
-        "inputs": {
-          "directReplyMessage": "<p>Hola, soy el asistente de Quintas el Rincon de mi mundo. Para cotizar necesito: fecha de check-in, noches/checkout, cantidad de personas y, si queres, la quinta preferida. Algunas fechas pueden estar no disponibles; si no hay cupo te propondre alternativas. Me compartis esos datos?</p>"
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false,
-        "baseClasses": [
-          "DirectReply"
-        ],
-        "category": "Agent Flows",
-        "description": "Directly reply to the user with a message",
-        "inputAnchors": [],
-        "outputs": {},
-        "hideOutput": true
-      },
-      "width": 169,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1260,
-        "y": -198.74007906381746
       },
       "selected": false,
       "dragging": false
@@ -2058,7 +2117,53 @@
             "reasoning": "",
             "llmModel": "chatOpenAI"
           },
-          "llmReturnResponseAs": "userMessage"
+          "llmReturnResponseAs": "userMessage",
+          "llmUpdateState": [
+            {
+              "key": "precioNoche",
+              "value": "{{ output.precioNoche }}"
+            },
+            {
+              "key": "precioTotal",
+              "value": "{{ output.precioTotal }}"
+            },
+            {
+              "key": "moneda",
+              "value": "{{ output.moneda }}"
+            },
+            {
+              "key": "tarifaNotas",
+              "value": "{{ output.notas }}"
+            },
+            {
+              "key": "alternativaNecesaria",
+              "value": "{{ output.alternativaNecesaria }}"
+            },
+            {
+              "key": "minNights",
+              "value": "{{ output.minNights }}"
+            },
+            {
+              "key": "minNightsOk",
+              "value": "{{ output.minNightsOk }}"
+            },
+            {
+              "key": "depositPct",
+              "value": "{{ output.depositPct }}"
+            },
+            {
+              "key": "depositDeadlineHours",
+              "value": "{{ output.depositDeadlineHours }}"
+            },
+            {
+              "key": "musicRules",
+              "value": "{{ output.musicRules }}"
+            },
+            {
+              "key": "paymentNote",
+              "value": "{{ output.paymentNote }}"
+            }
+          ]
         },
         "outputAnchors": [
           {
@@ -2304,59 +2409,6 @@
       "height": 66,
       "positionAbsolute": {
         "x": 2240,
-        "y": -140
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_reply_final",
-      "type": "agentFlow",
-      "position": {
-        "x": 2481.2599209361824,
-        "y": -140
-      },
-      "data": {
-        "id": "q_reply_final",
-        "label": "Q - Confirmacion",
-        "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          }
-        ],
-        "inputs": {
-          "directReplyMessage": "<p>Reserva preconfirmada. Estado: {{ $flow.state.estadoCalendario || 'hold' }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || '(pendiente)' }}. Reglas: musica moderada de dia, sin musica de noche. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Un humano confirma pagos y calendario real antes de cerrar.</p>"
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false,
-        "baseClasses": [
-          "DirectReply"
-        ],
-        "category": "Agent Flows",
-        "description": "Directly reply to the user with a message",
-        "inputAnchors": [],
-        "outputs": {},
-        "hideOutput": true
-      },
-      "width": 184,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 2481.2599209361824,
         "y": -140
       },
       "selected": false,
@@ -2881,59 +2933,6 @@
       "dragging": false
     },
     {
-      "id": "v_reply",
-      "type": "agentFlow",
-      "position": {
-        "x": 1541.2599209361827,
-        "y": 120
-      },
-      "data": {
-        "id": "v_reply",
-        "label": "Visita - Reply",
-        "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          }
-        ],
-        "inputs": {
-          "directReplyMessage": "<p>Visita registrada. Confirmaremos horario disponible y enviaremos ubicacion y notas clave de la quinta. Si necesitas otro horario, danoslo y ajustamos.</p>"
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false,
-        "baseClasses": [
-          "DirectReply"
-        ],
-        "category": "Agent Flows",
-        "description": "Directly reply to the user with a message",
-        "inputAnchors": [],
-        "outputs": {},
-        "hideOutput": true
-      },
-      "width": 158,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1541.2599209361827,
-        "y": 120
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
       "id": "faq_ret",
       "type": "agentFlow",
       "position": {
@@ -3299,11 +3298,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Responde breve sobre lluvia, aire, musica y pagos con el texto provisto."
+              "content": "Responde breve sobre lluvia, aire acondicionado, musica y pagos usando el texto provisto. Incluye link de catalogo si existe y resume reglas clave."
             },
             {
               "role": "user",
-              "content": "{{ faq_ret.output }}"
+              "content": "{{ faq_ret.output }}\nCatalogo: {{ $flow.state.catalogoLink || \"https://example.com/catalogo-quintas\" }}."
             }
           ],
           "llmEnableMemory": true,
@@ -3326,7 +3325,7 @@
             "reasoning": "",
             "llmModel": "chatOpenAI"
           },
-          "llmReturnResponseAs": "userMessage"
+          "llmReturnResponseAs": "assistantMessage"
         },
         "outputAnchors": [
           {
@@ -3348,59 +3347,6 @@
       "height": 72,
       "positionAbsolute": {
         "x": 1061.259921106751,
-        "y": 280
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "faq_reply",
-      "type": "agentFlow",
-      "position": {
-        "x": 1300,
-        "y": 280
-      },
-      "data": {
-        "id": "faq_reply",
-        "label": "FAQ - Direct",
-        "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          }
-        ],
-        "inputs": {
-          "directReplyMessage": "<p>{{ faq_llm.output }} Catalogo: {{ $flow.state.catalogoLink || 'https://ejemplo.com/catalogo-quintas' }}. Reglas clave: musica moderada de dia, sin musica de noche; sin seguro de lluvia ni A/C (hay carpa/ventiladores opcionales).</p>"
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false,
-        "baseClasses": [
-          "DirectReply"
-        ],
-        "category": "Agent Flows",
-        "description": "Directly reply to the user with a message",
-        "inputAnchors": [],
-        "outputs": {},
-        "hideOutput": true
-      },
-      "width": 150,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1300,
         "y": 280
       },
       "selected": false,
@@ -3772,7 +3718,7 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Genera un mensaje corto de follow-up o promo con los leads listados."
+              "content": "Genera un mensaje corto de follow-up o promo con los leads listados. Finaliza con: \"Si quieres que sostengamos una fecha o aplicar descuento de cliente habitual, avisa y lo marcamos.\""
             },
             {
               "role": "user",
@@ -3799,7 +3745,7 @@
             "reasoning": "",
             "llmModel": "chatOpenAI"
           },
-          "llmReturnResponseAs": "userMessage"
+          "llmReturnResponseAs": "assistantMessage"
         },
         "outputAnchors": [
           {
@@ -3821,59 +3767,6 @@
       "height": 72,
       "positionAbsolute": {
         "x": 1060,
-        "y": 440
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "f_reply",
-      "type": "agentFlow",
-      "position": {
-        "x": 1300,
-        "y": 440
-      },
-      "data": {
-        "id": "f_reply",
-        "label": "Followup - Reply",
-        "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          }
-        ],
-        "inputs": {
-          "directReplyMessage": "Seguimiento listo: {{ f_llm.output }}. Si quieres que sostengamos una fecha o aplicar descuento de cliente habitual, avisa y lo marcamos."
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false,
-        "baseClasses": [
-          "DirectReply"
-        ],
-        "category": "Agent Flows",
-        "description": "Directly reply to the user with a message",
-        "inputAnchors": [],
-        "outputs": {},
-        "hideOutput": true
-      },
-      "width": 180,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1300,
         "y": 440
       },
       "selected": false,
@@ -4356,7 +4249,7 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Resume ocupacion mock, ratio consultas->visitas->reservas y precios de referencia."
+              "content": "Resume ocupacion mock, ratio consultas->visitas->reservas y precios de referencia. Incluye referencia de competencia si esta disponible (COMPETENCIA_QUINTAS)."
             },
             {
               "role": "user",
@@ -4383,7 +4276,7 @@
             "reasoning": "",
             "llmModel": "chatOpenAI"
           },
-          "llmReturnResponseAs": "userMessage"
+          "llmReturnResponseAs": "assistantMessage"
         },
         "outputAnchors": [
           {
@@ -4411,31 +4304,96 @@
       "dragging": false
     },
     {
-      "id": "k_reply",
+      "id": "q_discount_flags",
       "type": "agentFlow",
       "position": {
-        "x": 1551.3392884256427,
-        "y": 608.8194465532779
+        "x": 1260,
+        "y": -200
       },
       "data": {
-        "id": "k_reply",
-        "label": "KPI - Direct",
+        "id": "q_discount_flags",
+        "label": "Q - flags descuento",
         "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
         "hideInput": false,
         "inputParams": [
           {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
           }
         ],
         "inputs": {
-          "directReplyMessage": "<p>KPI y comparativo: {{ k_llm.output }}. Incluye referencia de competencia si esta disponible (COMPETENCIA_QUINTAS).</p>"
+          "customFunctionInputVariables": [
+            {
+              "variableName": "negociacionFlag",
+              "variableValue": "{{ $flow.state.negociacionFlag }}"
+            },
+            {
+              "variableName": "clienteHabitualFlag",
+              "variableValue": "{{ $flow.state.clienteHabitualFlag }}"
+            },
+            {
+              "variableName": "descuentoPct",
+              "variableValue": "{{ $flow.state.descuentoPct }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const neg = String($negociacionFlag || '').toLowerCase() === 'true';const habitual = String($clienteHabitualFlag || '').toLowerCase() === 'true';const canApply = neg && habitual;const pct = canApply ? (Number($descuentoPct) || 0) : 0;return JSON.stringify({canApplyDiscount: canApply, descuentoPct: pct});",
+          "customFunctionUpdateState": [
+            {
+              "key": "canApplyDiscount",
+              "value": "{{ json.canApplyDiscount }}"
+            },
+            {
+              "key": "descuentoPct",
+              "value": "{{ json.descuentoPct }}"
+            }
+          ]
         },
         "outputAnchors": [
           {
@@ -4446,19 +4404,1638 @@
         ],
         "selected": false,
         "baseClasses": [
-          "DirectReply"
+          "CustomFunction"
         ],
         "category": "Agent Flows",
-        "description": "Directly reply to the user with a message",
+        "description": "Execute custom function",
         "inputAnchors": [],
-        "outputs": {},
-        "hideOutput": true
+        "outputs": {}
       },
-      "width": 146,
+      "width": 147,
       "height": 66,
       "positionAbsolute": {
-        "x": 1551.3392884256427,
-        "y": 608.8194465532779
+        "x": 1260,
+        "y": -200
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_cond_discount",
+      "type": "agentFlow",
+      "position": {
+        "x": 1500,
+        "y": -200
+      },
+      "data": {
+        "id": "q_cond_discount",
+        "label": "Q - descuento?",
+        "version": 1,
+        "name": "conditionAgentflow",
+        "type": "Condition",
+        "color": "#FFB938",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Conditions",
+            "name": "conditions",
+            "type": "array",
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Type",
+                "name": "type",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "String",
+                    "name": "string"
+                  },
+                  {
+                    "label": "Number",
+                    "name": "number"
+                  },
+                  {
+                    "label": "Boolean",
+                    "name": "boolean"
+                  }
+                ],
+                "default": "string"
+              },
+              {
+                "label": "Value 1",
+                "name": "value1",
+                "type": "string",
+                "acceptVariable": true
+              },
+              {
+                "label": "Operation",
+                "name": "operation",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "Contains",
+                    "name": "contains"
+                  },
+                  {
+                    "label": "Ends With",
+                    "name": "endsWith"
+                  },
+                  {
+                    "label": "Equal",
+                    "name": "equal"
+                  },
+                  {
+                    "label": "Not Contains",
+                    "name": "notContains"
+                  },
+                  {
+                    "label": "Not Equal",
+                    "name": "notEqual"
+                  },
+                  {
+                    "label": "Regex",
+                    "name": "regex"
+                  },
+                  {
+                    "label": "Starts With",
+                    "name": "startsWith"
+                  },
+                  {
+                    "label": "Is Empty",
+                    "name": "isEmpty"
+                  },
+                  {
+                    "label": "Not Empty",
+                    "name": "notEmpty"
+                  }
+                ],
+                "default": "equal"
+              },
+              {
+                "label": "Value 2",
+                "name": "value2",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "conditions": [
+            {
+              "type": "boolean",
+              "value1": "{{ $flow.state.canApplyDiscount }}",
+              "operation": "equal",
+              "value2": "<p>true</p>"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "false",
+            "name": "false",
+            "label": "false"
+          },
+          {
+            "id": "true",
+            "name": "true",
+            "label": "true"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "Condition"
+        ],
+        "category": "Agent Flows",
+        "description": "Split flows based on If Else conditions",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 179,
+      "height": 80,
+      "positionAbsolute": {
+        "x": 1500,
+        "y": -200
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_human_descuento",
+      "type": "agentFlow",
+      "position": {
+        "x": 1700,
+        "y": -260
+      },
+      "data": {
+        "id": "q_human_descuento",
+        "label": "Q - descuento",
+        "version": 1,
+        "name": "humanInputAgentflow",
+        "type": "HumanInput",
+        "color": "#6E6EFD",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Description Type",
+            "name": "humanInputDescriptionType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Fixed",
+                "name": "fixed"
+              },
+              {
+                "label": "Dynamic",
+                "name": "dynamic"
+              }
+            ],
+            "display": true
+          },
+          {
+            "label": "Description",
+            "name": "humanInputDescription",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true,
+            "show": {
+              "humanInputDescriptionType": "fixed"
+            },
+            "display": true
+          },
+          {
+            "label": "Model",
+            "name": "humanInputModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true,
+            "show": {
+              "humanInputDescriptionType": "dynamic"
+            },
+            "display": false
+          },
+          {
+            "label": "Prompt",
+            "name": "humanInputModelPrompt",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true,
+            "show": {
+              "humanInputDescriptionType": "dynamic"
+            },
+            "display": false
+          },
+          {
+            "label": "Enable Feedback",
+            "name": "humanInputEnableFeedback",
+            "type": "boolean",
+            "default": true,
+            "display": true
+          }
+        ],
+        "inputs": {
+          "humanInputDescriptionType": "fixed",
+          "humanInputDescription": "<p>Cliente pide descuento. Solo aplica si es cliente habitual. Indica el porcentaje (0-100). Si no aplica, deja 0.</p>",
+          "humanInputEnableFeedback": true
+        },
+        "outputAnchors": [
+          {
+            "id": "proceed",
+            "name": "proceed",
+            "label": "proceed"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "HumanInput"
+        ],
+        "category": "Agent Flows",
+        "description": "Request human input, approval or rejection during execution",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 165,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": -260
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_set_descuento",
+      "type": "agentFlow",
+      "position": {
+        "x": 1700,
+        "y": -120
+      },
+      "data": {
+        "id": "q_set_descuento",
+        "label": "Q - set descuento",
+        "version": 1,
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "customFunctionInputVariables": [
+            {
+              "variableName": "discountInput",
+              "variableValue": "{{ q_human_descuento.output.conditions[0].feedback }}"
+            },
+            {
+              "variableName": "clienteHabitualFlag",
+              "variableValue": "{{ $flow.state.clienteHabitualFlag }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const habitual = String($clienteHabitualFlag || '').toLowerCase() === 'true';const raw = String($discountInput || '').replace(',', '.');let pct = parseFloat(raw);if (!habitual || Number.isNaN(pct) || pct < 0) pct = 0;if (pct > 100) pct = 100;return JSON.stringify({descuentoPct: pct});",
+          "customFunctionUpdateState": [
+            {
+              "key": "descuentoPct",
+              "value": "{{ json.descuentoPct }}"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "CustomFunction"
+        ],
+        "category": "Agent Flows",
+        "description": "Execute custom function",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 147,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": -120
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_apply_discount",
+      "type": "agentFlow",
+      "position": {
+        "x": 1880,
+        "y": -140
+      },
+      "data": {
+        "id": "q_apply_discount",
+        "label": "Q - aplicar descuento",
+        "version": 1,
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "customFunctionInputVariables": [
+            {
+              "variableName": "precioTotal",
+              "variableValue": "{{ $flow.state.precioTotal }}"
+            },
+            {
+              "variableName": "descuentoPct",
+              "variableValue": "{{ $flow.state.descuentoPct }}"
+            },
+            {
+              "variableName": "clienteHabitualFlag",
+              "variableValue": "{{ $flow.state.clienteHabitualFlag }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const total = Number($precioTotal) || 0;const pct = Number($descuentoPct) || 0;const habitual = String($clienteHabitualFlag || '').toLowerCase() === 'true';const applied = habitual && pct > 0 ? Number((total * (1 - pct/100)).toFixed(2)) : total;const appliedPct = habitual ? pct : 0;return JSON.stringify({precioTotal: applied, descuentoPct: appliedPct});",
+          "customFunctionUpdateState": [
+            {
+              "key": "precioTotal",
+              "value": "{{ json.precioTotal }}"
+            },
+            {
+              "key": "descuentoPct",
+              "value": "{{ json.descuentoPct }}"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "CustomFunction"
+        ],
+        "category": "Agent Flows",
+        "description": "Execute custom function",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 147,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 1880,
+        "y": -140
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_ret_picos",
+      "type": "agentFlow",
+      "position": {
+        "x": 1040,
+        "y": -360
+      },
+      "data": {
+        "id": "q_ret_picos",
+        "label": "Q - Fechas importantes",
+        "version": 1,
+        "name": "retrieverAgentflow",
+        "type": "Retriever",
+        "color": "#b8bedd",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Knowledge (Document Stores)",
+            "name": "retrieverKnowledgeDocumentStores",
+            "type": "array",
+            "array": [
+              {
+                "label": "Document Store",
+                "name": "documentStore",
+                "type": "asyncOptions",
+                "loadMethod": "listStores"
+              }
+            ]
+          },
+          {
+            "label": "Retriever Query",
+            "name": "retrieverQuery",
+            "type": "string",
+            "rows": 4,
+            "acceptVariable": true
+          },
+          {
+            "label": "Output Format",
+            "name": "outputFormat",
+            "type": "options",
+            "options": [
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Text with Metadata",
+                "name": "textWithMetadata"
+              }
+            ],
+            "default": "text"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "retrieverUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "retrieverKnowledgeDocumentStores": [
+            {
+              "documentStore": "464c7e91-3f6e-469d-9201-9c68a3ea971c:RESTRICCIONES_QUINTAS"
+            }
+          ],
+          "retrieverQuery": "fechas importantes alquiladas feriados temporada alta",
+          "outputFormat": "text",
+          "retrieverUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "Retriever"
+        ],
+        "category": "Agent Flows",
+        "description": "Retrieve information from vector database",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 184,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 1040,
+        "y": -360
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_extract_catalogo",
+      "type": "agentFlow",
+      "position": {
+        "x": 1700,
+        "y": 40
+      },
+      "data": {
+        "id": "q_extract_catalogo",
+        "label": "Q - Catalogo resumen",
+        "version": 1,
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "customFunctionInputVariables": [
+            {
+              "variableName": "catalogoText",
+              "variableValue": "{{ q_ret_cat.output }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const text = String($catalogoText || '');const urlMatch = text.match(/https?:\\/\\/\\S+/);let link = urlMatch ? urlMatch[0] : '';link = link.replace(/[),.]+$/, '');const cleaned = text.replace(/\\s+/g, ' ').trim();const resumen = cleaned ? cleaned.slice(0, 400) : '';return JSON.stringify({ catalogoLink: link, catalogoResumen: resumen });",
+          "customFunctionUpdateState": [
+            {
+              "key": "catalogoLink",
+              "value": "{{ json.catalogoLink }}"
+            },
+            {
+              "key": "catalogoResumen",
+              "value": "{{ json.catalogoResumen }}"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "CustomFunction"
+        ],
+        "category": "Agent Flows",
+        "description": "Execute custom function",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 147,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": 40
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_reply_llm",
+      "type": "agentFlow",
+      "position": {
+        "x": 2260,
+        "y": -140
+      },
+      "data": {
+        "id": "q_reply_llm",
+        "label": "Q - Reply LLM",
+        "version": 1,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "generateInstruction": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "description": "Enable memory for the conversation thread",
+            "default": true,
+            "optional": true
+          },
+          {
+            "label": "Memory Type",
+            "name": "llmMemoryType",
+            "type": "options",
+            "options": [
+              {
+                "label": "All Messages",
+                "name": "allMessages",
+                "description": "Retrieve all messages from the conversation"
+              },
+              {
+                "label": "Window Size",
+                "name": "windowSize",
+                "description": "Uses a fixed window size to surface the last N messages"
+              },
+              {
+                "label": "Conversation Summary",
+                "name": "conversationSummary",
+                "description": "Summarizes the whole conversation"
+              },
+              {
+                "label": "Conversation Summary Buffer",
+                "name": "conversationSummaryBuffer",
+                "description": "Summarize conversations once token limit is reached. Default to 2000"
+              }
+            ],
+            "optional": true,
+            "default": "allMessages",
+            "show": {
+              "llmEnableMemory": true
+            }
+          },
+          {
+            "label": "Window Size",
+            "name": "llmMemoryWindowSize",
+            "type": "number",
+            "default": "20",
+            "description": "Uses a fixed window size to surface the last N messages",
+            "show": {
+              "llmMemoryType": "windowSize"
+            }
+          },
+          {
+            "label": "Max Token Limit",
+            "name": "llmMemoryMaxTokenLimit",
+            "type": "number",
+            "default": "2000",
+            "description": "Summarize conversations once token limit is reached. Default to 2000",
+            "show": {
+              "llmMemoryType": "conversationSummaryBuffer"
+            }
+          },
+          {
+            "label": "Input Message",
+            "name": "llmUserMessage",
+            "type": "string",
+            "description": "Add an input message as user message at the end of the conversation",
+            "rows": 4,
+            "optional": true,
+            "acceptVariable": true,
+            "show": {
+              "llmEnableMemory": true
+            }
+          },
+          {
+            "label": "Return Response As",
+            "name": "llmReturnResponseAs",
+            "type": "options",
+            "options": [
+              {
+                "label": "User Message",
+                "name": "userMessage"
+              },
+              {
+                "label": "Assistant Message",
+                "name": "assistantMessage"
+              }
+            ],
+            "default": "userMessage"
+          },
+          {
+            "label": "JSON Structured Output",
+            "name": "llmStructuredOutput",
+            "description": "Instruct the LLM to give output in a JSON structured schema",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string"
+              },
+              {
+                "label": "Type",
+                "name": "type",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "String",
+                    "name": "string"
+                  },
+                  {
+                    "label": "String Array",
+                    "name": "stringArray"
+                  },
+                  {
+                    "label": "Number",
+                    "name": "number"
+                  },
+                  {
+                    "label": "Boolean",
+                    "name": "boolean"
+                  },
+                  {
+                    "label": "Enum",
+                    "name": "enum"
+                  },
+                  {
+                    "label": "JSON Array",
+                    "name": "jsonArray"
+                  }
+                ]
+              },
+              {
+                "label": "Enum Values",
+                "name": "enumValues",
+                "type": "string",
+                "placeholder": "value1, value2, value3",
+                "description": "Enum values. Separated by comma",
+                "optional": true,
+                "show": {
+                  "llmStructuredOutput[$index].type": "enum"
+                }
+              },
+              {
+                "label": "JSON Schema",
+                "name": "jsonSchema",
+                "type": "code",
+                "placeholder": "{\n    \"answer\": {\n        \"type\": \"string\",\n        \"description\": \"Value of the answer\"\n    },\n    \"reason\": {\n        \"type\": \"string\",\n        \"description\": \"Reason for the answer\"\n    },\n    \"optional\": {\n        \"type\": \"boolean\"\n    },\n    \"count\": {\n        \"type\": \"number\"\n    },\n    \"children\": {\n        \"type\": \"array\",\n        \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"value\": {\n                    \"type\": \"string\",\n                    \"description\": \"Value of the children's answer\"\n                }\n            }\n        }\n    }\n}",
+                "description": "JSON schema for the structured output",
+                "optional": true,
+                "show": {
+                  "llmStructuredOutput[$index].type": "jsonArray"
+                }
+              },
+              {
+                "label": "Description",
+                "name": "description",
+                "type": "string",
+                "placeholder": "Description of the key"
+              }
+            ]
+          },
+          {
+            "label": "Update Flow State",
+            "name": "llmUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "llmModel": "chatOpenAI",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Redacta la respuesta final al cliente con tono amable y cercano. Incluye disponibilidad/estado, total, hold/expiracion, deposito/plazo, reglas de musica, y menciona catalogo y resumen de quintas si existe. Si hay fechas importantes alquiladas, avisalo. Devuelve solo texto."
+            },
+            {
+              "role": "user",
+              "content": "Estado: {{ $flow.state.estadoCalendario || \"hold\" }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || \"USD\" }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || \"(pendiente)\" }}. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Reglas: musica moderada de dia, sin musica de noche. Catalogo: {{ $flow.state.catalogoLink || \"\" }}. Detalles: {{ $flow.state.catalogoResumen || \"\" }}. Fechas importantes: {{ q_ret_picos.output || \"\" }}."
+            }
+          ],
+          "llmEnableMemory": true,
+          "llmModelConfig": {
+            "cache": "",
+            "modelName": "gpt-4.1-mini",
+            "temperature": 0.9,
+            "streaming": true,
+            "maxTokens": "",
+            "topP": "",
+            "frequencyPenalty": "",
+            "presencePenalty": "",
+            "timeout": "",
+            "strictToolCalling": "",
+            "stopSequence": "",
+            "basepath": "",
+            "proxyUrl": "",
+            "baseOptions": "",
+            "allowImageUploads": "",
+            "reasoning": "",
+            "llmModel": "chatOpenAI"
+          },
+          "llmReturnResponseAs": "assistantMessage",
+          "llmUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "LLM"
+        ],
+        "category": "Agent Flows",
+        "description": "Large language models to analyze user-provided inputs and generate responses",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 175,
+      "height": 72,
+      "positionAbsolute": {
+        "x": 2260,
+        "y": -140
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "q_reply_missing_llm",
+      "type": "agentFlow",
+      "position": {
+        "x": 1260,
+        "y": -198.74007906381746
+      },
+      "data": {
+        "id": "q_reply_missing_llm",
+        "label": "Q - pedir datos (LLM)",
+        "version": 1,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "generateInstruction": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "description": "Enable memory for the conversation thread",
+            "default": true,
+            "optional": true
+          },
+          {
+            "label": "Memory Type",
+            "name": "llmMemoryType",
+            "type": "options",
+            "options": [
+              {
+                "label": "All Messages",
+                "name": "allMessages",
+                "description": "Retrieve all messages from the conversation"
+              },
+              {
+                "label": "Window Size",
+                "name": "windowSize",
+                "description": "Uses a fixed window size to surface the last N messages"
+              },
+              {
+                "label": "Conversation Summary",
+                "name": "conversationSummary",
+                "description": "Summarizes the whole conversation"
+              },
+              {
+                "label": "Conversation Summary Buffer",
+                "name": "conversationSummaryBuffer",
+                "description": "Summarize conversations once token limit is reached. Default to 2000"
+              }
+            ],
+            "optional": true,
+            "default": "allMessages",
+            "show": {
+              "llmEnableMemory": true
+            }
+          },
+          {
+            "label": "Window Size",
+            "name": "llmMemoryWindowSize",
+            "type": "number",
+            "default": "20",
+            "description": "Uses a fixed window size to surface the last N messages",
+            "show": {
+              "llmMemoryType": "windowSize"
+            }
+          },
+          {
+            "label": "Max Token Limit",
+            "name": "llmMemoryMaxTokenLimit",
+            "type": "number",
+            "default": "2000",
+            "description": "Summarize conversations once token limit is reached. Default to 2000",
+            "show": {
+              "llmMemoryType": "conversationSummaryBuffer"
+            }
+          },
+          {
+            "label": "Input Message",
+            "name": "llmUserMessage",
+            "type": "string",
+            "description": "Add an input message as user message at the end of the conversation",
+            "rows": 4,
+            "optional": true,
+            "acceptVariable": true,
+            "show": {
+              "llmEnableMemory": true
+            }
+          },
+          {
+            "label": "Return Response As",
+            "name": "llmReturnResponseAs",
+            "type": "options",
+            "options": [
+              {
+                "label": "User Message",
+                "name": "userMessage"
+              },
+              {
+                "label": "Assistant Message",
+                "name": "assistantMessage"
+              }
+            ],
+            "default": "userMessage"
+          },
+          {
+            "label": "JSON Structured Output",
+            "name": "llmStructuredOutput",
+            "description": "Instruct the LLM to give output in a JSON structured schema",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string"
+              },
+              {
+                "label": "Type",
+                "name": "type",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "String",
+                    "name": "string"
+                  },
+                  {
+                    "label": "String Array",
+                    "name": "stringArray"
+                  },
+                  {
+                    "label": "Number",
+                    "name": "number"
+                  },
+                  {
+                    "label": "Boolean",
+                    "name": "boolean"
+                  },
+                  {
+                    "label": "Enum",
+                    "name": "enum"
+                  },
+                  {
+                    "label": "JSON Array",
+                    "name": "jsonArray"
+                  }
+                ]
+              },
+              {
+                "label": "Enum Values",
+                "name": "enumValues",
+                "type": "string",
+                "placeholder": "value1, value2, value3",
+                "description": "Enum values. Separated by comma",
+                "optional": true,
+                "show": {
+                  "llmStructuredOutput[$index].type": "enum"
+                }
+              },
+              {
+                "label": "JSON Schema",
+                "name": "jsonSchema",
+                "type": "code",
+                "placeholder": "{\n    \"answer\": {\n        \"type\": \"string\",\n        \"description\": \"Value of the answer\"\n    },\n    \"reason\": {\n        \"type\": \"string\",\n        \"description\": \"Reason for the answer\"\n    },\n    \"optional\": {\n        \"type\": \"boolean\"\n    },\n    \"count\": {\n        \"type\": \"number\"\n    },\n    \"children\": {\n        \"type\": \"array\",\n        \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"value\": {\n                    \"type\": \"string\",\n                    \"description\": \"Value of the children's answer\"\n                }\n            }\n        }\n    }\n}",
+                "description": "JSON schema for the structured output",
+                "optional": true,
+                "show": {
+                  "llmStructuredOutput[$index].type": "jsonArray"
+                }
+              },
+              {
+                "label": "Description",
+                "name": "description",
+                "type": "string",
+                "placeholder": "Description of the key"
+              }
+            ]
+          },
+          {
+            "label": "Update Flow State",
+            "name": "llmUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "llmModel": "chatOpenAI",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Redacta un mensaje corto y amable pidiendo los datos faltantes para cotizar: fecha de check-in, noches/checkout, cantidad de personas y quinta preferida. Si hay fechas importantes alquiladas, avisalo. Devuelve solo texto."
+            },
+            {
+              "role": "user",
+              "content": "Faltan: {{ $flow.state.missingFields }}. Fechas importantes: {{ q_ret_picos.output || \"\" }}."
+            }
+          ],
+          "llmEnableMemory": true,
+          "llmModelConfig": {
+            "cache": "",
+            "modelName": "gpt-4.1-mini",
+            "temperature": 0.9,
+            "streaming": true,
+            "maxTokens": "",
+            "topP": "",
+            "frequencyPenalty": "",
+            "presencePenalty": "",
+            "timeout": "",
+            "strictToolCalling": "",
+            "stopSequence": "",
+            "basepath": "",
+            "proxyUrl": "",
+            "baseOptions": "",
+            "allowImageUploads": "",
+            "reasoning": "",
+            "llmModel": "chatOpenAI"
+          },
+          "llmReturnResponseAs": "assistantMessage",
+          "llmUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "LLM"
+        ],
+        "category": "Agent Flows",
+        "description": "Large language models to analyze user-provided inputs and generate responses",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 175,
+      "height": 72,
+      "positionAbsolute": {
+        "x": 1260,
+        "y": -198.74007906381746
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "v_reply_llm",
+      "type": "agentFlow",
+      "position": {
+        "x": 1541.2599209361827,
+        "y": 120
+      },
+      "data": {
+        "id": "v_reply_llm",
+        "label": "Visita - Reply LLM",
+        "version": 1,
+        "name": "llmAgentflow",
+        "type": "LLM",
+        "color": "#64B5F6",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Model",
+            "name": "llmModel",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "loadConfig": true
+          },
+          {
+            "label": "Messages",
+            "name": "llmMessages",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Role",
+                "name": "role",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "System",
+                    "name": "system"
+                  },
+                  {
+                    "label": "Assistant",
+                    "name": "assistant"
+                  },
+                  {
+                    "label": "Developer",
+                    "name": "developer"
+                  },
+                  {
+                    "label": "User",
+                    "name": "user"
+                  }
+                ]
+              },
+              {
+                "label": "Content",
+                "name": "content",
+                "type": "string",
+                "acceptVariable": true,
+                "generateInstruction": true,
+                "rows": 4
+              }
+            ]
+          },
+          {
+            "label": "Enable Memory",
+            "name": "llmEnableMemory",
+            "type": "boolean",
+            "description": "Enable memory for the conversation thread",
+            "default": true,
+            "optional": true
+          },
+          {
+            "label": "Memory Type",
+            "name": "llmMemoryType",
+            "type": "options",
+            "options": [
+              {
+                "label": "All Messages",
+                "name": "allMessages",
+                "description": "Retrieve all messages from the conversation"
+              },
+              {
+                "label": "Window Size",
+                "name": "windowSize",
+                "description": "Uses a fixed window size to surface the last N messages"
+              },
+              {
+                "label": "Conversation Summary",
+                "name": "conversationSummary",
+                "description": "Summarizes the whole conversation"
+              },
+              {
+                "label": "Conversation Summary Buffer",
+                "name": "conversationSummaryBuffer",
+                "description": "Summarize conversations once token limit is reached. Default to 2000"
+              }
+            ],
+            "optional": true,
+            "default": "allMessages",
+            "show": {
+              "llmEnableMemory": true
+            }
+          },
+          {
+            "label": "Window Size",
+            "name": "llmMemoryWindowSize",
+            "type": "number",
+            "default": "20",
+            "description": "Uses a fixed window size to surface the last N messages",
+            "show": {
+              "llmMemoryType": "windowSize"
+            }
+          },
+          {
+            "label": "Max Token Limit",
+            "name": "llmMemoryMaxTokenLimit",
+            "type": "number",
+            "default": "2000",
+            "description": "Summarize conversations once token limit is reached. Default to 2000",
+            "show": {
+              "llmMemoryType": "conversationSummaryBuffer"
+            }
+          },
+          {
+            "label": "Input Message",
+            "name": "llmUserMessage",
+            "type": "string",
+            "description": "Add an input message as user message at the end of the conversation",
+            "rows": 4,
+            "optional": true,
+            "acceptVariable": true,
+            "show": {
+              "llmEnableMemory": true
+            }
+          },
+          {
+            "label": "Return Response As",
+            "name": "llmReturnResponseAs",
+            "type": "options",
+            "options": [
+              {
+                "label": "User Message",
+                "name": "userMessage"
+              },
+              {
+                "label": "Assistant Message",
+                "name": "assistantMessage"
+              }
+            ],
+            "default": "userMessage"
+          },
+          {
+            "label": "JSON Structured Output",
+            "name": "llmStructuredOutput",
+            "description": "Instruct the LLM to give output in a JSON structured schema",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string"
+              },
+              {
+                "label": "Type",
+                "name": "type",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "String",
+                    "name": "string"
+                  },
+                  {
+                    "label": "String Array",
+                    "name": "stringArray"
+                  },
+                  {
+                    "label": "Number",
+                    "name": "number"
+                  },
+                  {
+                    "label": "Boolean",
+                    "name": "boolean"
+                  },
+                  {
+                    "label": "Enum",
+                    "name": "enum"
+                  },
+                  {
+                    "label": "JSON Array",
+                    "name": "jsonArray"
+                  }
+                ]
+              },
+              {
+                "label": "Enum Values",
+                "name": "enumValues",
+                "type": "string",
+                "placeholder": "value1, value2, value3",
+                "description": "Enum values. Separated by comma",
+                "optional": true,
+                "show": {
+                  "llmStructuredOutput[$index].type": "enum"
+                }
+              },
+              {
+                "label": "JSON Schema",
+                "name": "jsonSchema",
+                "type": "code",
+                "placeholder": "{\n    \"answer\": {\n        \"type\": \"string\",\n        \"description\": \"Value of the answer\"\n    },\n    \"reason\": {\n        \"type\": \"string\",\n        \"description\": \"Reason for the answer\"\n    },\n    \"optional\": {\n        \"type\": \"boolean\"\n    },\n    \"count\": {\n        \"type\": \"number\"\n    },\n    \"children\": {\n        \"type\": \"array\",\n        \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"value\": {\n                    \"type\": \"string\",\n                    \"description\": \"Value of the children's answer\"\n                }\n            }\n        }\n    }\n}",
+                "description": "JSON schema for the structured output",
+                "optional": true,
+                "show": {
+                  "llmStructuredOutput[$index].type": "jsonArray"
+                }
+              },
+              {
+                "label": "Description",
+                "name": "description",
+                "type": "string",
+                "placeholder": "Description of the key"
+              }
+            ]
+          },
+          {
+            "label": "Update Flow State",
+            "name": "llmUpdateState",
+            "description": "Update runtime state during the execution of the workflow",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "llmModel": "chatOpenAI",
+          "llmMessages": [
+            {
+              "role": "system",
+              "content": "Redacta la confirmacion de visita. Indica que se confirmara el horario disponible y se enviara ubicacion y notas clave. Si necesitan otro horario, pedirlo. Devuelve solo texto."
+            },
+            {
+              "role": "user",
+              "content": "Fecha: {{ $flow.state.fechaSolicitada || \"\" }}. Preferencia: {{ $flow.state.preferenciaVisita || \"\" }}."
+            }
+          ],
+          "llmEnableMemory": true,
+          "llmModelConfig": {
+            "cache": "",
+            "modelName": "gpt-4.1-mini",
+            "temperature": 0.9,
+            "streaming": true,
+            "maxTokens": "",
+            "topP": "",
+            "frequencyPenalty": "",
+            "presencePenalty": "",
+            "timeout": "",
+            "strictToolCalling": "",
+            "stopSequence": "",
+            "basepath": "",
+            "proxyUrl": "",
+            "baseOptions": "",
+            "allowImageUploads": "",
+            "reasoning": "",
+            "llmModel": "chatOpenAI"
+          },
+          "llmReturnResponseAs": "assistantMessage",
+          "llmUpdateState": []
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "LLM"
+        ],
+        "category": "Agent Flows",
+        "description": "Large language models to analyze user-provided inputs and generate responses",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 175,
+      "height": 72,
+      "positionAbsolute": {
+        "x": 1541.2599209361827,
+        "y": 120
       },
       "selected": false,
       "dragging": false
@@ -4507,24 +6084,6 @@
       "target": "q_cond_missing",
       "sourceHandle": "output",
       "targetHandle": "q_cond_missing",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_cond_missing-true-q_reply_missing-input",
-      "source": "q_cond_missing",
-      "target": "q_reply_missing",
-      "sourceHandle": "true",
-      "targetHandle": "q_reply_missing",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_cond_missing-false-q_custom_calc-input",
-      "source": "q_cond_missing",
-      "target": "q_custom_calc",
-      "sourceHandle": "false",
-      "targetHandle": "q_custom_calc",
       "type": "agentFlow",
       "data": {}
     },
@@ -4583,29 +6142,11 @@
       "data": {}
     },
     {
-      "id": "q_llm_tarifa-output-q_human_cot-input",
-      "source": "q_llm_tarifa",
-      "target": "q_human_cot",
-      "sourceHandle": "output",
-      "targetHandle": "q_human_cot",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
       "id": "q_human_cot-proceed-q_custom_calendario-input",
       "source": "q_human_cot",
       "target": "q_custom_calendario",
       "sourceHandle": "proceed",
       "targetHandle": "q_custom_calendario",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_custom_calendario-output-q_reply_final-input",
-      "source": "q_custom_calendario",
-      "target": "q_reply_final",
-      "sourceHandle": "output",
-      "targetHandle": "q_reply_final",
       "type": "agentFlow",
       "data": {}
     },
@@ -4637,15 +6178,6 @@
       "data": {}
     },
     {
-      "id": "v_human-proceed-v_reply-input",
-      "source": "v_human",
-      "target": "v_reply",
-      "sourceHandle": "proceed",
-      "targetHandle": "v_reply",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
       "id": "router-faq-faq_ret-input",
       "source": "router",
       "target": "faq_ret",
@@ -4664,15 +6196,6 @@
       "data": {}
     },
     {
-      "id": "faq_llm-output-faq_reply-input",
-      "source": "faq_llm",
-      "target": "faq_reply",
-      "sourceHandle": "output",
-      "targetHandle": "faq_reply",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
       "id": "router-followup-f_ret-input",
       "source": "router",
       "target": "f_ret",
@@ -4687,15 +6210,6 @@
       "target": "f_llm",
       "sourceHandle": "output",
       "targetHandle": "f_llm",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "f_llm-output-f_reply-input",
-      "source": "f_llm",
-      "target": "f_reply",
-      "sourceHandle": "output",
-      "targetHandle": "f_reply",
       "type": "agentFlow",
       "data": {}
     },
@@ -4727,11 +6241,146 @@
       "data": {}
     },
     {
-      "id": "k_llm-output-k_reply-input",
-      "source": "k_llm",
-      "target": "k_reply",
+      "id": "q_cond_missing-false-q_discount_flags-input",
+      "source": "q_cond_missing",
+      "target": "q_discount_flags",
+      "sourceHandle": "false",
+      "targetHandle": "q_discount_flags",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_discount_flags-output-q_cond_discount-input",
+      "source": "q_discount_flags",
+      "target": "q_cond_discount",
       "sourceHandle": "output",
-      "targetHandle": "k_reply",
+      "targetHandle": "q_cond_discount",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_cond_discount-true-q_human_descuento-input",
+      "source": "q_cond_discount",
+      "target": "q_human_descuento",
+      "sourceHandle": "true",
+      "targetHandle": "q_human_descuento",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_cond_discount-false-q_custom_calc-input",
+      "source": "q_cond_discount",
+      "target": "q_custom_calc",
+      "sourceHandle": "false",
+      "targetHandle": "q_custom_calc",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_human_descuento-proceed-q_set_descuento-input",
+      "source": "q_human_descuento",
+      "target": "q_set_descuento",
+      "sourceHandle": "proceed",
+      "targetHandle": "q_set_descuento",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_set_descuento-output-q_custom_calc-input",
+      "source": "q_set_descuento",
+      "target": "q_custom_calc",
+      "sourceHandle": "output",
+      "targetHandle": "q_custom_calc",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_llm_tarifa-output-q_apply_discount-input",
+      "source": "q_llm_tarifa",
+      "target": "q_apply_discount",
+      "sourceHandle": "output",
+      "targetHandle": "q_apply_discount",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_apply_discount-output-q_human_cot-input",
+      "source": "q_apply_discount",
+      "target": "q_human_cot",
+      "sourceHandle": "output",
+      "targetHandle": "q_human_cot",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_norm-output-q_ret_picos-input",
+      "source": "q_norm",
+      "target": "q_ret_picos",
+      "sourceHandle": "output",
+      "targetHandle": "q_ret_picos",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_ret_cat-output-q_extract_catalogo-input",
+      "source": "q_ret_cat",
+      "target": "q_extract_catalogo",
+      "sourceHandle": "output",
+      "targetHandle": "q_extract_catalogo",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_extract_catalogo-output-q_llm_tarifa-input",
+      "source": "q_extract_catalogo",
+      "target": "q_llm_tarifa",
+      "sourceHandle": "output",
+      "targetHandle": "q_llm_tarifa",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_custom_calendario-output-q_reply_llm-input",
+      "source": "q_custom_calendario",
+      "target": "q_reply_llm",
+      "sourceHandle": "output",
+      "targetHandle": "q_reply_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_cond_missing-true-q_reply_missing_llm-input",
+      "source": "q_cond_missing",
+      "target": "q_reply_missing_llm",
+      "sourceHandle": "true",
+      "targetHandle": "q_reply_missing_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_ret_picos-output-q_reply_missing_llm-input",
+      "source": "q_ret_picos",
+      "target": "q_reply_missing_llm",
+      "sourceHandle": "output",
+      "targetHandle": "q_reply_missing_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "q_ret_picos-output-q_reply_llm-input",
+      "source": "q_ret_picos",
+      "target": "q_reply_llm",
+      "sourceHandle": "output",
+      "targetHandle": "q_reply_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "v_human-proceed-v_reply_llm-input",
+      "source": "v_human",
+      "target": "v_reply_llm",
+      "sourceHandle": "proceed",
+      "targetHandle": "v_reply_llm",
       "type": "agentFlow",
       "data": {}
     }

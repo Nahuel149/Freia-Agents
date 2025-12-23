@@ -80,10 +80,13 @@ export const AsyncDropdown = ({
         }
         return options.find((option) => option.name === value)
     }
-    const getDefaultOptionValue = () => (multiple ? [] : '')
     const addNewOption = [{ label: '- Create New -', name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const { reactFlowInstance } = useContext(flowContext)
+    const selectedOption = findMatchingOptions(options, internalValue)
+    const resolvedValue = multiple
+        ? selectedOption || []
+        : selectedOption || (freeSolo && internalValue && internalValue !== 'choose an option' ? internalValue : null)
 
     const fetchCredentialList = async () => {
         try {
@@ -182,7 +185,7 @@ export const AsyncDropdown = ({
                     setOpen(false)
                 }}
                 options={options}
-                value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
+                value={resolvedValue}
                 onChange={(e, selection) => {
                     if (multiple) {
                         let value = ''

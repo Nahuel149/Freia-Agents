@@ -23,9 +23,11 @@ const StyledPopper = styled(Popper)(({ theme }) => ({
 export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, freeSolo = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
-    const getDefaultOptionValue = () => ''
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const theme = useTheme()
+    const selectedOption = findMatchingOptions(options, internalValue)
+    const resolvedValue =
+        selectedOption || (freeSolo && internalValue && internalValue !== 'choose an option' ? internalValue : null)
 
     return (
         <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
@@ -37,7 +39,7 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                 size='small'
                 loading={loading}
                 options={options || []}
-                value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
+                value={resolvedValue}
                 onChange={(e, selection) => {
                     const value = selection ? selection.name : ''
                     setInternalValue(value)
