@@ -171,12 +171,14 @@ export const constructGraphs = (
             const target = reactFlowEdges[i].target
 
             if (Object.prototype.hasOwnProperty.call(graph, target)) {
-                graph[target].push(source)
+                if (!graph[target].includes(source)) {
+                    graph[target].push(source)
+                    nodeDependencies[target] += 1
+                }
             } else {
                 graph[target] = [source]
+                nodeDependencies[target] += 1
             }
-
-            nodeDependencies[target] += 1
         }
 
         return { graph, nodeDependencies }
@@ -187,19 +189,24 @@ export const constructGraphs = (
         const target = reactFlowEdges[i].target
 
         if (Object.prototype.hasOwnProperty.call(graph, source)) {
-            graph[source].push(target)
+            if (!graph[source].includes(target)) {
+                graph[source].push(target)
+                nodeDependencies[target] += 1
+            }
         } else {
             graph[source] = [target]
+            nodeDependencies[target] += 1
         }
 
         if (options && options.isNonDirected) {
             if (Object.prototype.hasOwnProperty.call(graph, target)) {
-                graph[target].push(source)
+                if (!graph[target].includes(source)) {
+                    graph[target].push(source)
+                }
             } else {
                 graph[target] = [source]
             }
         }
-        nodeDependencies[target] += 1
     }
 
     return { graph, nodeDependencies }

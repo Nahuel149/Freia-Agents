@@ -343,6 +343,22 @@
             {
               "key": "catalogoResumen",
               "value": "Quintas El Rincon de Mi Mundo en Francisco Alvarez, Moreno (La Providencia 1005). Alquiler temporal familiar. Quintas: 'El Rincon de Mi Mundo' (parque 3500 m2, pileta 12x4, quincho cerrado con cocina equipada y parrilla, quincho abierto, canchas futbol/voley, 2 habitaciones matrimoniales en suite + 1 con 5 camas, capacidad hasta 30 personas). 'El Rincon II' (parque 3500 m2, pileta 8x4, quincho abierto con parrilla, cocina equipada, comedor 10, futon, TV, canchas, 2 suites + 1 con cuchetas, 4 banos). 'La Amorosa' disponible, detalles a confirmar. Servicios: WiFi, DirecTV futbol, gas garrafa, agua caliente, ventiladores, vajilla para 10, mantenimiento piscina/parque, estacionamiento. Mascotas permitidas salvo razas agresivas. Musica moderada hasta 21:00. Email: consultas@quintaselrincondemimundo.com.ar."
+            },
+            {
+              "key": "leadName",
+              "value": ""
+            },
+            {
+              "key": "leadEmail",
+              "value": ""
+            },
+            {
+              "key": "leadFound",
+              "value": false
+            },
+            {
+              "key": "shouldSaveLead",
+              "value": false
             }
           ],
           "startPersistState": false,
@@ -3298,11 +3314,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Responde breve y factual usando el texto provisto y el resumen del catalogo. Incluye ubicacion si preguntan (La Providencia 1005, Francisco Alvarez), servicios (WiFi, DirecTV futbol, gas garrafa, agua caliente, ventiladores, mantenimiento piscina/parque, estacionamiento), politica de mascotas (permitidas salvo razas agresivas) y musica moderada hasta 21:00. Si no hay info de pagos, indica que se confirma por email."
+              "content": "Responde breve y factual usando el texto provisto y el resumen del catalogo. Incluye ubicacion si preguntan (La Providencia 1005, Francisco Alvarez), servicios (WiFi, DirecTV futbol, gas garrafa, agua caliente, ventiladores, mantenimiento piscina/parque, estacionamiento), politica de mascotas (permitidas salvo razas agresivas) y musica moderada hasta 21:00. Aclara que no hay seguro de lluvia y que el aire acondicionado depende de cada quinta. Si leadFound es true y hay nombre, saluda al cliente por su nombre. Si no hay info de pagos, indica que se confirma por email."
             },
             {
               "role": "user",
-              "content": "{{ faq_ret.output }}\nCatalogo: {{ $flow.state.catalogoLink || 'https://quintaselrincondemimundo.com.ar/' }}.\nResumen: {{ $flow.state.catalogoResumen || '' }}."
+              "content": "{{ faq_ret.output }}\nCatalogo: {{ $flow.state.catalogoLink || 'https://quintaselrincondemimundo.com.ar/' }}.\nResumen: {{ $flow.state.catalogoResumen || '' }}. Lead previo: {{ $flow.state.leadFound }}. Nombre: {{ $flow.state.leadName || \"\" }}. Email: {{ $flow.state.leadEmail || \"\" }}."
             }
           ],
           "llmEnableMemory": true,
@@ -5365,11 +5381,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Redacta la respuesta final al cliente con tono amable y cercano. Incluye disponibilidad/estado, total, hold/expiracion, deposito/plazo, reglas de musica (moderada hasta 21:00), y menciona catalogo y resumen de quintas si existe. Si hay fechas importantes alquiladas, avisalo. Si piden contacto, incluye email consultas@quintaselrincondemimundo.com.ar. Devuelve solo texto."
+              "content": "Redacta la respuesta final al cliente con tono amable y cercano. Incluye disponibilidad/estado, total, hold/expiracion, deposito/plazo, reglas de musica (moderada hasta 21:00), y menciona catalogo y resumen de quintas si existe. Si hay fechas importantes alquiladas, avisalo. Aclara que no hay seguro de lluvia y que el aire acondicionado depende de cada quinta. Si leadFound es true y hay nombre, saluda al cliente por su nombre y menciona que ya tenemos su registro. Si no hay lead previo, indica que registraste el lead para seguimiento. Si piden contacto, incluye email consultas@quintaselrincondemimundo.com.ar. Devuelve solo texto."
             },
             {
               "role": "user",
-              "content": "Estado: {{ $flow.state.estadoCalendario || 'hold' }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || '(pendiente)' }}. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Reglas: musica moderada hasta 21:00. Catalogo: {{ $flow.state.catalogoLink || '' }}. Detalles: {{ $flow.state.catalogoResumen || '' }}. Fechas importantes: {{ q_ret_picos.output || '' }}."
+              "content": "Estado: {{ $flow.state.estadoCalendario || 'hold' }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || '(pendiente)' }}. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Reglas: musica moderada hasta 21:00. Catalogo: {{ $flow.state.catalogoLink || '' }}. Detalles: {{ $flow.state.catalogoResumen || '' }}. Fechas importantes: {{ q_ret_picos.output || '' }}. Lead previo: {{ $flow.state.leadFound }}. Nombre: {{ $flow.state.leadName || \"\" }}. Email: {{ $flow.state.leadEmail || \"\" }}."
             }
           ],
           "llmEnableMemory": true,
@@ -5675,11 +5691,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Redacta un mensaje corto y amable pidiendo los datos faltantes para cotizar: fecha de check-in, noches/checkout, cantidad de personas y quinta preferida (El Rincon de Mi Mundo, El Rincon II, La Amorosa). Si hay fechas importantes alquiladas, avisalo. Devuelve solo texto."
+              "content": "Redacta un mensaje corto y amable pidiendo los datos faltantes para cotizar: fecha de check-in, noches/checkout, cantidad de personas y quinta preferida (El Rincon de Mi Mundo, El Rincon II, La Amorosa). Si ya hay fecha y personas, confirma que vas a revisar disponibilidad y precio seg?n calendario. Si hay fechas importantes alquiladas, avisalo. Si el faltante incluye la quinta (quintaId) o no hay preferencia, incluye el link del catalogo y un resumen breve de cada quinta, mas reglas clave: musica moderada hasta 21:00 y mascotas permitidas salvo razas agresivas. Si preguntan por seguro de lluvia, aclarar que no hay. Si preguntan por aire acondicionado, indicar que depende de la quinta. Si leadFound es true y hay nombre, saluda al cliente por su nombre. Devuelve solo texto."
             },
             {
               "role": "user",
-              "content": "Faltan: {{ $flow.state.missingFields }}. Fechas importantes: {{ q_ret_picos.output || '' }}."
+              "content": "Faltan: {{ $flow.state.missingFields }}. Fechas importantes: {{ q_ret_picos.output || '' }}. Lead previo: {{ $flow.state.leadFound }}. Nombre: {{ $flow.state.leadName || \"\" }}. Email: {{ $flow.state.leadEmail || \"\" }}. Catalogo: {{ $flow.state.catalogoLink || \"\" }}. Resumen: {{ $flow.state.catalogoResumen || \"\" }}. Datos actuales: fecha={{ $flow.state.fechaSolicitada || \"\" }}, checkout={{ $flow.state.checkOut || \"\" }}, noches={{ $flow.state.diasSolicitados || 0 }}, personas={{ $flow.state.personas || 0 }}, quinta={{ $flow.state.quintaId || \"\" }}."
             }
           ],
           "llmEnableMemory": true,
@@ -5985,11 +6001,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Redacta la confirmacion de visita. Indica que se confirmara el horario disponible y se enviara ubicacion y notas clave. Ubicacion: La Providencia 1005, Francisco Alvarez. Si necesitan otro horario, pedirlo. Devuelve solo texto."
+              "content": "Redacta la confirmacion de visita. Indica que se confirmara el horario disponible y se enviara ubicacion y notas clave. Ubicacion: La Providencia 1005, Francisco Alvarez. Si necesitan otro horario, pedirlo. Si leadFound es true y hay nombre, saluda al cliente por su nombre. Devuelve solo texto."
             },
             {
               "role": "user",
-              "content": "Fecha: {{ $flow.state.fechaSolicitada || '' }}. Preferencia: {{ $flow.state.preferenciaVisita || '' }}."
+              "content": "Fecha: {{ $flow.state.fechaSolicitada || '' }}. Preferencia: {{ $flow.state.preferenciaVisita || '' }}. Lead previo: {{ $flow.state.leadFound }}. Nombre: {{ $flow.state.leadName || \"\" }}. Email: {{ $flow.state.leadEmail || \"\" }}."
             }
           ],
           "llmEnableMemory": true,
@@ -6039,18 +6055,824 @@
       },
       "selected": false,
       "dragging": false
+    },
+    {
+      "id": "lead_parse",
+      "type": "agentFlow",
+      "position": {
+        "x": 0,
+        "y": -120
+      },
+      "data": {
+        "id": "lead_parse",
+        "label": "Lead - parse",
+        "version": 1,
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "customFunctionInputVariables": [
+            {
+              "variableName": "inputText",
+              "variableValue": "{{ $flow.input || \"\" }}"
+            },
+            {
+              "variableName": "prevLeadName",
+              "variableValue": "{{ $flow.state.leadName || \"\" }}"
+            },
+            {
+              "variableName": "prevLeadEmail",
+              "variableValue": "{{ $flow.state.leadEmail || \"\" }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const text = String($inputText || '');const prevName = String($prevLeadName || '');const prevEmail = String($prevLeadEmail || '');const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);let email = prevEmail; if (emailMatch) email = emailMatch[0].trim();let name = prevName;const nameMatch = text.match(/(?:me llamo|mi nombre es|soy)\\s+([A-Za-z][A-Za-z'.-]*(?:\\s+[A-Za-z][A-Za-z'.-]*){0,2})/i);if (nameMatch) { const candidate = nameMatch[1].trim(); if (!/cliente|habitual|una|un|la|el/i.test(candidate)) name = candidate; }return JSON.stringify({ leadEmail: email, leadName: name });",
+          "customFunctionUpdateState": [
+            {
+              "key": "leadEmail",
+              "value": "{{ json.leadEmail }}"
+            },
+            {
+              "key": "leadName",
+              "value": "{{ json.leadName }}"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "CustomFunction"
+        ],
+        "category": "Agent Flows",
+        "description": "Execute custom function",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 147,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 0,
+        "y": -120
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "lead_lookup",
+      "type": "agentFlow",
+      "position": {
+        "x": 0,
+        "y": -240
+      },
+      "positionAbsolute": {
+        "x": 0,
+        "y": -240
+      },
+      "width": 165,
+      "height": 66,
+      "dragging": false,
+      "selected": false,
+      "data": {
+        "id": "lead_lookup",
+        "label": "Lead - lookup",
+        "name": "httpAgentflow",
+        "type": "HTTP",
+        "version": 1.1,
+        "baseClasses": [
+          "HTTP"
+        ],
+        "category": "Agent Flows",
+        "color": "#FF7F7F",
+        "description": "Send a HTTP request",
+        "hideInput": false,
+        "inputAnchors": [],
+        "inputParams": [
+          {
+            "label": "Method",
+            "name": "method",
+            "type": "options",
+            "options": [
+              {
+                "label": "GET",
+                "name": "GET"
+              },
+              {
+                "label": "POST",
+                "name": "POST"
+              },
+              {
+                "label": "PUT",
+                "name": "PUT"
+              },
+              {
+                "label": "DELETE",
+                "name": "DELETE"
+              },
+              {
+                "label": "PATCH",
+                "name": "PATCH"
+              }
+            ],
+            "default": "GET"
+          },
+          {
+            "label": "URL",
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "label": "Headers",
+            "name": "headers",
+            "type": "array",
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string",
+                "default": ""
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "default": "",
+                "acceptVariable": true
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Query Params",
+            "name": "queryParams",
+            "type": "array",
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string",
+                "default": ""
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "default": "",
+                "acceptVariable": true
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Body Type",
+            "name": "bodyType",
+            "type": "options",
+            "options": [
+              {
+                "label": "JSON",
+                "name": "json"
+              },
+              {
+                "label": "Raw",
+                "name": "raw"
+              },
+              {
+                "label": "Form Data",
+                "name": "formData"
+              },
+              {
+                "label": "x-www-form-urlencoded",
+                "name": "xWwwFormUrlencoded"
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Body",
+            "name": "body",
+            "type": "array",
+            "acceptVariable": true,
+            "show": {
+              "bodyType": [
+                "xWwwFormUrlencoded",
+                "formData"
+              ]
+            },
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string",
+                "default": ""
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "default": "",
+                "acceptVariable": true
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Body",
+            "name": "body",
+            "type": "string",
+            "acceptVariable": true,
+            "rows": 4,
+            "show": {
+              "bodyType": [
+                "raw",
+                "json"
+              ]
+            },
+            "optional": true
+          },
+          {
+            "label": "Response Type",
+            "name": "responseType",
+            "type": "options",
+            "options": [
+              {
+                "label": "JSON",
+                "name": "json"
+              },
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Array Buffer",
+                "name": "arraybuffer"
+              },
+              {
+                "label": "Raw (Base64)",
+                "name": "base64"
+              }
+            ],
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/leads/{{ $flow.chatflowid }}",
+          "responseType": "json"
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "label": "output",
+            "name": "output"
+          }
+        ],
+        "outputs": {}
+      }
+    },
+    {
+      "id": "lead_match",
+      "type": "agentFlow",
+      "position": {
+        "x": 0,
+        "y": -360
+      },
+      "data": {
+        "id": "lead_match",
+        "label": "Lead - match",
+        "version": 1,
+        "name": "customFunctionAgentflow",
+        "type": "CustomFunction",
+        "color": "#E4B7FF",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Input Variables",
+            "name": "customFunctionInputVariables",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Variable Name",
+                "name": "variableName",
+                "type": "string"
+              },
+              {
+                "label": "Variable Value",
+                "name": "variableValue",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          },
+          {
+            "label": "Javascript Function",
+            "name": "customFunctionJavascriptFunction",
+            "type": "code"
+          },
+          {
+            "label": "Update Flow State",
+            "name": "customFunctionUpdateState",
+            "type": "array",
+            "optional": true,
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "asyncOptions",
+                "loadMethod": "listRuntimeStateKeys",
+                "freeSolo": true
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "acceptVariable": true,
+                "acceptNodeOutputAsVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "customFunctionInputVariables": [
+            {
+              "variableName": "leadsData",
+              "variableValue": "{{ lead_lookup.output.http.data }}"
+            },
+            {
+              "variableName": "leadEmail",
+              "variableValue": "{{ $flow.state.leadEmail || \"\" }}"
+            },
+            {
+              "variableName": "leadName",
+              "variableValue": "{{ $flow.state.leadName || \"\" }}"
+            }
+          ],
+          "customFunctionJavascriptFunction": "const raw = $leadsData; let leads = [];if (Array.isArray(raw)) { leads = raw; }else if (typeof raw === 'string' && raw.trim()) { try { leads = JSON.parse(raw); } catch (e) { leads = []; } }else if (raw && typeof raw === 'object' && Array.isArray(raw.data)) { leads = raw.data; }const email = String($leadEmail || '').trim();const name = String($leadName || '').trim();const emailMatch = email ? leads.find(l => String(l.email || '').toLowerCase() === email.toLowerCase()) : null;let match = emailMatch;if (!match && name) { match = leads.find(l => String(l.name || '').toLowerCase() === name.toLowerCase()); }const found = Boolean(match);const leadId = match ? String(match.id || '') : '';const finalName = match && match.name ? String(match.name) : name;const finalEmail = match && match.email ? String(match.email) : email;const shouldSaveLead = !found && (finalName || finalEmail);return JSON.stringify({ leadFound: found, leadId: leadId, leadName: finalName, leadEmail: finalEmail, shouldSaveLead: shouldSaveLead });",
+          "customFunctionUpdateState": [
+            {
+              "key": "leadFound",
+              "value": "{{ json.leadFound }}"
+            },
+            {
+              "key": "leadId",
+              "value": "{{ json.leadId }}"
+            },
+            {
+              "key": "leadName",
+              "value": "{{ json.leadName }}"
+            },
+            {
+              "key": "leadEmail",
+              "value": "{{ json.leadEmail }}"
+            },
+            {
+              "key": "shouldSaveLead",
+              "value": "{{ json.shouldSaveLead }}"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "name": "output",
+            "label": "output"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "CustomFunction"
+        ],
+        "category": "Agent Flows",
+        "description": "Execute custom function",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 147,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 0,
+        "y": -360
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "lead_cond_save",
+      "type": "agentFlow",
+      "position": {
+        "x": 0,
+        "y": -480
+      },
+      "data": {
+        "id": "lead_cond_save",
+        "label": "Lead - guardar?",
+        "version": 1,
+        "name": "conditionAgentflow",
+        "type": "Condition",
+        "color": "#FFB938",
+        "hideInput": false,
+        "inputParams": [
+          {
+            "label": "Conditions",
+            "name": "conditions",
+            "type": "array",
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Type",
+                "name": "type",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "String",
+                    "name": "string"
+                  },
+                  {
+                    "label": "Number",
+                    "name": "number"
+                  },
+                  {
+                    "label": "Boolean",
+                    "name": "boolean"
+                  }
+                ],
+                "default": "string"
+              },
+              {
+                "label": "Value 1",
+                "name": "value1",
+                "type": "string",
+                "acceptVariable": true
+              },
+              {
+                "label": "Operation",
+                "name": "operation",
+                "type": "options",
+                "options": [
+                  {
+                    "label": "Contains",
+                    "name": "contains"
+                  },
+                  {
+                    "label": "Ends With",
+                    "name": "endsWith"
+                  },
+                  {
+                    "label": "Equal",
+                    "name": "equal"
+                  },
+                  {
+                    "label": "Not Contains",
+                    "name": "notContains"
+                  },
+                  {
+                    "label": "Not Equal",
+                    "name": "notEqual"
+                  },
+                  {
+                    "label": "Regex",
+                    "name": "regex"
+                  },
+                  {
+                    "label": "Starts With",
+                    "name": "startsWith"
+                  },
+                  {
+                    "label": "Is Empty",
+                    "name": "isEmpty"
+                  },
+                  {
+                    "label": "Not Empty",
+                    "name": "notEmpty"
+                  }
+                ],
+                "default": "equal"
+              },
+              {
+                "label": "Value 2",
+                "name": "value2",
+                "type": "string",
+                "acceptVariable": true
+              }
+            ]
+          }
+        ],
+        "inputs": {
+          "conditions": [
+            {
+              "operation": "equal",
+              "type": "boolean",
+              "value1": "{{ $flow.state.shouldSaveLead }}",
+              "value2": "<p>true</p>"
+            }
+          ]
+        },
+        "outputAnchors": [
+          {
+            "id": "false",
+            "name": "false",
+            "label": "false"
+          },
+          {
+            "id": "true",
+            "name": "true",
+            "label": "true"
+          }
+        ],
+        "selected": false,
+        "baseClasses": [
+          "Condition"
+        ],
+        "category": "Agent Flows",
+        "description": "Split flows based on If Else conditions",
+        "inputAnchors": [],
+        "outputs": {}
+      },
+      "width": 179,
+      "height": 80,
+      "positionAbsolute": {
+        "x": 0,
+        "y": -480
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "lead_save",
+      "type": "agentFlow",
+      "position": {
+        "x": 0,
+        "y": -600
+      },
+      "positionAbsolute": {
+        "x": 0,
+        "y": -600
+      },
+      "width": 165,
+      "height": 66,
+      "dragging": false,
+      "selected": false,
+      "data": {
+        "id": "lead_save",
+        "label": "Lead - save",
+        "name": "httpAgentflow",
+        "type": "HTTP",
+        "version": 1.1,
+        "baseClasses": [
+          "HTTP"
+        ],
+        "category": "Agent Flows",
+        "color": "#FF7F7F",
+        "description": "Send a HTTP request",
+        "hideInput": false,
+        "inputAnchors": [],
+        "inputParams": [
+          {
+            "label": "Method",
+            "name": "method",
+            "type": "options",
+            "options": [
+              {
+                "label": "GET",
+                "name": "GET"
+              },
+              {
+                "label": "POST",
+                "name": "POST"
+              },
+              {
+                "label": "PUT",
+                "name": "PUT"
+              },
+              {
+                "label": "DELETE",
+                "name": "DELETE"
+              },
+              {
+                "label": "PATCH",
+                "name": "PATCH"
+              }
+            ],
+            "default": "GET"
+          },
+          {
+            "label": "URL",
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "label": "Headers",
+            "name": "headers",
+            "type": "array",
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string",
+                "default": ""
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "default": "",
+                "acceptVariable": true
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Query Params",
+            "name": "queryParams",
+            "type": "array",
+            "acceptVariable": true,
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string",
+                "default": ""
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "default": "",
+                "acceptVariable": true
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Body Type",
+            "name": "bodyType",
+            "type": "options",
+            "options": [
+              {
+                "label": "JSON",
+                "name": "json"
+              },
+              {
+                "label": "Raw",
+                "name": "raw"
+              },
+              {
+                "label": "Form Data",
+                "name": "formData"
+              },
+              {
+                "label": "x-www-form-urlencoded",
+                "name": "xWwwFormUrlencoded"
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Body",
+            "name": "body",
+            "type": "array",
+            "acceptVariable": true,
+            "show": {
+              "bodyType": [
+                "xWwwFormUrlencoded",
+                "formData"
+              ]
+            },
+            "array": [
+              {
+                "label": "Key",
+                "name": "key",
+                "type": "string",
+                "default": ""
+              },
+              {
+                "label": "Value",
+                "name": "value",
+                "type": "string",
+                "default": "",
+                "acceptVariable": true
+              }
+            ],
+            "optional": true
+          },
+          {
+            "label": "Body",
+            "name": "body",
+            "type": "string",
+            "acceptVariable": true,
+            "rows": 4,
+            "show": {
+              "bodyType": [
+                "raw",
+                "json"
+              ]
+            },
+            "optional": true
+          },
+          {
+            "label": "Response Type",
+            "name": "responseType",
+            "type": "options",
+            "options": [
+              {
+                "label": "JSON",
+                "name": "json"
+              },
+              {
+                "label": "Text",
+                "name": "text"
+              },
+              {
+                "label": "Array Buffer",
+                "name": "arraybuffer"
+              },
+              {
+                "label": "Raw (Base64)",
+                "name": "base64"
+              }
+            ],
+            "optional": true
+          }
+        ],
+        "inputs": {
+          "method": "POST",
+          "url": "http://localhost:3000/api/v1/leads",
+          "bodyType": "json",
+          "body": "{\"name\": \"{{ $flow.state.leadName }}\", \"email\": \"{{ $flow.state.leadEmail }}\", \"chatflowid\": \"{{ $flow.chatflowid }}\", \"chatId\": \"{{ $flow.chatId }}\"}",
+          "responseType": "json"
+        },
+        "outputAnchors": [
+          {
+            "id": "output",
+            "label": "output",
+            "name": "output"
+          }
+        ],
+        "outputs": {}
+      }
     }
   ],
   "edges": [
-    {
-      "id": "start-output-llm_intent-input",
-      "source": "start",
-      "target": "llm_intent",
-      "sourceHandle": "output",
-      "targetHandle": "llm_intent",
-      "type": "agentFlow",
-      "data": {}
-    },
     {
       "id": "llm_intent-output-router-input",
       "source": "llm_intent",
@@ -6381,6 +7203,69 @@
       "target": "v_reply_llm",
       "sourceHandle": "proceed",
       "targetHandle": "v_reply_llm",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "start-output-lead_parse-input",
+      "source": "start",
+      "target": "lead_parse",
+      "sourceHandle": "output",
+      "targetHandle": "lead_parse",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "lead_parse-output-lead_lookup-input",
+      "source": "lead_parse",
+      "target": "lead_lookup",
+      "sourceHandle": "output",
+      "targetHandle": "lead_lookup",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "lead_lookup-output-lead_match-input",
+      "source": "lead_lookup",
+      "target": "lead_match",
+      "sourceHandle": "output",
+      "targetHandle": "lead_match",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "lead_match-output-lead_cond_save-input",
+      "source": "lead_match",
+      "target": "lead_cond_save",
+      "sourceHandle": "output",
+      "targetHandle": "lead_cond_save",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "lead_cond_save-true-lead_save-input",
+      "source": "lead_cond_save",
+      "target": "lead_save",
+      "sourceHandle": "true",
+      "targetHandle": "lead_save",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "lead_cond_save-false-llm_intent-input",
+      "source": "lead_cond_save",
+      "target": "llm_intent",
+      "sourceHandle": "false",
+      "targetHandle": "llm_intent",
+      "type": "agentFlow",
+      "data": {}
+    },
+    {
+      "id": "lead_save-output-llm_intent-input",
+      "source": "lead_save",
+      "target": "llm_intent",
+      "sourceHandle": "output",
+      "targetHandle": "llm_intent",
       "type": "agentFlow",
       "data": {}
     }
