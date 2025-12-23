@@ -21,10 +21,10 @@ class WebSocketService {
     getWebSocketURL() {
         // Get base URL from environment or current location
         const baseURL = import.meta.env.VITE_API_BASE_URL || window.location.origin
-        
+
         // Convert HTTP/HTTPS to WS/WSS
         let wsURL = baseURL.replace(/^http/, 'ws')
-        
+
         // Handle different environments
         if (baseURL.includes('localhost:3000')) {
             // Local development - backend runs on port 3000
@@ -36,7 +36,7 @@ class WebSocketService {
             // Production or other environments
             wsURL = `${wsURL}/ws`
         }
-        
+
         return wsURL
     }
 
@@ -83,7 +83,7 @@ class WebSocketService {
             this.isConnected = false
             this.stopHeartbeat()
             this.emit('disconnected', { code: event.code, reason: event.reason })
-            
+
             if (!event.wasClean) {
                 this.handleReconnect()
             }
@@ -154,7 +154,7 @@ class WebSocketService {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++
             console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
-            
+
             setTimeout(() => {
                 this.connect()
             }, this.reconnectInterval * this.reconnectAttempts)
@@ -212,7 +212,7 @@ class WebSocketService {
      */
     emit(event, data) {
         if (this.listeners.has(event)) {
-            this.listeners.get(event).forEach(callback => {
+            this.listeners.get(event).forEach((callback) => {
                 try {
                     callback(data)
                 } catch (error) {

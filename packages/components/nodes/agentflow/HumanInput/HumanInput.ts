@@ -152,7 +152,7 @@ class HumanInput_Agentflow implements INode {
         const isStreamable = options.sseStreamer !== undefined
 
         if (humanInput) {
-            const outcomes: Partial<ICondition>[] & Partial<IHumanInput>[] = [
+            const outcomes: Array<Partial<ICondition> & Partial<IHumanInput>> = [
                 {
                     type: 'proceed',
                     startNodeId: humanInput?.startNodeId,

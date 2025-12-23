@@ -97,7 +97,7 @@ class CodeExecutor {
         return new Promise((resolve) => {
             const timeout = Math.min(options.timeout || this.defaultTimeout, this.maxTimeout)
             const workingDir = options.workingDirectory || this.tempDir
-            
+
             const childProcess: ChildProcess = spawn(command, args, {
                 cwd: workingDir,
                 env: { ...process.env, ...options.environmentVariables },
@@ -127,7 +127,7 @@ class CodeExecutor {
             // Handle process completion
             childProcess.on('close', (exitCode) => {
                 clearTimeout(timeoutId)
-                
+
                 if (isTimedOut) {
                     resolve({
                         stdout: '',
@@ -151,28 +151,24 @@ class CodeExecutor {
         })
     }
 
-    async executeCode(
-        code: string,
-        language: CodeLanguage,
-        options: CodeExecutionOptions = {}
-    ): Promise<CodeExecutionResult> {
+    async executeCode(code: string, language: CodeLanguage, options: CodeExecutionOptions = {}): Promise<CodeExecutionResult> {
         const startTime = Date.now()
         let tempFilePath: string | null = null
 
         try {
             // Create temporary file
             tempFilePath = this.createTempFile(code, language)
-            
+
             // Get execution command
             const { command, args } = this.getExecutionCommand(language, tempFilePath)
-            
+
             // Execute the code
             const result = await this.executeProcess(command, args, options)
             const executionTime = Date.now() - startTime
 
             // Determine success based on exit code and stderr
             const success = result.exitCode === 0 && !result.stderr.trim()
-            
+
             return {
                 success,
                 output: result.stdout.trim(),
@@ -182,7 +178,7 @@ class CodeExecutor {
         } catch (error) {
             const executionTime = Date.now() - startTime
             logger.error('Code execution error:', error)
-            
+
             return {
                 success: false,
                 error: `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -236,11 +232,7 @@ class CodeExecutor {
 export const codeExecutor = new CodeExecutor()
 
 // Convenience function for direct usage
-export const executeCode = async (
-    code: string,
-    language: CodeLanguage,
-    options?: CodeExecutionOptions
-): Promise<CodeExecutionResult> => {
+export const executeCode = async (code: string, language: CodeLanguage, options?: CodeExecutionOptions): Promise<CodeExecutionResult> => {
     return codeExecutor.executeCode(code, language, options)
 }
 

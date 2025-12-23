@@ -232,9 +232,7 @@ const TemplateModal = ({ open, onClose, onSubmit, initialData, saving, error }) 
                         multiline
                         placeholder='{"vertical":"..."}'
                     />
-                    {(localError || error) && (
-                        <Alert severity='error'>{localError || error}</Alert>
-                    )}
+                    {(localError || error) && <Alert severity='error'>{localError || error}</Alert>}
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ px: 3, py: 2 }}>
@@ -300,9 +298,7 @@ const DemoHoteles = () => {
         return headers
     }, [authUser?.id, authUser?.role])
 
-    const [lang, setLang] = useState(
-        (typeof window !== 'undefined' && localStorage.getItem('app_lang')) || 'es'
-    )
+    const [lang, setLang] = useState((typeof window !== 'undefined' && localStorage.getItem('app_lang')) || 'es')
     const [isDark, setIsDark] = useState(customization.isDarkMode)
     const [templates, setTemplates] = useState([])
     const [activeSlug, setActiveSlug] = useState('')
@@ -372,28 +368,31 @@ const DemoHoteles = () => {
         }
     }, [authHeaders])
 
-    const verifyTemplateAccess = useCallback(async (slug) => {
-        try {
-            const res = await fetch(`/api/v1/templates/${slug}`, {
-                credentials: 'include',
-                headers: authHeaders
-            })
-            if (res.status === 401 || res.status === 403) {
-                setAccessError('No autorizado para acceder a esta landing')
+    const verifyTemplateAccess = useCallback(
+        async (slug) => {
+            try {
+                const res = await fetch(`/api/v1/templates/${slug}`, {
+                    credentials: 'include',
+                    headers: authHeaders
+                })
+                if (res.status === 401 || res.status === 403) {
+                    setAccessError('No autorizado para acceder a esta landing')
+                    return null
+                }
+                if (res.status === 404) {
+                    setAccessError('Template no encontrada o sin acceso')
+                    return null
+                }
+                if (!res.ok) throw new Error('Error al validar template')
+                const data = await res.json()
+                return normalizeTemplate(data.template)
+            } catch (err) {
+                setFetchError('No se pudo validar la template solicitada')
                 return null
             }
-            if (res.status === 404) {
-                setAccessError('Template no encontrada o sin acceso')
-                return null
-            }
-            if (!res.ok) throw new Error('Error al validar template')
-            const data = await res.json()
-            return normalizeTemplate(data.template)
-        } catch (err) {
-            setFetchError('No se pudo validar la template solicitada')
-            return null
-        }
-    }, [authHeaders])
+        },
+        [authHeaders]
+    )
 
     const mergeTemplates = useCallback((base, maybeTemplate) => {
         if (!maybeTemplate) return base
@@ -407,8 +406,7 @@ const DemoHoteles = () => {
             const baseTemplates = await fetchTemplates()
 
             let nextSlug = ''
-            const storedPreference =
-                typeof window !== 'undefined' ? localStorage.getItem('preferredLandingTemplateSlug') : null
+            const storedPreference = typeof window !== 'undefined' ? localStorage.getItem('preferredLandingTemplateSlug') : null
 
             if (landingId) {
                 const verified = await verifyTemplateAccess(landingId)
@@ -544,9 +542,7 @@ const DemoHoteles = () => {
         }
     }
 
-    const filteredTemplates = templates.filter(
-        (tpl) => verticalFilter === 'all' || tpl.vertical === verticalFilter
-    )
+    const filteredTemplates = templates.filter((tpl) => verticalFilter === 'all' || tpl.vertical === verticalFilter)
     const availableVerticals = [...new Set(templates.map((t) => t.vertical).filter(Boolean))]
 
     if (!loadingTemplates && !templates.length && accessError) {

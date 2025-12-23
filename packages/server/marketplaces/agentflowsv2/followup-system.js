@@ -1,50 +1,47 @@
 // Sistema de seguimiento automático para B2B Sales
-const B2BSalesDB = require('./database-config');
-const AddressManager = require('./address-manager');
+const B2BSalesDB = require('./database-config')
+const AddressManager = require('./address-manager')
 
 class FollowUpSystem {
     constructor(dbConnectionString) {
-        this.db = new B2BSalesDB(dbConnectionString);
-        this.addressManager = new AddressManager(dbConnectionString);
-        this.isRunning = false;
-        this.intervalId = null;
+        this.db = new B2BSalesDB(dbConnectionString)
+        this.addressManager = new AddressManager(dbConnectionString)
+        this.isRunning = false
+        this.intervalId = null
     }
 
     // Inicializar el sistema de seguimiento
     async initialize() {
         try {
             // Crear tabla de seguimientos si no existe (ya está en el schema)
-            console.log('Follow-up system initialized');
+            console.log('Follow-up system initialized')
         } catch (error) {
-            console.error('Error initializing follow-up system:', error);
+            console.error('Error initializing follow-up system:', error)
         }
     }
 
     // Programar seguimiento para cliente que no cerró
     async scheduleFollowUp(customerData, flowState) {
         try {
-            const {
-                phoneNumber, firstName, lastName, productInterest, 
-                lastInteraction, negotiationAttempts = 0
-            } = customerData;
+            const { phoneNumber, firstName, lastName, productInterest, lastInteraction, negotiationAttempts = 0 } = customerData
 
             // Buscar o crear cliente
-            let customer = await this.db.findCustomerByPhone(phoneNumber);
+            let customer = await this.db.findCustomerByPhone(phoneNumber)
             if (!customer) {
                 customer = await this.db.upsertCustomer({
                     phoneNumber,
                     firstName,
                     lastName
-                });
+                })
             }
 
             // Calcular cuándo hacer el seguimiento
-            const delayHours = parseInt(flowState.followUpDelayHours || '24');
-            const scheduledAt = new Date();
-            scheduledAt.setHours(scheduledAt.getHours() + delayHours);
+            const delayHours = parseInt(flowState.followUpDelayHours || '24')
+            const scheduledAt = new Date()
+            scheduledAt.setHours(scheduledAt.getHours() + delayHours)
 
             // Ajustar a horario comercial si es necesario
-            const adjustedTime = this.adjustToBusinessHours(scheduledAt, flowState);
+            const adjustedTime = this.adjustToBusinessHours(scheduledAt, flowState)
 
             const followUpData = {
                 customerId: customer.id,
@@ -60,57 +57,55 @@ class FollowUpSystem {
                     attemptNumber: negotiationAttempts + 1
                 }),
                 nextAction: 'send_followup_message'
-            };
+            }
 
-            const followUp = await this.db.scheduleFollowUp(followUpData);
-            console.log(`Follow-up scheduled for ${phoneNumber} at ${adjustedTime}`);
-            
-            return followUp;
+            const followUp = await this.db.scheduleFollowUp(followUpData)
+            console.log(`Follow-up scheduled for ${phoneNumber} at ${adjustedTime}`)
+
+            return followUp
         } catch (error) {
-            console.error('Error scheduling follow-up:', error);
-            return null;
+            console.error('Error scheduling follow-up:', error)
+            return null
         }
     }
 
     // Ajustar hora al horario comercial
     adjustToBusinessHours(dateTime, flowState) {
-        const businessStart = flowState.businessHoursStart || '09:00';
-        const businessEnd = flowState.businessHoursEnd || '18:00';
-        const workDays = (flowState.followUpDaysOfWeek || '1,2,3,4,5').split(',').map(d => parseInt(d));
+        const businessStart = flowState.businessHoursStart || '09:00'
+        const businessEnd = flowState.businessHoursEnd || '18:00'
+        const workDays = (flowState.followUpDaysOfWeek || '1,2,3,4,5').split(',').map((d) => parseInt(d))
 
-        const [startHour, startMin] = businessStart.split(':').map(n => parseInt(n));
-        const [endHour, endMin] = businessEnd.split(':').map(n => parseInt(n));
+        const [startHour, startMin] = businessStart.split(':').map((n) => parseInt(n))
+        const [endHour, endMin] = businessEnd.split(':').map((n) => parseInt(n))
 
-        let adjustedDate = new Date(dateTime);
+        let adjustedDate = new Date(dateTime)
 
         // Si es fin de semana o día no laboral, mover al próximo día laboral
         while (!workDays.includes(adjustedDate.getDay())) {
-            adjustedDate.setDate(adjustedDate.getDate() + 1);
+            adjustedDate.setDate(adjustedDate.getDate() + 1)
         }
 
         // Si es antes del horario comercial, ajustar al inicio
-        if (adjustedDate.getHours() < startHour || 
-            (adjustedDate.getHours() === startHour && adjustedDate.getMinutes() < startMin)) {
-            adjustedDate.setHours(startHour, startMin, 0, 0);
+        if (adjustedDate.getHours() < startHour || (adjustedDate.getHours() === startHour && adjustedDate.getMinutes() < startMin)) {
+            adjustedDate.setHours(startHour, startMin, 0, 0)
         }
         // Si es después del horario comercial, mover al próximo día laboral
-        else if (adjustedDate.getHours() > endHour || 
-                (adjustedDate.getHours() === endHour && adjustedDate.getMinutes() > endMin)) {
-            adjustedDate.setDate(adjustedDate.getDate() + 1);
+        else if (adjustedDate.getHours() > endHour || (adjustedDate.getHours() === endHour && adjustedDate.getMinutes() > endMin)) {
+            adjustedDate.setDate(adjustedDate.getDate() + 1)
             // Verificar que el próximo día sea laboral
             while (!workDays.includes(adjustedDate.getDay())) {
-                adjustedDate.setDate(adjustedDate.getDate() + 1);
+                adjustedDate.setDate(adjustedDate.getDate() + 1)
             }
-            adjustedDate.setHours(startHour, startMin, 0, 0);
+            adjustedDate.setHours(startHour, startMin, 0, 0)
         }
 
-        return adjustedDate;
+        return adjustedDate
     }
 
     // Generar mensaje de seguimiento personalizado
     generateFollowUpMessage(data) {
-        const { firstName, productInterest, attemptNumber } = data;
-        
+        const { firstName, productInterest, attemptNumber } = data
+
         const messages = {
             1: [
                 `¡Hola ${firstName}! Te escribo porque ayer estuvimos charlando sobre ${productInterest}. ¿Pudiste pensarlo? Tengo buenas noticias sobre stock y precios 😊`,
@@ -127,58 +122,54 @@ class FollowUpSystem {
                 `¡Buenas ${firstName}! Te hago la última oferta por ${productInterest}. Si no te cierra, entiendo perfectamente. ¿Qué te parece?`,
                 `¡Hola ${firstName}! No te voy a molestar más después de esto, pero tengo una última propuesta para ${productInterest} que creo que no vas a poder rechazar 😄`
             ]
-        };
+        }
 
-        const attemptMessages = messages[Math.min(attemptNumber, 3)] || messages[3];
-        return attemptMessages[Math.floor(Math.random() * attemptMessages.length)];
+        const attemptMessages = messages[Math.min(attemptNumber, 3)] || messages[3]
+        return attemptMessages[Math.floor(Math.random() * attemptMessages.length)]
     }
 
     // Procesar seguimientos pendientes
     async processPendingFollowUps() {
         try {
-            const pendingFollowUps = await this.db.getPendingFollowUps(20);
-            
+            const pendingFollowUps = await this.db.getPendingFollowUps(20)
+
             for (const followUp of pendingFollowUps) {
-                await this.executeFollowUp(followUp);
+                await this.executeFollowUp(followUp)
                 // Pequeña pausa entre mensajes para no saturar
-                await this.sleep(2000);
+                await this.sleep(2000)
             }
 
-            return pendingFollowUps.length;
+            return pendingFollowUps.length
         } catch (error) {
-            console.error('Error processing pending follow-ups:', error);
-            return 0;
+            console.error('Error processing pending follow-ups:', error)
+            return 0
         }
     }
 
     // Ejecutar un seguimiento específico
     async executeFollowUp(followUp) {
         try {
-            console.log(`Executing follow-up for ${followUp.phone_number}`);
-            
+            console.log(`Executing follow-up for ${followUp.phone_number}`)
+
             // Aquí se integraría con Wasender o el sistema de mensajería
             const messageData = {
                 phoneNumber: followUp.phone_number,
                 message: followUp.message_sent,
                 followUpId: followUp.id
-            };
+            }
 
             // Simular envío de mensaje (en producción sería llamada a Wasender)
-            const messageSent = await this.sendWhatsAppMessage(messageData);
-            
+            const messageSent = await this.sendWhatsAppMessage(messageData)
+
             if (messageSent) {
                 // Marcar como completado y programar próximo seguimiento si es necesario
-                await this.db.completeFollowUp(
-                    followUp.id, 
-                    'Message sent successfully', 
-                    'wait_for_response'
-                );
+                await this.db.completeFollowUp(followUp.id, 'Message sent successfully', 'wait_for_response')
 
                 // Si no es el último intento, programar el siguiente
                 if (followUp.attempt_number < followUp.max_attempts) {
-                    const nextAttempt = new Date();
-                    const intervalHours = 48; // 2 días entre intentos
-                    nextAttempt.setHours(nextAttempt.getHours() + intervalHours);
+                    const nextAttempt = new Date()
+                    const intervalHours = 48 // 2 días entre intentos
+                    nextAttempt.setHours(nextAttempt.getHours() + intervalHours)
 
                     await this.db.scheduleFollowUp({
                         customerId: followUp.customer_id,
@@ -194,11 +185,11 @@ class FollowUpSystem {
                             attemptNumber: followUp.attempt_number + 1
                         }),
                         nextAction: 'send_followup_message'
-                    });
+                    })
                 }
             }
         } catch (error) {
-            console.error(`Error executing follow-up for ${followUp.phone_number}:`, error);
+            console.error(`Error executing follow-up for ${followUp.phone_number}:`, error)
         }
     }
 
@@ -206,42 +197,42 @@ class FollowUpSystem {
     async sendWhatsAppMessage(messageData) {
         try {
             // En producción, aquí iría la integración con Wasender
-            console.log(`📱 Sending WhatsApp to ${messageData.phoneNumber}: ${messageData.message}`);
-            
+            console.log(`📱 Sending WhatsApp to ${messageData.phoneNumber}: ${messageData.message}`)
+
             // Simular éxito (en producción verificar respuesta de Wasender)
-            return true;
+            return true
         } catch (error) {
-            console.error('Error sending WhatsApp message:', error);
-            return false;
+            console.error('Error sending WhatsApp message:', error)
+            return false
         }
     }
 
     // Iniciar el procesamiento automático
     startAutomaticProcessing(intervalMinutes = 15) {
         if (this.isRunning) {
-            console.log('Follow-up system is already running');
-            return;
+            console.log('Follow-up system is already running')
+            return
         }
 
-        this.isRunning = true;
-        console.log(`Starting automatic follow-up processing every ${intervalMinutes} minutes`);
-        
+        this.isRunning = true
+        console.log(`Starting automatic follow-up processing every ${intervalMinutes} minutes`)
+
         this.intervalId = setInterval(async () => {
-            const processed = await this.processPendingFollowUps();
+            const processed = await this.processPendingFollowUps()
             if (processed > 0) {
-                console.log(`Processed ${processed} follow-ups`);
+                console.log(`Processed ${processed} follow-ups`)
             }
-        }, intervalMinutes * 60 * 1000);
+        }, intervalMinutes * 60 * 1000)
     }
 
     // Detener el procesamiento automático
     stopAutomaticProcessing() {
         if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
+            clearInterval(this.intervalId)
+            this.intervalId = null
         }
-        this.isRunning = false;
-        console.log('Follow-up system stopped');
+        this.isRunning = false
+        console.log('Follow-up system stopped')
     }
 
     // Obtener estadísticas de seguimientos
@@ -257,23 +248,23 @@ class FollowUpSystem {
                 WHERE created_at >= NOW() - INTERVAL '30 days'
                 GROUP BY follow_up_type, status
                 ORDER BY follow_up_type, status;
-            `;
-            
-            const result = await this.db.pool.query(query);
-            return result.rows;
+            `
+
+            const result = await this.db.pool.query(query)
+            return result.rows
         } catch (error) {
-            console.error('Error getting follow-up stats:', error);
-            return [];
+            console.error('Error getting follow-up stats:', error)
+            return []
         }
     }
 
     // Función auxiliar para pausas
     sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise((resolve) => setTimeout(resolve, ms))
     }
 }
 
-module.exports = FollowUpSystem;
+module.exports = FollowUpSystem
 
 // Ejemplo de uso:
 // const followUpSystem = new FollowUpSystem();

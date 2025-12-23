@@ -1,4 +1,4 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { DynamicStructuredTool } from '../CustomTool/core'
 import { z } from 'zod'
@@ -56,8 +56,9 @@ class QAConsultationTool_Tools implements INode {
 
     async init(nodeData: INodeData): Promise<DynamicStructuredTool> {
         const qaChain = nodeData.inputs?.qaChain
-        const toolName = nodeData.inputs?.toolName as string || 'document_consultation'
-        const toolDescription = nodeData.inputs?.toolDescription as string || 'Consult documents to answer questions based on stored knowledge'
+        const toolName = (nodeData.inputs?.toolName as string) || 'document_consultation'
+        const toolDescription =
+            (nodeData.inputs?.toolDescription as string) || 'Consult documents to answer questions based on stored knowledge'
         const returnDirect = nodeData.inputs?.returnDirect as boolean
 
         if (!qaChain) {
@@ -106,7 +107,7 @@ class QAConsultationTool_Tools implements INode {
 
         // Set the QA chain as a variable
         tool.setVariables([{ qaChain }])
-        
+
         if (returnDirect !== undefined) {
             tool.returnDirect = returnDirect
         }

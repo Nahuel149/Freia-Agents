@@ -1,124 +1,124 @@
 {
-  "inventory_tools": [
-    {
-      "id": "httpRequestGet_inventory",
-      "name": "Check Product Stock",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/inventory/check",
-      "description": "Verifica el stock disponible de un producto específico. Usar cuando el cliente pregunte por disponibilidad de cualquier producto.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "queryParams": {
-        "productId": "ID del producto a verificar",
-        "productCode": "Código del producto alternativo",
-        "productName": "Nombre del producto para búsqueda"
-      }
-    },
-    {
-      "id": "httpRequestGet_low_stock",
-      "name": "Get Low Stock Alerts",
-      "type": "HttpRequestGet", 
-      "url": "${FREIA_API_BASE_URL}/api/v1/inventory/low-stock",
-      "description": "Obtiene lista de productos con stock bajo (menos de 20 unidades). Usar para alertas de inventario.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "queryParams": {
-        "threshold": "Umbral de stock bajo (default: 20)"
-      }
-    },
-    {
-      "id": "httpRequestPost_reserve_stock",
-      "name": "Reserve Product Stock",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/inventory/reserve",
-      "description": "Reserva stock de un producto durante el proceso de venta. Usar cuando el cliente confirme interés en comprar.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "productId": "ID del producto a reservar",
-        "quantity": "Cantidad a reservar",
-        "clientId": "ID del cliente",
-        "reservationTime": "Tiempo de reserva en minutos (default: 30)"
-      }
-    },
-    {
-      "id": "httpRequestPost_update_stock",
-      "name": "Update Product Stock",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/inventory/update",
-      "description": "Actualiza el stock de un producto después de una venta confirmada.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "productId": "ID del producto",
-        "quantity": "Cantidad vendida (número negativo para reducir stock)",
-        "saleId": "ID de la venta asociada",
-        "reason": "Motivo del cambio de stock"
-      }
-    },
-    {
-      "id": "httpRequestGet_product_alternatives",
-      "name": "Find Product Alternatives",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/inventory/alternatives",
-      "description": "Busca productos alternativos cuando el producto solicitado no tiene stock. Usar cuando stock = 0.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "queryParams": {
-        "productId": "ID del producto sin stock",
-        "category": "Categoría del producto",
-        "brand": "Marca preferida (opcional)",
-        "priceRange": "Rango de precio (low, medium, high)"
-      }
-    },
-    {
-      "id": "httpRequestPost_stock_notification",
-      "name": "Create Stock Notification",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/inventory/notify",
-      "description": "Crea una notificación para contactar al cliente cuando llegue stock de un producto agotado.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "productId": "ID del producto sin stock",
-        "clientId": "ID del cliente interesado",
-        "clientPhone": "Teléfono del cliente",
-        "clientEmail": "Email del cliente (opcional)",
-        "estimatedTime": "Tiempo estimado de reposición",
-        "priority": "Prioridad de la notificación (high, medium, low)"
-      }
+    "inventory_tools": [
+        {
+            "id": "httpRequestGet_inventory",
+            "name": "Check Product Stock",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/inventory/check",
+            "description": "Verifica el stock disponible de un producto específico. Usar cuando el cliente pregunte por disponibilidad de cualquier producto.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "queryParams": {
+                "productId": "ID del producto a verificar",
+                "productCode": "Código del producto alternativo",
+                "productName": "Nombre del producto para búsqueda"
+            }
+        },
+        {
+            "id": "httpRequestGet_low_stock",
+            "name": "Get Low Stock Alerts",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/inventory/low-stock",
+            "description": "Obtiene lista de productos con stock bajo (menos de 20 unidades). Usar para alertas de inventario.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "queryParams": {
+                "threshold": "Umbral de stock bajo (default: 20)"
+            }
+        },
+        {
+            "id": "httpRequestPost_reserve_stock",
+            "name": "Reserve Product Stock",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/inventory/reserve",
+            "description": "Reserva stock de un producto durante el proceso de venta. Usar cuando el cliente confirme interés en comprar.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "productId": "ID del producto a reservar",
+                "quantity": "Cantidad a reservar",
+                "clientId": "ID del cliente",
+                "reservationTime": "Tiempo de reserva en minutos (default: 30)"
+            }
+        },
+        {
+            "id": "httpRequestPost_update_stock",
+            "name": "Update Product Stock",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/inventory/update",
+            "description": "Actualiza el stock de un producto después de una venta confirmada.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "productId": "ID del producto",
+                "quantity": "Cantidad vendida (número negativo para reducir stock)",
+                "saleId": "ID de la venta asociada",
+                "reason": "Motivo del cambio de stock"
+            }
+        },
+        {
+            "id": "httpRequestGet_product_alternatives",
+            "name": "Find Product Alternatives",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/inventory/alternatives",
+            "description": "Busca productos alternativos cuando el producto solicitado no tiene stock. Usar cuando stock = 0.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "queryParams": {
+                "productId": "ID del producto sin stock",
+                "category": "Categoría del producto",
+                "brand": "Marca preferida (opcional)",
+                "priceRange": "Rango de precio (low, medium, high)"
+            }
+        },
+        {
+            "id": "httpRequestPost_stock_notification",
+            "name": "Create Stock Notification",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/inventory/notify",
+            "description": "Crea una notificación para contactar al cliente cuando llegue stock de un producto agotado.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "productId": "ID del producto sin stock",
+                "clientId": "ID del cliente interesado",
+                "clientPhone": "Teléfono del cliente",
+                "clientEmail": "Email del cliente (opcional)",
+                "estimatedTime": "Tiempo estimado de reposición",
+                "priority": "Prioridad de la notificación (high, medium, low)"
+            }
+        }
+    ],
+    "integration_notes": {
+        "database_tables": [
+            "product_inventory - Tabla principal de inventario",
+            "agent_event - Para tracking de consultas de productos",
+            "sale_record - Para registro de ventas y actualización de stock"
+        ],
+        "existing_functions": [
+            "checkStock() - Función existente en agent.js",
+            "lowStockAlerts() - Función existente en agent.js",
+            "ProductInventory entity - TypeORM entity para inventario"
+        ],
+        "api_endpoints_needed": [
+            "GET /api/v1/inventory/check - Verificar stock",
+            "GET /api/v1/inventory/low-stock - Stock bajo",
+            "POST /api/v1/inventory/reserve - Reservar stock",
+            "POST /api/v1/inventory/update - Actualizar stock",
+            "GET /api/v1/inventory/alternatives - Productos alternativos",
+            "POST /api/v1/inventory/notify - Notificaciones de stock"
+        ]
     }
-  ],
-  "integration_notes": {
-    "database_tables": [
-      "product_inventory - Tabla principal de inventario",
-      "agent_event - Para tracking de consultas de productos",
-      "sale_record - Para registro de ventas y actualización de stock"
-    ],
-    "existing_functions": [
-      "checkStock() - Función existente en agent.js",
-      "lowStockAlerts() - Función existente en agent.js",
-      "ProductInventory entity - TypeORM entity para inventario"
-    ],
-    "api_endpoints_needed": [
-      "GET /api/v1/inventory/check - Verificar stock",
-      "GET /api/v1/inventory/low-stock - Stock bajo",
-      "POST /api/v1/inventory/reserve - Reservar stock",
-      "POST /api/v1/inventory/update - Actualizar stock",
-      "GET /api/v1/inventory/alternatives - Productos alternativos",
-      "POST /api/v1/inventory/notify - Notificaciones de stock"
-    ]
-  }
 }

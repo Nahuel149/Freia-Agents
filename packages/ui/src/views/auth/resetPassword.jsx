@@ -174,16 +174,14 @@ const ResetPasswordPage = () => {
                 overflow: 'auto'
             }}
         >
-            <Container maxWidth="sm">
+            <Container maxWidth='sm'>
                 <Card
                     sx={{
                         backdropFilter: 'blur(20px)',
                         background: customization.isDarkMode ? 'rgba(14, 21, 41, 0.9)' : 'rgba(255, 255, 255, 0.95)',
                         border: customization.isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
                         borderRadius: '24px',
-                        boxShadow: customization.isDarkMode
-                            ? '0 25px 60px rgba(0, 0, 0, 0.45)'
-                            : '0 25px 60px rgba(10, 86, 240, 0.18)',
+                        boxShadow: customization.isDarkMode ? '0 25px 60px rgba(0, 0, 0, 0.45)' : '0 25px 60px rgba(10, 86, 240, 0.18)',
                         position: 'relative',
                         zIndex: 1
                     }}
@@ -200,9 +198,9 @@ const ResetPasswordPage = () => {
                                 </Alert>
                             )}
                             <Stack sx={{ gap: 2, alignItems: 'center', textAlign: 'center', mb: 1 }}>
-                                <Typography 
-                                    variant='h3' 
-                                    sx={{ 
+                                <Typography
+                                    variant='h3'
+                                    sx={{
                                         fontWeight: 700,
                                         fontSize: { xs: '1.75rem', sm: '2rem' },
                                         background: customization.isDarkMode
@@ -216,19 +214,19 @@ const ResetPasswordPage = () => {
                                 >
                                     Reset Password
                                 </Typography>
-                                <Typography 
-                                    variant='body1' 
-                                    sx={{ 
+                                <Typography
+                                    variant='body1'
+                                    sx={{
                                         color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
                                         maxWidth: '400px'
                                     }}
                                 >
-                                    <Link 
-                                        style={{ 
+                                    <Link
+                                        style={{
                                             color: customization.isDarkMode ? '#667eea' : '#764ba2',
                                             textDecoration: 'none',
                                             fontWeight: 600
-                                        }} 
+                                        }}
                                         to='/signin'
                                     >
                                         Back to Login
@@ -237,10 +235,12 @@ const ResetPasswordPage = () => {
                                 </Typography>
                             </Stack>
                             <form onSubmit={validateAndSubmit}>
-                                <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 3 }}>
+                                <Stack
+                                    sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 3 }}
+                                >
                                     <Box>
-                                        <Typography 
-                                            sx={{ 
+                                        <Typography
+                                            sx={{
                                                 mb: 1,
                                                 fontWeight: 600,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
@@ -256,8 +256,8 @@ const ResetPasswordPage = () => {
                                         />
                                     </Box>
                                     <Box>
-                                        <Typography 
-                                            sx={{ 
+                                        <Typography
+                                            sx={{
                                                 mb: 1,
                                                 fontWeight: 600,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
@@ -275,9 +275,13 @@ const ResetPasswordPage = () => {
                                             value={tokenVal}
                                             sx={{
                                                 borderRadius: 2,
-                                                backgroundColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)',
+                                                backgroundColor: customization.isDarkMode
+                                                    ? 'rgba(255, 255, 255, 0.05)'
+                                                    : 'rgba(255, 255, 255, 0.8)',
                                                 backdropFilter: 'blur(10px)',
-                                                border: customization.isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.3)',
+                                                border: customization.isDarkMode
+                                                    ? '1px solid rgba(255, 255, 255, 0.1)'
+                                                    : '1px solid rgba(255, 255, 255, 0.3)',
                                                 '& .MuiOutlinedInput-notchedOutline': {
                                                     border: 'none'
                                                 },
@@ -289,9 +293,9 @@ const ResetPasswordPage = () => {
                                                 }
                                             }}
                                         />
-                                        <Typography 
-                                            variant='caption' 
-                                            sx={{ 
+                                        <Typography
+                                            variant='caption'
+                                            sx={{
                                                 mt: 0.5,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
                                                 fontStyle: 'italic'
@@ -301,8 +305,8 @@ const ResetPasswordPage = () => {
                                         </Typography>
                                     </Box>
                                     <Box>
-                                        <Typography 
-                                            sx={{ 
+                                        <Typography
+                                            sx={{
                                                 mb: 1,
                                                 fontWeight: 600,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
@@ -316,20 +320,21 @@ const ResetPasswordPage = () => {
                                             value={newPasswordVal}
                                             showDialog={false}
                                         />
-                                        <Typography 
-                                            variant='caption' 
-                                            sx={{ 
+                                        <Typography
+                                            variant='caption'
+                                            sx={{
                                                 mt: 0.5,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
                                                 fontStyle: 'italic'
                                             }}
                                         >
-                                            Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character.
+                                            Password must be at least 8 characters long and contain at least one lowercase letter, one
+                                            uppercase letter, one digit, and one special character.
                                         </Typography>
                                     </Box>
                                     <Box>
-                                        <Typography 
-                                            sx={{ 
+                                        <Typography
+                                            sx={{
                                                 mb: 1,
                                                 fontWeight: 600,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
@@ -343,9 +348,9 @@ const ResetPasswordPage = () => {
                                             value={confirmPasswordVal}
                                             showDialog={false}
                                         />
-                                        <Typography 
-                                            variant='caption' 
-                                            sx={{ 
+                                        <Typography
+                                            variant='caption'
+                                            sx={{
                                                 mt: 0.5,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
                                                 fontStyle: 'italic'

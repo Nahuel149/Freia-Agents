@@ -99,17 +99,17 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
             const createResp = await variablesApi.createVariable(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                message: t('variables.notifications.variableAdded'),
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
+                    message: t('variables.notifications.variableAdded'),
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
@@ -213,7 +213,8 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            {t('variables.variableType')}<span style={{ color: 'red' }}>&nbsp;*</span>
+                            {t('variables.variableType')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
@@ -230,7 +231,8 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                     <Box sx={{ p: 2 }}>
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
-                                {t('variables.variableValue')}<span style={{ color: 'red' }}>&nbsp;*</span>
+                                {t('variables.variableValue')}
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
                         </div>

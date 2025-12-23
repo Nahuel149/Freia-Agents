@@ -1,48 +1,48 @@
 {
-  "referenceDate": "2025-12-16",
-  "competitors": [
-    {
-      "name": "Quinta Los Arces",
-      "location": "Zona Norte",
-      "pricePerNight": 260,
-      "currency": "USD",
-      "notes": "incluye aire acondicionado en salon"
-    },
-    {
-      "name": "Quinta La Laguna",
-      "location": "Zona Oeste",
-      "pricePerNight": 200,
-      "currency": "USD",
-      "notes": "sin pileta, pero gran parque"
-    },
-    {
-      "name": "Quinta Nueva 1",
-      "location": "Zona Norte",
-      "pricePerNight": 210,
-      "currency": "USD",
-      "notes": "referencia ampliada"
-    },
-    {
-      "name": "Quinta Nueva 2",
-      "location": "Zona Oeste",
-      "pricePerNight": 230,
-      "currency": "USD",
-      "notes": "referencia ampliada"
-    },
-    {
-      "name": "Quinta Nueva 3",
-      "location": "Zona Norte",
-      "pricePerNight": 250,
-      "currency": "USD",
-      "notes": "referencia ampliada"
-    },
-    {
-      "name": "Quinta Nueva 4",
-      "location": "Zona Oeste",
-      "pricePerNight": 270,
-      "currency": "USD",
-      "notes": "referencia ampliada"
-    }
-  ],
-  "comments": "usar solo como referencia manual para KPI; ajustar con datos reales cuando se disponga"
+    "referenceDate": "2025-12-16",
+    "competitors": [
+        {
+            "name": "Quinta Los Arces",
+            "location": "Zona Norte",
+            "pricePerNight": 260,
+            "currency": "USD",
+            "notes": "incluye aire acondicionado en salon"
+        },
+        {
+            "name": "Quinta La Laguna",
+            "location": "Zona Oeste",
+            "pricePerNight": 200,
+            "currency": "USD",
+            "notes": "sin pileta, pero gran parque"
+        },
+        {
+            "name": "Quinta Nueva 1",
+            "location": "Zona Norte",
+            "pricePerNight": 210,
+            "currency": "USD",
+            "notes": "referencia ampliada"
+        },
+        {
+            "name": "Quinta Nueva 2",
+            "location": "Zona Oeste",
+            "pricePerNight": 230,
+            "currency": "USD",
+            "notes": "referencia ampliada"
+        },
+        {
+            "name": "Quinta Nueva 3",
+            "location": "Zona Norte",
+            "pricePerNight": 250,
+            "currency": "USD",
+            "notes": "referencia ampliada"
+        },
+        {
+            "name": "Quinta Nueva 4",
+            "location": "Zona Oeste",
+            "pricePerNight": 270,
+            "currency": "USD",
+            "notes": "referencia ampliada"
+        }
+    ],
+    "comments": "usar solo como referencia manual para KPI; ajustar con datos reales cuando se disponga"
 }

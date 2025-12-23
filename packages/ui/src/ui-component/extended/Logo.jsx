@@ -7,9 +7,9 @@ const Logo = () => {
 
     return (
         <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row', marginLeft: '10px' }}>
-            <img 
-                src="/assets/Freia.png" 
-                alt="Freia Logo" 
+            <img
+                src='/assets/Freia.png'
+                alt='Freia Logo'
                 style={{
                     height: '32px',
                     width: 'auto',

@@ -1,720 +1,720 @@
 {
-  "calendario": [
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-09",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-10",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-11",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-12",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-10",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-11",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-12",
-      "tipo": "suite",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-10",
-      "tipo": "premium",
-      "cupo": 0,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-10",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-11",
-      "tipo": "estandar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-12",
-      "tipo": "loft",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-15",
-      "tipo": "premium",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-09",
-      "tipo": "estandar",
-      "cupo": 4,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-10",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-10",
-      "tipo": "executive",
-      "cupo": 2,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-11",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-12",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": true
-    }
-  ],
-  "disponibilidad": [
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-09",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-10",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-11",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-12",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-10",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-11",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro",
-      "fecha": "2024-08-12",
-      "tipo": "suite",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-10",
-      "tipo": "premium",
-      "cupo": 0,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-10",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-11",
-      "tipo": "estandar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-12",
-      "tipo": "loft",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo",
-      "fecha": "2024-08-15",
-      "tipo": "premium",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-09",
-      "tipo": "estandar",
-      "cupo": 4,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-10",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-10",
-      "tipo": "executive",
-      "cupo": 2,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-11",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto",
-      "fecha": "2024-08-12",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": true
-    },
-    {
-      "sede": "Centro-x1",
-      "fecha": "2024-08-23",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x1",
-      "fecha": "2024-08-24",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x1",
-      "fecha": "2024-08-25",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x1",
-      "fecha": "2024-08-26",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x1",
-      "fecha": "2024-08-24",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x1",
-      "fecha": "2024-08-25",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x1",
-      "fecha": "2024-08-26",
-      "tipo": "suite",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x1",
-      "fecha": "2024-08-24",
-      "tipo": "premium",
-      "cupo": 0,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x1",
-      "fecha": "2024-08-24",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x1",
-      "fecha": "2024-08-25",
-      "tipo": "estandar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x1",
-      "fecha": "2024-08-26",
-      "tipo": "loft",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x1",
-      "fecha": "2024-08-29",
-      "tipo": "premium",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x1",
-      "fecha": "2024-08-23",
-      "tipo": "estandar",
-      "cupo": 4,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x1",
-      "fecha": "2024-08-24",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x1",
-      "fecha": "2024-08-24",
-      "tipo": "executive",
-      "cupo": 2,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x1",
-      "fecha": "2024-08-25",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x1",
-      "fecha": "2024-08-26",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": true
-    },
-    {
-      "sede": "Centro-x2",
-      "fecha": "2024-09-06",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x2",
-      "fecha": "2024-09-07",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x2",
-      "fecha": "2024-09-08",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x2",
-      "fecha": "2024-09-09",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x2",
-      "fecha": "2024-09-07",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x2",
-      "fecha": "2024-09-08",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x2",
-      "fecha": "2024-09-09",
-      "tipo": "suite",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x2",
-      "fecha": "2024-09-07",
-      "tipo": "premium",
-      "cupo": 0,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x2",
-      "fecha": "2024-09-07",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x2",
-      "fecha": "2024-09-08",
-      "tipo": "estandar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x2",
-      "fecha": "2024-09-09",
-      "tipo": "loft",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x2",
-      "fecha": "2024-09-12",
-      "tipo": "premium",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x2",
-      "fecha": "2024-09-06",
-      "tipo": "estandar",
-      "cupo": 4,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x2",
-      "fecha": "2024-09-07",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x2",
-      "fecha": "2024-09-07",
-      "tipo": "executive",
-      "cupo": 2,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x2",
-      "fecha": "2024-09-08",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x2",
-      "fecha": "2024-09-09",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": true
-    },
-    {
-      "sede": "Centro-x3",
-      "fecha": "2024-09-20",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x3",
-      "fecha": "2024-09-21",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x3",
-      "fecha": "2024-09-22",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x3",
-      "fecha": "2024-09-23",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x3",
-      "fecha": "2024-09-21",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x3",
-      "fecha": "2024-09-22",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x3",
-      "fecha": "2024-09-23",
-      "tipo": "suite",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x3",
-      "fecha": "2024-09-21",
-      "tipo": "premium",
-      "cupo": 0,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x3",
-      "fecha": "2024-09-21",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x3",
-      "fecha": "2024-09-22",
-      "tipo": "estandar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x3",
-      "fecha": "2024-09-23",
-      "tipo": "loft",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x3",
-      "fecha": "2024-09-26",
-      "tipo": "premium",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x3",
-      "fecha": "2024-09-20",
-      "tipo": "estandar",
-      "cupo": 4,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x3",
-      "fecha": "2024-09-21",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x3",
-      "fecha": "2024-09-21",
-      "tipo": "executive",
-      "cupo": 2,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x3",
-      "fecha": "2024-09-22",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x3",
-      "fecha": "2024-09-23",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": true
-    },
-    {
-      "sede": "Centro-x4",
-      "fecha": "2024-10-04",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x4",
-      "fecha": "2024-10-05",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x4",
-      "fecha": "2024-10-06",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x4",
-      "fecha": "2024-10-07",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x4",
-      "fecha": "2024-10-05",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x4",
-      "fecha": "2024-10-06",
-      "tipo": "premium",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Centro-x4",
-      "fecha": "2024-10-07",
-      "tipo": "suite",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x4",
-      "fecha": "2024-10-05",
-      "tipo": "premium",
-      "cupo": 0,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x4",
-      "fecha": "2024-10-05",
-      "tipo": "estandar",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x4",
-      "fecha": "2024-10-06",
-      "tipo": "estandar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x4",
-      "fecha": "2024-10-07",
-      "tipo": "loft",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Palermo-x4",
-      "fecha": "2024-10-10",
-      "tipo": "premium",
-      "cupo": 2,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x4",
-      "fecha": "2024-10-04",
-      "tipo": "estandar",
-      "cupo": 4,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x4",
-      "fecha": "2024-10-05",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x4",
-      "fecha": "2024-10-05",
-      "tipo": "executive",
-      "cupo": 2,
-      "overbooking": true
-    },
-    {
-      "sede": "Aeropuerto-x4",
-      "fecha": "2024-10-06",
-      "tipo": "familiar",
-      "cupo": 1,
-      "overbooking": false
-    },
-    {
-      "sede": "Aeropuerto-x4",
-      "fecha": "2024-10-07",
-      "tipo": "estandar",
-      "cupo": 3,
-      "overbooking": true
-    }
-  ]
+    "calendario": [
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-09",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-10",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-11",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-12",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-10",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-11",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-12",
+            "tipo": "suite",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-10",
+            "tipo": "premium",
+            "cupo": 0,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-10",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-11",
+            "tipo": "estandar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-12",
+            "tipo": "loft",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-15",
+            "tipo": "premium",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-09",
+            "tipo": "estandar",
+            "cupo": 4,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-10",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-10",
+            "tipo": "executive",
+            "cupo": 2,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-11",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-12",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": true
+        }
+    ],
+    "disponibilidad": [
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-09",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-10",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-11",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-12",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-10",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-11",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro",
+            "fecha": "2024-08-12",
+            "tipo": "suite",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-10",
+            "tipo": "premium",
+            "cupo": 0,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-10",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-11",
+            "tipo": "estandar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-12",
+            "tipo": "loft",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo",
+            "fecha": "2024-08-15",
+            "tipo": "premium",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-09",
+            "tipo": "estandar",
+            "cupo": 4,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-10",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-10",
+            "tipo": "executive",
+            "cupo": 2,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-11",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto",
+            "fecha": "2024-08-12",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": true
+        },
+        {
+            "sede": "Centro-x1",
+            "fecha": "2024-08-23",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x1",
+            "fecha": "2024-08-24",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x1",
+            "fecha": "2024-08-25",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x1",
+            "fecha": "2024-08-26",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x1",
+            "fecha": "2024-08-24",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x1",
+            "fecha": "2024-08-25",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x1",
+            "fecha": "2024-08-26",
+            "tipo": "suite",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x1",
+            "fecha": "2024-08-24",
+            "tipo": "premium",
+            "cupo": 0,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x1",
+            "fecha": "2024-08-24",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x1",
+            "fecha": "2024-08-25",
+            "tipo": "estandar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x1",
+            "fecha": "2024-08-26",
+            "tipo": "loft",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x1",
+            "fecha": "2024-08-29",
+            "tipo": "premium",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x1",
+            "fecha": "2024-08-23",
+            "tipo": "estandar",
+            "cupo": 4,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x1",
+            "fecha": "2024-08-24",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x1",
+            "fecha": "2024-08-24",
+            "tipo": "executive",
+            "cupo": 2,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x1",
+            "fecha": "2024-08-25",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x1",
+            "fecha": "2024-08-26",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": true
+        },
+        {
+            "sede": "Centro-x2",
+            "fecha": "2024-09-06",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x2",
+            "fecha": "2024-09-07",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x2",
+            "fecha": "2024-09-08",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x2",
+            "fecha": "2024-09-09",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x2",
+            "fecha": "2024-09-07",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x2",
+            "fecha": "2024-09-08",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x2",
+            "fecha": "2024-09-09",
+            "tipo": "suite",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x2",
+            "fecha": "2024-09-07",
+            "tipo": "premium",
+            "cupo": 0,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x2",
+            "fecha": "2024-09-07",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x2",
+            "fecha": "2024-09-08",
+            "tipo": "estandar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x2",
+            "fecha": "2024-09-09",
+            "tipo": "loft",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x2",
+            "fecha": "2024-09-12",
+            "tipo": "premium",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x2",
+            "fecha": "2024-09-06",
+            "tipo": "estandar",
+            "cupo": 4,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x2",
+            "fecha": "2024-09-07",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x2",
+            "fecha": "2024-09-07",
+            "tipo": "executive",
+            "cupo": 2,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x2",
+            "fecha": "2024-09-08",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x2",
+            "fecha": "2024-09-09",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": true
+        },
+        {
+            "sede": "Centro-x3",
+            "fecha": "2024-09-20",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x3",
+            "fecha": "2024-09-21",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x3",
+            "fecha": "2024-09-22",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x3",
+            "fecha": "2024-09-23",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x3",
+            "fecha": "2024-09-21",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x3",
+            "fecha": "2024-09-22",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x3",
+            "fecha": "2024-09-23",
+            "tipo": "suite",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x3",
+            "fecha": "2024-09-21",
+            "tipo": "premium",
+            "cupo": 0,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x3",
+            "fecha": "2024-09-21",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x3",
+            "fecha": "2024-09-22",
+            "tipo": "estandar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x3",
+            "fecha": "2024-09-23",
+            "tipo": "loft",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x3",
+            "fecha": "2024-09-26",
+            "tipo": "premium",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x3",
+            "fecha": "2024-09-20",
+            "tipo": "estandar",
+            "cupo": 4,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x3",
+            "fecha": "2024-09-21",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x3",
+            "fecha": "2024-09-21",
+            "tipo": "executive",
+            "cupo": 2,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x3",
+            "fecha": "2024-09-22",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x3",
+            "fecha": "2024-09-23",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": true
+        },
+        {
+            "sede": "Centro-x4",
+            "fecha": "2024-10-04",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x4",
+            "fecha": "2024-10-05",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x4",
+            "fecha": "2024-10-06",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x4",
+            "fecha": "2024-10-07",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x4",
+            "fecha": "2024-10-05",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x4",
+            "fecha": "2024-10-06",
+            "tipo": "premium",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Centro-x4",
+            "fecha": "2024-10-07",
+            "tipo": "suite",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x4",
+            "fecha": "2024-10-05",
+            "tipo": "premium",
+            "cupo": 0,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x4",
+            "fecha": "2024-10-05",
+            "tipo": "estandar",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x4",
+            "fecha": "2024-10-06",
+            "tipo": "estandar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x4",
+            "fecha": "2024-10-07",
+            "tipo": "loft",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Palermo-x4",
+            "fecha": "2024-10-10",
+            "tipo": "premium",
+            "cupo": 2,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x4",
+            "fecha": "2024-10-04",
+            "tipo": "estandar",
+            "cupo": 4,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x4",
+            "fecha": "2024-10-05",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x4",
+            "fecha": "2024-10-05",
+            "tipo": "executive",
+            "cupo": 2,
+            "overbooking": true
+        },
+        {
+            "sede": "Aeropuerto-x4",
+            "fecha": "2024-10-06",
+            "tipo": "familiar",
+            "cupo": 1,
+            "overbooking": false
+        },
+        {
+            "sede": "Aeropuerto-x4",
+            "fecha": "2024-10-07",
+            "tipo": "estandar",
+            "cupo": 3,
+            "overbooking": true
+        }
+    ]
 }

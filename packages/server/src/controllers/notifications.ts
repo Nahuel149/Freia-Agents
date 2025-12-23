@@ -63,11 +63,11 @@ const insertNotificationFollowUp = async (payload: NotificationPayload) => {
         metadata = null
     } = payload
 
-    logger.info('insertNotificationFollowUp called with payload', { 
-        customerId, 
-        phoneNumber, 
-        saleId, 
-        followUpType 
+    logger.info('insertNotificationFollowUp called with payload', {
+        customerId,
+        phoneNumber,
+        saleId,
+        followUpType
     })
 
     // Ensure scheduled_at is never null - use current timestamp if not provided
@@ -75,13 +75,13 @@ const insertNotificationFollowUp = async (payload: NotificationPayload) => {
 
     const appServer = getRunningExpressApp()
 
-    logger.info('About to execute INSERT query', { 
-        customerId, 
-        phoneNumber, 
-        saleId, 
-        followUpType, 
-        finalScheduledAt, 
-        status 
+    logger.info('About to execute INSERT query', {
+        customerId,
+        phoneNumber,
+        saleId,
+        followUpType,
+        finalScheduledAt,
+        status
     })
 
     const result = await appServer.AppDataSource.query(
@@ -153,16 +153,7 @@ const createNotification = async (req: Request, res: Response, next: NextFunctio
 
 const notifyPriceApproval = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {
-            approvalRequestId,
-            clientId,
-            phoneNumber,
-            approved,
-            newPrice,
-            discountPercentage,
-            validUntil,
-            reason
-        } = req.body
+        const { approvalRequestId, clientId, phoneNumber, approved, newPrice, discountPercentage, validUntil, reason } = req.body
 
         if (!approvalRequestId || approved === undefined) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'approvalRequestId and approved flag are required')
@@ -176,10 +167,7 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
         if (parsedSaleId) {
             try {
                 const appServer = getRunningExpressApp()
-                const saleExists = await appServer.AppDataSource.query(
-                    'SELECT id FROM sales WHERE id = $1',
-                    [parsedSaleId]
-                )
+                const saleExists = await appServer.AppDataSource.query('SELECT id FROM sales WHERE id = $1', [parsedSaleId])
                 if (saleExists && saleExists.length > 0) {
                     const noteParts: string[] = []
                     noteParts.push(approved ? 'Descuento aprobado' : 'Descuento rechazado')
@@ -194,10 +182,7 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
                         params.push(newPrice)
                     }
 
-                    await appServer.AppDataSource.query(
-                        `UPDATE sales SET ${updateFields.join(', ')} WHERE id = $1`,
-                        params
-                    )
+                    await appServer.AppDataSource.query(`UPDATE sales SET ${updateFields.join(', ')} WHERE id = $1`, params)
                 }
             } catch (error) {
                 logger.warn('Unable to update sale with price approval details', { saleId: parsedSaleId, error })
@@ -247,19 +232,14 @@ const notifyPriceApproval = async (req: Request, res: Response, next: NextFuncti
 
 const notifyDeliveryImprovement = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {
-            deliveryRequestId,
-            clientId,
-            phoneNumber,
-            improved,
-            newDeliveryTime,
-            originalDeliveryTime,
-            reason,
-            additionalCost
-        } = req.body
+        const { deliveryRequestId, clientId, phoneNumber, improved, newDeliveryTime, originalDeliveryTime, reason, additionalCost } =
+            req.body
 
         if (!deliveryRequestId || originalDeliveryTime === undefined || improved === undefined) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'deliveryRequestId, improved flag and originalDeliveryTime are required')
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                'deliveryRequestId, improved flag and originalDeliveryTime are required'
+            )
         }
 
         const { customerId, phone } = await resolveCustomerContext(clientId, phoneNumber)
@@ -270,17 +250,14 @@ const notifyDeliveryImprovement = async (req: Request, res: Response, next: Next
         if (parsedSaleId) {
             try {
                 const appServer = getRunningExpressApp()
-                const saleExists = await appServer.AppDataSource.query(
-                    `SELECT id FROM sales WHERE id = $1`,
-                    [parsedSaleId]
-                )
-                
-                logger.info('Sale validation result', { 
-                    parsedSaleId, 
+                const saleExists = await appServer.AppDataSource.query(`SELECT id FROM sales WHERE id = $1`, [parsedSaleId])
+
+                logger.info('Sale validation result', {
+                    parsedSaleId,
                     saleExists: saleExists?.length || 0,
-                    foundSale: saleExists?.[0] || null 
+                    foundSale: saleExists?.[0] || null
                 })
-                
+
                 if (saleExists && saleExists.length > 0) {
                     validSaleId = parsedSaleId
                     logger.info('Sale exists, setting validSaleId', { validSaleId })
@@ -293,27 +270,27 @@ const notifyDeliveryImprovement = async (req: Request, res: Response, next: Next
                     )
                 } else {
                     validSaleId = null
-                    logger.warn('Sale ID does not exist, setting validSaleId to null', { 
+                    logger.warn('Sale ID does not exist, setting validSaleId to null', {
                         deliveryRequestId: parsedSaleId,
-                        validSaleId 
+                        validSaleId
                     })
                 }
             } catch (error) {
                 validSaleId = null
-                logger.warn('Unable to update sale with delivery notes, setting validSaleId to null', { 
-                    deliveryRequestId, 
+                logger.warn('Unable to update sale with delivery notes, setting validSaleId to null', {
+                    deliveryRequestId,
                     error,
-                    validSaleId 
+                    validSaleId
                 })
             }
         } else {
             logger.info('No parsedSaleId provided, validSaleId remains null', { parsedSaleId, validSaleId })
         }
 
-        logger.info('About to call insertNotificationFollowUp', { 
-            validSaleId, 
-            customerId, 
-            phoneNumber: phone ?? 'internal' 
+        logger.info('About to call insertNotificationFollowUp', {
+            validSaleId,
+            customerId,
+            phoneNumber: phone ?? 'internal'
         })
 
         const followUp = await insertNotificationFollowUp({

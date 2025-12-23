@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -156,7 +156,7 @@ export default async function(input: Input, context: Context): Promise<Response>
     const handleSubmit = async (values) => {
         try {
             setLoading(true)
-            
+
             const codeAgentData = {
                 name: values.name,
                 description: values.description,
@@ -183,7 +183,7 @@ export default async function(input: Input, context: Context): Promise<Response>
                     }
                 })
             }
-            
+
             onConfirm()
         } catch (error) {
             console.error('Error saving CodeAgent:', error)
@@ -226,13 +226,8 @@ export default async function(input: Input, context: Context): Promise<Response>
                     <Typography variant='h4'>{dialogProps.title}</Typography>
                 </Box>
             </DialogTitle>
-            
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-                enableReinitialize
-            >
+
+            <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit} enableReinitialize>
                 {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
                     <form onSubmit={handleSubmit}>
                         <DialogContent>
@@ -248,7 +243,7 @@ export default async function(input: Input, context: Context): Promise<Response>
                                     helperText={touched.name && errors.name}
                                     placeholder='Enter CodeAgent name'
                                 />
-                                
+
                                 <TextField
                                     fullWidth
                                     label='Description'
@@ -262,7 +257,7 @@ export default async function(input: Input, context: Context): Promise<Response>
                                     multiline
                                     rows={2}
                                 />
-                                
+
                                 <FormControl fullWidth>
                                     <InputLabel>Language</InputLabel>
                                     <Select
@@ -275,11 +270,11 @@ export default async function(input: Input, context: Context): Promise<Response>
                                         <MenuItem value='python'>Python</MenuItem>
                                     </Select>
                                 </FormControl>
-                                
+
                                 <Divider />
-                                
+
                                 <Typography variant='h6'>Code</Typography>
-                                
+
                                 <TextField
                                     fullWidth
                                     label='Code'
@@ -301,22 +296,17 @@ export default async function(input: Input, context: Context): Promise<Response>
                                 />
                             </Stack>
                         </DialogContent>
-                        
+
                         <DialogActions>
                             <Button onClick={onCancel}>Cancel</Button>
-                            <StyledButton
-                                type='submit'
-                                variant='contained'
-                                color='primary'
-                                disabled={loading}
-                            >
+                            <StyledButton type='submit' variant='contained' color='primary' disabled={loading}>
                                 {dialogProps.type === 'ADD' ? 'Create' : 'Update'}
                             </StyledButton>
                         </DialogActions>
                     </form>
                 )}
             </Formik>
-            
+
             <BackdropLoader open={loading} />
         </Dialog>
     )

@@ -50,7 +50,8 @@ export class OrderValidationService {
             const quote = quoteRows?.[0]
             if (!quote) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Quote no encontrado')
             if (quote.currency !== currency) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Moneda no coincide con el quote')
-            if (quote.amount_cents !== amountCents) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Monto no coincide con el quote')
+            if (quote.amount_cents !== amountCents)
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Monto no coincide con el quote')
             if (!isAdmin) {
                 if (quote.user_email && quote.user_email !== currentEmail) {
                     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Quote asignado a otro usuario')

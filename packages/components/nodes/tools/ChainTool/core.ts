@@ -15,7 +15,10 @@ export class ChainTool extends DynamicTool {
             ...rest,
             func: async (input, runManager) => {
                 // prevent sending SSE events of the sub-chain
-                const sseStreamer = runManager?.handlers.find((handler) => handler instanceof CustomChainHandler)?.sseStreamer
+                const sseHandler = runManager?.handlers.find((handler) => handler instanceof CustomChainHandler) as
+                    | CustomChainHandler
+                    | undefined
+                const sseStreamer = sseHandler?.sseStreamer
                 if (runManager) {
                     const callbacks = runManager.handlers
                     for (let i = 0; i < callbacks.length; i += 1) {

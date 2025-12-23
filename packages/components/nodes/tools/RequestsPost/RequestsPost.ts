@@ -125,8 +125,7 @@ class RequestsPost_Tools implements INode {
                 label: 'Query Params Schema',
                 name: 'requestsPostQueryParamsSchema',
                 type: 'code',
-                description:
-                    'Description of the available query/path params to enable LLM to figure out which parameters to use',
+                description: 'Description of the available query/path params to enable LLM to figure out which parameters to use',
                 placeholder: queryCodeExample,
                 optional: true,
                 hideCodeExecute: true,

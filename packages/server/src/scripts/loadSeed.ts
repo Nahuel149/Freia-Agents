@@ -20,7 +20,7 @@ async function insertBatch(table: string, rows: any[]) {
         .createQueryBuilder()
         .insert()
         .into(table)
-        .values(rows.map((r)=>Object.fromEntries(Object.entries(r).filter(([,v])=>v!==null && v!==undefined))))
+        .values(rows.map((r) => Object.fromEntries(Object.entries(r).filter(([, v]) => v !== null && v !== undefined))))
         .orIgnore()
         .execute()
 }
@@ -58,9 +58,7 @@ async function insertSales(rows: any[]) {
     let paramIndex = 1
 
     rows.forEach((row) => {
-        const filteredRow = Object.fromEntries(
-            Object.entries(row).filter(([, v]) => v !== null && v !== undefined)
-        )
+        const filteredRow = Object.fromEntries(Object.entries(row).filter(([, v]) => v !== null && v !== undefined))
         const placeholders: string[] = []
         columns.forEach((col) => {
             placeholders.push(`$${paramIndex++}`)
@@ -106,11 +104,11 @@ async function main() {
         const uniqueCustomers = Array.from(customerMap.values())
 
         // Ensure all customer ids used in sales exist
-        const existingIds = new Set<number>(uniqueCustomers.map(c=>c.id))
+        const existingIds = new Set<number>(uniqueCustomers.map((c) => c.id))
         const missingCustomerRows = seedData.sales
-            .map(s=>s.customer_id)
-            .filter((id)=>id && !existingIds.has(id))
-            .map((id)=>({id, phone_number:`+000000${id}`}))
+            .map((s) => s.customer_id)
+            .filter((id) => id && !existingIds.has(id))
+            .map((id) => ({ id, phone_number: `+000000${id}` }))
 
         const finalCustomers = uniqueCustomers.concat(missingCustomerRows)
 
@@ -120,9 +118,9 @@ async function main() {
 
         // --- Ensure no missing customer ids remain after insertion ---
         const existingRows: Array<{ id: number }> = await getDataSource().query('SELECT id FROM customers')
-        const presentIds = new Set<number>(existingRows.map(r => Number(r.id)))
+        const presentIds = new Set<number>(existingRows.map((r) => Number(r.id)))
         const missingAfterInsert = seedData.sales
-            .map(s => s.customer_id)
+            .map((s) => s.customer_id)
             .filter((id) => id && !presentIds.has(id))
             .map((id) => ({ id, phone_number: `+999999${id}` }))
 

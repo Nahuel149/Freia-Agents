@@ -656,7 +656,14 @@ const EvalEvaluationRows = () => {
                                 Expand
                             </Button>
                         </Stack>
-                        <TableContainer sx={{ border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], borderRadius: 2 }} component={Paper}>
+                        <TableContainer
+                            sx={{
+                                border: 1,
+                                borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                                borderRadius: 2
+                            }}
+                            component={Paper}
+                        >
                             <Table sx={{ minWidth: 650 }}>
                                 <TableHead
                                     sx={{

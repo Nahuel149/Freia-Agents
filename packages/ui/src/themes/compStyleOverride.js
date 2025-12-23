@@ -4,25 +4,23 @@ export default function componentStyleOverrides(theme) {
     const hoverBackground = isDarkMode
         ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.28) 0%, rgba(56, 189, 248, 0.2) 100%)'
         : 'linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(56, 189, 248, 0.15) 100%)'
-    const activeShadow = isDarkMode
-        ? '0 12px 30px rgba(59, 130, 246, 0.18)'
-        : '0 10px 24px rgba(79, 70, 229, 0.18)'
+    const activeShadow = isDarkMode ? '0 12px 30px rgba(59, 130, 246, 0.18)' : '0 10px 24px rgba(79, 70, 229, 0.18)'
     const baseRadius = theme?.customization?.borderRadius || 12
     return {
         MuiTabs: {
-        styleOverrides: {
-            root: {
-                '& .MuiTab-root': {
-                    color: theme?.customization?.isDarkMode ? '#ffffff' : '#000000',
-                    '&.Mui-selected': {
+            styleOverrides: {
+                root: {
+                    '& .MuiTab-root': {
                         color: theme?.customization?.isDarkMode ? '#ffffff' : '#000000',
-                        fontWeight: 600
+                        '&.Mui-selected': {
+                            color: theme?.customization?.isDarkMode ? '#ffffff' : '#000000',
+                            fontWeight: 600
+                        }
                     }
                 }
             }
-        }
-    },
-    MuiCssBaseline: {
+        },
+        MuiCssBaseline: {
             styleOverrides: {
                 body: {
                     backgroundColor: theme?.customization?.isDarkMode ? '#050817' : '#f5f7ff',
@@ -68,7 +66,7 @@ export default function componentStyleOverrides(theme) {
                 root: {
                     fontWeight: 500,
                     borderRadius: '4px',
-                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : '#ffffff'
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : theme.textDark
                 }
             }
         },

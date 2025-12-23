@@ -27,19 +27,22 @@ import { useAuth } from '@/hooks/useAuth'
 
 import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+const StyledTableCell = styled(TableCell)(({ theme }) => {
+    const textColor = theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary
 
-    [`&.${tableCellClasses.head}`]: {
-        color: theme.palette.text.primary,
-        fontWeight: 600
-    },
-    [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-        height: 64,
-        color: theme.palette.text.primary
+    return {
+        borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+        [`&.${tableCellClasses.head}`]: {
+            color: textColor,
+            fontWeight: 600
+        },
+        [`&.${tableCellClasses.body}`]: {
+            fontSize: 14,
+            height: 64,
+            color: textColor
+        }
     }
-}))
+})
 
 const StyledTableRow = styled(TableRow)(() => ({
     // hide last border
@@ -108,7 +111,14 @@ export const FlowListTable = ({
 
     return (
         <>
-            <TableContainer sx={{ border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], borderRadius: 2 }} component={Paper}>
+            <TableContainer
+                sx={{
+                    border: 1,
+                    borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                    borderRadius: 2
+                }}
+                component={Paper}
+            >
                 <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
                     <TableHead
                         sx={{

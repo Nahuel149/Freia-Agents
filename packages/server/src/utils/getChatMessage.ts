@@ -72,52 +72,52 @@ export const utilGetChatMessage = async ({
         if (feedback) {
             // Handle feedback queries with improved efficiency
             return await handleFeedbackQuery({
-            chatflowid,
-            chatTypes,
-            sortOrder,
-            chatId,
-            memoryType,
-            sessionId,
-            startDate,
-            endDate,
-            messageId,
-            feedbackTypes,
-            page,
-            pageSize
+                chatflowid,
+                chatTypes,
+                sortOrder,
+                chatId,
+                memoryType,
+                sessionId,
+                startDate,
+                endDate,
+                messageId,
+                feedbackTypes,
+                page,
+                pageSize
+            })
+        }
+
+        let createdDateQuery
+
+        if (startDate || endDate) {
+            if (startDate && endDate) {
+                createdDateQuery = Between(new Date(startDate), new Date(endDate))
+            } else if (startDate) {
+                createdDateQuery = MoreThanOrEqual(new Date(startDate))
+            } else if (endDate) {
+                createdDateQuery = LessThanOrEqual(new Date(endDate))
+            }
+        }
+
+        const messages = await appServer.AppDataSource.getRepository(ChatMessage).find({
+            where: {
+                chatflowid,
+                chatType: chatTypes?.length ? In(chatTypes) : undefined,
+                chatId,
+                memoryType: memoryType ?? undefined,
+                sessionId: sessionId ?? undefined,
+                createdDate: createdDateQuery,
+                id: messageId ?? undefined
+            },
+            relations: {
+                execution: true
+            },
+            order: {
+                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+            }
         })
-    }
 
-    let createdDateQuery
-
-    if (startDate || endDate) {
-        if (startDate && endDate) {
-            createdDateQuery = Between(new Date(startDate), new Date(endDate))
-        } else if (startDate) {
-            createdDateQuery = MoreThanOrEqual(new Date(startDate))
-        } else if (endDate) {
-            createdDateQuery = LessThanOrEqual(new Date(endDate))
-        }
-    }
-
-    const messages = await appServer.AppDataSource.getRepository(ChatMessage).find({
-        where: {
-            chatflowid,
-            chatType: chatTypes?.length ? In(chatTypes) : undefined,
-            chatId,
-            memoryType: memoryType ?? undefined,
-            sessionId: sessionId ?? undefined,
-            createdDate: createdDateQuery,
-            id: messageId ?? undefined
-        },
-        relations: {
-            execution: true
-        },
-        order: {
-            createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
-        }
-    })
-
-    return messages
+        return messages
     } catch (error) {
         throw new Error(`Error getting chat message: ${error}`)
     }

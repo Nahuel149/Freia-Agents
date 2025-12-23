@@ -93,7 +93,7 @@ const getSaleById = async (req: Request, res: Response, next: NextFunction) => {
         const appServer = getRunningExpressApp()
         const query = 'SELECT * FROM sales WHERE id = $1'
         const result = await appServer.AppDataSource.query(query, [parseInt(id)])
-        
+
         if (result.length === 0) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Sale not found')
         }
@@ -120,7 +120,7 @@ const getSalesByPhone = async (req: Request, res: Response, next: NextFunction) 
             ORDER BY created_at DESC
         `
         const result = await appServer.AppDataSource.query(query, [phone])
-        
+
         return res.json(result)
     } catch (error) {
         logger.error('Error getting sales by phone:', error)
@@ -162,7 +162,7 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
 
         // Normalize phone number to international format
         const normalizedPhoneNumber = normalizePhoneNumber(phone_number)
-        
+
         // Validate the normalized phone number
         if (!isValidPhoneNumber(normalizedPhoneNumber)) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid phone number format')
@@ -196,29 +196,24 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         const discountPercentageNumber = parseNumberish(discount_percentage) ?? 0
         const finalPriceNumber = parseNumberish(final_price)
         const currency =
-            typeof req.body.currency === 'string' && req.body.currency.trim()
-                ? req.body.currency.trim().toUpperCase().slice(0, 10)
-                : 'USD'
+            typeof req.body.currency === 'string' && req.body.currency.trim() ? req.body.currency.trim().toUpperCase().slice(0, 10) : 'USD'
 
         // If product_sku is not provided, try to detect it from conversation
         if (!finalProductSku && (resolvedChatflowId || sessionId || chatId)) {
             logger.info('Product SKU not provided, analyzing conversation for product information...')
-            
-            const analysisResult = await analyzeConversationForProduct(
-                resolvedChatflowId ?? '',
-                sessionId,
-                chatId,
-                normalizedPhoneNumber
-            )
+
+            const analysisResult = await analyzeConversationForProduct(resolvedChatflowId ?? '', sessionId, chatId, normalizedPhoneNumber)
 
             if (analysisResult.productInfo && analysisResult.productInfo.confidence > 0.5) {
                 finalProductSku = analysisResult.productInfo.product_sku
                 finalProductBrand = finalProductBrand || analysisResult.productInfo.product_brand
                 finalProductModel = finalProductModel || analysisResult.productInfo.product_model
                 finalWheelSize = finalWheelSize || analysisResult.productInfo.wheel_size
-                
-                analysisNotes = `Auto-detected from conversation (confidence: ${(analysisResult.productInfo.confidence * 100).toFixed(1)}%). Keywords: ${analysisResult.analysisDetails.keywordsFound.join(', ')}`
-                
+
+                analysisNotes = `Auto-detected from conversation (confidence: ${(analysisResult.productInfo.confidence * 100).toFixed(
+                    1
+                )}%). Keywords: ${analysisResult.analysisDetails.keywordsFound.join(', ')}`
+
                 logger.info('Product information detected from conversation:', {
                     product_sku: finalProductSku,
                     product_brand: finalProductBrand,
@@ -292,7 +287,7 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         // Validate that we have a product SKU
         if (!finalProductSku) {
             throw new InternalFlowiseError(
-                StatusCodes.BAD_REQUEST, 
+                StatusCodes.BAD_REQUEST,
                 'Product SKU is required. Either provide it directly or ensure the conversation contains sufficient product information (brand, tire size, etc.)'
             )
         }
@@ -307,7 +302,7 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         // Combine agent notes with analysis notes
         const combinedNotes = [agent_notes, analysisNotes].filter(Boolean).join(' | ')
         const amountCents = computeAmountCents(finalPriceNumber, totalPriceNumber, unitPriceNumber, quantityNumber)
-        
+
         const query = `
             INSERT INTO sales (
                 customer_id, phone_number, product_sku, product_brand, product_model,
@@ -318,7 +313,7 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW(), NOW())
             RETURNING *
         `
-        
+
         const result = await appServer.AppDataSource.query(query, [
             customer_id,
             normalizedPhoneNumber,
@@ -342,11 +337,9 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
         ])
 
         const resolvedCustomerName = customer_name || client_name || undefined
-        const fallbackAmount = unitPriceNumber !== null && Number.isFinite(unitPriceNumber)
-            ? unitPriceNumber * quantityNumber
-            : null
-        const analyticsTotal = [finalPriceNumber, totalPriceNumber, fallbackAmount]
-            .find((value) => typeof value === 'number' && Number.isFinite(value)) || 0
+        const fallbackAmount = unitPriceNumber !== null && Number.isFinite(unitPriceNumber) ? unitPriceNumber * quantityNumber : null
+        const analyticsTotal =
+            [finalPriceNumber, totalPriceNumber, fallbackAmount].find((value) => typeof value === 'number' && Number.isFinite(value)) || 0
 
         await recordSaleAnalytics(
             {
@@ -382,12 +375,14 @@ const createSale = async (req: Request, res: Response, next: NextFunction) => {
 
         return res.status(StatusCodes.CREATED).json({
             ...result[0],
-            analysis_info: analysisNotes ? {
-                auto_detected: true,
-                analysis_notes: analysisNotes
-            } : {
-                auto_detected: false
-            }
+            analysis_info: analysisNotes
+                ? {
+                      auto_detected: true,
+                      analysis_notes: analysisNotes
+                  }
+                : {
+                      auto_detected: false
+                  }
         })
     } catch (error) {
         logger.error('Error creating sale:', error)
@@ -418,12 +413,9 @@ const updateSale = async (req: Request, res: Response, next: NextFunction) => {
         }
 
         const appServer = getRunningExpressApp()
-        
+
         // Check if sale exists
-        const existingSale = await appServer.AppDataSource.query(
-            'SELECT * FROM sales WHERE id = $1',
-            [parseInt(id)]
-        )
+        const existingSale = await appServer.AppDataSource.query('SELECT * FROM sales WHERE id = $1', [parseInt(id)])
 
         if (existingSale.length === 0) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Sale not found')
@@ -541,7 +533,7 @@ const updateSale = async (req: Request, res: Response, next: NextFunction) => {
         params.push(parseInt(id))
 
         const result = await appServer.AppDataSource.query(updateQuery, params)
-        
+
         return res.json(result[0])
     } catch (error) {
         logger.error('Error updating sale:', error)
@@ -553,7 +545,7 @@ const updateSale = async (req: Request, res: Response, next: NextFunction) => {
 const getSalesStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const appServer = getRunningExpressApp()
-        
+
         const statsQuery = `
             SELECT 
                 COUNT(*) as total_sales,
@@ -566,9 +558,9 @@ const getSalesStats = async (req: Request, res: Response, next: NextFunction) =>
                 SUM(CASE WHEN created_at >= NOW() - INTERVAL '30 days' AND sale_status = 'completed' THEN final_price ELSE 0 END) as revenue_last_30_days
             FROM sales
         `
-        
+
         const result = await appServer.AppDataSource.query(statsQuery)
-        
+
         return res.json(result[0])
     } catch (error) {
         logger.error('Error getting sales stats:', error)
@@ -587,9 +579,9 @@ const getRecentSales = async (req: Request, res: Response, next: NextFunction) =
             ORDER BY created_at DESC
             LIMIT $1
         `
-        
+
         const result = await appServer.AppDataSource.query(query, [parseInt(limit as string)])
-        
+
         return res.json(result)
     } catch (error) {
         logger.error('Error getting recent sales:', error)
@@ -614,9 +606,9 @@ const getSalesByStatus = async (req: Request, res: Response, next: NextFunction)
             ORDER BY created_at DESC
             LIMIT $2
         `
-        
+
         const result = await appServer.AppDataSource.query(query, [status, parseInt(limit as string)])
-        
+
         return res.json(result)
     } catch (error) {
         logger.error('Error getting sales by status:', error)
@@ -627,8 +619,8 @@ const getSalesByStatus = async (req: Request, res: Response, next: NextFunction)
 // Generate sale quote
 const createSaleQuote = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { 
-            product_sku, 
+        const {
+            product_sku,
             quantity = 1,
             // New parameters for conversation analysis
             chatflowid,
@@ -642,17 +634,15 @@ const createSaleQuote = async (req: Request, res: Response, next: NextFunction) 
         // If product_sku is not provided, try to detect it from conversation
         if (!finalProductSku && (chatflowid || sessionId || chatId)) {
             logger.info('Product SKU not provided for quote, analyzing conversation for product information...')
-            
-            const analysisResult = await analyzeConversationForProduct(
-                chatflowid,
-                sessionId,
-                chatId
-            )
+
+            const analysisResult = await analyzeConversationForProduct(chatflowid, sessionId, chatId)
 
             if (analysisResult.productInfo && analysisResult.productInfo.confidence > 0.5) {
                 finalProductSku = analysisResult.productInfo.product_sku
-                analysisNotes = `Auto-detected from conversation (confidence: ${(analysisResult.productInfo.confidence * 100).toFixed(1)}%). Keywords: ${analysisResult.analysisDetails.keywordsFound.join(', ')}`
-                
+                analysisNotes = `Auto-detected from conversation (confidence: ${(analysisResult.productInfo.confidence * 100).toFixed(
+                    1
+                )}%). Keywords: ${analysisResult.analysisDetails.keywordsFound.join(', ')}`
+
                 logger.info('Product SKU detected from conversation for quote:', {
                     product_sku: finalProductSku,
                     confidence: analysisResult.productInfo.confidence,
@@ -671,7 +661,7 @@ const createSaleQuote = async (req: Request, res: Response, next: NextFunction) 
         }
 
         const appServer = getRunningExpressApp()
-        
+
         // Try to fetch price from inventory table if available
         const inventoryQuery = 'SELECT price FROM product_inventory WHERE "productId" = $1 LIMIT 1'
         let unitPrice = 0
@@ -683,28 +673,28 @@ const createSaleQuote = async (req: Request, res: Response, next: NextFunction) 
         } catch {
             // Ignore if table not present yet
         }
-        
+
         // Fallback unit price
         if (!unitPrice || isNaN(unitPrice)) {
             unitPrice = 100 // default placeholder price
         }
-        
+
         const totalPrice = unitPrice * quantity
-        
+
         const response: {
-            product_sku: any;
-            quantity: any;
-            unit_price: number;
-            total_price: number;
+            product_sku: any
+            quantity: any
+            unit_price: number
+            total_price: number
             analysis_info?: {
-                auto_detected: boolean;
-                analysis_notes: string;
-            };
-        } = { 
-            product_sku: finalProductSku, 
-            quantity, 
-            unit_price: unitPrice, 
-            total_price: totalPrice 
+                auto_detected: boolean
+                analysis_notes: string
+            }
+        } = {
+            product_sku: finalProductSku,
+            quantity,
+            unit_price: unitPrice,
+            total_price: totalPrice
         }
 
         // Add analysis info if product was auto-detected
@@ -714,7 +704,7 @@ const createSaleQuote = async (req: Request, res: Response, next: NextFunction) 
                 analysis_notes: analysisNotes
             }
         }
-        
+
         return res.json(response)
     } catch (error) {
         logger.error('Error generating sale quote:', error)

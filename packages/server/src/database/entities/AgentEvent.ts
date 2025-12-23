@@ -38,4 +38,3 @@ export class AgentEvent {
     @Column({ type: 'text', nullable: true })
     metadata?: string // JSON string
 }
-

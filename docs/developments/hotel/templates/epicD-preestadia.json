@@ -1,103 +1,133 @@
 {
-  "name": "DEMO Hoteles - Epic D (Pre-Estadia)",
-  "description": "Solicitudes antes de la llegada: early/late, traslados, amenities, info.",
-  "nodes": [
-    {
-      "id": "start",
-      "type": "Start",
-      "label": "Start",
-      "data": { "inputType": "chat", "ephemeralMemory": false, "flowState": { "solicitudTipo": "", "detalleSolicitud": "", "sede": "", "costoExtra": "", "disponibilidadServicio": "", "respuestaInfo": "" } },
-      "position": [0, 0]
-    },
-    {
-      "id": "memory",
-      "type": "MongoDBAtlasChatMemory",
-      "label": "Memory",
-      "data": { "credential": "{{MONGO_CREDENTIAL_ID}}", "databaseName": "freia_demo", "collectionName": "chat_memory_hoteles", "sessionId": "{{ $flow.chatId }}", "memoryKey": "history" },
-      "position": [0, 140]
-    },
-    {
-      "id": "llm_clasificar",
-      "type": "LLM",
-      "label": "LLM Clasificar pre-estadia",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          { "role": "system", "content": "Mapea a solicitudTipo: early_checkin | late_checkout | traslado | amenities | spa | cuna | estacionamiento | info | recomendaciones. Devuelve JSON {solicitudTipo, detalleSolicitud, needsClarification, missingFields}." },
-          { "role": "user", "content": "{{ $flow.input }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "solicitudTipo": { "type": "string" },
-            "detalleSolicitud": { "type": "string" },
-            "needsClarification": { "type": "boolean" },
-            "missingFields": { "type": "array", "items": { "type": "string" } }
-          }
+    "name": "DEMO Hoteles - Epic D (Pre-Estadia)",
+    "description": "Solicitudes antes de la llegada: early/late, traslados, amenities, info.",
+    "nodes": [
+        {
+            "id": "start",
+            "type": "Start",
+            "label": "Start",
+            "data": {
+                "inputType": "chat",
+                "ephemeralMemory": false,
+                "flowState": {
+                    "solicitudTipo": "",
+                    "detalleSolicitud": "",
+                    "sede": "",
+                    "costoExtra": "",
+                    "disponibilidadServicio": "",
+                    "respuestaInfo": ""
+                }
+            },
+            "position": [0, 0]
         },
-        "updateFlowState": { "solicitudTipo": "{{ json.solicitudTipo }}", "detalleSolicitud": "{{ json.detalleSolicitud }}" }
-      },
-      "position": [240, 0]
-    },
-    {
-      "id": "retriever_reglas",
-      "type": "Retriever",
-      "label": "Reglas/Servicios",
-      "data": { "documentStoreId": "{{DOCSTORE_REGLAS_ID}}", "query": "{{ $flow.state.solicitudTipo }} early late {{ $flow.state.sede }}", "outputFormat": "text" },
-      "position": [480, -20]
-    },
-    {
-      "id": "retriever_faq",
-      "type": "Retriever",
-      "label": "FAQ",
-      "data": { "documentStoreId": "{{DOCSTORE_FAQ_ID}}", "query": "horarios {{ $flow.state.sede }} {{ $flow.state.solicitudTipo }}", "outputFormat": "text" },
-      "position": [480, 120]
-    },
-    {
-      "id": "human_confirm",
-      "type": "HumanInput",
-      "label": "Confirmar servicio",
-      "data": {
-        "descriptionType": "Fixed",
-        "description": "Solicitud: {{ $flow.state.solicitudTipo }}\nDetalle: {{ $flow.state.detalleSolicitud }}\nInfo: {{ retriever_reglas.output }} {{ retriever_faq.output }}\n¿Confirmas?",
-        "feedback": true
-      },
-      "position": [740, 40]
-    },
-    {
-      "id": "custom_registrar",
-      "type": "CustomFunction",
-      "label": "Registrar solicitud",
-      "data": {
-        "inputVariables": [],
-        "code": "return JSON.stringify({status:'registrado'});",
-        "updateFlowState": { "respuestaInfo": "{{ functionOutput }}" }
-      },
-      "position": [980, 40]
-    },
-    {
-      "id": "reply_final",
-      "type": "DirectReply",
-      "label": "Reply",
-      "data": { "message": "Solicitud registrada: {{ $flow.state.solicitudTipo }}. Estado: {{ $flow.state.respuestaInfo.status || 'pendiente' }}. Notificaremos al personal. ¿Algo más antes de tu llegada?" },
-      "position": [1220, 40]
+        {
+            "id": "memory",
+            "type": "MongoDBAtlasChatMemory",
+            "label": "Memory",
+            "data": {
+                "credential": "{{MONGO_CREDENTIAL_ID}}",
+                "databaseName": "freia_demo",
+                "collectionName": "chat_memory_hoteles",
+                "sessionId": "{{ $flow.chatId }}",
+                "memoryKey": "history"
+            },
+            "position": [0, 140]
+        },
+        {
+            "id": "llm_clasificar",
+            "type": "LLM",
+            "label": "LLM Clasificar pre-estadia",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Mapea a solicitudTipo: early_checkin | late_checkout | traslado | amenities | spa | cuna | estacionamiento | info | recomendaciones. Devuelve JSON {solicitudTipo, detalleSolicitud, needsClarification, missingFields}."
+                    },
+                    { "role": "user", "content": "{{ $flow.input }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "solicitudTipo": { "type": "string" },
+                        "detalleSolicitud": { "type": "string" },
+                        "needsClarification": { "type": "boolean" },
+                        "missingFields": { "type": "array", "items": { "type": "string" } }
+                    }
+                },
+                "updateFlowState": { "solicitudTipo": "{{ json.solicitudTipo }}", "detalleSolicitud": "{{ json.detalleSolicitud }}" }
+            },
+            "position": [240, 0]
+        },
+        {
+            "id": "retriever_reglas",
+            "type": "Retriever",
+            "label": "Reglas/Servicios",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_REGLAS_ID}}",
+                "query": "{{ $flow.state.solicitudTipo }} early late {{ $flow.state.sede }}",
+                "outputFormat": "text"
+            },
+            "position": [480, -20]
+        },
+        {
+            "id": "retriever_faq",
+            "type": "Retriever",
+            "label": "FAQ",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_FAQ_ID}}",
+                "query": "horarios {{ $flow.state.sede }} {{ $flow.state.solicitudTipo }}",
+                "outputFormat": "text"
+            },
+            "position": [480, 120]
+        },
+        {
+            "id": "human_confirm",
+            "type": "HumanInput",
+            "label": "Confirmar servicio",
+            "data": {
+                "descriptionType": "Fixed",
+                "description": "Solicitud: {{ $flow.state.solicitudTipo }}\nDetalle: {{ $flow.state.detalleSolicitud }}\nInfo: {{ retriever_reglas.output }} {{ retriever_faq.output }}\n¿Confirmas?",
+                "feedback": true
+            },
+            "position": [740, 40]
+        },
+        {
+            "id": "custom_registrar",
+            "type": "CustomFunction",
+            "label": "Registrar solicitud",
+            "data": {
+                "inputVariables": [],
+                "code": "return JSON.stringify({status:'registrado'});",
+                "updateFlowState": { "respuestaInfo": "{{ functionOutput }}" }
+            },
+            "position": [980, 40]
+        },
+        {
+            "id": "reply_final",
+            "type": "DirectReply",
+            "label": "Reply",
+            "data": {
+                "message": "Solicitud registrada: {{ $flow.state.solicitudTipo }}. Estado: {{ $flow.state.respuestaInfo.status || 'pendiente' }}. Notificaremos al personal. ¿Algo más antes de tu llegada?"
+            },
+            "position": [1220, 40]
+        }
+    ],
+    "edges": [
+        { "source": "start", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "input" },
+        { "source": "memory", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "memory" },
+        { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_reglas", "targetHandle": "input" },
+        { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_faq", "targetHandle": "input" },
+        { "source": "retriever_reglas", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
+        { "source": "retriever_faq", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
+        { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_registrar", "targetHandle": "input" },
+        { "source": "custom_registrar", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
+    ],
+    "placeholders": {
+        "LLM_CREDENTIAL_ID": "tu_llm_cred",
+        "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+        "DOCSTORE_REGLAS_ID": "docstore_reglas_id",
+        "DOCSTORE_FAQ_ID": "docstore_faq_id"
     }
-  ],
-  "edges": [
-    { "source": "start", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "input" },
-    { "source": "memory", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "memory" },
-    { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_reglas", "targetHandle": "input" },
-    { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_faq", "targetHandle": "input" },
-    { "source": "retriever_reglas", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
-    { "source": "retriever_faq", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
-    { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_registrar", "targetHandle": "input" },
-    { "source": "custom_registrar", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
-  ],
-  "placeholders": {
-    "LLM_CREDENTIAL_ID": "tu_llm_cred",
-    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
-    "DOCSTORE_REGLAS_ID": "docstore_reglas_id",
-    "DOCSTORE_FAQ_ID": "docstore_faq_id"
-  }
 }

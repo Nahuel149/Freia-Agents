@@ -15,7 +15,8 @@ const templates = [
         hero: {
             badge: 'Demo Freia · Hoteles',
             title: 'Asistente 24/7 para tu cadena hotelera',
-            subtitle: 'Reserva, cambios, cancelaciones y atención pre/durante la estadía con reglas de negocio, disponibilidad en vivo y confirmaciones seguras.',
+            subtitle:
+                'Reserva, cambios, cancelaciones y atención pre/durante la estadía con reglas de negocio, disponibilidad en vivo y confirmaciones seguras.',
             chatLabel: 'Probar demo',
             chatLink: envOrDefault('VITE_DEMO_HOTEL_CHAT_URL', 'https://example.com/chat-hoteles'),
             secondaryLabel: 'Ver API',
@@ -28,9 +29,21 @@ const templates = [
             { label: 'Errores en políticas', value: '0' }
         ],
         features: [
-            { icon: '🏨', title: 'Reservas inteligentes', desc: 'Disponibilidad en vivo, mínima estadía en feriados, alternativas y confirmación.' },
-            { icon: '🧾', title: 'Cambios y cancelaciones', desc: 'Recalcula tarifas, respeta reembolsables/no reembolsables y penalidades automáticas.' },
-            { icon: '🧳', title: 'Atención al huésped', desc: 'Early/late check-in, traslados, room service, incidentes y upsell de servicios.' }
+            {
+                icon: '🏨',
+                title: 'Reservas inteligentes',
+                desc: 'Disponibilidad en vivo, mínima estadía en feriados, alternativas y confirmación.'
+            },
+            {
+                icon: '🧾',
+                title: 'Cambios y cancelaciones',
+                desc: 'Recalcula tarifas, respeta reembolsables/no reembolsables y penalidades automáticas.'
+            },
+            {
+                icon: '🧳',
+                title: 'Atención al huésped',
+                desc: 'Early/late check-in, traslados, room service, incidentes y upsell de servicios.'
+            }
         ],
         flows: [
             {
@@ -50,8 +63,18 @@ const templates = [
                 bullets: ['Leads y seguimientos', 'Notificaciones a staff', 'Reportes rápidos de ocupación/upsell']
             }
         ],
-        howItWorks: ['Input del huésped', 'Consulta Inventario/Disponibilidad/Reglas', 'LLM aplica reglas y calcula tarifa', 'Confirmación con HITL opcional y envío'],
-        value: ['Multilingüe y 24/7', 'Integrable con PMS/CRMs', 'Memoria en Mongo, vectores en Pinecone', 'Modo demo con link externo al chat']
+        howItWorks: [
+            'Input del huésped',
+            'Consulta Inventario/Disponibilidad/Reglas',
+            'LLM aplica reglas y calcula tarifa',
+            'Confirmación con HITL opcional y envío'
+        ],
+        value: [
+            'Multilingüe y 24/7',
+            'Integrable con PMS/CRMs',
+            'Memoria en Mongo, vectores en Pinecone',
+            'Modo demo con link externo al chat'
+        ]
     },
     {
         id: 'gomerias-arg',
@@ -82,7 +105,11 @@ const templates = [
         flows: [
             {
                 title: 'Cotización',
-                bullets: ['Busca neumáticos por medida/vehículo', 'Verifica stock y sugiere marcas (Pirelli, Michelin, Bridgestone)', 'Calcula total con promos']
+                bullets: [
+                    'Busca neumáticos por medida/vehículo',
+                    'Verifica stock y sugiere marcas (Pirelli, Michelin, Bridgestone)',
+                    'Calcula total con promos'
+                ]
             },
             {
                 title: 'Turnos',
@@ -93,8 +120,18 @@ const templates = [
                 bullets: ['Seguimiento de orden', 'Reclamos o cambios de fecha', 'Recordatorios de rotación']
             }
         ],
-        howItWorks: ['Input del cliente', 'Consulta catálogo/stock (medida, marca, modelo)', 'LLM sugiere alternativas y calcula total', 'Agenda turno y confirma'],
-        value: ['Integrable con inventarios locales/ERP', 'Multimarcas (Pirelli, Michelin, Bridgestone)', 'Turnos y servicios en un chat', 'Demo con chat externo listo']
+        howItWorks: [
+            'Input del cliente',
+            'Consulta catálogo/stock (medida, marca, modelo)',
+            'LLM sugiere alternativas y calcula total',
+            'Agenda turno y confirma'
+        ],
+        value: [
+            'Integrable con inventarios locales/ERP',
+            'Multimarcas (Pirelli, Michelin, Bridgestone)',
+            'Turnos y servicios en un chat',
+            'Demo con chat externo listo'
+        ]
     },
     {
         id: 'retail-placeholder',

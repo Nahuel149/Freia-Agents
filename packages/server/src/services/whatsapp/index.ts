@@ -1,5 +1,4 @@
 import axios from 'axios'
-import logger from '../../utils/logger'
 import { DataSource } from 'typeorm'
 import { CodeLanguage, executeCode } from '../../utils/codeExecution'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -73,9 +72,14 @@ export class WhatsAppService {
 
         let lang: CodeLanguage
         switch ((agent.language || '').toLowerCase()) {
-            case 'python': lang = CodeLanguage.PYTHON; break
-            case 'typescript': lang = CodeLanguage.TYPESCRIPT; break
-            default: lang = CodeLanguage.JAVASCRIPT
+            case 'python':
+                lang = CodeLanguage.PYTHON
+                break
+            case 'typescript':
+                lang = CodeLanguage.TYPESCRIPT
+                break
+            default:
+                lang = CodeLanguage.JAVASCRIPT
         }
 
         const result = await executeCode(agent.code, lang, { environmentVariables: env, timeout: 60000 })

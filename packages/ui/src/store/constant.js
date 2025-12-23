@@ -14,8 +14,7 @@ import {
     IconNote,
     IconWorld,
     IconRelationOneToManyFilled,
-    IconVectorBezier2
-,
+    IconVectorBezier2,
     IconSearch,
     IconSend,
     IconEdit,
@@ -143,5 +142,5 @@ export const AGENTFLOW_ICONS = [
         name: 'httpRequestPatch',
         icon: IconTool,
         color: '#9C27B0'
-    },
+    }
 ]

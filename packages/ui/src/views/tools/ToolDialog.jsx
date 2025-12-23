@@ -486,9 +486,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                 {t('tools.toolDescription')}
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
-                            <TooltipWithParser
-                                title={t('tools.toolDescTooltip')}
-                            />
+                            <TooltipWithParser title={t('tools.toolDescTooltip')} />
                         </Stack>
                         <OutlinedInput
                             id='toolDesc'

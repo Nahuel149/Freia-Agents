@@ -3,10 +3,10 @@
  * This script helps migrate existing data to the new PostgreSQL setup
  */
 
-const fs = require('fs');
-const path = require('path');
-const { Pool } = require('pg');
-require('dotenv').config();
+const fs = require('fs')
+const path = require('path')
+const { Pool } = require('pg')
+require('dotenv').config()
 
 // PostgreSQL connection
 const pgPool = new Pool({
@@ -16,23 +16,23 @@ const pgPool = new Pool({
     user: process.env.POSTGRES_USER || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'password',
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+})
 
 class DatabaseMigrator {
     constructor() {
-        this.sourceDbPath = process.env.SOURCE_DB_PATH || './database.sqlite';
-        this.migrationLog = [];
+        this.sourceDbPath = process.env.SOURCE_DB_PATH || './database.sqlite'
+        this.migrationLog = []
     }
 
     /**
      * Log migration steps
      */
     log(message, type = 'info') {
-        const timestamp = new Date().toISOString();
-        const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
-        
-        console.log(logEntry);
-        this.migrationLog.push(logEntry);
+        const timestamp = new Date().toISOString()
+        const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`
+
+        console.log(logEntry)
+        this.migrationLog.push(logEntry)
     }
 
     /**
@@ -40,16 +40,16 @@ class DatabaseMigrator {
      */
     async testPostgresConnection() {
         try {
-            const client = await pgPool.connect();
-            const result = await client.query('SELECT version()');
-            client.release();
-            
-            this.log('✅ PostgreSQL connection successful');
-            this.log(`Database version: ${result.rows[0].version}`);
-            return true;
+            const client = await pgPool.connect()
+            const result = await client.query('SELECT version()')
+            client.release()
+
+            this.log('✅ PostgreSQL connection successful')
+            this.log(`Database version: ${result.rows[0].version}`)
+            return true
         } catch (error) {
-            this.log(`❌ PostgreSQL connection failed: ${error.message}`, 'error');
-            return false;
+            this.log(`❌ PostgreSQL connection failed: ${error.message}`, 'error')
+            return false
         }
     }
 
@@ -58,12 +58,12 @@ class DatabaseMigrator {
      */
     checkSourceDatabase() {
         if (fs.existsSync(this.sourceDbPath)) {
-            this.log(`✅ Source database found: ${this.sourceDbPath}`);
-            return true;
+            this.log(`✅ Source database found: ${this.sourceDbPath}`)
+            return true
         } else {
-            this.log(`❌ Source database not found: ${this.sourceDbPath}`, 'error');
-            this.log('Please set SOURCE_DB_PATH environment variable to your database file', 'info');
-            return false;
+            this.log(`❌ Source database not found: ${this.sourceDbPath}`, 'error')
+            this.log('Please set SOURCE_DB_PATH environment variable to your database file', 'info')
+            return false
         }
     }
 
@@ -71,23 +71,20 @@ class DatabaseMigrator {
      * Create admin user in PostgreSQL
      */
     async createAdminUser(userData) {
-        const { name, email, password } = userData;
-        
+        const { name, email, password } = userData
+
         try {
-            const client = await pgPool.connect();
-            
+            const client = await pgPool.connect()
+
             // Check if user already exists
-            const existingUser = await client.query(
-                'SELECT id FROM "user" WHERE email = $1',
-                [email]
-            );
-            
+            const existingUser = await client.query('SELECT id FROM "user" WHERE email = $1', [email])
+
             if (existingUser.rows.length > 0) {
-                this.log(`User ${email} already exists, skipping creation`);
-                client.release();
-                return existingUser.rows[0].id;
+                this.log(`User ${email} already exists, skipping creation`)
+                client.release()
+                return existingUser.rows[0].id
             }
-            
+
             // Create new user
             const result = await client.query(
                 `INSERT INTO "user" ("name", "email", "credential", "status") 
@@ -95,16 +92,16 @@ class DatabaseMigrator {
                  ON CONFLICT ("email") DO UPDATE SET "name" = $1
                  RETURNING "id"`,
                 [name, email, password || null]
-            );
-            
-            client.release();
-            
-            const userId = result.rows[0].id;
-            this.log(`✅ Admin user created: ${name} (${email})`);
-            return userId;
+            )
+
+            client.release()
+
+            const userId = result.rows[0].id
+            this.log(`✅ Admin user created: ${name} (${email})`)
+            return userId
         } catch (error) {
-            this.log(`❌ Error creating admin user: ${error.message}`, 'error');
-            throw error;
+            this.log(`❌ Error creating admin user: ${error.message}`, 'error')
+            throw error
         }
     }
 
@@ -113,13 +110,13 @@ class DatabaseMigrator {
      */
     async migrateChatFlows(flows = []) {
         if (!flows || flows.length === 0) {
-            this.log('No chat flows to migrate');
-            return;
+            this.log('No chat flows to migrate')
+            return
         }
 
         try {
-            const client = await pgPool.connect();
-            let migratedCount = 0;
+            const client = await pgPool.connect()
+            let migratedCount = 0
 
             for (const flow of flows) {
                 try {
@@ -137,17 +134,17 @@ class DatabaseMigrator {
                             flow.createdDate || new Date(),
                             flow.updatedDate || new Date()
                         ]
-                    );
-                    migratedCount++;
+                    )
+                    migratedCount++
                 } catch (flowError) {
-                    this.log(`❌ Error migrating flow ${flow.name}: ${flowError.message}`, 'error');
+                    this.log(`❌ Error migrating flow ${flow.name}: ${flowError.message}`, 'error')
                 }
             }
 
-            client.release();
-            this.log(`✅ Migrated ${migratedCount} chat flows`);
+            client.release()
+            this.log(`✅ Migrated ${migratedCount} chat flows`)
         } catch (error) {
-            this.log(`❌ Error migrating chat flows: ${error.message}`, 'error');
+            this.log(`❌ Error migrating chat flows: ${error.message}`, 'error')
         }
     }
 
@@ -156,13 +153,13 @@ class DatabaseMigrator {
      */
     async migrateCredentials(credentials = []) {
         if (!credentials || credentials.length === 0) {
-            this.log('No credentials to migrate');
-            return;
+            this.log('No credentials to migrate')
+            return
         }
 
         try {
-            const client = await pgPool.connect();
-            let migratedCount = 0;
+            const client = await pgPool.connect()
+            let migratedCount = 0
 
             for (const cred of credentials) {
                 try {
@@ -179,17 +176,17 @@ class DatabaseMigrator {
                             cred.createdDate || new Date(),
                             cred.updatedDate || new Date()
                         ]
-                    );
-                    migratedCount++;
+                    )
+                    migratedCount++
                 } catch (credError) {
-                    this.log(`❌ Error migrating credential ${cred.name}: ${credError.message}`, 'error');
+                    this.log(`❌ Error migrating credential ${cred.name}: ${credError.message}`, 'error')
                 }
             }
 
-            client.release();
-            this.log(`✅ Migrated ${migratedCount} credentials`);
+            client.release()
+            this.log(`✅ Migrated ${migratedCount} credentials`)
         } catch (error) {
-            this.log(`❌ Error migrating credentials: ${error.message}`, 'error');
+            this.log(`❌ Error migrating credentials: ${error.message}`, 'error')
         }
     }
 
@@ -198,7 +195,7 @@ class DatabaseMigrator {
      */
     async setupDefaultOrgAndWorkspace(adminUserId) {
         try {
-            const client = await pgPool.connect();
+            const client = await pgPool.connect()
 
             // Create default organization
             const orgResult = await client.query(
@@ -207,17 +204,15 @@ class DatabaseMigrator {
                  ON CONFLICT DO NOTHING
                  RETURNING "id"`,
                 [adminUserId]
-            );
+            )
 
-            let orgId;
+            let orgId
             if (orgResult.rows.length > 0) {
-                orgId = orgResult.rows[0].id;
+                orgId = orgResult.rows[0].id
             } else {
                 // Get existing organization
-                const existingOrg = await client.query(
-                    'SELECT "id" FROM "organization" WHERE "name" = \'Default Organization\' LIMIT 1'
-                );
-                orgId = existingOrg.rows[0].id;
+                const existingOrg = await client.query('SELECT "id" FROM "organization" WHERE "name" = \'Default Organization\' LIMIT 1')
+                orgId = existingOrg.rows[0].id
             }
 
             // Create admin role
@@ -227,18 +222,18 @@ class DatabaseMigrator {
                  ON CONFLICT DO NOTHING
                  RETURNING "id"`,
                 [orgId, adminUserId]
-            );
+            )
 
-            let roleId;
+            let roleId
             if (roleResult.rows.length > 0) {
-                roleId = roleResult.rows[0].id;
+                roleId = roleResult.rows[0].id
             } else {
                 // Get existing role
                 const existingRole = await client.query(
                     'SELECT "id" FROM "role" WHERE "name" = \'Admin\' AND "organizationId" = $1 LIMIT 1',
                     [orgId]
-                );
-                roleId = existingRole.rows[0].id;
+                )
+                roleId = existingRole.rows[0].id
             }
 
             // Create default workspace
@@ -248,18 +243,18 @@ class DatabaseMigrator {
                  ON CONFLICT DO NOTHING
                  RETURNING "id"`,
                 [orgId, adminUserId]
-            );
+            )
 
-            let workspaceId;
+            let workspaceId
             if (workspaceResult.rows.length > 0) {
-                workspaceId = workspaceResult.rows[0].id;
+                workspaceId = workspaceResult.rows[0].id
             } else {
                 // Get existing workspace
                 const existingWorkspace = await client.query(
                     'SELECT "id" FROM "workspace" WHERE "name" = \'Default Workspace\' AND "organizationId" = $1 LIMIT 1',
                     [orgId]
-                );
-                workspaceId = existingWorkspace.rows[0].id;
+                )
+                workspaceId = existingWorkspace.rows[0].id
             }
 
             // Link admin user to organization
@@ -268,7 +263,7 @@ class DatabaseMigrator {
                  VALUES ($1, $2, $3, $2, $2) 
                  ON CONFLICT DO NOTHING`,
                 [orgId, adminUserId, roleId]
-            );
+            )
 
             // Link admin user to workspace
             await client.query(
@@ -276,15 +271,15 @@ class DatabaseMigrator {
                  VALUES ($1, $2, $3, $2, $2) 
                  ON CONFLICT DO NOTHING`,
                 [workspaceId, adminUserId, roleId]
-            );
+            )
 
-            client.release();
-            this.log('✅ Default organization and workspace setup completed');
-            
-            return { orgId, workspaceId, roleId };
+            client.release()
+            this.log('✅ Default organization and workspace setup completed')
+
+            return { orgId, workspaceId, roleId }
         } catch (error) {
-            this.log(`❌ Error setting up organization and workspace: ${error.message}`, 'error');
-            throw error;
+            this.log(`❌ Error setting up organization and workspace: ${error.message}`, 'error')
+            throw error
         }
     }
 
@@ -292,7 +287,7 @@ class DatabaseMigrator {
      * Generate migration report
      */
     generateReport() {
-        const reportPath = path.join(__dirname, 'migration-report.txt');
+        const reportPath = path.join(__dirname, 'migration-report.txt')
         const reportContent = [
             '='.repeat(60),
             'DATABASE MIGRATION REPORT',
@@ -306,10 +301,10 @@ class DatabaseMigrator {
             ...this.migrationLog,
             '',
             '='.repeat(60)
-        ].join('\n');
+        ].join('\n')
 
-        fs.writeFileSync(reportPath, reportContent);
-        this.log(`📄 Migration report saved to: ${reportPath}`);
+        fs.writeFileSync(reportPath, reportContent)
+        this.log(`📄 Migration report saved to: ${reportPath}`)
     }
 
     /**
@@ -324,57 +319,56 @@ class DatabaseMigrator {
             },
             chatFlows = [],
             credentials = []
-        } = options;
+        } = options
 
-        this.log('🚀 Starting database migration to PostgreSQL');
-        this.log('='.repeat(50));
+        this.log('🚀 Starting database migration to PostgreSQL')
+        this.log('='.repeat(50))
 
         try {
             // Step 1: Test connections
-            this.log('Step 1: Testing database connections...');
-            const pgConnected = await this.testPostgresConnection();
+            this.log('Step 1: Testing database connections...')
+            const pgConnected = await this.testPostgresConnection()
             if (!pgConnected) {
-                throw new Error('PostgreSQL connection failed');
+                throw new Error('PostgreSQL connection failed')
             }
 
             // Step 2: Create admin user
-            this.log('Step 2: Creating admin user...');
-            const adminUserId = await this.createAdminUser(adminUser);
+            this.log('Step 2: Creating admin user...')
+            const adminUserId = await this.createAdminUser(adminUser)
 
             // Step 3: Setup organization and workspace
-            this.log('Step 3: Setting up organization and workspace...');
-            await this.setupDefaultOrgAndWorkspace(adminUserId);
+            this.log('Step 3: Setting up organization and workspace...')
+            await this.setupDefaultOrgAndWorkspace(adminUserId)
 
             // Step 4: Migrate data
-            this.log('Step 4: Migrating application data...');
-            await this.migrateChatFlows(chatFlows);
-            await this.migrateCredentials(credentials);
+            this.log('Step 4: Migrating application data...')
+            await this.migrateChatFlows(chatFlows)
+            await this.migrateCredentials(credentials)
 
             // Step 5: Generate report
-            this.log('Step 5: Generating migration report...');
-            this.generateReport();
+            this.log('Step 5: Generating migration report...')
+            this.generateReport()
 
-            this.log('='.repeat(50));
-            this.log('✅ Migration completed successfully!');
-            this.log('Next steps:');
-            this.log('1. Update your application environment variables');
-            this.log('2. Set DATABASE_TYPE=postgres');
-            this.log('3. Test your application with the new database');
-            this.log('4. Review the migration report for any issues');
-
+            this.log('='.repeat(50))
+            this.log('✅ Migration completed successfully!')
+            this.log('Next steps:')
+            this.log('1. Update your application environment variables')
+            this.log('2. Set DATABASE_TYPE=postgres')
+            this.log('3. Test your application with the new database')
+            this.log('4. Review the migration report for any issues')
         } catch (error) {
-            this.log(`❌ Migration failed: ${error.message}`, 'error');
-            this.generateReport();
-            throw error;
+            this.log(`❌ Migration failed: ${error.message}`, 'error')
+            this.generateReport()
+            throw error
         } finally {
-            await pgPool.end();
+            await pgPool.end()
         }
     }
 }
 
 // Example usage and CLI interface
 if (require.main === module) {
-    const migrator = new DatabaseMigrator();
+    const migrator = new DatabaseMigrator()
 
     // Example migration with sample data
     const migrationOptions = {
@@ -403,17 +397,18 @@ if (require.main === module) {
             //     encryptedData: '{}'
             // }
         ]
-    };
+    }
 
-    migrator.runMigration(migrationOptions)
+    migrator
+        .runMigration(migrationOptions)
         .then(() => {
-            console.log('\n🎉 Migration process completed!');
-            process.exit(0);
+            console.log('\n🎉 Migration process completed!')
+            process.exit(0)
         })
         .catch((error) => {
-            console.error('\n💥 Migration process failed:', error.message);
-            process.exit(1);
-        });
+            console.error('\n💥 Migration process failed:', error.message)
+            process.exit(1)
+        })
 }
 
-module.exports = DatabaseMigrator;
+module.exports = DatabaseMigrator

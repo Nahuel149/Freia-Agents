@@ -39,7 +39,7 @@ const authSlice = createSlice({
             state.user.name = user.name
             state.user.email = user.email
             AuthUtils.updateCurrentUser(state.user)
-        },
+        }
         // OSS Mode: Workspace name updates removed
     }
 })

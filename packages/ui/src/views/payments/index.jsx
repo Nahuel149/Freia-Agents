@@ -47,9 +47,9 @@ const PaymentOptionCard = ({ title, description, priceLabel, actionLabel, onSubm
         }
     }
     return (
-        <Card>
+        <Card sx={{ minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <CardContent>
-                <Stack spacing={2}>
+                <Stack spacing={1.5}>
                     <Typography variant='h5'>{title}</Typography>
                     <Typography variant='body2' color='text.secondary'>
                         {description}
@@ -57,11 +57,19 @@ const PaymentOptionCard = ({ title, description, priceLabel, actionLabel, onSubm
                     <Typography variant='h6'>{priceLabel}</Typography>
                     {children}
                     {error && <Alert severity='error'>{error}</Alert>}
-                    <Button variant='contained' onClick={handleSubmit} disabled={submitting}>
-                        {submitting ? 'Procesando...' : actionLabel}
-                    </Button>
                 </Stack>
             </CardContent>
+            <Box sx={{ px: 3, pb: 3 }}>
+                <Button
+                    variant='contained'
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    fullWidth
+                    sx={{ borderRadius: 2, height: 48, textTransform: 'none' }}
+                >
+                    {submitting ? 'Procesando...' : actionLabel}
+                </Button>
+            </Box>
         </Card>
     )
 }
@@ -82,10 +90,7 @@ const Payments = () => {
     const [quotes, setQuotes] = useState([])
     const [quotesLoading, setQuotesLoading] = useState(false)
     const [quotesError, setQuotesError] = useState('')
-    const providerLabel = useMemo(
-        () => countries.find((c) => c.code === countryCode)?.provider || 'dLocal',
-        [countryCode]
-    )
+    const providerLabel = useMemo(() => countries.find((c) => c.code === countryCode)?.provider || 'dLocal', [countryCode])
 
     const callCheckout = async ({ orderId, amountCents, currency }) => {
         const effectiveEmail = customEmail || email
@@ -132,28 +137,35 @@ const Payments = () => {
     }, [isAdmin])
 
     return (
-        <Container maxWidth='lg' sx={{ py: 4 }}>
-            <Stack spacing={2} mb={3}>
+        <Container maxWidth='lg' sx={{ py: 2, pb: 1, overflow: 'hidden' }}>
+            <Stack spacing={2} mb={2}>
                 <Typography variant='h4'>Payments</Typography>
                 <Typography variant='body1' color='text.secondary'>
                     Elige una opción y se generará un checkout seguro ({providerLabel}).
                 </Typography>
             </Stack>
-            <FormControl sx={{ mb: 3, minWidth: 240 }} size='small'>
-                <InputLabel id='country-select-label'>País</InputLabel>
-                <Select
-                    labelId='country-select-label'
-                    value={countryCode}
-                    label='País'
-                    onChange={(e) => setCountryCode(e.target.value)}
-                >
-                    {countries.map((c) => (
-                        <MenuItem key={c.code} value={c.code}>
-                            {c.label}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
+            <Card sx={{ mb: 3, borderRadius: 3, px: 3, py: 2, background: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#f5f5f5' }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems='center'>
+                    <FormControl sx={{ minWidth: 240 }} size='small'>
+                        <InputLabel id='country-select-label'>País</InputLabel>
+                        <Select
+                            labelId='country-select-label'
+                            value={countryCode}
+                            label='País'
+                            onChange={(e) => setCountryCode(e.target.value)}
+                        >
+                            {countries.map((c) => (
+                                <MenuItem key={c.code} value={c.code}>
+                                    {c.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <Typography variant='body2' color='text.secondary'>
+                        Pagos procesados en {providerLabel}
+                    </Typography>
+                </Stack>
+            </Card>
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                     <PaymentOptionCard
@@ -161,7 +173,9 @@ const Payments = () => {
                         description='Mantenimiento 1 mes'
                         priceLabel='$500 USD'
                         actionLabel='Pagar suscripción'
-                        onSubmit={() => callCheckout({ orderId: `subscription-monthly-${Date.now()}`, amountCents: 50000, currency: 'USD' })}
+                        onSubmit={() =>
+                            callCheckout({ orderId: `subscription-monthly-${Date.now()}`, amountCents: 50000, currency: 'USD' })
+                        }
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -193,7 +207,7 @@ const Payments = () => {
                     <Grid item xs={12}>
                         <PaymentOptionCard
                             title='Pago personalizado'
-                            description='Define monto y moneda; genera un quote y paga. Solo admin puede generar para otro email.'
+                            description='Define monto y moneda; genera un quote y paga.'
                             priceLabel={`Monto actual: ${customAmount} ${customCurrency}`}
                             actionLabel='Generar y pagar'
                             onSubmit={async () => {
@@ -220,7 +234,7 @@ const Payments = () => {
                                 })
                             }}
                         >
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                                 <TextField
                                     label='Monto'
                                     type='number'
@@ -259,9 +273,7 @@ const Payments = () => {
                                 value={customDesc}
                                 onChange={(e) => setCustomDesc(e.target.value)}
                             />
-                            {customQuoteId && (
-                                <Alert severity='info'>Quote generado: {customQuoteId}</Alert>
-                            )}
+                            {customQuoteId && <Alert severity='info'>Quote generado: {customQuoteId}</Alert>}
                         </PaymentOptionCard>
                     </Grid>
                 )}
@@ -273,7 +285,6 @@ const Payments = () => {
                         actionLabel='Pagar código'
                         onSubmit={async () => {
                             if (!assignedQuoteId) throw new Error('Ingresa un código de pago')
-                            // fetch quote to get amount/currency
                             const res = await fetch(`/api/v1/payments/quotes/${assignedQuoteId}`)
                             const data = await res.json()
                             if (!res.ok) throw new Error(data?.message || data?.error || 'Quote inválido')
@@ -330,11 +341,7 @@ const Payments = () => {
                                         <TableCell>{q.userEmail || q.user_email || '—'}</TableCell>
                                         <TableCell>{q.description || '—'}</TableCell>
                                         <TableCell>
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => setAssignedQuoteId(q.id)}
-                                                title='Usar este código'
-                                            >
+                                            <IconButton size='small' onClick={() => setAssignedQuoteId(q.id)} title='Usar este código'>
                                                 <ContentCopyIcon fontSize='small' />
                                             </IconButton>
                                         </TableCell>

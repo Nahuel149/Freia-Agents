@@ -13,8 +13,6 @@ import { Tool } from '../../database/entities/Tool'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import assistantsService from '../../services/assistants'
-import chatflowsService from '../../services/chatflows'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import assistantService from '../assistants'
 import chatMessagesService from '../chat-messages'
@@ -99,27 +97,22 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
             exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW') : []
         AgentFlowV2 = 'data' in AgentFlowV2 ? AgentFlowV2.data : AgentFlowV2
 
-        let AssistantCustom: Assistant[] =
-            exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM') : []
+        let AssistantCustom: Assistant[] = exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM') : []
 
         let AssistantFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT') : []
         AssistantFlow = 'data' in AssistantFlow ? AssistantFlow.data : AssistantFlow
 
-        let AssistantOpenAI: Assistant[] =
-            exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI') : []
+        let AssistantOpenAI: Assistant[] = exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI') : []
 
-        let AssistantAzure: Assistant[] =
-            exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE') : []
+        let AssistantAzure: Assistant[] = exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE') : []
 
         let ChatFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW') : []
         ChatFlow = 'data' in ChatFlow ? ChatFlow.data : ChatFlow
 
         let allChatflow: ChatFlow[] | { data: ChatFlow[]; total: number } =
-            exportInput.chat_message === true || exportInput.chat_feedback === true
-                ? await chatflowService.getAllChatflows()
-                : []
+            exportInput.chat_message === true || exportInput.chat_feedback === true ? await chatflowService.getAllChatflows() : []
         allChatflow = 'data' in allChatflow ? allChatflow.data : allChatflow
         const chatflowIds = allChatflow.map((chatflow) => chatflow.id)
 
@@ -129,8 +122,7 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
         let ChatMessageFeedback: ChatMessageFeedback[] =
             exportInput.chat_feedback === true ? await chatMessagesService.getMessagesFeedbackByChatflowIds(chatflowIds) : []
 
-        let CustomTemplate: CustomTemplate[] =
-            exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates() : []
+        let CustomTemplate: CustomTemplate[] = exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates() : []
 
         let DocumentStore: DocumentStore[] | { data: DocumentStore[]; total: number } =
             exportInput.document_store === true ? await documenStoreService.getAllDocumentStores() : []
@@ -147,8 +139,7 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
         const { data: totalExecutions } = exportInput.execution === true ? await executionService.getAllExecutions(filters) : { data: [] }
         let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
 
-        let Tool: Tool[] | { data: Tool[]; total: number } =
-            exportInput.tool === true ? await toolsService.getAllTools() : []
+        let Tool: Tool[] | { data: Tool[]; total: number } = exportInput.tool === true ? await toolsService.getAllTools() : []
         Tool = 'data' in Tool ? Tool.data : Tool
 
         let Variable: Variable[] | { data: Variable[]; total: number } =
@@ -223,11 +214,7 @@ async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, origina
     }
 }
 
-async function replaceDuplicateIdsForChatMessage(
-    queryRunner: QueryRunner,
-    originalData: ExportData,
-    chatMessages: ChatMessage[]
-) {
+async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, originalData: ExportData, chatMessages: ChatMessage[]) {
     try {
         const chatmessageChatflowIds = chatMessages.map((chatMessage) => {
             return { id: chatMessage.chatflowid, qty: 0 }
@@ -295,11 +282,7 @@ async function replaceDuplicateIdsForChatMessage(
     }
 }
 
-async function replaceExecutionIdForChatMessage(
-    queryRunner: QueryRunner,
-    originalData: ExportData,
-    chatMessages: ChatMessage[]
-) {
+async function replaceExecutionIdForChatMessage(queryRunner: QueryRunner, originalData: ExportData, chatMessages: ChatMessage[]) {
     try {
         // step 1 - get all execution ids from chatMessages
         const chatMessageExecutionIds = chatMessages
@@ -653,11 +636,7 @@ const importData = async (importData: ExportData) => {
                 importData = await replaceExecutionIdForChatMessage(queryRunner, importData, importData.ChatMessage)
             }
             if (importData.ChatMessageFeedback.length > 0)
-                importData = await replaceDuplicateIdsForChatMessageFeedback(
-                    queryRunner,
-                    importData,
-                    importData.ChatMessageFeedback
-                )
+                importData = await replaceDuplicateIdsForChatMessageFeedback(queryRunner, importData, importData.ChatMessageFeedback)
             if (importData.CustomTemplate.length > 0) {
                 importData = await replaceDuplicateIdsForCustomTemplate(queryRunner, importData, importData.CustomTemplate)
             }

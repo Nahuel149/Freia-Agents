@@ -1,9 +1,9 @@
 // Sistema de gestión de direcciones para B2B Sales
-const B2BSalesDB = require('./database-config');
+const B2BSalesDB = require('./database-config')
 
 class AddressManager {
     constructor(dbConnectionString) {
-        this.db = new B2BSalesDB(dbConnectionString);
+        this.db = new B2BSalesDB(dbConnectionString)
     }
 
     // Crear tabla de direcciones si no existe
@@ -28,12 +28,12 @@ class AddressManager {
                 CREATE INDEX IF NOT EXISTS idx_addresses_customer_id ON customer_addresses(customer_id);
                 CREATE INDEX IF NOT EXISTS idx_addresses_phone ON customer_addresses(phone_number);
                 CREATE INDEX IF NOT EXISTS idx_addresses_default ON customer_addresses(is_default);
-            `;
-            
-            await this.db.pool.query(createTableQuery);
-            console.log('Address table initialized successfully');
+            `
+
+            await this.db.pool.query(createTableQuery)
+            console.log('Address table initialized successfully')
         } catch (error) {
-            console.error('Error initializing address table:', error);
+            console.error('Error initializing address table:', error)
         }
     }
 
@@ -46,13 +46,13 @@ class AddressManager {
                 JOIN customers c ON ca.customer_id = c.id
                 WHERE ca.phone_number = $1
                 ORDER BY ca.is_default DESC, ca.created_at DESC;
-            `;
-            
-            const result = await this.db.pool.query(query, [phoneNumber]);
-            return result.rows;
+            `
+
+            const result = await this.db.pool.query(query, [phoneNumber])
+            return result.rows
         } catch (error) {
-            console.error('Error getting customer addresses:', error);
-            return [];
+            console.error('Error getting customer addresses:', error)
+            return []
         }
     }
 
@@ -64,30 +64,25 @@ class AddressManager {
                 FROM customer_addresses ca
                 WHERE ca.phone_number = $1 AND ca.is_default = TRUE
                 LIMIT 1;
-            `;
-            
-            const result = await this.db.pool.query(query, [phoneNumber]);
-            return result.rows[0] || null;
+            `
+
+            const result = await this.db.pool.query(query, [phoneNumber])
+            return result.rows[0] || null
         } catch (error) {
-            console.error('Error getting default address:', error);
-            return null;
+            console.error('Error getting default address:', error)
+            return null
         }
     }
 
     // Agregar nueva dirección
     async addAddress(addressData) {
         try {
-            const {
-                customerId, phoneNumber, addressLabel, fullAddress, city, 
-                province, postalCode, isDefault, deliveryInstructions
-            } = addressData;
+            const { customerId, phoneNumber, addressLabel, fullAddress, city, province, postalCode, isDefault, deliveryInstructions } =
+                addressData
 
             // Si es dirección por defecto, quitar el default de las otras
             if (isDefault) {
-                await this.db.pool.query(
-                    'UPDATE customer_addresses SET is_default = FALSE WHERE phone_number = $1',
-                    [phoneNumber]
-                );
+                await this.db.pool.query('UPDATE customer_addresses SET is_default = FALSE WHERE phone_number = $1', [phoneNumber])
             }
 
             const query = `
@@ -96,38 +91,42 @@ class AddressManager {
                     province, postal_code, is_default, delivery_instructions
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING *;
-            `;
+            `
 
             const result = await this.db.pool.query(query, [
-                customerId, phoneNumber, addressLabel, fullAddress, city,
-                province, postalCode, isDefault, deliveryInstructions
-            ]);
+                customerId,
+                phoneNumber,
+                addressLabel,
+                fullAddress,
+                city,
+                province,
+                postalCode,
+                isDefault,
+                deliveryInstructions
+            ])
 
-            return result.rows[0];
+            return result.rows[0]
         } catch (error) {
-            console.error('Error adding address:', error);
-            return null;
+            console.error('Error adding address:', error)
+            return null
         }
     }
 
     // Actualizar dirección existente
     async updateAddress(addressId, updateData) {
         try {
-            const {
-                addressLabel, fullAddress, city, province, postalCode, 
-                isDefault, deliveryInstructions
-            } = updateData;
+            const { addressLabel, fullAddress, city, province, postalCode, isDefault, deliveryInstructions } = updateData
 
             // Si se marca como default, quitar default de las otras del mismo cliente
             if (isDefault) {
-                const phoneQuery = 'SELECT phone_number FROM customer_addresses WHERE id = $1';
-                const phoneResult = await this.db.pool.query(phoneQuery, [addressId]);
-                
+                const phoneQuery = 'SELECT phone_number FROM customer_addresses WHERE id = $1'
+                const phoneResult = await this.db.pool.query(phoneQuery, [addressId])
+
                 if (phoneResult.rows[0]) {
-                    await this.db.pool.query(
-                        'UPDATE customer_addresses SET is_default = FALSE WHERE phone_number = $1 AND id != $2',
-                        [phoneResult.rows[0].phone_number, addressId]
-                    );
+                    await this.db.pool.query('UPDATE customer_addresses SET is_default = FALSE WHERE phone_number = $1 AND id != $2', [
+                        phoneResult.rows[0].phone_number,
+                        addressId
+                    ])
                 }
             }
 
@@ -143,17 +142,23 @@ class AddressManager {
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = $1
                 RETURNING *;
-            `;
+            `
 
             const result = await this.db.pool.query(query, [
-                addressId, addressLabel, fullAddress, city, province, 
-                postalCode, isDefault, deliveryInstructions
-            ]);
+                addressId,
+                addressLabel,
+                fullAddress,
+                city,
+                province,
+                postalCode,
+                isDefault,
+                deliveryInstructions
+            ])
 
-            return result.rows[0];
+            return result.rows[0]
         } catch (error) {
-            console.error('Error updating address:', error);
-            return null;
+            console.error('Error updating address:', error)
+            return null
         }
     }
 
@@ -161,20 +166,17 @@ class AddressManager {
     async setDefaultAddress(addressId) {
         try {
             // Obtener teléfono del cliente
-            const phoneQuery = 'SELECT phone_number FROM customer_addresses WHERE id = $1';
-            const phoneResult = await this.db.pool.query(phoneQuery, [addressId]);
-            
+            const phoneQuery = 'SELECT phone_number FROM customer_addresses WHERE id = $1'
+            const phoneResult = await this.db.pool.query(phoneQuery, [addressId])
+
             if (!phoneResult.rows[0]) {
-                throw new Error('Address not found');
+                throw new Error('Address not found')
             }
 
-            const phoneNumber = phoneResult.rows[0].phone_number;
+            const phoneNumber = phoneResult.rows[0].phone_number
 
             // Quitar default de todas las direcciones del cliente
-            await this.db.pool.query(
-                'UPDATE customer_addresses SET is_default = FALSE WHERE phone_number = $1',
-                [phoneNumber]
-            );
+            await this.db.pool.query('UPDATE customer_addresses SET is_default = FALSE WHERE phone_number = $1', [phoneNumber])
 
             // Establecer la nueva dirección como default
             const query = `
@@ -182,25 +184,25 @@ class AddressManager {
                 SET is_default = TRUE, updated_at = CURRENT_TIMESTAMP
                 WHERE id = $1
                 RETURNING *;
-            `;
+            `
 
-            const result = await this.db.pool.query(query, [addressId]);
-            return result.rows[0];
+            const result = await this.db.pool.query(query, [addressId])
+            return result.rows[0]
         } catch (error) {
-            console.error('Error setting default address:', error);
-            return null;
+            console.error('Error setting default address:', error)
+            return null
         }
     }
 
     // Eliminar dirección
     async deleteAddress(addressId) {
         try {
-            const query = 'DELETE FROM customer_addresses WHERE id = $1 RETURNING *';
-            const result = await this.db.pool.query(query, [addressId]);
-            return result.rows[0];
+            const query = 'DELETE FROM customer_addresses WHERE id = $1 RETURNING *'
+            const result = await this.db.pool.query(query, [addressId])
+            return result.rows[0]
         } catch (error) {
-            console.error('Error deleting address:', error);
-            return null;
+            console.error('Error deleting address:', error)
+            return null
         }
     }
 
@@ -212,47 +214,49 @@ class AddressManager {
                 WHERE phone_number = $1 
                 AND (full_address ILIKE $2 OR address_label ILIKE $2)
                 ORDER BY is_default DESC, created_at DESC;
-            `;
-            
-            const result = await this.db.pool.query(query, [phoneNumber, `%${searchText}%`]);
-            return result.rows;
+            `
+
+            const result = await this.db.pool.query(query, [phoneNumber, `%${searchText}%`])
+            return result.rows
         } catch (error) {
-            console.error('Error searching addresses:', error);
-            return [];
+            console.error('Error searching addresses:', error)
+            return []
         }
     }
 
     // Generar mensaje para el agente con opciones de dirección
     async generateAddressOptions(phoneNumber) {
         try {
-            const addresses = await this.getCustomerAddresses(phoneNumber);
-            
+            const addresses = await this.getCustomerAddresses(phoneNumber)
+
             if (addresses.length === 0) {
-                return "No tenés direcciones guardadas. Por favor, proporcioná la dirección de entrega.";
+                return 'No tenés direcciones guardadas. Por favor, proporcioná la dirección de entrega.'
             }
 
             if (addresses.length === 1) {
-                const addr = addresses[0];
-                return `Tenés guardada la dirección: ${addr.full_address}${addr.address_label ? ` (${addr.address_label})` : ''}. ¿Hacemos el envío ahí o preferís otra dirección?`;
+                const addr = addresses[0]
+                return `Tenés guardada la dirección: ${addr.full_address}${
+                    addr.address_label ? ` (${addr.address_label})` : ''
+                }. ¿Hacemos el envío ahí o preferís otra dirección?`
             }
 
-            let message = "Tenés estas direcciones guardadas:\n";
+            let message = 'Tenés estas direcciones guardadas:\n'
             addresses.forEach((addr, index) => {
-                const defaultLabel = addr.is_default ? " (habitual)" : "";
-                const label = addr.address_label ? ` - ${addr.address_label}` : "";
-                message += `${index + 1}. ${addr.full_address}${label}${defaultLabel}\n`;
-            });
-            message += "¿A cuál querés que hagamos el envío o preferís una dirección nueva?";
-            
-            return message;
+                const defaultLabel = addr.is_default ? ' (habitual)' : ''
+                const label = addr.address_label ? ` - ${addr.address_label}` : ''
+                message += `${index + 1}. ${addr.full_address}${label}${defaultLabel}\n`
+            })
+            message += '¿A cuál querés que hagamos el envío o preferís una dirección nueva?'
+
+            return message
         } catch (error) {
-            console.error('Error generating address options:', error);
-            return "Error al consultar direcciones. Por favor, proporcioná la dirección de entrega.";
+            console.error('Error generating address options:', error)
+            return 'Error al consultar direcciones. Por favor, proporcioná la dirección de entrega.'
         }
     }
 }
 
-module.exports = AddressManager;
+module.exports = AddressManager
 
 // Ejemplo de uso:
 // const addressManager = new AddressManager();

@@ -6,11 +6,22 @@ import { Telemetry } from '../utils/telemetry'
 import { NodesPool } from '../NodesPool'
 import { CachePool } from '../CachePool'
 import { QueueEvents, QueueEventsListener } from 'bullmq'
+import type { DataSource } from 'typeorm'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { UsageCacheManager } from '../UsageCacheManager'
+import type { IComponentNodes } from '../Interface'
 
 interface CustomListener extends QueueEventsListener {
     abort: (args: { id: string }, id: string) => void
+}
+
+interface WorkerRuntimeData {
+    appDataSource: DataSource
+    telemetry: Telemetry
+    componentNodes: IComponentNodes
+    cachePool: CachePool
+    abortControllerPool: AbortControllerPool
+    usageCacheManager: UsageCacheManager
 }
 
 export default class Worker extends BaseCommand {
@@ -55,7 +66,7 @@ export default class Worker extends BaseCommand {
         process.stdin.resume()
     }
 
-    async prepareData() {
+    async prepareData(): Promise<WorkerRuntimeData> {
         // Init database
         const appDataSource = getDataSource()
         await appDataSource.initialize()

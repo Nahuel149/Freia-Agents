@@ -37,14 +37,13 @@ import { useTheme } from '@mui/material/styles'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
-import { PermissionListItemButton } from '@/ui-component/button/RBACButtons'
 import MainCard from '@/ui-component/cards/MainCard'
 import AboutDialog from '@/ui-component/dialog/AboutDialog'
 import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
 import ExportingGIF from '@/assets/images/Exporting.gif'
-import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconUserEdit, IconX } from '@tabler/icons-react'
+import { IconFileExport, IconFileUpload, IconLogout, IconSettings, IconUserEdit, IconX } from '@tabler/icons-react'
 import './index.css'
 
 // API
@@ -464,9 +463,9 @@ const ProfileSection = ({ handleLogout }) => {
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 1, mb: 1 }}>
-                                                    <img 
-                                                        src="/assets/Freia.png" 
-                                                        alt="Freia Logo" 
+                                                    <img
+                                                        src='/assets/Freia.png'
+                                                        alt='Freia Logo'
                                                         style={{
                                                             height: '32px',
                                                             width: 'auto',

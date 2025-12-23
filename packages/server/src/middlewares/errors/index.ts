@@ -19,9 +19,7 @@ async function errorHandlerMiddleware(err: InternalFlowiseError, req: Request, r
 
     const reqId = (req as any).requestId || res.getHeader('x-request-id')
     // Log enriched error details with correlation id
-    logger.error(
-        `Error encountered [reqId=${reqId}] ${req.method} ${req.url} -> ${statusCode}: ${err.message}`
-    )
+    logger.error(`Error encountered [reqId=${reqId}] ${req.method} ${req.url} -> ${statusCode}: ${err.message}`)
     if (!req.body || !req.body.streaming || req.body.streaming === 'false') {
         res.setHeader('Content-Type', 'application/json')
         if (reqId) res.setHeader('x-request-id', String(reqId))

@@ -89,8 +89,18 @@ export class AddLandingTemplates1761000000000 implements MigrationInterface {
                     bullets: ['Leads y seguimientos', 'Notificaciones a staff', 'Reportes rápidos de ocupación/upsell']
                 }
             ],
-            howItWorks: ['Input del huésped', 'Consulta Inventario/Disponibilidad/Reglas', 'LLM aplica reglas y calcula tarifa', 'Confirmación con HITL opcional y envío'],
-            value: ['Multilingüe y 24/7', 'Integrable con PMS/CRMs', 'Memoria en Mongo, vectores en Pinecone', 'Modo demo con link externo al chat']
+            howItWorks: [
+                'Input del huésped',
+                'Consulta Inventario/Disponibilidad/Reglas',
+                'LLM aplica reglas y calcula tarifa',
+                'Confirmación con HITL opcional y envío'
+            ],
+            value: [
+                'Multilingüe y 24/7',
+                'Integrable con PMS/CRMs',
+                'Memoria en Mongo, vectores en Pinecone',
+                'Modo demo con link externo al chat'
+            ]
         })
 
         const gomeriaConfig = JSON.stringify({
@@ -100,8 +110,7 @@ export class AddLandingTemplates1761000000000 implements MigrationInterface {
             hero: {
                 badge: 'Demo Freia · Gomerías',
                 title: 'Asistente para venta y cambios de neumáticos',
-                subtitle:
-                    'Cotiza Pirelli, Michelin, Bridgestone y más; verifica stock, agenda turnos y coordina servicios en minutos.',
+                subtitle: 'Cotiza Pirelli, Michelin, Bridgestone y más; verifica stock, agenda turnos y coordina servicios en minutos.',
                 chatLabel: 'Probar demo',
                 chatLink: 'https://example.com/chat-gomerias',
                 secondaryLabel: 'Ver API',
@@ -141,7 +150,11 @@ export class AddLandingTemplates1761000000000 implements MigrationInterface {
                 },
                 {
                     title: 'Turnos',
-                    bullets: ['Agenda instalación/alineación/balanceo', 'Propone fechas/horarios alternativos', 'Confirma y envía comprobante']
+                    bullets: [
+                        'Agenda instalación/alineación/balanceo',
+                        'Propone fechas/horarios alternativos',
+                        'Confirma y envía comprobante'
+                    ]
                 },
                 { title: 'Postventa', bullets: ['Seguimiento de orden', 'Reclamos o cambios de fecha', 'Recordatorios de rotación'] }
             ],

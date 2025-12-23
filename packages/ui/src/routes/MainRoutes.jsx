@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { Navigate } from 'react-router-dom'
 
 // project imports
 import MainLayout from '@/layout/MainLayout'
@@ -15,12 +16,6 @@ const Dashboard = Loadable(lazy(() => import('@/views/dashboard')))
 // agents routing
 const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 const AgentflowGenerator = Loadable(lazy(() => import('@/views/agentflows/AgentflowGenerator')))
-
-// codeagent routing
-const CodeAgent = Loadable(lazy(() => import('@/views/codeagent')))
-const CodeAgentExecution = Loadable(lazy(() => import('@/views/codeagent/CodeAgentExecution')))
-// test chat routing
-const TestChat = Loadable(lazy(() => import('@/views/testchat')))
 
 // marketplaces routing
 const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
@@ -93,6 +88,10 @@ const MainRoutes = {
             )
         },
         {
+            path: '/',
+            element: <Navigate to='/agentflows' replace />
+        },
+        {
             path: '/chatflows',
             element: (
                 <RequireAuth permission={'chatflows:view'}>
@@ -105,30 +104,6 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'dashboard:view'}>
                     <Dashboard />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/codeagent',
-            element: (
-                <RequireAuth permission={'codeagents:view'}>
-                    <CodeAgent />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/codeagent/:id/execute',
-            element: (
-                <RequireAuth permission={'codeagents:view'}>
-                    <CodeAgentExecution />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/testchat',
-            element: (
-                <RequireAuth permission={'codeagents:view'}>
-                    <TestChat />
                 </RequireAuth>
             )
         },

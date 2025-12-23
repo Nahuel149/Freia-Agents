@@ -60,7 +60,11 @@ async function main() {
         `SELECT table_schema, table_name, column_name, data_type, is_nullable, column_default,
                 character_maximum_length, numeric_precision, numeric_scale
          FROM information_schema.columns c
-         WHERE 1=1 ${schemaFilter ? `AND c.table_schema = ANY(string_to_array($1, ',')::text[])` : `AND c.table_schema NOT IN ('pg_catalog','information_schema')`}
+         WHERE 1=1 ${
+             schemaFilter
+                 ? `AND c.table_schema = ANY(string_to_array($1, ',')::text[])`
+                 : `AND c.table_schema NOT IN ('pg_catalog','information_schema')`
+         }
          ORDER BY table_schema, table_name, ordinal_position`,
         params
     )
@@ -72,7 +76,11 @@ async function main() {
            ON tc.constraint_name = kcu.constraint_name
           AND tc.table_schema = kcu.table_schema
          WHERE tc.constraint_type = 'PRIMARY KEY'
-           ${schemaFilter ? `AND tc.table_schema = ANY(string_to_array($1, ',')::text[])` : `AND tc.table_schema NOT IN ('pg_catalog','information_schema')`}
+           ${
+               schemaFilter
+                   ? `AND tc.table_schema = ANY(string_to_array($1, ',')::text[])`
+                   : `AND tc.table_schema NOT IN ('pg_catalog','information_schema')`
+           }
          ORDER BY tc.table_schema, tc.table_name, kcu.ordinal_position`,
         params
     )
@@ -92,7 +100,11 @@ async function main() {
          JOIN information_schema.constraint_column_usage AS ccu
            ON ccu.constraint_name = tc.constraint_name AND ccu.table_schema = tc.table_schema
          WHERE tc.constraint_type = 'FOREIGN KEY'
-           ${schemaFilter ? `AND tc.table_schema = ANY(string_to_array($1, ',')::text[])` : `AND tc.table_schema NOT IN ('pg_catalog','information_schema')`}
+           ${
+               schemaFilter
+                   ? `AND tc.table_schema = ANY(string_to_array($1, ',')::text[])`
+                   : `AND tc.table_schema NOT IN ('pg_catalog','information_schema')`
+           }
          ORDER BY tc.table_schema, tc.table_name, kcu.ordinal_position`,
         params
     )
@@ -100,7 +112,11 @@ async function main() {
     const idxRes = await client.query<Index>(
         `SELECT schemaname, tablename, indexname, indexdef
          FROM pg_indexes
-         WHERE 1=1 ${schemaFilter ? `AND schemaname = ANY(string_to_array($1, ',')::text[])` : `AND schemaname NOT IN ('pg_catalog','information_schema')`}
+         WHERE 1=1 ${
+             schemaFilter
+                 ? `AND schemaname = ANY(string_to_array($1, ',')::text[])`
+                 : `AND schemaname NOT IN ('pg_catalog','information_schema')`
+         }
          ORDER BY schemaname, tablename, indexname`,
         params
     )
@@ -175,7 +191,10 @@ async function main() {
         if (fks.length) {
             md += `#### Foreign Keys\n`
             for (const f of fks) {
-                md += `- ${f.column_name} → ${f.foreign_table_schema}.${f.foreign_table_name}(${f.foreign_column_name})` + ` \`[${f.constraint_name}]\`` + `\n`
+                md +=
+                    `- ${f.column_name} → ${f.foreign_table_schema}.${f.foreign_table_name}(${f.foreign_column_name})` +
+                    ` \`[${f.constraint_name}]\`` +
+                    `\n`
             }
             md += `\n`
         }
@@ -203,4 +222,3 @@ main().catch((e) => {
     console.error(e)
     process.exit(1)
 })
-

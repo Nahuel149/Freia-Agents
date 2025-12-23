@@ -190,7 +190,8 @@ const AddEditDatasetDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            {t('common.name')}<span style={{ color: 'red' }}>&nbsp;*</span>
+                            {t('common.name')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
@@ -236,11 +237,7 @@ const AddEditDatasetDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             onChange={(newValue) => setSelectedFile(newValue)}
                             value={selectedFile ?? 'Choose a file to upload'}
                         />
-                        <SwitchInput
-                            value={firstRowHeaders}
-                            onChange={setFirstRowHeaders}
-                            label={t('datasets.firstRowHeaders')}
-                        />
+                        <SwitchInput value={firstRowHeaders} onChange={setFirstRowHeaders} label={t('datasets.firstRowHeaders')} />
                     </Box>
                 )}
             </DialogContent>

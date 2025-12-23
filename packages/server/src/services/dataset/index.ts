@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { FindOptionsWhere } from 'typeorm'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { Dataset } from '../../database/entities/Dataset'
@@ -41,7 +40,10 @@ const getAllDatasets = async (page: number = -1, limit: number = -1) => {
             return returnObj
         }
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: datasetService.getAllDatasets - ${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: datasetService.getAllDatasets - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -62,7 +64,9 @@ const getDataset = async (id: string, page: number = -1, limit: number = -1) => 
         // check if there are any sequence numbers == -1, if so set them to the max sequence number + 1
         const missingSequenceNumbers = data.filter((item: DatasetRow) => item.sequenceNo === -1)
         if (missingSequenceNumbers.length > 0) {
-            const maxSequenceNumber = data.reduce((prev: DatasetRow, current: DatasetRow) => (prev.sequenceNo > current.sequenceNo ? prev : current))
+            const maxSequenceNumber = data.reduce((prev: DatasetRow, current: DatasetRow) =>
+                prev.sequenceNo > current.sequenceNo ? prev : current
+            )
             let sequenceNo = maxSequenceNumber.sequenceNo + 1
             for (const zeroSequenceNumber of missingSequenceNumbers) {
                 zeroSequenceNumber.sequenceNo = sequenceNo++

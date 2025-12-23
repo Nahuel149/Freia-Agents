@@ -258,7 +258,11 @@ const Variables = () => {
                         ) : (
                             <>
                                 <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], borderRadius: 2 }}
+                                    sx={{
+                                        border: 1,
+                                        borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                                        borderRadius: 2
+                                    }}
                                     component={Paper}
                                 >
                                     <Table sx={{ minWidth: 650 }} aria-label='simple table'>
@@ -393,7 +397,11 @@ const Variables = () => {
                                                             </StyledTableCell>
                                                             <Available permission={'variables:create,variables:update'}>
                                                                 <StyledTableCell>
-                                                                    <IconButton title={t('variables.edit')} color='primary' onClick={() => edit(variable)}>
+                                                                    <IconButton
+                                                                        title={t('variables.edit')}
+                                                                        color='primary'
+                                                                        onClick={() => edit(variable)}
+                                                                    >
                                                                         <IconEdit />
                                                                     </IconButton>
                                                                 </StyledTableCell>

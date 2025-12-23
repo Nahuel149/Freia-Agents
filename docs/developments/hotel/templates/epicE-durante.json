@@ -1,134 +1,169 @@
 {
-  "name": "DEMO Hoteles - Epic E (Durante Estadia)",
-  "description": "Pedidos, incidentes y extensión de estadía.",
-  "nodes": [
-    {
-      "id": "start",
-      "type": "Start",
-      "label": "Start",
-      "data": { "inputType": "chat", "ephemeralMemory": false, "flowState": { "solicitudTipo": "", "detalleSolicitud": "", "prioridad": "media", "nuevaFechaCheckout": "", "reservaId": "", "reserva": "", "disponibilidad": "", "precio": "" } },
-      "position": [0, 0]
-    },
-    {
-      "id": "memory",
-      "type": "MongoDBAtlasChatMemory",
-      "label": "Memory",
-      "data": { "credential": "{{MONGO_CREDENTIAL_ID}}", "databaseName": "freia_demo", "collectionName": "chat_memory_hoteles", "sessionId": "{{ $flow.chatId }}", "memoryKey": "history" },
-      "position": [0, 140]
-    },
-    {
-      "id": "llm_clasificar",
-      "type": "LLM",
-      "label": "LLM Clasificar durante",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          { "role": "system", "content": "Mapea a solicitudTipo: toallas | limpieza | amenities | room_service | recepcion | incidente | extender_estadia | info_servicio. Si incidente, clasifica y asigna prioridad (alta/media/baja). Si extender_estadia, extrae nuevaFechaCheckout. Devuelve JSON con solicitudTipo, detalleSolicitud, prioridad, nuevaFechaCheckout, needsClarification." },
-          { "role": "user", "content": "{{ $flow.input }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "solicitudTipo": { "type": "string" },
-            "detalleSolicitud": { "type": "string" },
-            "prioridad": { "type": "string" },
-            "nuevaFechaCheckout": { "type": "string" },
-            "needsClarification": { "type": "boolean" }
-          }
+    "name": "DEMO Hoteles - Epic E (Durante Estadia)",
+    "description": "Pedidos, incidentes y extensión de estadía.",
+    "nodes": [
+        {
+            "id": "start",
+            "type": "Start",
+            "label": "Start",
+            "data": {
+                "inputType": "chat",
+                "ephemeralMemory": false,
+                "flowState": {
+                    "solicitudTipo": "",
+                    "detalleSolicitud": "",
+                    "prioridad": "media",
+                    "nuevaFechaCheckout": "",
+                    "reservaId": "",
+                    "reserva": "",
+                    "disponibilidad": "",
+                    "precio": ""
+                }
+            },
+            "position": [0, 0]
         },
-        "updateFlowState": {
-          "solicitudTipo": "{{ json.solicitudTipo }}",
-          "detalleSolicitud": "{{ json.detalleSolicitud }}",
-          "prioridad": "{{ json.prioridad }}",
-          "nuevaFechaCheckout": "{{ json.nuevaFechaCheckout }}"
+        {
+            "id": "memory",
+            "type": "MongoDBAtlasChatMemory",
+            "label": "Memory",
+            "data": {
+                "credential": "{{MONGO_CREDENTIAL_ID}}",
+                "databaseName": "freia_demo",
+                "collectionName": "chat_memory_hoteles",
+                "sessionId": "{{ $flow.chatId }}",
+                "memoryKey": "history"
+            },
+            "position": [0, 140]
+        },
+        {
+            "id": "llm_clasificar",
+            "type": "LLM",
+            "label": "LLM Clasificar durante",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Mapea a solicitudTipo: toallas | limpieza | amenities | room_service | recepcion | incidente | extender_estadia | info_servicio. Si incidente, clasifica y asigna prioridad (alta/media/baja). Si extender_estadia, extrae nuevaFechaCheckout. Devuelve JSON con solicitudTipo, detalleSolicitud, prioridad, nuevaFechaCheckout, needsClarification."
+                    },
+                    { "role": "user", "content": "{{ $flow.input }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "solicitudTipo": { "type": "string" },
+                        "detalleSolicitud": { "type": "string" },
+                        "prioridad": { "type": "string" },
+                        "nuevaFechaCheckout": { "type": "string" },
+                        "needsClarification": { "type": "boolean" }
+                    }
+                },
+                "updateFlowState": {
+                    "solicitudTipo": "{{ json.solicitudTipo }}",
+                    "detalleSolicitud": "{{ json.detalleSolicitud }}",
+                    "prioridad": "{{ json.prioridad }}",
+                    "nuevaFechaCheckout": "{{ json.nuevaFechaCheckout }}"
+                }
+            },
+            "position": [240, 0]
+        },
+        {
+            "id": "retriever_faq",
+            "type": "Retriever",
+            "label": "FAQ servicios",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_FAQ_ID}}",
+                "query": "servicios horarios {{ $flow.state.solicitudTipo }}",
+                "outputFormat": "text"
+            },
+            "position": [480, -40]
+        },
+        {
+            "id": "retriever_disp",
+            "type": "Retriever",
+            "label": "Disponibilidad extensión",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_DISP_ID}}",
+                "query": "{{ $flow.state.sede }} {{ $flow.state.nuevaFechaCheckout }} disponibilidad",
+                "outputFormat": "text"
+            },
+            "position": [480, 140]
+        },
+        {
+            "id": "llm_tarifa",
+            "type": "LLM",
+            "label": "Tarifa extensión",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Calcular tarifa de noches extra. Devuelve JSON { precioNoche, precioTotal, moneda, politica }."
+                    },
+                    { "role": "user", "content": "{{ retriever_disp.output }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "precioNoche": { "type": "number" },
+                        "precioTotal": { "type": "number" },
+                        "moneda": { "type": "string" },
+                        "politica": { "type": "string" }
+                    }
+                },
+                "updateFlowState": { "precio": "{{ json }}" }
+            },
+            "position": [720, 140]
+        },
+        {
+            "id": "human_confirm",
+            "type": "HumanInput",
+            "label": "Confirmar acción",
+            "data": {
+                "descriptionType": "Fixed",
+                "description": "Solicitud: {{ $flow.state.solicitudTipo }}\nDetalle: {{ $flow.state.detalleSolicitud }}\nTarifa (si aplica): {{ $flow.state.precio.precioTotal }} {{ $flow.state.precio.moneda }}\n¿Confirmas?",
+                "feedback": true
+            },
+            "position": [960, 40]
+        },
+        {
+            "id": "custom_registrar",
+            "type": "CustomFunction",
+            "label": "Registrar/Extender",
+            "data": {
+                "inputVariables": [],
+                "code": "return JSON.stringify({status:'ok'});",
+                "updateFlowState": { "reserva": "{{ functionOutput }}" }
+            },
+            "position": [1200, 40]
+        },
+        {
+            "id": "reply_final",
+            "type": "DirectReply",
+            "label": "Reply",
+            "data": {
+                "message": "Solicitud {{ $flow.state.solicitudTipo }} procesada. Estado: {{ $flow.state.reserva.status || 'registrado' }}. {{ $flow.state.precio ? `Tarifa extra: ${$flow.state.precio.precioTotal} ${$flow.state.precio.moneda}` : '' }}"
+            },
+            "position": [1440, 40]
         }
-      },
-      "position": [240, 0]
-    },
-    {
-      "id": "retriever_faq",
-      "type": "Retriever",
-      "label": "FAQ servicios",
-      "data": { "documentStoreId": "{{DOCSTORE_FAQ_ID}}", "query": "servicios horarios {{ $flow.state.solicitudTipo }}", "outputFormat": "text" },
-      "position": [480, -40]
-    },
-    {
-      "id": "retriever_disp",
-      "type": "Retriever",
-      "label": "Disponibilidad extensión",
-      "data": { "documentStoreId": "{{DOCSTORE_DISP_ID}}", "query": "{{ $flow.state.sede }} {{ $flow.state.nuevaFechaCheckout }} disponibilidad", "outputFormat": "text" },
-      "position": [480, 140]
-    },
-    {
-      "id": "llm_tarifa",
-      "type": "LLM",
-      "label": "Tarifa extensión",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          { "role": "system", "content": "Calcular tarifa de noches extra. Devuelve JSON { precioNoche, precioTotal, moneda, politica }." },
-          { "role": "user", "content": "{{ retriever_disp.output }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "precioNoche": { "type": "number" },
-            "precioTotal": { "type": "number" },
-            "moneda": { "type": "string" },
-            "politica": { "type": "string" }
-          }
-        },
-        "updateFlowState": { "precio": "{{ json }}" }
-      },
-      "position": [720, 140]
-    },
-    {
-      "id": "human_confirm",
-      "type": "HumanInput",
-      "label": "Confirmar acción",
-      "data": {
-        "descriptionType": "Fixed",
-        "description": "Solicitud: {{ $flow.state.solicitudTipo }}\nDetalle: {{ $flow.state.detalleSolicitud }}\nTarifa (si aplica): {{ $flow.state.precio.precioTotal }} {{ $flow.state.precio.moneda }}\n¿Confirmas?",
-        "feedback": true
-      },
-      "position": [960, 40]
-    },
-    {
-      "id": "custom_registrar",
-      "type": "CustomFunction",
-      "label": "Registrar/Extender",
-      "data": {
-        "inputVariables": [],
-        "code": "return JSON.stringify({status:'ok'});",
-        "updateFlowState": { "reserva": "{{ functionOutput }}" }
-      },
-      "position": [1200, 40]
-    },
-    {
-      "id": "reply_final",
-      "type": "DirectReply",
-      "label": "Reply",
-      "data": { "message": "Solicitud {{ $flow.state.solicitudTipo }} procesada. Estado: {{ $flow.state.reserva.status || 'registrado' }}. {{ $flow.state.precio ? `Tarifa extra: ${$flow.state.precio.precioTotal} ${$flow.state.precio.moneda}` : '' }}" },
-      "position": [1440, 40]
+    ],
+    "edges": [
+        { "source": "start", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "input" },
+        { "source": "memory", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "memory" },
+        { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_faq", "targetHandle": "input" },
+        { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_disp", "targetHandle": "input" },
+        { "source": "retriever_disp", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
+        { "source": "llm_tarifa", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
+        { "source": "retriever_faq", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
+        { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_registrar", "targetHandle": "input" },
+        { "source": "custom_registrar", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
+    ],
+    "placeholders": {
+        "LLM_CREDENTIAL_ID": "tu_llm_cred",
+        "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+        "DOCSTORE_FAQ_ID": "docstore_faq_id",
+        "DOCSTORE_DISP_ID": "docstore_disp_id"
     }
-  ],
-  "edges": [
-    { "source": "start", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "input" },
-    { "source": "memory", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "memory" },
-    { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_faq", "targetHandle": "input" },
-    { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_disp", "targetHandle": "input" },
-    { "source": "retriever_disp", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
-    { "source": "llm_tarifa", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
-    { "source": "retriever_faq", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
-    { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_registrar", "targetHandle": "input" },
-    { "source": "custom_registrar", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
-  ],
-  "placeholders": {
-    "LLM_CREDENTIAL_ID": "tu_llm_cred",
-    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
-    "DOCSTORE_FAQ_ID": "docstore_faq_id",
-    "DOCSTORE_DISP_ID": "docstore_disp_id"
-  }
 }

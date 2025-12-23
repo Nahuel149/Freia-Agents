@@ -131,7 +131,6 @@ const DocumentStoreDetails = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     // OSS mode: Workspace assignment checks removed
-    const { } = useAuth()
     useNotifier()
     const { confirm } = useConfirm()
     const { t } = useTranslation()
@@ -603,12 +602,7 @@ const DocumentStoreDetails = () => {
                         <Stack direction='row' spacing={1} alignItems='center'>
                             <DocumentStoreStatus status={documentStore?.status} />
                             <Available permission={'documentStores:update'}>
-                                <Button
-                                    size='small'
-                                    variant='outlined'
-                                    endIcon={<KeyboardArrowDownIcon />}
-                                    onClick={handleStatusMenuOpen}
-                                >
+                                <Button size='small' variant='outlined' endIcon={<KeyboardArrowDownIcon />} onClick={handleStatusMenuOpen}>
                                     {t('docstore.statusActions')}
                                 </Button>
                             </Available>

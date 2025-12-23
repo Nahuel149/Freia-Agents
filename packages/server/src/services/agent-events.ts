@@ -23,10 +23,7 @@ const buildPreview = (content?: string | null): string => {
     return trimmed.length <= MESSAGE_PREVIEW_LIMIT ? trimmed : `${trimmed.slice(0, MESSAGE_PREVIEW_LIMIT - 3)}...`
 }
 
-export const recordConversationAnalyticsFromMessage = async (
-    message: ChatMessage,
-    dataSource: DataSource
-): Promise<void> => {
+export const recordConversationAnalyticsFromMessage = async (message: ChatMessage, dataSource: DataSource): Promise<void> => {
     try {
         if (!message) return
         if (message.chatType && message.chatType !== ChatType.EXTERNAL) return

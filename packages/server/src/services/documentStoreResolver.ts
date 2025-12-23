@@ -125,6 +125,6 @@ export async function resolveSelectedStores(storeIds: string[]): Promise<Resolve
     const envelope: StoreEnvelope = { version: '1', stores }
     const datasetHash = crypto.createHash('sha256').update(JSON.stringify(envelope)).digest('hex')
 
-    logger.debug(`[docResolver] result stores=${stores.length} totalBytes=${totalBytes} hash=${datasetHash.slice(0,8)}...`)
+    logger.debug(`[docResolver] result stores=${stores.length} totalBytes=${totalBytes} hash=${datasetHash.slice(0, 8)}...`)
     return { envelope, totalBytes, datasetHash, statuses, repoRoot }
 }

@@ -146,7 +146,7 @@ const deleteCustomTemplate = async (templateId: string, workspaceId: string): Pr
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Template with id ${templateId} not found`)
         }
         if (workspaceId !== 'oss-mode' && template.workspaceId !== workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don\'t have access to this template`)
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don't have access to this template`)
         }
         return await appServer.AppDataSource.getRepository(CustomTemplate).delete({ id: templateId })
     } catch (error) {

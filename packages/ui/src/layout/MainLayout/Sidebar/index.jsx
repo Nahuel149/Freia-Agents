@@ -83,9 +83,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                             background: 'transparent',
                             color: theme.palette.text.primary,
                             backdropFilter: 'blur(26px) saturate(160%)',
-                            boxShadow: isDarkMode
-                                ? '0 28px 80px rgba(8, 12, 30, 0.55)'
-                                : '0 26px 70px rgba(79, 70, 229, 0.12)',
+                            boxShadow: isDarkMode ? '0 28px 80px rgba(8, 12, 30, 0.55)' : '0 26px 70px rgba(79, 70, 229, 0.12)',
                             [theme.breakpoints.up('md')]: {
                                 top: `${headerHeight}px`
                             },

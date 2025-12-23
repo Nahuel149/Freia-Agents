@@ -101,9 +101,7 @@ const getComplementaryPromotions = async (req: Request, res: Response, next: Nex
         const inventory = await fetchInventory()
         const normalizedProductId = productId ? productId.trim() : null
 
-        const reference = normalizedProductId
-            ? inventory.find((item: InventoryItem) => item.productid === normalizedProductId)
-            : null
+        const reference = normalizedProductId ? inventory.find((item: InventoryItem) => item.productid === normalizedProductId) : null
 
         const limit = Math.max(1, parseInt(maxResults))
         const accessoryTags = ['ACC', 'SERV', 'KIT', 'ACEITE', 'FILTRO', 'BATER']
@@ -115,11 +113,12 @@ const getComplementaryPromotions = async (req: Request, res: Response, next: Nex
                 }
 
                 const matchesCategory = category
-                    ? item.name.toLowerCase().includes(category.toLowerCase()) || item.productid?.toLowerCase().includes(category.toLowerCase())
+                    ? item.name.toLowerCase().includes(category.toLowerCase()) ||
+                      item.productid?.toLowerCase().includes(category.toLowerCase())
                     : true
 
                 const matchesBrand = reference ? item.brand !== reference.brand : true
-                const looksAccessory = accessoryTags.some(tag => item.productid?.toUpperCase().includes(tag))
+                const looksAccessory = accessoryTags.some((tag) => item.productid?.toUpperCase().includes(tag))
                 const matchesVehicle = vehicleModel ? item.name.toLowerCase().includes(vehicleModel.toLowerCase()) : true
 
                 return matchesCategory && matchesBrand && matchesVehicle && looksAccessory
@@ -164,7 +163,7 @@ const getSeasonalPromotions = async (req: Request, res: Response, next: NextFunc
         const keywords = seasonKeywords[season.toLowerCase()] ?? []
         const filtered = inventory.filter((item: InventoryItem) => {
             const lowerName = item.name.toLowerCase()
-            const matchesSeason = keywords.length === 0 || keywords.some(keyword => lowerName.includes(keyword))
+            const matchesSeason = keywords.length === 0 || keywords.some((keyword) => lowerName.includes(keyword))
             const matchesCategory = productCategory ? lowerName.includes(productCategory.toLowerCase()) : true
             return matchesSeason && matchesCategory
         })
@@ -192,9 +191,7 @@ const getBundleOffers = async (req: Request, res: Response, next: NextFunction) 
         const reference = productId ? inventory.find((item: InventoryItem) => item.productid === productId) : null
         const quantity = Math.max(2, parseInt(minQuantity))
 
-        const serviceItems = includeServices === 'true'
-            ? inventory.filter((item: InventoryItem) => item.productid?.startsWith('SERV'))
-            : []
+        const serviceItems = includeServices === 'true' ? inventory.filter((item: InventoryItem) => item.productid?.startsWith('SERV')) : []
 
         const bundles: Array<{
             mainProduct: InventoryItem | null
@@ -253,17 +250,15 @@ const applyPromoCode = async (req: Request, res: Response, next: NextFunction) =
         }
 
         const inventory = await fetchInventory()
-        const items = Array.isArray(products)
-            ? inventory.filter((item: InventoryItem) => products.includes(item.productid))
-            : []
+        const items = Array.isArray(products) ? inventory.filter((item: InventoryItem) => products.includes(item.productid)) : []
 
         const subtotal = items.reduce((acc: number, item: InventoryItem) => acc + item.price, 0)
 
         const promoMap: Record<string, { type: 'percentage' | 'fixed'; value: number }> = {
-            'FREIA10': { type: 'percentage', value: 10 },
-            'FREIA20': { type: 'percentage', value: 20 },
-            'ENVIOGRATIS': { type: 'fixed', value: 15000 },
-            'COMBOAUTO': { type: 'percentage', value: 15 }
+            FREIA10: { type: 'percentage', value: 10 },
+            FREIA20: { type: 'percentage', value: 20 },
+            ENVIOGRATIS: { type: 'fixed', value: 15000 },
+            COMBOAUTO: { type: 'percentage', value: 15 }
         }
 
         const promo = promoMap[promoCode.toUpperCase()]
@@ -329,10 +324,10 @@ const getCrossSellRecommendations = async (req: Request, res: Response, next: Ne
                 if (Array.isArray(maybeJson)) {
                     parsedCurrent = maybeJson
                 } else {
-                    parsedCurrent = currentProducts.split(',').map(value => value.trim())
+                    parsedCurrent = currentProducts.split(',').map((value) => value.trim())
                 }
             } catch (error) {
-                parsedCurrent = currentProducts.split(',').map(value => value.trim())
+                parsedCurrent = currentProducts.split(',').map((value) => value.trim())
             }
         }
 
@@ -387,7 +382,10 @@ const getLoyaltyRewards = async (req: Request, res: Response, next: NextFunction
             return false
         })
 
-        const totalSpent = customerSales.reduce((acc: number, sale: SalesRecord) => acc + Number(sale.final_price ?? sale.total_price ?? 0), 0)
+        const totalSpent = customerSales.reduce(
+            (acc: number, sale: SalesRecord) => acc + Number(sale.final_price ?? sale.total_price ?? 0),
+            0
+        )
         const totalOrders = customerSales.length
         const tier = totalSpent > 2000000 ? 'platinum' : totalSpent > 1000000 ? 'gold' : totalSpent > 500000 ? 'silver' : 'bronze'
         const points = Math.round(totalSpent / 1000)
@@ -438,7 +436,10 @@ const getPromotionsAnalytics = async (req: Request, res: Response, next: NextFun
             return afterStart && beforeEnd
         })
 
-        const totalRevenue = filteredSales.reduce((acc: number, sale: SalesRecord) => acc + Number(sale.final_price ?? sale.total_price ?? 0), 0)
+        const totalRevenue = filteredSales.reduce(
+            (acc: number, sale: SalesRecord) => acc + Number(sale.final_price ?? sale.total_price ?? 0),
+            0
+        )
         const totalDiscount = filteredSales.reduce((acc: number, sale: SalesRecord) => acc + Number(sale.discount_percentage ?? 0), 0)
         const averageDiscount = filteredSales.length > 0 ? totalDiscount / filteredSales.length : 0
 

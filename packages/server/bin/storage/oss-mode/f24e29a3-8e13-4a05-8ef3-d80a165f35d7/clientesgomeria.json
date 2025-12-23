@@ -1,318 +1,318 @@
 [
-  {
-    "business_id": "BIZ-001",
-    "business_name": "Transportes Del Sur S.A.",
-    "cuit": "30-71123456-8",
-    "address": "Parque Industrial Gral. Belgrano, Lote 14, Córdoba",
-    "phone": "+54 9 351 6123-4567",
-    "email": "compras@transportesdelsur.com",
-    "contact_person": "Ricardo Montoya",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-001",
-        "date": "2025-08-10",
-        "total_ars": 7099000.00,
-        "items": [
-          {
-            "product_id": "MIC-LTX-2457016",
-            "product_name": "LTX Force 245/70 R16",
-            "quantity": 20,
-            "unit_price_ars": 310000.00
-          },
-          {
-            "product_id": "YPF-ELA-F50-4L",
-            "product_name": "Aceite Elaion F50 D2 5W-30 4L",
-            "quantity": 10,
-            "unit_price_ars": 89900.00
-          }
+    {
+        "business_id": "BIZ-001",
+        "business_name": "Transportes Del Sur S.A.",
+        "cuit": "30-71123456-8",
+        "address": "Parque Industrial Gral. Belgrano, Lote 14, Córdoba",
+        "phone": "+54 9 351 6123-4567",
+        "email": "compras@transportesdelsur.com",
+        "contact_person": "Ricardo Montoya",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-001",
+                "date": "2025-08-10",
+                "total_ars": 7099000.0,
+                "items": [
+                    {
+                        "product_id": "MIC-LTX-2457016",
+                        "product_name": "LTX Force 245/70 R16",
+                        "quantity": 20,
+                        "unit_price_ars": 310000.0
+                    },
+                    {
+                        "product_id": "YPF-ELA-F50-4L",
+                        "product_name": "Aceite Elaion F50 D2 5W-30 4L",
+                        "quantity": 10,
+                        "unit_price_ars": 89900.0
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-002",
-    "business_name": "Agroservicios Pampeanos S.R.L.",
-    "cuit": "30-70987654-3",
-    "address": "Ruta Nacional 8, Km 350, Venado Tuerto, Santa Fe",
-    "phone": "+54 9 3462 456-7890",
-    "email": "administracion@agroserviciospampeanos.com.ar",
-    "contact_person": "Javier Estévez",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-002",
-        "date": "2025-07-22",
-        "total_ars": 9536000.00,
-        "items": [
-          {
-            "product_id": "FIR-F900-2656517",
-            "product_name": "Destination A/T 265/65 R17",
-            "quantity": 32,
-            "unit_price_ars": 298000.00
-          }
+    },
+    {
+        "business_id": "BIZ-002",
+        "business_name": "Agroservicios Pampeanos S.R.L.",
+        "cuit": "30-70987654-3",
+        "address": "Ruta Nacional 8, Km 350, Venado Tuerto, Santa Fe",
+        "phone": "+54 9 3462 456-7890",
+        "email": "administracion@agroserviciospampeanos.com.ar",
+        "contact_person": "Javier Estévez",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-002",
+                "date": "2025-07-22",
+                "total_ars": 9536000.0,
+                "items": [
+                    {
+                        "product_id": "FIR-F900-2656517",
+                        "product_name": "Destination A/T 265/65 R17",
+                        "quantity": 32,
+                        "unit_price_ars": 298000.0
+                    }
+                ]
+            },
+            {
+                "purchase_id": "ORD-2025-009",
+                "date": "2025-09-05",
+                "total_ars": 2550000.0,
+                "items": [
+                    {
+                        "product_id": "MOU-M30-1275",
+                        "product_name": "Batería Moura M30GD 12x75",
+                        "quantity": 10,
+                        "unit_price_ars": 255000.0
+                    }
+                ]
+            }
         ]
-      },
-      {
-        "purchase_id": "ORD-2025-009",
-        "date": "2025-09-05",
-        "total_ars": 2550000.00,
-        "items": [
-          {
-            "product_id": "MOU-M30-1275",
-            "product_name": "Batería Moura M30GD 12x75",
-            "quantity": 10,
-            "unit_price_ars": 255000.00
-          }
+    },
+    {
+        "business_id": "BIZ-003",
+        "business_name": "Taxis Avenida",
+        "cuit": "30-68123123-5",
+        "address": "Av. Independencia 2500, CABA, Buenos Aires",
+        "phone": "+54 9 11 4321-9876",
+        "email": "flota@taxisavenida.com",
+        "contact_person": "Susana Giménez"
+    },
+    {
+        "business_id": "BIZ-004",
+        "business_name": "Constructora Andina S.R.L.",
+        "cuit": "30-71456789-0",
+        "address": "Lateral Acceso Este 1020, Guaymallén, Mendoza",
+        "phone": "+54 9 261 3321-4567",
+        "email": "proveedores@constructoraandina.com",
+        "contact_person": "Marcos Peña",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-003",
+                "date": "2025-06-15",
+                "total_ars": 4768000.0,
+                "items": [
+                    {
+                        "product_id": "DUN-AT5-2656018",
+                        "product_name": "Grandtrek AT5 265/60 R18",
+                        "quantity": 12,
+                        "unit_price_ars": 345000.0
+                    },
+                    {
+                        "product_id": "HEL-BAT-1290",
+                        "product_name": "Batería Heliar Original 12x90",
+                        "quantity": 2,
+                        "unit_price_ars": 295000.0
+                    },
+                    {
+                        "product_id": "VAL-PREM-15W40-4L",
+                        "product_name": "Aceite Premium Protection 15W-40 4L",
+                        "quantity": 6,
+                        "unit_price_ars": 65000.0
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-003",
-    "business_name": "Taxis Avenida",
-    "cuit": "30-68123123-5",
-    "address": "Av. Independencia 2500, CABA, Buenos Aires",
-    "phone": "+54 9 11 4321-9876",
-    "email": "flota@taxisavenida.com",
-    "contact_person": "Susana Giménez"
-  },
-  {
-    "business_id": "BIZ-004",
-    "business_name": "Constructora Andina S.R.L.",
-    "cuit": "30-71456789-0",
-    "address": "Lateral Acceso Este 1020, Guaymallén, Mendoza",
-    "phone": "+54 9 261 3321-4567",
-    "email": "proveedores@constructoraandina.com",
-    "contact_person": "Marcos Peña",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-003",
-        "date": "2025-06-15",
-        "total_ars": 4768000.00,
-        "items": [
-          {
-            "product_id": "DUN-AT5-2656018",
-            "product_name": "Grandtrek AT5 265/60 R18",
-            "quantity": 12,
-            "unit_price_ars": 345000.00
-          },
-          {
-            "product_id": "HEL-BAT-1290",
-            "product_name": "Batería Heliar Original 12x90",
-            "quantity": 2,
-            "unit_price_ars": 295000.00
-          },
-          {
-            "product_id": "VAL-PREM-15W40-4L",
-            "product_name": "Aceite Premium Protection 15W-40 4L",
-            "quantity": 6,
-            "unit_price_ars": 65000.00
-          }
+    },
+    {
+        "business_id": "BIZ-005",
+        "business_name": "Remis Oeste",
+        "cuit": "33-69876543-9",
+        "address": "Av. Rivadavia 11000, Liniers, Buenos Aires",
+        "phone": "+54 9 11 4444-5555",
+        "email": "remis.oeste.compras@gmail.com",
+        "contact_person": "Horacio Pérez"
+    },
+    {
+        "business_id": "BIZ-006",
+        "business_name": "Taller Mecánico 'El Rápido'",
+        "cuit": "27-25123456-7",
+        "address": "Warnes 850, Villa Crespo, Buenos Aires",
+        "phone": "+54 9 11 5001-2002",
+        "email": "taller.elrapido@yahoo.com",
+        "contact_person": "Roberto Carlos",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-004",
+                "date": "2025-08-28",
+                "total_ars": 1604800.0,
+                "items": [
+                    {
+                        "product_id": "NGK-BKR6E-4",
+                        "product_name": "Juego de 4 Bujías BKR6E",
+                        "quantity": 10,
+                        "unit_price_ars": 39800.0
+                    },
+                    {
+                        "product_id": "CAS-MAG-10W40-4L",
+                        "product_name": "Aceite Magnatec 10W-40 4L",
+                        "quantity": 12,
+                        "unit_price_ars": 82500.0
+                    },
+                    {
+                        "product_id": "MAN-HU718-5X",
+                        "product_name": "Filtro de Aceite HU718/5X",
+                        "quantity": 10,
+                        "unit_price_ars": 21000.0
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-005",
-    "business_name": "Remis Oeste",
-    "cuit": "33-69876543-9",
-    "address": "Av. Rivadavia 11000, Liniers, Buenos Aires",
-    "phone": "+54 9 11 4444-5555",
-    "email": "remis.oeste.compras@gmail.com",
-    "contact_person": "Horacio Pérez"
-  },
-  {
-    "business_id": "BIZ-006",
-    "business_name": "Taller Mecánico 'El Rápido'",
-    "cuit": "27-25123456-7",
-    "address": "Warnes 850, Villa Crespo, Buenos Aires",
-    "phone": "+54 9 11 5001-2002",
-    "email": "taller.elrapido@yahoo.com",
-    "contact_person": "Roberto Carlos",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-004",
-        "date": "2025-08-28",
-        "total_ars": 1604800.00,
-        "items": [
-          {
-            "product_id": "NGK-BKR6E-4",
-            "product_name": "Juego de 4 Bujías BKR6E",
-            "quantity": 10,
-            "unit_price_ars": 39800.00
-          },
-          {
-            "product_id": "CAS-MAG-10W40-4L",
-            "product_name": "Aceite Magnatec 10W-40 4L",
-            "quantity": 12,
-            "unit_price_ars": 82500.00
-          },
-          {
-            "product_id": "MAN-HU718-5X",
-            "product_name": "Filtro de Aceite HU718/5X",
-            "quantity": 10,
-            "unit_price_ars": 21000.00
-          }
+    },
+    {
+        "business_id": "BIZ-007",
+        "business_name": "Logística Patagónica S.A.",
+        "cuit": "30-71111222-3",
+        "address": "Parque Industrial, Neuquén Capital, Neuquén",
+        "phone": "+54 9 299 555-1020",
+        "email": "logistica.pat@outlook.com",
+        "contact_person": "Ana María Soler"
+    },
+    {
+        "business_id": "BIZ-008",
+        "business_name": "Concesionaria Ruta 9",
+        "cuit": "30-67676767-1",
+        "address": "Autopista Cordoba-Rosario Km 550, Córdoba",
+        "phone": "+54 9 351 765-4321",
+        "email": "gerencia@ruta9automotores.com",
+        "contact_person": "Esteban Quito",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-005",
+                "date": "2025-04-11",
+                "total_ars": 3570000.0,
+                "items": [
+                    {
+                        "product_id": "HAN-K435-1856015",
+                        "product_name": "Kinergy Eco2 K435 185/60 R15",
+                        "quantity": 20,
+                        "unit_price_ars": 178500.0
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-007",
-    "business_name": "Logística Patagónica S.A.",
-    "cuit": "30-71111222-3",
-    "address": "Parque Industrial, Neuquén Capital, Neuquén",
-    "phone": "+54 9 299 555-1020",
-    "email": "logistica.pat@outlook.com",
-    "contact_person": "Ana María Soler"
-  },
-  {
-    "business_id": "BIZ-008",
-    "business_name": "Concesionaria Ruta 9",
-    "cuit": "30-67676767-1",
-    "address": "Autopista Cordoba-Rosario Km 550, Córdoba",
-    "phone": "+54 9 351 765-4321",
-    "email": "gerencia@ruta9automotores.com",
-    "contact_person": "Esteban Quito",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-005",
-        "date": "2025-04-11",
-        "total_ars": 3570000.00,
-        "items": [
-          {
-            "product_id": "HAN-K435-1856015",
-            "product_name": "Kinergy Eco2 K435 185/60 R15",
-            "quantity": 20,
-            "unit_price_ars": 178500.00
-          }
+    },
+    {
+        "business_id": "BIZ-009",
+        "business_name": "Fletes 'Don Pepe'",
+        "cuit": "20-12345678-9",
+        "address": "Av. Eva Perón 3300, Rosario, Santa Fe",
+        "phone": "+54 9 341 222-3333",
+        "email": "pepe.fletes@hotmail.com",
+        "contact_person": "José Argento"
+    },
+    {
+        "business_id": "BIZ-010",
+        "business_name": "Turismo Serrano S.R.L.",
+        "cuit": "30-70101010-2",
+        "address": "Terminal de Ómnibus, Local 12, Córdoba",
+        "phone": "+54 9 351 800-9000",
+        "email": "mantenimiento@turismoserrano.com",
+        "contact_person": "Guillermo Francella",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-006",
+                "date": "2025-09-01",
+                "total_ars": 1260000.0,
+                "items": [
+                    {
+                        "product_id": "BOS-DIS-VW-GOL",
+                        "product_name": "Juego Discos de Freno Delanteros VW Gol Trend",
+                        "quantity": 6,
+                        "unit_price_ars": 155000.0
+                    },
+                    {
+                        "product_id": "WAG-DOT4-1L",
+                        "product_name": "Líquido de Frenos DOT 4 1L",
+                        "quantity": 20,
+                        "unit_price_ars": 18500.0
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-009",
-    "business_name": "Fletes 'Don Pepe'",
-    "cuit": "20-12345678-9",
-    "address": "Av. Eva Perón 3300, Rosario, Santa Fe",
-    "phone": "+54 9 341 222-3333",
-    "email": "pepe.fletes@hotmail.com",
-    "contact_person": "José Argento"
-  },
-  {
-    "business_id": "BIZ-010",
-    "business_name": "Turismo Serrano S.R.L.",
-    "cuit": "30-70101010-2",
-    "address": "Terminal de Ómnibus, Local 12, Córdoba",
-    "phone": "+54 9 351 800-9000",
-    "email": "mantenimiento@turismoserrano.com",
-    "contact_person": "Guillermo Francella",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-006",
-        "date": "2025-09-01",
-        "total_ars": 1260000.00,
-        "items": [
-          {
-            "product_id": "BOS-DIS-VW-GOL",
-            "product_name": "Juego Discos de Freno Delanteros VW Gol Trend",
-            "quantity": 6,
-            "unit_price_ars": 155000.00
-          },
-          {
-            "product_id": "WAG-DOT4-1L",
-            "product_name": "Líquido de Frenos DOT 4 1L",
-            "quantity": 20,
-            "unit_price_ars": 18500.00
-          }
+    },
+    {
+        "business_id": "BIZ-011",
+        "business_name": "Mantenimiento Flota Municipalidad de La Matanza",
+        "cuit": "30-99905678-4",
+        "address": "Almafuerte 3050, San Justo, Buenos Aires",
+        "phone": "+54 9 11 4651-0101",
+        "email": "compras.publicas@lamatanza.gov.ar",
+        "contact_person": "Luis D'Elía"
+    },
+    {
+        "business_id": "BIZ-012",
+        "business_name": "Servicios Petroleros del Oeste",
+        "cuit": "30-71123987-5",
+        "address": "Ruta 22, Cutral Có, Neuquén",
+        "phone": "+54 9 299 444-5566",
+        "email": "spo.compras@spoweb.com",
+        "contact_person": "Walter White",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-007",
+                "date": "2025-08-18",
+                "total_ars": 8940000.0,
+                "items": [
+                    {
+                        "product_id": "FIR-F900-2656517",
+                        "product_name": "Destination A/T 265/65 R17",
+                        "quantity": 30,
+                        "unit_price_ars": 298000.0
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-011",
-    "business_name": "Mantenimiento Flota Municipalidad de La Matanza",
-    "cuit": "30-99905678-4",
-    "address": "Almafuerte 3050, San Justo, Buenos Aires",
-    "phone": "+54 9 11 4651-0101",
-    "email": "compras.publicas@lamatanza.gov.ar",
-    "contact_person": "Luis D'Elía"
-  },
-  {
-    "business_id": "BIZ-012",
-    "business_name": "Servicios Petroleros del Oeste",
-    "cuit": "30-71123987-5",
-    "address": "Ruta 22, Cutral Có, Neuquén",
-    "phone": "+54 9 299 444-5566",
-    "email": "spo.compras@spoweb.com",
-    "contact_person": "Walter White",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-007",
-        "date": "2025-08-18",
-        "total_ars": 8940000.00,
-        "items": [
-          {
-            "product_id": "FIR-F900-2656517",
-            "product_name": "Destination A/T 265/65 R17",
-            "quantity": 30,
-            "unit_price_ars": 298000.00
-          }
+    },
+    {
+        "business_id": "BIZ-013",
+        "business_name": "Vivero 'Las Flores'",
+        "cuit": "27-30123456-9",
+        "address": "Camino a 60 Cuadras, Km 10, Córdoba",
+        "phone": "+54 9 351 234-5678",
+        "email": "info@viverolasflores.com.ar",
+        "contact_person": "Jazmín del Campo"
+    },
+    {
+        "business_id": "BIZ-014",
+        "business_name": "Rent-a-Car Cuyo",
+        "cuit": "30-66554433-2",
+        "address": "Aeropuerto El Plumerillo, Local 5, Mendoza",
+        "phone": "+54 9 261 500-6000",
+        "email": "mantenimiento@rentacuyo.com",
+        "contact_person": "Lionel Messi",
+        "previous_purchases": [
+            {
+                "purchase_id": "ORD-2025-008",
+                "date": "2025-07-05",
+                "total_ars": 5299000.0,
+                "items": [
+                    {
+                        "product_id": "PIR-P1-1756514",
+                        "product_name": "Cinturato P1 175/65 R14",
+                        "quantity": 20,
+                        "unit_price_ars": 149900.0
+                    },
+                    {
+                        "product_id": "FAT-SENTIVA-1856515",
+                        "product_name": "Sentiva AR-360 185/65 R15",
+                        "quantity": 10,
+                        "unit_price_ars": 162000.0
+                    },
+                    {
+                        "product_id": "ACC-KITSEG-01",
+                        "product_name": "Kit de Seguridad Reglamentario Auto",
+                        "quantity": 10,
+                        "unit_price_ars": 55000.0
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-013",
-    "business_name": "Vivero 'Las Flores'",
-    "cuit": "27-30123456-9",
-    "address": "Camino a 60 Cuadras, Km 10, Córdoba",
-    "phone": "+54 9 351 234-5678",
-    "email": "info@viverolasflores.com.ar",
-    "contact_person": "Jazmín del Campo"
-  },
-  {
-    "business_id": "BIZ-014",
-    "business_name": "Rent-a-Car Cuyo",
-    "cuit": "30-66554433-2",
-    "address": "Aeropuerto El Plumerillo, Local 5, Mendoza",
-    "phone": "+54 9 261 500-6000",
-    "email": "mantenimiento@rentacuyo.com",
-    "contact_person": "Lionel Messi",
-    "previous_purchases": [
-      {
-        "purchase_id": "ORD-2025-008",
-        "date": "2025-07-05",
-        "total_ars": 5299000.00,
-        "items": [
-          {
-            "product_id": "PIR-P1-1756514",
-            "product_name": "Cinturato P1 175/65 R14",
-            "quantity": 20,
-            "unit_price_ars": 149900.00
-          },
-          {
-            "product_id": "FAT-SENTIVA-1856515",
-            "product_name": "Sentiva AR-360 185/65 R15",
-            "quantity": 10,
-            "unit_price_ars": 162000.00
-          },
-          {
-            "product_id": "ACC-KITSEG-01",
-            "product_name": "Kit de Seguridad Reglamentario Auto",
-            "quantity": 10,
-            "unit_price_ars": 55000.00
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "business_id": "BIZ-015",
-    "business_name": "Distribuidora Láctea Serenísima",
-    "cuit": "30-50000000-1",
-    "address": "Av. Warnes 2500, La Paternal, Buenos Aires",
-    "phone": "+54 9 11 4858-0000",
-    "email": "logistica.caba@laserenisima.com.ar",
-    "contact_person": "Pascual Mastellone"
-  }
+    },
+    {
+        "business_id": "BIZ-015",
+        "business_name": "Distribuidora Láctea Serenísima",
+        "cuit": "30-50000000-1",
+        "address": "Av. Warnes 2500, La Paternal, Buenos Aires",
+        "phone": "+54 9 11 4858-0000",
+        "email": "logistica.caba@laserenisima.com.ar",
+        "contact_person": "Pascual Mastellone"
+    }
 ]

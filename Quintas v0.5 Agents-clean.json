@@ -1,1881 +1,1877 @@
 {
-  "nodes": [
-    {
-      "id": "start",
-      "type": "agentFlow",
-      "position": {
-        "x": 0,
-        "y": 0
-      },
-      "data": {
-        "id": "start",
-        "label": "Start",
-        "version": 1.1,
-        "name": "startAgentflow",
-        "type": "Start",
-        "color": "#7EE787",
-        "hideInput": true,
-        "baseClasses": [
-          "Start"
-        ],
-        "category": "Agent Flows",
-        "description": "Starting point of the agentflow",
-        "inputParams": [
-          {
-            "label": "Input Type",
-            "name": "startInputType",
-            "type": "options",
-            "options": [
-              {
-                "label": "Chat Input",
-                "name": "chatInput",
-                "description": "Start the conversation with chat input"
-              },
-              {
-                "label": "Form Input",
-                "name": "formInput",
-                "description": "Start the workflow with form inputs"
-              }
-            ],
-            "default": "chatInput",
-            "id": "start-input-startInputType-options",
-            "display": true
-          },
-          {
-            "label": "Form Title",
-            "name": "formTitle",
-            "type": "string",
-            "placeholder": "Please Fill Out The Form",
-            "show": {
-              "startInputType": "formInput"
+    "nodes": [
+        {
+            "id": "start",
+            "type": "agentFlow",
+            "position": {
+                "x": 0,
+                "y": 0
             },
-            "id": "start-input-formTitle-string",
-            "display": false
-          },
-          {
-            "label": "Form Description",
-            "name": "formDescription",
-            "type": "string",
-            "placeholder": "Complete all fields below to continue",
-            "show": {
-              "startInputType": "formInput"
-            },
-            "id": "start-input-formDescription-string",
-            "display": false
-          },
-          {
-            "label": "Form Input Types",
-            "name": "formInputTypes",
-            "description": "Specify the type of form input",
-            "type": "array",
-            "show": {
-              "startInputType": "formInput"
-            },
-            "array": [
-              {
-                "label": "Type",
-                "name": "type",
-                "type": "options",
-                "options": [
-                  {
-                    "label": "String",
-                    "name": "string"
-                  },
-                  {
-                    "label": "Number",
-                    "name": "number"
-                  },
-                  {
-                    "label": "Boolean",
-                    "name": "boolean"
-                  },
-                  {
-                    "label": "Options",
-                    "name": "options"
-                  }
+            "data": {
+                "id": "start",
+                "label": "Start",
+                "version": 1.1,
+                "name": "startAgentflow",
+                "type": "Start",
+                "color": "#7EE787",
+                "hideInput": true,
+                "baseClasses": ["Start"],
+                "category": "Agent Flows",
+                "description": "Starting point of the agentflow",
+                "inputParams": [
+                    {
+                        "label": "Input Type",
+                        "name": "startInputType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Chat Input",
+                                "name": "chatInput",
+                                "description": "Start the conversation with chat input"
+                            },
+                            {
+                                "label": "Form Input",
+                                "name": "formInput",
+                                "description": "Start the workflow with form inputs"
+                            }
+                        ],
+                        "default": "chatInput",
+                        "id": "start-input-startInputType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Form Title",
+                        "name": "formTitle",
+                        "type": "string",
+                        "placeholder": "Please Fill Out The Form",
+                        "show": {
+                            "startInputType": "formInput"
+                        },
+                        "id": "start-input-formTitle-string",
+                        "display": false
+                    },
+                    {
+                        "label": "Form Description",
+                        "name": "formDescription",
+                        "type": "string",
+                        "placeholder": "Complete all fields below to continue",
+                        "show": {
+                            "startInputType": "formInput"
+                        },
+                        "id": "start-input-formDescription-string",
+                        "display": false
+                    },
+                    {
+                        "label": "Form Input Types",
+                        "name": "formInputTypes",
+                        "description": "Specify the type of form input",
+                        "type": "array",
+                        "show": {
+                            "startInputType": "formInput"
+                        },
+                        "array": [
+                            {
+                                "label": "Type",
+                                "name": "type",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "String",
+                                        "name": "string"
+                                    },
+                                    {
+                                        "label": "Number",
+                                        "name": "number"
+                                    },
+                                    {
+                                        "label": "Boolean",
+                                        "name": "boolean"
+                                    },
+                                    {
+                                        "label": "Options",
+                                        "name": "options"
+                                    }
+                                ],
+                                "default": "string"
+                            },
+                            {
+                                "label": "Label",
+                                "name": "label",
+                                "type": "string",
+                                "placeholder": "Label for the input"
+                            },
+                            {
+                                "label": "Variable Name",
+                                "name": "name",
+                                "type": "string",
+                                "placeholder": "Variable name for the input (must be camel case)",
+                                "description": "Variable name must be camel case. For example: firstName, lastName, etc."
+                            },
+                            {
+                                "label": "Add Options",
+                                "name": "addOptions",
+                                "type": "array",
+                                "show": {
+                                    "formInputTypes[$index].type": "options"
+                                },
+                                "array": [
+                                    {
+                                        "label": "Option",
+                                        "name": "option",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        ],
+                        "id": "start-input-formInputTypes-array",
+                        "display": false
+                    },
+                    {
+                        "label": "Ephemeral Memory",
+                        "name": "startEphemeralMemory",
+                        "type": "boolean",
+                        "description": "Start fresh for every execution without past chat history",
+                        "optional": true,
+                        "id": "start-input-startEphemeralMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Flow State",
+                        "name": "startState",
+                        "description": "Runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "string",
+                                "placeholder": "Foo"
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "placeholder": "Bar",
+                                "optional": true
+                            }
+                        ],
+                        "id": "start-input-startState-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Persist State",
+                        "name": "startPersistState",
+                        "type": "boolean",
+                        "description": "Persist the state in the same session",
+                        "optional": true,
+                        "id": "start-input-startPersistState-boolean",
+                        "display": true
+                    }
                 ],
-                "default": "string"
-              },
-              {
-                "label": "Label",
-                "name": "label",
-                "type": "string",
-                "placeholder": "Label for the input"
-              },
-              {
-                "label": "Variable Name",
-                "name": "name",
-                "type": "string",
-                "placeholder": "Variable name for the input (must be camel case)",
-                "description": "Variable name must be camel case. For example: firstName, lastName, etc."
-              },
-              {
-                "label": "Add Options",
-                "name": "addOptions",
-                "type": "array",
-                "show": {
-                  "formInputTypes[$index].type": "options"
+                "inputAnchors": [],
+                "inputs": {
+                    "startInputType": "chatInput",
+                    "startEphemeralMemory": false,
+                    "startState": [
+                        {
+                            "key": "intent",
+                            "value": ""
+                        },
+                        {
+                            "key": "idioma",
+                            "value": "es"
+                        },
+                        {
+                            "key": "fechaSolicitada",
+                            "value": ""
+                        },
+                        {
+                            "key": "checkOut",
+                            "value": ""
+                        },
+                        {
+                            "key": "diasSolicitados",
+                            "value": 0
+                        },
+                        {
+                            "key": "personas",
+                            "value": 0
+                        },
+                        {
+                            "key": "quintaId",
+                            "value": ""
+                        },
+                        {
+                            "key": "quintasDisponibles",
+                            "value": "[]"
+                        },
+                        {
+                            "key": "catalogoLink",
+                            "value": ""
+                        },
+                        {
+                            "key": "precioBase",
+                            "value": 0
+                        },
+                        {
+                            "key": "precioTotal",
+                            "value": 0
+                        },
+                        {
+                            "key": "moneda",
+                            "value": "USD"
+                        },
+                        {
+                            "key": "descuentoPct",
+                            "value": 0
+                        },
+                        {
+                            "key": "clienteHabitualFlag",
+                            "value": false
+                        },
+                        {
+                            "key": "cotizacionVigencia",
+                            "value": ""
+                        },
+                        {
+                            "key": "estadoCalendario",
+                            "value": ""
+                        },
+                        {
+                            "key": "holdExpires",
+                            "value": ""
+                        },
+                        {
+                            "key": "lead",
+                            "value": "{}"
+                        },
+                        {
+                            "key": "citaVisita",
+                            "value": "{}"
+                        },
+                        {
+                            "key": "kpi",
+                            "value": "{}"
+                        },
+                        {
+                            "key": "alternativas",
+                            "value": "[]"
+                        },
+                        {
+                            "key": "minNights",
+                            "value": 0
+                        },
+                        {
+                            "key": "depositPct",
+                            "value": 0
+                        },
+                        {
+                            "key": "depositDeadlineHours",
+                            "value": 0
+                        },
+                        {
+                            "key": "musicRules",
+                            "value": ""
+                        },
+                        {
+                            "key": "paymentNote",
+                            "value": ""
+                        }
+                    ],
+                    "startPersistState": false
                 },
-                "array": [
-                  {
-                    "label": "Option",
-                    "name": "option",
-                    "type": "string"
-                  }
-                ]
-              }
-            ],
-            "id": "start-input-formInputTypes-array",
-            "display": false
-          },
-          {
-            "label": "Ephemeral Memory",
-            "name": "startEphemeralMemory",
-            "type": "boolean",
-            "description": "Start fresh for every execution without past chat history",
-            "optional": true,
-            "id": "start-input-startEphemeralMemory-boolean",
-            "display": true
-          },
-          {
-            "label": "Flow State",
-            "name": "startState",
-            "description": "Runtime state during the execution of the workflow",
-            "type": "array",
-            "optional": true,
-            "array": [
-              {
-                "label": "Key",
-                "name": "key",
-                "type": "string",
-                "placeholder": "Foo"
-              },
-              {
-                "label": "Value",
-                "name": "value",
-                "type": "string",
-                "placeholder": "Bar",
-                "optional": true
-              }
-            ],
-            "id": "start-input-startState-array",
-            "display": true
-          },
-          {
-            "label": "Persist State",
-            "name": "startPersistState",
-            "type": "boolean",
-            "description": "Persist the state in the same session",
-            "optional": true,
-            "id": "start-input-startPersistState-boolean",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "startInputType": "chatInput",
-          "startEphemeralMemory": false,
-          "startState": [
-            {
-              "key": "intent",
-              "value": ""
-            },
-            {
-              "key": "idioma",
-              "value": "es"
-            },
-            {
-              "key": "fechaSolicitada",
-              "value": ""
-            },
-            {
-              "key": "checkOut",
-              "value": ""
-            },
-            {
-              "key": "diasSolicitados",
-              "value": 0
-            },
-            {
-              "key": "personas",
-              "value": 0
-            },
-            {
-              "key": "quintaId",
-              "value": ""
-            },
-            {
-              "key": "quintasDisponibles",
-              "value": "[]"
-            },
-            {
-              "key": "catalogoLink",
-              "value": ""
-            },
-            {
-              "key": "precioBase",
-              "value": 0
-            },
-            {
-              "key": "precioTotal",
-              "value": 0
-            },
-            {
-              "key": "moneda",
-              "value": "USD"
-            },
-            {
-              "key": "descuentoPct",
-              "value": 0
-            },
-            {
-              "key": "clienteHabitualFlag",
-              "value": false
-            },
-            {
-              "key": "cotizacionVigencia",
-              "value": ""
-            },
-            {
-              "key": "estadoCalendario",
-              "value": ""
-            },
-            {
-              "key": "holdExpires",
-              "value": ""
-            },
-            {
-              "key": "lead",
-              "value": "{}"
-            },
-            {
-              "key": "citaVisita",
-              "value": "{}"
-            },
-            {
-              "key": "kpi",
-              "value": "{}"
-            },
-            {
-              "key": "alternativas",
-              "value": "[]"
-            },
-            {
-              "key": "minNights",
-              "value": 0
-            },
-            {
-              "key": "depositPct",
-              "value": 0
-            },
-            {
-              "key": "depositDeadlineHours",
-              "value": 0
-            },
-            {
-              "key": "musicRules",
-              "value": ""
-            },
-            {
-              "key": "paymentNote",
-              "value": ""
-            }
-          ],
-          "startPersistState": false
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 103,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 0,
-        "y": 0
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "llm_intent",
-      "type": "agentFlow",
-      "position": {
-        "x": 240,
-        "y": 0
-      },
-      "data": {
-        "id": "llm_intent",
-        "label": "LLM Intent",
-        "version": 1,
-        "name": "llmAgentflow",
-        "type": "LLM",
-        "color": "#64B5F6",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Model",
-            "name": "llmModel",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "loadConfig": true,
-            "display": true
-          },
-          {
-            "label": "Messages",
-            "name": "llmMessages",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Role",
-                "name": "role",
-                "type": "options",
-                "options": [
-                  {
-                    "label": "System",
-                    "name": "system"
-                  },
-                  {
-                    "label": "Assistant",
-                    "name": "assistant"
-                  },
-                  {
-                    "label": "Developer",
-                    "name": "developer"
-                  },
-                  {
-                    "label": "User",
-                    "name": "user"
-                  }
-                ]
-              },
-              {
-                "label": "Content",
-                "name": "content",
-                "type": "string",
-                "acceptVariable": true,
-                "rows": 4
-              }
-            ],
-            "display": true
-          },
-          {
-            "label": "Enable Memory",
-            "name": "llmEnableMemory",
-            "type": "boolean",
-            "default": true,
-            "optional": true,
-            "display": true
-          }
-        ],
-        "inputs": {
-          "llmModel": "chatOpenAI",
-          "llmMessages": [
-            {
-              "role": "system",
-              "content": "Clasifica la intencion en: disponibilidad, reserva, visita, faq, followup, kpi. Devuelve solo JSON {intent, notas}."
-            },
-            {
-              "role": "user",
-              "content": "{{ $flow.input }}"
-            }
-          ],
-          "llmEnableMemory": true,
-          "llmModelConfig": {
-            "cache": "",
-            "modelName": "gpt-4.1-mini",
-            "temperature": 0.9,
-            "streaming": true,
-            "maxTokens": "",
-            "topP": "",
-            "frequencyPenalty": "",
-            "presencePenalty": "",
-            "timeout": "",
-            "strictToolCalling": "",
-            "stopSequence": "",
-            "basepath": "",
-            "proxyUrl": "",
-            "baseOptions": "",
-            "allowImageUploads": "",
-            "reasoning": "",
-            "llmModel": "chatOpenAI"
-          }
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 175,
-      "height": 72,
-      "positionAbsolute": {
-        "x": 240,
-        "y": 0
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "router",
-      "type": "agentFlow",
-      "position": {
-        "x": 520,
-        "y": 0
-      },
-      "data": {
-        "id": "router",
-        "label": "Router IA",
-        "version": 1.1,
-        "name": "conditionAgentAgentflow",
-        "type": "ConditionAgent",
-        "color": "#ff8fab",
-        "baseClasses": [
-          "ConditionAgent"
-        ],
-        "category": "Agent Flows",
-        "description": "Utilize an agent to split flows based on dynamic conditions",
-        "inputParams": [
-          {
-            "label": "Model",
-            "name": "conditionAgentModel",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "loadConfig": true,
-            "id": "router-input-conditionAgentModel-asyncOptions",
-            "display": true
-          },
-          {
-            "label": "Instructions",
-            "name": "conditionAgentInstructions",
-            "type": "string",
-            "description": "A general instructions of what the condition agent should do",
-            "rows": 4,
-            "acceptVariable": true,
-            "placeholder": "Determine if the user is interested in learning about AI",
-            "id": "router-input-conditionAgentInstructions-string",
-            "display": true
-          },
-          {
-            "label": "Input",
-            "name": "conditionAgentInput",
-            "type": "string",
-            "description": "Input to be used for the condition agent",
-            "rows": 4,
-            "acceptVariable": true,
-            "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
-            "id": "router-input-conditionAgentInput-string",
-            "display": true
-          },
-          {
-            "label": "Scenarios",
-            "name": "conditionAgentScenarios",
-            "description": "Define the scenarios that will be used as the conditions to split the flow",
-            "type": "array",
-            "array": [
-              {
-                "label": "Scenario",
-                "name": "scenario",
-                "type": "string",
-                "placeholder": "User is asking for a pizza"
-              }
-            ],
-            "default": [
-              {
-                "scenario": ""
-              },
-              {
-                "scenario": ""
-              }
-            ],
-            "id": "router-input-conditionAgentScenarios-array",
-            "display": true
-          },
-          {
-            "label": "Override System Prompt",
-            "name": "conditionAgentOverrideSystemPrompt",
-            "type": "boolean",
-            "description": "Override initial system prompt for Condition Agent",
-            "optional": true,
-            "id": "router-input-conditionAgentOverrideSystemPrompt-boolean",
-            "display": true
-          },
-          {
-            "label": "Node System Prompt",
-            "name": "conditionAgentSystemPrompt",
-            "type": "string",
-            "rows": 4,
-            "optional": true,
-            "acceptVariable": true,
-            "default": "<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>\n    <ul>\n        <li><strong>Input</strong>: A string representing the user's query, message or data.</li>\n        <li><strong>Scenarios</strong>: A list of predefined scenarios that relate to the input.</li>\n        <li><strong>Instruction</strong>: Determine which of the provided scenarios is the best fit for the input.</li>\n    </ul>\n    <h2>Steps</h2>\n    <ol>\n        <li><strong>Read the input string</strong> and the list of scenarios.</li>\n        <li><strong>Analyze the content of the input</strong> to identify its main topic or intention.</li>\n        <li><strong>Compare the input with each scenario</strong>: Evaluate how well the input's topic or intention aligns with each of the provided scenarios and select the one that is the best fit.</li>\n        <li><strong>Output the result</strong>: Return the selected scenario in the specified JSON format.</li>\n    </ol>\n    <h2>Output Format</h2>\n    <p>Output should be a JSON object that names the selected scenario, like this: <code>{\"output\": \"<selected_scenario_name>\"}</code>. No explanation is needed.</p>\n    <h2>Examples</h2>\n    <ol>\n       <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Hello\", \"scenarios\": [\"user is asking about AI\", \"user is not asking about AI\"], \"instruction\": \"Your task is to check if the user is asking about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is not asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"What is AIGC?\", \"scenarios\": [\"user is asking about AI\", \"user is asking about the weather\"], \"instruction\": \"Your task is to check and see if the user is asking a topic about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Can you explain deep learning?\", \"scenarios\": [\"user is interested in AI topics\", \"user wants to order food\"], \"instruction\": \"Determine if the user is interested in learning about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is interested in AI topics\"}</code></p>\n        </li>\n    </ol>\n    <h2>Note</h2>\n    <ul>\n        <li>Ensure that the input scenarios align well with potential user queries for accurate matching.</li>\n        <li>DO NOT include anything other than the JSON in your response.</li>\n    </ul>",
-            "description": "Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure",
-            "show": {
-              "conditionAgentOverrideSystemPrompt": true
-            },
-            "id": "router-input-conditionAgentSystemPrompt-string",
-            "display": false
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "conditionAgentModel": "chatOpenAI",
-          "conditionAgentInstructions": "Elige el escenario mas adecuado: disponibilidad, reserva, visita, faq, followup, kpi.",
-          "conditionAgentInput": "{{ $flow.input }}",
-          "conditionAgentScenarios": [
-            {
-              "scenario": "disponibilidad"
-            },
-            {
-              "scenario": "reserva"
-            },
-            {
-              "scenario": "visita"
-            },
-            {
-              "scenario": "faq"
-            },
-            {
-              "scenario": "followup"
-            },
-            {
-              "scenario": "kpi"
-            }
-          ],
-          "conditionAgentOverrideSystemPrompt": "",
-          "conditionAgentSystemPrompt": "<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>\n    <ul>\n        <li><strong>Input</strong>: A string representing the user's query, message or data.</li>\n        <li><strong>Scenarios</strong>: A list of predefined scenarios that relate to the input.</li>\n        <li><strong>Instruction</strong>: Determine which of the provided scenarios is the best fit for the input.</li>\n    </ul>\n    <h2>Steps</h2>\n    <ol>\n        <li><strong>Read the input string</strong> and the list of scenarios.</li>\n        <li><strong>Analyze the content of the input</strong> to identify its main topic or intention.</li>\n        <li><strong>Compare the input with each scenario</strong>: Evaluate how well the input's topic or intention aligns with each of the provided scenarios and select the one that is the best fit.</li>\n        <li><strong>Output the result</strong>: Return the selected scenario in the specified JSON format.</li>\n    </ol>\n    <h2>Output Format</h2>\n    <p>Output should be a JSON object that names the selected scenario, like this: <code>{\"output\": \"<selected_scenario_name>\"}</code>. No explanation is needed.</p>\n    <h2>Examples</h2>\n    <ol>\n       <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Hello\", \"scenarios\": [\"user is asking about AI\", \"user is not asking about AI\"], \"instruction\": \"Your task is to check if the user is asking about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is not asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"What is AIGC?\", \"scenarios\": [\"user is asking about AI\", \"user is asking about the weather\"], \"instruction\": \"Your task is to check and see if the user is asking a topic about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Can you explain deep learning?\", \"scenarios\": [\"user is interested in AI topics\", \"user wants to order food\"], \"instruction\": \"Determine if the user is interested in learning about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is interested in AI topics\"}</code></p>\n        </li>\n    </ol>\n    <h2>Note</h2>\n    <ul>\n        <li>Ensure that the input scenarios align well with potential user queries for accurate matching.</li>\n        <li>DO NOT include anything other than the JSON in your response.</li>\n    </ul>",
-          "conditionAgentModelConfig": {
-            "cache": "",
-            "modelName": "gpt-4.1-mini",
-            "temperature": 0.9,
-            "streaming": true,
-            "maxTokens": "",
-            "topP": "",
-            "frequencyPenalty": "",
-            "presencePenalty": "",
-            "timeout": "",
-            "strictToolCalling": "",
-            "stopSequence": "",
-            "basepath": "",
-            "proxyUrl": "",
-            "baseOptions": "",
-            "allowImageUploads": "",
-            "reasoning": "",
-            "conditionAgentModel": "chatOpenAI"
-          }
-        },
-        "outputAnchors": [
-          {
-            "id": "disponibilidad",
-            "name": "disponibilidad",
-            "label": "disponibilidad"
-          },
-          {
-            "id": "faq",
-            "name": "faq",
-            "label": "faq"
-          },
-          {
-            "id": "followup",
-            "name": "followup",
-            "label": "followup"
-          },
-          {
-            "id": "kpi",
-            "name": "kpi",
-            "label": "kpi"
-          },
-          {
-            "id": "reserva",
-            "name": "reserva",
-            "label": "reserva"
-          },
-          {
-            "id": "visita",
-            "name": "visita",
-            "label": "visita"
-          }
-        ],
-        "outputs": {
-          "conditionAgentAgentflow": ""
-        },
-        "selected": false
-      },
-      "width": 175,
-      "height": 160,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 520,
-        "y": 0
-      }
-    },
-    {
-      "id": "q_norm",
-      "type": "agentFlow",
-      "position": {
-        "x": 780,
-        "y": -160
-      },
-      "data": {
-        "id": "q_norm",
-        "label": "Q - Normalizar",
-        "version": 1,
-        "name": "llmAgentflow",
-        "type": "LLM",
-        "color": "#64B5F6",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Model",
-            "name": "llmModel",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "loadConfig": true,
-            "display": true
-          },
-          {
-            "label": "Messages",
-            "name": "llmMessages",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Role",
-                "name": "role",
-                "type": "options",
-                "options": [
-                  {
-                    "label": "System",
-                    "name": "system"
-                  },
-                  {
-                    "label": "Assistant",
-                    "name": "assistant"
-                  },
-                  {
-                    "label": "Developer",
-                    "name": "developer"
-                  },
-                  {
-                    "label": "User",
-                    "name": "user"
-                  }
-                ]
-              },
-              {
-                "label": "Content",
-                "name": "content",
-                "type": "string",
-                "acceptVariable": true,
-                "rows": 4
-              }
-            ],
-            "display": true
-          },
-          {
-            "label": "Enable Memory",
-            "name": "llmEnableMemory",
-            "type": "boolean",
-            "default": true,
-            "optional": true,
-            "display": true
-          }
-        ],
-        "inputs": {
-          "llmModel": "chatOpenAI",
-          "llmMessages": [
-            {
-              "role": "system",
-              "content": "Extrae de la consulta: fechaSolicitada, checkOut o diasSolicitados, personas, quintaId, clienteHabitualFlag, preferenciaVisita. Si falta algo, needsClarification=true y missingFields. Devuelve solo JSON."
-            },
-            {
-              "role": "user",
-              "content": "{{ $flow.input }}"
-            }
-          ],
-          "llmEnableMemory": true,
-          "llmModelConfig": {
-            "cache": "",
-            "modelName": "gpt-4.1-mini",
-            "temperature": 0.9,
-            "streaming": true,
-            "maxTokens": "",
-            "topP": "",
-            "frequencyPenalty": "",
-            "presencePenalty": "",
-            "timeout": "",
-            "strictToolCalling": "",
-            "stopSequence": "",
-            "basepath": "",
-            "proxyUrl": "",
-            "baseOptions": "",
-            "allowImageUploads": "",
-            "reasoning": "",
-            "llmModel": "chatOpenAI"
-          }
-        },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 175,
-      "height": 72,
-      "positionAbsolute": {
-        "x": 780,
-        "y": -160
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_cond_missing",
-      "type": "agentFlow",
-      "position": {
-        "x": 1020,
-        "y": -160
-      },
-      "data": {
-        "id": "q_cond_missing",
-        "label": "Q - faltan datos?",
-        "version": 1,
-        "name": "conditionAgentflow",
-        "type": "Condition",
-        "color": "#FFB938",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Conditions",
-            "name": "conditions",
-            "type": "array",
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Type",
-                "name": "type",
-                "type": "options",
-                "options": [
-                  {
-                    "label": "String",
-                    "name": "string"
-                  },
-                  {
-                    "label": "Number",
-                    "name": "number"
-                  },
-                  {
-                    "label": "Boolean",
-                    "name": "boolean"
-                  }
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
                 ],
-                "default": "string"
-              },
-              {
-                "label": "Value 1",
-                "name": "value1",
-                "type": "string",
-                "acceptVariable": true
-              },
-              {
-                "label": "Operation",
-                "name": "operation",
-                "type": "options",
-                "options": [
-                  {
-                    "label": "Contains",
-                    "name": "contains"
-                  },
-                  {
-                    "label": "Ends With",
-                    "name": "endsWith"
-                  },
-                  {
-                    "label": "Equal",
-                    "name": "equal"
-                  },
-                  {
-                    "label": "Not Contains",
-                    "name": "notContains"
-                  },
-                  {
-                    "label": "Not Equal",
-                    "name": "notEqual"
-                  },
-                  {
-                    "label": "Regex",
-                    "name": "regex"
-                  },
-                  {
-                    "label": "Starts With",
-                    "name": "startsWith"
-                  },
-                  {
-                    "label": "Is Empty",
-                    "name": "isEmpty"
-                  },
-                  {
-                    "label": "Not Empty",
-                    "name": "notEmpty"
-                  }
+                "outputs": {},
+                "selected": false
+            },
+            "width": 103,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 0,
+                "y": 0
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "llm_intent",
+            "type": "agentFlow",
+            "position": {
+                "x": 240,
+                "y": 0
+            },
+            "data": {
+                "id": "llm_intent",
+                "label": "LLM Intent",
+                "version": 1,
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ],
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true,
+                        "display": true
+                    }
                 ],
-                "default": "equal"
-              },
-              {
-                "label": "Value 2",
-                "name": "value2",
-                "type": "string",
-                "acceptVariable": true
-              }
-            ]
-          }
-        ],
-        "inputs": {
-          "conditions": [
-            {
-              "type": "Boolean",
-              "value1": "{{ $flow.state.needsClarification }}",
-              "operation": "equal",
-              "value2": true
+                "inputs": {
+                    "llmModel": "chatOpenAI",
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Clasifica la intencion en: disponibilidad, reserva, visita, faq, followup, kpi. Devuelve solo JSON {intent, notas}."
+                        },
+                        {
+                            "role": "user",
+                            "content": "{{ $flow.input }}"
+                        }
+                    ],
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 175,
+            "height": 72,
+            "positionAbsolute": {
+                "x": 240,
+                "y": 0
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "router",
+            "type": "agentFlow",
+            "position": {
+                "x": 520,
+                "y": 0
+            },
+            "data": {
+                "id": "router",
+                "label": "Router IA",
+                "version": 1.1,
+                "name": "conditionAgentAgentflow",
+                "type": "ConditionAgent",
+                "color": "#ff8fab",
+                "baseClasses": ["ConditionAgent"],
+                "category": "Agent Flows",
+                "description": "Utilize an agent to split flows based on dynamic conditions",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "conditionAgentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "router-input-conditionAgentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Instructions",
+                        "name": "conditionAgentInstructions",
+                        "type": "string",
+                        "description": "A general instructions of what the condition agent should do",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "placeholder": "Determine if the user is interested in learning about AI",
+                        "id": "router-input-conditionAgentInstructions-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Input",
+                        "name": "conditionAgentInput",
+                        "type": "string",
+                        "description": "Input to be used for the condition agent",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
+                        "id": "router-input-conditionAgentInput-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Scenarios",
+                        "name": "conditionAgentScenarios",
+                        "description": "Define the scenarios that will be used as the conditions to split the flow",
+                        "type": "array",
+                        "array": [
+                            {
+                                "label": "Scenario",
+                                "name": "scenario",
+                                "type": "string",
+                                "placeholder": "User is asking for a pizza"
+                            }
+                        ],
+                        "default": [
+                            {
+                                "scenario": ""
+                            },
+                            {
+                                "scenario": ""
+                            }
+                        ],
+                        "id": "router-input-conditionAgentScenarios-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Override System Prompt",
+                        "name": "conditionAgentOverrideSystemPrompt",
+                        "type": "boolean",
+                        "description": "Override initial system prompt for Condition Agent",
+                        "optional": true,
+                        "id": "router-input-conditionAgentOverrideSystemPrompt-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Node System Prompt",
+                        "name": "conditionAgentSystemPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "default": "<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>\n    <ul>\n        <li><strong>Input</strong>: A string representing the user's query, message or data.</li>\n        <li><strong>Scenarios</strong>: A list of predefined scenarios that relate to the input.</li>\n        <li><strong>Instruction</strong>: Determine which of the provided scenarios is the best fit for the input.</li>\n    </ul>\n    <h2>Steps</h2>\n    <ol>\n        <li><strong>Read the input string</strong> and the list of scenarios.</li>\n        <li><strong>Analyze the content of the input</strong> to identify its main topic or intention.</li>\n        <li><strong>Compare the input with each scenario</strong>: Evaluate how well the input's topic or intention aligns with each of the provided scenarios and select the one that is the best fit.</li>\n        <li><strong>Output the result</strong>: Return the selected scenario in the specified JSON format.</li>\n    </ol>\n    <h2>Output Format</h2>\n    <p>Output should be a JSON object that names the selected scenario, like this: <code>{\"output\": \"<selected_scenario_name>\"}</code>. No explanation is needed.</p>\n    <h2>Examples</h2>\n    <ol>\n       <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Hello\", \"scenarios\": [\"user is asking about AI\", \"user is not asking about AI\"], \"instruction\": \"Your task is to check if the user is asking about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is not asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"What is AIGC?\", \"scenarios\": [\"user is asking about AI\", \"user is asking about the weather\"], \"instruction\": \"Your task is to check and see if the user is asking a topic about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Can you explain deep learning?\", \"scenarios\": [\"user is interested in AI topics\", \"user wants to order food\"], \"instruction\": \"Determine if the user is interested in learning about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is interested in AI topics\"}</code></p>\n        </li>\n    </ol>\n    <h2>Note</h2>\n    <ul>\n        <li>Ensure that the input scenarios align well with potential user queries for accurate matching.</li>\n        <li>DO NOT include anything other than the JSON in your response.</li>\n    </ul>",
+                        "description": "Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure",
+                        "show": {
+                            "conditionAgentOverrideSystemPrompt": true
+                        },
+                        "id": "router-input-conditionAgentSystemPrompt-string",
+                        "display": false
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "conditionAgentModel": "chatOpenAI",
+                    "conditionAgentInstructions": "Elige el escenario mas adecuado: disponibilidad, reserva, visita, faq, followup, kpi.",
+                    "conditionAgentInput": "{{ $flow.input }}",
+                    "conditionAgentScenarios": [
+                        {
+                            "scenario": "disponibilidad"
+                        },
+                        {
+                            "scenario": "reserva"
+                        },
+                        {
+                            "scenario": "visita"
+                        },
+                        {
+                            "scenario": "faq"
+                        },
+                        {
+                            "scenario": "followup"
+                        },
+                        {
+                            "scenario": "kpi"
+                        }
+                    ],
+                    "conditionAgentOverrideSystemPrompt": "",
+                    "conditionAgentSystemPrompt": "<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>\n    <ul>\n        <li><strong>Input</strong>: A string representing the user's query, message or data.</li>\n        <li><strong>Scenarios</strong>: A list of predefined scenarios that relate to the input.</li>\n        <li><strong>Instruction</strong>: Determine which of the provided scenarios is the best fit for the input.</li>\n    </ul>\n    <h2>Steps</h2>\n    <ol>\n        <li><strong>Read the input string</strong> and the list of scenarios.</li>\n        <li><strong>Analyze the content of the input</strong> to identify its main topic or intention.</li>\n        <li><strong>Compare the input with each scenario</strong>: Evaluate how well the input's topic or intention aligns with each of the provided scenarios and select the one that is the best fit.</li>\n        <li><strong>Output the result</strong>: Return the selected scenario in the specified JSON format.</li>\n    </ol>\n    <h2>Output Format</h2>\n    <p>Output should be a JSON object that names the selected scenario, like this: <code>{\"output\": \"<selected_scenario_name>\"}</code>. No explanation is needed.</p>\n    <h2>Examples</h2>\n    <ol>\n       <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Hello\", \"scenarios\": [\"user is asking about AI\", \"user is not asking about AI\"], \"instruction\": \"Your task is to check if the user is asking about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is not asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"What is AIGC?\", \"scenarios\": [\"user is asking about AI\", \"user is asking about the weather\"], \"instruction\": \"Your task is to check and see if the user is asking a topic about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Can you explain deep learning?\", \"scenarios\": [\"user is interested in AI topics\", \"user wants to order food\"], \"instruction\": \"Determine if the user is interested in learning about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is interested in AI topics\"}</code></p>\n        </li>\n    </ol>\n    <h2>Note</h2>\n    <ul>\n        <li>Ensure that the input scenarios align well with potential user queries for accurate matching.</li>\n        <li>DO NOT include anything other than the JSON in your response.</li>\n    </ul>",
+                    "conditionAgentModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "conditionAgentModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "disponibilidad",
+                        "name": "disponibilidad",
+                        "label": "disponibilidad"
+                    },
+                    {
+                        "id": "faq",
+                        "name": "faq",
+                        "label": "faq"
+                    },
+                    {
+                        "id": "followup",
+                        "name": "followup",
+                        "label": "followup"
+                    },
+                    {
+                        "id": "kpi",
+                        "name": "kpi",
+                        "label": "kpi"
+                    },
+                    {
+                        "id": "reserva",
+                        "name": "reserva",
+                        "label": "reserva"
+                    },
+                    {
+                        "id": "visita",
+                        "name": "visita",
+                        "label": "visita"
+                    }
+                ],
+                "outputs": {
+                    "conditionAgentAgentflow": ""
+                },
+                "selected": false
+            },
+            "width": 175,
+            "height": 160,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 520,
+                "y": 0
             }
-          ]
         },
-        "outputAnchors": [
-          {
-            "id": "false",
-            "name": "false",
-            "label": "false"
-          },
-          {
-            "id": "true",
-            "name": "true",
-            "label": "true"
-          }
-        ],
-        "selected": false
-      },
-      "width": 179,
-      "height": 80,
-      "positionAbsolute": {
-        "x": 1020,
-        "y": -160
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_reply_missing",
-      "type": "agentFlow",
-      "position": {
-        "x": 1260,
-        "y": -200
-      },
-      "data": {
-        "id": "q_reply_missing",
-        "label": "Q - pedir datos",
-        "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          }
-        ],
-        "inputs": {
-          "directReplyMessage": "<p>Hola, soy el asistente de Quintas el Rinc\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00b3n de mi mundo. Para cotizar necesito: fecha de check-in, noches/checkout, cantidad de personas y, si queres, la quinta preferida. Algunas fechas pueden estar no disponibles; si no hay cupo te propondre alternativas. Me compartis esos datos?</p>"
+        {
+            "id": "q_norm",
+            "type": "agentFlow",
+            "position": {
+                "x": 780,
+                "y": -160
+            },
+            "data": {
+                "id": "q_norm",
+                "label": "Q - Normalizar",
+                "version": 1,
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ],
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true,
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "llmModel": "chatOpenAI",
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Extrae de la consulta: fechaSolicitada, checkOut o diasSolicitados, personas, quintaId, clienteHabitualFlag, preferenciaVisita. Si falta algo, needsClarification=true y missingFields. Devuelve solo JSON."
+                        },
+                        {
+                            "role": "user",
+                            "content": "{{ $flow.input }}"
+                        }
+                    ],
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 175,
+            "height": 72,
+            "positionAbsolute": {
+                "x": 780,
+                "y": -160
+            },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 169,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1260,
-        "y": -200
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_custom_calc",
-      "type": "agentFlow",
-      "position": {
-        "x": 1260,
-        "y": -120
-      },
-      "data": {
-        "id": "q_custom_calc",
-        "label": "Q - calcular",
-        "version": 1,
-        "name": "customFunctionAgentflow",
-        "type": "CustomFunction",
-        "color": "#E4B7FF",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Input Variables",
-            "name": "customFunctionInputVariables",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Variable Name",
-                "name": "variableName",
-                "type": "string"
-              },
-              {
-                "label": "Variable Value",
-                "name": "variableValue",
-                "type": "string",
-                "acceptVariable": true
-              }
-            ]
-          },
-          {
-            "label": "Javascript Function",
-            "name": "customFunctionJavascriptFunction",
-            "type": "code"
-          },
-          {
-            "label": "Update Flow State",
-            "name": "customFunctionUpdateState",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Key",
-                "name": "key",
-                "type": "asyncOptions",
-                "loadMethod": "listRuntimeStateKeys",
-                "freeSolo": true
-              },
-              {
-                "label": "Value",
-                "name": "value",
-                "type": "string",
-                "acceptVariable": true,
-                "acceptNodeOutputAsVariable": true
-              }
-            ]
-          }
-        ],
-        "inputs": {
-          "customFunctionInputVariables": [
-            {
-              "name": "diasSolicitados",
-              "value": "{{ $flow.state.diasSolicitados }}"
+        {
+            "id": "q_cond_missing",
+            "type": "agentFlow",
+            "position": {
+                "x": 1020,
+                "y": -160
             },
-            {
-              "name": "precioBase",
-              "value": "{{ $flow.state.precioBase }}"
+            "data": {
+                "id": "q_cond_missing",
+                "label": "Q - faltan datos?",
+                "version": 1,
+                "name": "conditionAgentflow",
+                "type": "Condition",
+                "color": "#FFB938",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Conditions",
+                        "name": "conditions",
+                        "type": "array",
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Type",
+                                "name": "type",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "String",
+                                        "name": "string"
+                                    },
+                                    {
+                                        "label": "Number",
+                                        "name": "number"
+                                    },
+                                    {
+                                        "label": "Boolean",
+                                        "name": "boolean"
+                                    }
+                                ],
+                                "default": "string"
+                            },
+                            {
+                                "label": "Value 1",
+                                "name": "value1",
+                                "type": "string",
+                                "acceptVariable": true
+                            },
+                            {
+                                "label": "Operation",
+                                "name": "operation",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "Contains",
+                                        "name": "contains"
+                                    },
+                                    {
+                                        "label": "Ends With",
+                                        "name": "endsWith"
+                                    },
+                                    {
+                                        "label": "Equal",
+                                        "name": "equal"
+                                    },
+                                    {
+                                        "label": "Not Contains",
+                                        "name": "notContains"
+                                    },
+                                    {
+                                        "label": "Not Equal",
+                                        "name": "notEqual"
+                                    },
+                                    {
+                                        "label": "Regex",
+                                        "name": "regex"
+                                    },
+                                    {
+                                        "label": "Starts With",
+                                        "name": "startsWith"
+                                    },
+                                    {
+                                        "label": "Is Empty",
+                                        "name": "isEmpty"
+                                    },
+                                    {
+                                        "label": "Not Empty",
+                                        "name": "notEmpty"
+                                    }
+                                ],
+                                "default": "equal"
+                            },
+                            {
+                                "label": "Value 2",
+                                "name": "value2",
+                                "type": "string",
+                                "acceptVariable": true
+                            }
+                        ]
+                    }
+                ],
+                "inputs": {
+                    "conditions": [
+                        {
+                            "type": "Boolean",
+                            "value1": "{{ $flow.state.needsClarification }}",
+                            "operation": "equal",
+                            "value2": true
+                        }
+                    ]
+                },
+                "outputAnchors": [
+                    {
+                        "id": "false",
+                        "name": "false",
+                        "label": "false"
+                    },
+                    {
+                        "id": "true",
+                        "name": "true",
+                        "label": "true"
+                    }
+                ],
+                "selected": false
             },
-            {
-              "name": "descuentoPct",
-              "value": "{{ $flow.state.descuentoPct }}"
+            "width": 179,
+            "height": 80,
+            "positionAbsolute": {
+                "x": 1020,
+                "y": -160
             },
-            {
-              "name": "clienteHabitualFlag",
-              "value": "{{ $flow.state.clienteHabitualFlag }}"
-            }
-          ],
-          "customFunctionJavascriptFunction": "const dias=Number($diasSolicitados)||1;const base=Number($precioBase)||0;const descFlag=String($clienteHabitualFlag)==='true';const desc=descFlag?(Number($descuentoPct)||0):0;const total=base*dias*(1-(desc/100));return JSON.stringify({noches:dias,precioTotal:total,descuentoPct:desc});",
-          "customFunctionUpdateState": [
-            {
-              "key": "diasSolicitados",
-              "value": "{{ json.noches }}"
-            },
-            {
-              "key": "precioTotal",
-              "value": "{{ json.precioTotal }}"
-            },
-            {
-              "key": "descuentoPct",
-              "value": "{{ json.descuentoPct }}"
-            }
-          ]
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 147,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1260,
-        "y": -120
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_ret_restr",
-      "type": "agentFlow",
-      "position": {
-        "x": 1500,
-        "y": -240
-      },
-      "data": {
-        "id": "q_ret_restr",
-        "label": "Q - Restricciones",
-        "version": 1,
-        "name": "retrieverAgentflow",
-        "type": "Retriever",
-        "color": "#b8bedd",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Knowledge (Document Stores)",
-            "name": "retrieverKnowledgeDocumentStores",
-            "type": "array",
-            "array": [
-              {
-                "label": "Document Store",
-                "name": "documentStore",
-                "type": "asyncOptions",
-                "loadMethod": "listStores"
-              }
-            ]
-          },
-          {
-            "label": "Retriever Query",
-            "name": "retrieverQuery",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          },
-          {
-            "label": "Output Format",
-            "name": "outputFormat",
-            "type": "options",
-            "options": [
-              {
-                "label": "Text",
-                "name": "text"
-              },
-              {
-                "label": "Text with Metadata",
-                "name": "textWithMetadata"
-              }
-            ],
-            "default": "text"
-          },
-          {
-            "label": "Update Flow State",
-            "name": "retrieverUpdateState",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Key",
-                "name": "key",
-                "type": "asyncOptions",
-                "loadMethod": "listRuntimeStateKeys",
-                "freeSolo": true
-              },
-              {
-                "label": "Value",
-                "name": "value",
-                "type": "string",
-                "acceptVariable": true,
-                "acceptNodeOutputAsVariable": true
-              }
-            ]
-          }
-        ],
-        "inputs": {
-          "retrieverKnowledgeDocumentStores": [
-            {
-              "documentStore": "464c7e91-3f6e-469d-9201-9c68a3ea971c:RESTRICCIONES_QUINTAS"
-            }
-          ],
-          "retrieverQuery": "{{ $flow.state.fechaSolicitada }} minimos musica pagos visitas {{ $flow.state.quintaId }}",
-          "outputFormat": "text",
-          "retrieverUpdateState": []
+        {
+            "id": "q_reply_missing",
+            "type": "agentFlow",
+            "position": {
+                "x": 1260,
+                "y": -200
+            },
+            "data": {
+                "id": "q_reply_missing",
+                "label": "Q - pedir datos",
+                "version": 1,
+                "name": "directReplyAgentflow",
+                "type": "DirectReply",
+                "color": "#4DDBBB",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Message",
+                        "name": "directReplyMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true
+                    }
+                ],
+                "inputs": {
+                    "directReplyMessage": "<p>Hola, soy el asistente de Quintas el Rinc\u00c3\u0192\u00c6\u2019\u00c3\u201a\u00c2\u00b3n de mi mundo. Para cotizar necesito: fecha de check-in, noches/checkout, cantidad de personas y, si queres, la quinta preferida. Algunas fechas pueden estar no disponibles; si no hay cupo te propondre alternativas. Me compartis esos datos?</p>"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 169,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 1260,
+                "y": -200
+            },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 184,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1500,
-        "y": -240
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_ret_cal",
-      "type": "agentFlow",
-      "position": {
-        "x": 1500,
-        "y": -160
-      },
-      "data": {
-        "id": "q_ret_cal",
-        "label": "Q - Calendario",
-        "version": 1,
-        "name": "retrieverAgentflow",
-        "type": "Retriever",
-        "color": "#b8bedd",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Knowledge (Document Stores)",
-            "name": "retrieverKnowledgeDocumentStores",
-            "type": "array",
-            "array": [
-              {
-                "label": "Document Store",
-                "name": "documentStore",
-                "type": "asyncOptions",
-                "loadMethod": "listStores"
-              }
-            ]
-          },
-          {
-            "label": "Retriever Query",
-            "name": "retrieverQuery",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          },
-          {
-            "label": "Output Format",
-            "name": "outputFormat",
-            "type": "options",
-            "options": [
-              {
-                "label": "Text",
-                "name": "text"
-              },
-              {
-                "label": "Text with Metadata",
-                "name": "textWithMetadata"
-              }
-            ],
-            "default": "text"
-          },
-          {
-            "label": "Update Flow State",
-            "name": "retrieverUpdateState",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Key",
-                "name": "key",
-                "type": "asyncOptions",
-                "loadMethod": "listRuntimeStateKeys",
-                "freeSolo": true
-              },
-              {
-                "label": "Value",
-                "name": "value",
-                "type": "string",
-                "acceptVariable": true,
-                "acceptNodeOutputAsVariable": true
-              }
-            ]
-          }
-        ],
-        "inputs": {
-          "retrieverKnowledgeDocumentStores": [
-            {
-              "documentStore": "713b2827-a1c6-4426-90b2-c5e438e424e1:CALENDARIO_QUINTAS"
-            }
-          ],
-          "retrieverQuery": "{{ $flow.state.fechaSolicitada }} {{ $flow.state.diasSolicitados }} {{ $flow.state.personas }} {{ $flow.state.quintaId }}",
-          "outputFormat": "text",
-          "retrieverUpdateState": []
+        {
+            "id": "q_custom_calc",
+            "type": "agentFlow",
+            "position": {
+                "x": 1260,
+                "y": -120
+            },
+            "data": {
+                "id": "q_custom_calc",
+                "label": "Q - calcular",
+                "version": 1,
+                "name": "customFunctionAgentflow",
+                "type": "CustomFunction",
+                "color": "#E4B7FF",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Input Variables",
+                        "name": "customFunctionInputVariables",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Variable Name",
+                                "name": "variableName",
+                                "type": "string"
+                            },
+                            {
+                                "label": "Variable Value",
+                                "name": "variableValue",
+                                "type": "string",
+                                "acceptVariable": true
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Javascript Function",
+                        "name": "customFunctionJavascriptFunction",
+                        "type": "code"
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "customFunctionUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ]
+                    }
+                ],
+                "inputs": {
+                    "customFunctionInputVariables": [
+                        {
+                            "name": "diasSolicitados",
+                            "value": "{{ $flow.state.diasSolicitados }}"
+                        },
+                        {
+                            "name": "precioBase",
+                            "value": "{{ $flow.state.precioBase }}"
+                        },
+                        {
+                            "name": "descuentoPct",
+                            "value": "{{ $flow.state.descuentoPct }}"
+                        },
+                        {
+                            "name": "clienteHabitualFlag",
+                            "value": "{{ $flow.state.clienteHabitualFlag }}"
+                        }
+                    ],
+                    "customFunctionJavascriptFunction": "const dias=Number($diasSolicitados)||1;const base=Number($precioBase)||0;const descFlag=String($clienteHabitualFlag)==='true';const desc=descFlag?(Number($descuentoPct)||0):0;const total=base*dias*(1-(desc/100));return JSON.stringify({noches:dias,precioTotal:total,descuentoPct:desc});",
+                    "customFunctionUpdateState": [
+                        {
+                            "key": "diasSolicitados",
+                            "value": "{{ json.noches }}"
+                        },
+                        {
+                            "key": "precioTotal",
+                            "value": "{{ json.precioTotal }}"
+                        },
+                        {
+                            "key": "descuentoPct",
+                            "value": "{{ json.descuentoPct }}"
+                        }
+                    ]
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 147,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 1260,
+                "y": -120
+            },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 166,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1500,
-        "y": -160
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_ret_cat",
-      "type": "agentFlow",
-      "position": {
-        "x": 1500,
-        "y": -80
-      },
-      "data": {
-        "id": "q_ret_cat",
-        "label": "Q - Catalogo",
-        "version": 1,
-        "name": "retrieverAgentflow",
-        "type": "Retriever",
-        "color": "#b8bedd",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Knowledge (Document Stores)",
-            "name": "retrieverKnowledgeDocumentStores",
-            "type": "array",
-            "array": [
-              {
-                "label": "Document Store",
-                "name": "documentStore",
-                "type": "asyncOptions",
-                "loadMethod": "listStores"
-              }
-            ]
-          },
-          {
-            "label": "Retriever Query",
-            "name": "retrieverQuery",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          },
-          {
-            "label": "Output Format",
-            "name": "outputFormat",
-            "type": "options",
-            "options": [
-              {
-                "label": "Text",
-                "name": "text"
-              },
-              {
-                "label": "Text with Metadata",
-                "name": "textWithMetadata"
-              }
-            ],
-            "default": "text"
-          },
-          {
-            "label": "Update Flow State",
-            "name": "retrieverUpdateState",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Key",
-                "name": "key",
-                "type": "asyncOptions",
-                "loadMethod": "listRuntimeStateKeys",
-                "freeSolo": true
-              },
-              {
-                "label": "Value",
-                "name": "value",
-                "type": "string",
-                "acceptVariable": true,
-                "acceptNodeOutputAsVariable": true
-              }
-            ]
-          }
-        ],
-        "inputs": {
-          "retrieverKnowledgeDocumentStores": [
-            {
-              "documentStore": "e9af236d-07a1-4216-b9af-ae86e0dffdee:CATALOGO_QUINTAS"
-            }
-          ],
-          "retrieverQuery": "{{ $flow.state.personas }} capacidad amenities precio {{ $flow.state.fechaSolicitada }}",
-          "outputFormat": "text",
-          "retrieverUpdateState": []
+        {
+            "id": "q_ret_restr",
+            "type": "agentFlow",
+            "position": {
+                "x": 1500,
+                "y": -240
+            },
+            "data": {
+                "id": "q_ret_restr",
+                "label": "Q - Restricciones",
+                "version": 1,
+                "name": "retrieverAgentflow",
+                "type": "Retriever",
+                "color": "#b8bedd",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Knowledge (Document Stores)",
+                        "name": "retrieverKnowledgeDocumentStores",
+                        "type": "array",
+                        "array": [
+                            {
+                                "label": "Document Store",
+                                "name": "documentStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listStores"
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Retriever Query",
+                        "name": "retrieverQuery",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true
+                    },
+                    {
+                        "label": "Output Format",
+                        "name": "outputFormat",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Text",
+                                "name": "text"
+                            },
+                            {
+                                "label": "Text with Metadata",
+                                "name": "textWithMetadata"
+                            }
+                        ],
+                        "default": "text"
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "retrieverUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ]
+                    }
+                ],
+                "inputs": {
+                    "retrieverKnowledgeDocumentStores": [
+                        {
+                            "documentStore": "464c7e91-3f6e-469d-9201-9c68a3ea971c:RESTRICCIONES_QUINTAS"
+                        }
+                    ],
+                    "retrieverQuery": "{{ $flow.state.fechaSolicitada }} minimos musica pagos visitas {{ $flow.state.quintaId }}",
+                    "outputFormat": "text",
+                    "retrieverUpdateState": []
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 184,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 1500,
+                "y": -240
+            },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 154,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 1500,
-        "y": -80
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_llm_tarifa",
-      "type": "agentFlow",
-      "position": {
-        "x": 1760,
-        "y": -140
-      },
-      "data": {
-        "id": "q_llm_tarifa",
-        "label": "Q - Tarifa",
-        "version": 1,
-        "name": "llmAgentflow",
-        "type": "LLM",
-        "color": "#64B5F6",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Model",
-            "name": "llmModel",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "loadConfig": true,
-            "display": true
-          },
-          {
-            "label": "Messages",
-            "name": "llmMessages",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Role",
-                "name": "role",
-                "type": "options",
-                "options": [
-                  {
-                    "label": "System",
-                    "name": "system"
-                  },
-                  {
-                    "label": "Assistant",
-                    "name": "assistant"
-                  },
-                  {
-                    "label": "Developer",
-                    "name": "developer"
-                  },
-                  {
-                    "label": "User",
-                    "name": "user"
-                  }
-                ]
-              },
-              {
-                "label": "Content",
-                "name": "content",
-                "type": "string",
-                "acceptVariable": true,
-                "rows": 4
-              }
-            ],
-            "display": true
-          },
-          {
-            "label": "Enable Memory",
-            "name": "llmEnableMemory",
-            "type": "boolean",
-            "default": true,
-            "optional": true,
-            "display": true
-          }
-        ],
-        "inputs": {
-          "llmModel": "chatOpenAI",
-          "llmMessages": [
-            {
-              "role": "system",
-              "content": "Con inventario/catalogo, restricciones (minimos, musica, pagos) y calendario, calcula precio por noche y total. Si noches < minNights, marca alternativaNecesaria=true y propone extender (texto en notas). Incluye deposito y plazo de pago. Devuelve JSON {precioNoche, precioTotal, moneda, notas, alternativaNecesaria, minNights, minNightsOk, depositPct, depositDeadlineHours, musicRules, paymentNote}."
+        {
+            "id": "q_ret_cal",
+            "type": "agentFlow",
+            "position": {
+                "x": 1500,
+                "y": -160
             },
-            {
-              "role": "user",
-              "content": "{{ q_ret_cat.output }} {{ q_ret_restr.output }} {{ q_ret_cal.output }}"
-            }
-          ],
-          "llmEnableMemory": true,
-          "llmModelConfig": {
-            "cache": "",
-            "modelName": "gpt-4.1-mini",
-            "temperature": 0.9,
-            "streaming": true,
-            "maxTokens": "",
-            "topP": "",
-            "frequencyPenalty": "",
-            "presencePenalty": "",
-            "timeout": "",
-            "strictToolCalling": "",
-            "stopSequence": "",
-            "basepath": "",
-            "proxyUrl": "",
-            "baseOptions": "",
-            "allowImageUploads": "",
-            "reasoning": "",
-            "llmModel": "chatOpenAI"
-          }
+            "data": {
+                "id": "q_ret_cal",
+                "label": "Q - Calendario",
+                "version": 1,
+                "name": "retrieverAgentflow",
+                "type": "Retriever",
+                "color": "#b8bedd",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Knowledge (Document Stores)",
+                        "name": "retrieverKnowledgeDocumentStores",
+                        "type": "array",
+                        "array": [
+                            {
+                                "label": "Document Store",
+                                "name": "documentStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listStores"
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Retriever Query",
+                        "name": "retrieverQuery",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true
+                    },
+                    {
+                        "label": "Output Format",
+                        "name": "outputFormat",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Text",
+                                "name": "text"
+                            },
+                            {
+                                "label": "Text with Metadata",
+                                "name": "textWithMetadata"
+                            }
+                        ],
+                        "default": "text"
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "retrieverUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ]
+                    }
+                ],
+                "inputs": {
+                    "retrieverKnowledgeDocumentStores": [
+                        {
+                            "documentStore": "713b2827-a1c6-4426-90b2-c5e438e424e1:CALENDARIO_QUINTAS"
+                        }
+                    ],
+                    "retrieverQuery": "{{ $flow.state.fechaSolicitada }} {{ $flow.state.diasSolicitados }} {{ $flow.state.personas }} {{ $flow.state.quintaId }}",
+                    "outputFormat": "text",
+                    "retrieverUpdateState": []
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 166,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 1500,
+                "y": -160
+            },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 175,
-      "height": 72,
-      "positionAbsolute": {
-        "x": 1760,
-        "y": -140
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_human_cot",
-      "type": "agentFlow",
-      "position": {
-        "x": 2000,
-        "y": -140
-      },
-      "data": {
-        "id": "q_human_cot",
-        "label": "Q - Cotizacion",
-        "version": 1,
-        "name": "humanInputAgentflow",
-        "type": "HumanInput",
-        "color": "#6E6EFD",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Description Type",
-            "name": "humanInputDescriptionType",
-            "type": "options",
-            "options": [
-              {
-                "label": "Fixed",
-                "name": "fixed"
-              },
-              {
-                "label": "Dynamic",
-                "name": "dynamic"
-              }
-            ],
-            "display": true
-          },
-          {
-            "label": "Description",
-            "name": "humanInputDescription",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true,
-            "show": {
-              "humanInputDescriptionType": "fixed"
+        {
+            "id": "q_ret_cat",
+            "type": "agentFlow",
+            "position": {
+                "x": 1500,
+                "y": -80
             },
-            "display": true
-          },
-          {
-            "label": "Model",
-            "name": "humanInputModel",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "loadConfig": true,
-            "show": {
-              "humanInputDescriptionType": "dynamic"
+            "data": {
+                "id": "q_ret_cat",
+                "label": "Q - Catalogo",
+                "version": 1,
+                "name": "retrieverAgentflow",
+                "type": "Retriever",
+                "color": "#b8bedd",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Knowledge (Document Stores)",
+                        "name": "retrieverKnowledgeDocumentStores",
+                        "type": "array",
+                        "array": [
+                            {
+                                "label": "Document Store",
+                                "name": "documentStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listStores"
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Retriever Query",
+                        "name": "retrieverQuery",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true
+                    },
+                    {
+                        "label": "Output Format",
+                        "name": "outputFormat",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Text",
+                                "name": "text"
+                            },
+                            {
+                                "label": "Text with Metadata",
+                                "name": "textWithMetadata"
+                            }
+                        ],
+                        "default": "text"
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "retrieverUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ]
+                    }
+                ],
+                "inputs": {
+                    "retrieverKnowledgeDocumentStores": [
+                        {
+                            "documentStore": "e9af236d-07a1-4216-b9af-ae86e0dffdee:CATALOGO_QUINTAS"
+                        }
+                    ],
+                    "retrieverQuery": "{{ $flow.state.personas }} capacidad amenities precio {{ $flow.state.fechaSolicitada }}",
+                    "outputFormat": "text",
+                    "retrieverUpdateState": []
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
             },
-            "display": false
-          },
-          {
-            "label": "Prompt",
-            "name": "humanInputModelPrompt",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true,
-            "show": {
-              "humanInputDescriptionType": "dynamic"
+            "width": 154,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 1500,
+                "y": -80
             },
-            "display": false
-          },
-          {
-            "label": "Enable Feedback",
-            "name": "humanInputEnableFeedback",
-            "type": "boolean",
-            "default": true,
-            "display": true
-          }
-        ],
-        "inputs": {
-          "humanInputDescriptionType": "fixed",
-          "humanInputDescription": "<p>Confirma cotizacion (HITL): total {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}, estado {{ $flow.state.estadoCalendario || 'hold' }} (hold 24h). Confirmar / cambiar fechas / cancelar. Solo aplica descuento si cliente habitual. Un humano verifica calendario real antes de cerrar.</p>",
-          "humanInputEnableFeedback": true
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "proceed",
-            "name": "proceed",
-            "label": "proceed"
-          }
-        ],
-        "selected": false
-      },
-      "width": 165,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 2000,
-        "y": -140
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_custom_calendario",
-      "type": "agentFlow",
-      "position": {
-        "x": 2240,
-        "y": -140
-      },
-      "data": {
-        "id": "q_custom_calendario",
-        "label": "Q - Calendario",
-        "version": 1,
-        "name": "customFunctionAgentflow",
-        "type": "CustomFunction",
-        "color": "#E4B7FF",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Input Variables",
-            "name": "customFunctionInputVariables",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Variable Name",
-                "name": "variableName",
-                "type": "string"
-              },
-              {
-                "label": "Variable Value",
-                "name": "variableValue",
-                "type": "string",
-                "acceptVariable": true
-              }
-            ]
-          },
-          {
-            "label": "Javascript Function",
-            "name": "customFunctionJavascriptFunction",
-            "type": "code"
-          },
-          {
-            "label": "Update Flow State",
-            "name": "customFunctionUpdateState",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Key",
-                "name": "key",
-                "type": "asyncOptions",
-                "loadMethod": "listRuntimeStateKeys",
-                "freeSolo": true
-              },
-              {
-                "label": "Value",
-                "name": "value",
-                "type": "string",
-                "acceptVariable": true,
-                "acceptNodeOutputAsVariable": true
-              }
-            ]
-          }
-        ],
-        "inputs": {
-          "customFunctionInputVariables": [
-            {
-              "name": "estado",
-              "value": "hold"
+        {
+            "id": "q_llm_tarifa",
+            "type": "agentFlow",
+            "position": {
+                "x": 1760,
+                "y": -140
             },
-            {
-              "name": "fecha",
-              "value": "{{ $flow.state.fechaSolicitada }}"
+            "data": {
+                "id": "q_llm_tarifa",
+                "label": "Q - Tarifa",
+                "version": 1,
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ],
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true,
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "llmModel": "chatOpenAI",
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Con inventario/catalogo, restricciones (minimos, musica, pagos) y calendario, calcula precio por noche y total. Si noches < minNights, marca alternativaNecesaria=true y propone extender (texto en notas). Incluye deposito y plazo de pago. Devuelve JSON {precioNoche, precioTotal, moneda, notas, alternativaNecesaria, minNights, minNightsOk, depositPct, depositDeadlineHours, musicRules, paymentNote}."
+                        },
+                        {
+                            "role": "user",
+                            "content": "{{ q_ret_cat.output }} {{ q_ret_restr.output }} {{ q_ret_cal.output }}"
+                        }
+                    ],
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
             },
-            {
-              "name": "dias",
-              "value": "{{ $flow.state.diasSolicitados }}"
-            }
-          ],
-          "customFunctionJavascriptFunction": "const holdHours=24;const now=new Date();const exp=new Date(now.getTime()+holdHours*60*60*1000).toISOString();return JSON.stringify({estadoCalendario:$estado||'hold',holdExpires:exp,reservaId:'QTA-'+Date.now()});",
-          "customFunctionUpdateState": [
-            {
-              "key": "estadoCalendario",
-              "value": "{{ json.estadoCalendario }}"
+            "width": 175,
+            "height": 72,
+            "positionAbsolute": {
+                "x": 1760,
+                "y": -140
             },
-            {
-              "key": "holdExpires",
-              "value": "{{ json.holdExpires }}"
-            },
-            {
-              "key": "reservaId",
-              "value": "{{ json.reservaId }}"
-            }
-          ]
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 166,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 2240,
-        "y": -140
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "q_reply_final",
-      "type": "agentFlow",
-      "position": {
-        "x": 2480,
-        "y": -140
-      },
-      "data": {
-        "id": "q_reply_final",
-        "label": "Q - Confirmacion",
-        "version": 1,
-        "name": "directReplyAgentflow",
-        "type": "DirectReply",
-        "color": "#4DDBBB",
-        "hideInput": false,
-        "inputParams": [
-          {
-            "label": "Message",
-            "name": "directReplyMessage",
-            "type": "string",
-            "rows": 4,
-            "acceptVariable": true
-          }
-        ],
-        "inputs": {
-          "directReplyMessage": "<p>Reserva preconfirmada. Estado: {{ $flow.state.estadoCalendario || 'hold' }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || '(pendiente)' }}. Reglas: musica moderada de dia, sin musica de noche. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Un humano confirma pagos y calendario real antes de cerrar.</p>"
+        {
+            "id": "q_human_cot",
+            "type": "agentFlow",
+            "position": {
+                "x": 2000,
+                "y": -140
+            },
+            "data": {
+                "id": "q_human_cot",
+                "label": "Q - Cotizacion",
+                "version": 1,
+                "name": "humanInputAgentflow",
+                "type": "HumanInput",
+                "color": "#6E6EFD",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Description Type",
+                        "name": "humanInputDescriptionType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Fixed",
+                                "name": "fixed"
+                            },
+                            {
+                                "label": "Dynamic",
+                                "name": "dynamic"
+                            }
+                        ],
+                        "display": true
+                    },
+                    {
+                        "label": "Description",
+                        "name": "humanInputDescription",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "show": {
+                            "humanInputDescriptionType": "fixed"
+                        },
+                        "display": true
+                    },
+                    {
+                        "label": "Model",
+                        "name": "humanInputModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "show": {
+                            "humanInputDescriptionType": "dynamic"
+                        },
+                        "display": false
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "humanInputModelPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "show": {
+                            "humanInputDescriptionType": "dynamic"
+                        },
+                        "display": false
+                    },
+                    {
+                        "label": "Enable Feedback",
+                        "name": "humanInputEnableFeedback",
+                        "type": "boolean",
+                        "default": true,
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "humanInputDescriptionType": "fixed",
+                    "humanInputDescription": "<p>Confirma cotizacion (HITL): total {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}, estado {{ $flow.state.estadoCalendario || 'hold' }} (hold 24h). Confirmar / cambiar fechas / cancelar. Solo aplica descuento si cliente habitual. Un humano verifica calendario real antes de cerrar.</p>",
+                    "humanInputEnableFeedback": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "proceed",
+                        "name": "proceed",
+                        "label": "proceed"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 165,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 2000,
+                "y": -140
+            },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "output",
-            "name": "output",
-            "label": "output"
-          }
-        ],
-        "selected": false
-      },
-      "width": 184,
-      "height": 66,
-      "positionAbsolute": {
-        "x": 2480,
-        "y": -140
-      },
-      "selected": false,
-      "dragging": false
-    }
-  ],
-  "edges": [
-    {
-      "id": "start-output-llm_intent-input",
-      "source": "start",
-      "target": "llm_intent",
-      "sourceHandle": "output",
-      "targetHandle": "llm_intent",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "llm_intent-output-router-input",
-      "source": "llm_intent",
-      "target": "router",
-      "sourceHandle": "output",
-      "targetHandle": "router",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "router-disponibilidad-q_norm-input",
-      "source": "router",
-      "target": "q_norm",
-      "sourceHandle": "disponibilidad",
-      "targetHandle": "q_norm",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "router-reserva-q_norm-input",
-      "source": "router",
-      "target": "q_norm",
-      "sourceHandle": "reserva",
-      "targetHandle": "q_norm",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_norm-output-q_cond_missing-input",
-      "source": "q_norm",
-      "target": "q_cond_missing",
-      "sourceHandle": "output",
-      "targetHandle": "q_cond_missing",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_cond_missing-true-q_reply_missing-input",
-      "source": "q_cond_missing",
-      "target": "q_reply_missing",
-      "sourceHandle": "true",
-      "targetHandle": "q_reply_missing",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_cond_missing-false-q_custom_calc-input",
-      "source": "q_cond_missing",
-      "target": "q_custom_calc",
-      "sourceHandle": "false",
-      "targetHandle": "q_custom_calc",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_custom_calc-output-q_ret_restr-input",
-      "source": "q_custom_calc",
-      "target": "q_ret_restr",
-      "sourceHandle": "output",
-      "targetHandle": "q_ret_restr",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_custom_calc-output-q_ret_cal-input",
-      "source": "q_custom_calc",
-      "target": "q_ret_cal",
-      "sourceHandle": "output",
-      "targetHandle": "q_ret_cal",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_custom_calc-output-q_ret_cat-input",
-      "source": "q_custom_calc",
-      "target": "q_ret_cat",
-      "sourceHandle": "output",
-      "targetHandle": "q_ret_cat",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_ret_restr-output-q_llm_tarifa-input",
-      "source": "q_ret_restr",
-      "target": "q_llm_tarifa",
-      "sourceHandle": "output",
-      "targetHandle": "q_llm_tarifa",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_ret_cal-output-q_llm_tarifa-input",
-      "source": "q_ret_cal",
-      "target": "q_llm_tarifa",
-      "sourceHandle": "output",
-      "targetHandle": "q_llm_tarifa",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_ret_cat-output-q_llm_tarifa-input",
-      "source": "q_ret_cat",
-      "target": "q_llm_tarifa",
-      "sourceHandle": "output",
-      "targetHandle": "q_llm_tarifa",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_llm_tarifa-output-q_human_cot-input",
-      "source": "q_llm_tarifa",
-      "target": "q_human_cot",
-      "sourceHandle": "output",
-      "targetHandle": "q_human_cot",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_human_cot-proceed-q_custom_calendario-input",
-      "source": "q_human_cot",
-      "target": "q_custom_calendario",
-      "sourceHandle": "proceed",
-      "targetHandle": "q_custom_calendario",
-      "type": "agentFlow",
-      "data": {}
-    },
-    {
-      "id": "q_custom_calendario-output-q_reply_final-input",
-      "source": "q_custom_calendario",
-      "target": "q_reply_final",
-      "sourceHandle": "output",
-      "targetHandle": "q_reply_final",
-      "type": "agentFlow",
-      "data": {}
-    }
-  ]
+        {
+            "id": "q_custom_calendario",
+            "type": "agentFlow",
+            "position": {
+                "x": 2240,
+                "y": -140
+            },
+            "data": {
+                "id": "q_custom_calendario",
+                "label": "Q - Calendario",
+                "version": 1,
+                "name": "customFunctionAgentflow",
+                "type": "CustomFunction",
+                "color": "#E4B7FF",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Input Variables",
+                        "name": "customFunctionInputVariables",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Variable Name",
+                                "name": "variableName",
+                                "type": "string"
+                            },
+                            {
+                                "label": "Variable Value",
+                                "name": "variableValue",
+                                "type": "string",
+                                "acceptVariable": true
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Javascript Function",
+                        "name": "customFunctionJavascriptFunction",
+                        "type": "code"
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "customFunctionUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ]
+                    }
+                ],
+                "inputs": {
+                    "customFunctionInputVariables": [
+                        {
+                            "name": "estado",
+                            "value": "hold"
+                        },
+                        {
+                            "name": "fecha",
+                            "value": "{{ $flow.state.fechaSolicitada }}"
+                        },
+                        {
+                            "name": "dias",
+                            "value": "{{ $flow.state.diasSolicitados }}"
+                        }
+                    ],
+                    "customFunctionJavascriptFunction": "const holdHours=24;const now=new Date();const exp=new Date(now.getTime()+holdHours*60*60*1000).toISOString();return JSON.stringify({estadoCalendario:$estado||'hold',holdExpires:exp,reservaId:'QTA-'+Date.now()});",
+                    "customFunctionUpdateState": [
+                        {
+                            "key": "estadoCalendario",
+                            "value": "{{ json.estadoCalendario }}"
+                        },
+                        {
+                            "key": "holdExpires",
+                            "value": "{{ json.holdExpires }}"
+                        },
+                        {
+                            "key": "reservaId",
+                            "value": "{{ json.reservaId }}"
+                        }
+                    ]
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 166,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 2240,
+                "y": -140
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "q_reply_final",
+            "type": "agentFlow",
+            "position": {
+                "x": 2480,
+                "y": -140
+            },
+            "data": {
+                "id": "q_reply_final",
+                "label": "Q - Confirmacion",
+                "version": 1,
+                "name": "directReplyAgentflow",
+                "type": "DirectReply",
+                "color": "#4DDBBB",
+                "hideInput": false,
+                "inputParams": [
+                    {
+                        "label": "Message",
+                        "name": "directReplyMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true
+                    }
+                ],
+                "inputs": {
+                    "directReplyMessage": "<p>Reserva preconfirmada. Estado: {{ $flow.state.estadoCalendario || 'hold' }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || '(pendiente)' }}. Reglas: musica moderada de dia, sin musica de noche. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Un humano confirma pagos y calendario real antes de cerrar.</p>"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false
+            },
+            "width": 184,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 2480,
+                "y": -140
+            },
+            "selected": false,
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "id": "start-output-llm_intent-input",
+            "source": "start",
+            "target": "llm_intent",
+            "sourceHandle": "output",
+            "targetHandle": "llm_intent",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "llm_intent-output-router-input",
+            "source": "llm_intent",
+            "target": "router",
+            "sourceHandle": "output",
+            "targetHandle": "router",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "router-disponibilidad-q_norm-input",
+            "source": "router",
+            "target": "q_norm",
+            "sourceHandle": "disponibilidad",
+            "targetHandle": "q_norm",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "router-reserva-q_norm-input",
+            "source": "router",
+            "target": "q_norm",
+            "sourceHandle": "reserva",
+            "targetHandle": "q_norm",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_norm-output-q_cond_missing-input",
+            "source": "q_norm",
+            "target": "q_cond_missing",
+            "sourceHandle": "output",
+            "targetHandle": "q_cond_missing",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_cond_missing-true-q_reply_missing-input",
+            "source": "q_cond_missing",
+            "target": "q_reply_missing",
+            "sourceHandle": "true",
+            "targetHandle": "q_reply_missing",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_cond_missing-false-q_custom_calc-input",
+            "source": "q_cond_missing",
+            "target": "q_custom_calc",
+            "sourceHandle": "false",
+            "targetHandle": "q_custom_calc",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_custom_calc-output-q_ret_restr-input",
+            "source": "q_custom_calc",
+            "target": "q_ret_restr",
+            "sourceHandle": "output",
+            "targetHandle": "q_ret_restr",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_custom_calc-output-q_ret_cal-input",
+            "source": "q_custom_calc",
+            "target": "q_ret_cal",
+            "sourceHandle": "output",
+            "targetHandle": "q_ret_cal",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_custom_calc-output-q_ret_cat-input",
+            "source": "q_custom_calc",
+            "target": "q_ret_cat",
+            "sourceHandle": "output",
+            "targetHandle": "q_ret_cat",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_ret_restr-output-q_llm_tarifa-input",
+            "source": "q_ret_restr",
+            "target": "q_llm_tarifa",
+            "sourceHandle": "output",
+            "targetHandle": "q_llm_tarifa",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_ret_cal-output-q_llm_tarifa-input",
+            "source": "q_ret_cal",
+            "target": "q_llm_tarifa",
+            "sourceHandle": "output",
+            "targetHandle": "q_llm_tarifa",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_ret_cat-output-q_llm_tarifa-input",
+            "source": "q_ret_cat",
+            "target": "q_llm_tarifa",
+            "sourceHandle": "output",
+            "targetHandle": "q_llm_tarifa",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_llm_tarifa-output-q_human_cot-input",
+            "source": "q_llm_tarifa",
+            "target": "q_human_cot",
+            "sourceHandle": "output",
+            "targetHandle": "q_human_cot",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_human_cot-proceed-q_custom_calendario-input",
+            "source": "q_human_cot",
+            "target": "q_custom_calendario",
+            "sourceHandle": "proceed",
+            "targetHandle": "q_custom_calendario",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "q_custom_calendario-output-q_reply_final-input",
+            "source": "q_custom_calendario",
+            "target": "q_reply_final",
+            "sourceHandle": "output",
+            "targetHandle": "q_reply_final",
+            "type": "agentFlow",
+            "data": {}
+        }
+    ]
 }

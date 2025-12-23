@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
@@ -14,21 +14,7 @@ import {
     Avatar,
     IconButton,
     Tooltip,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Divider,
-    TextField,
     Button,
-    Alert,
-    Badge,
-    Switch,
-    FormControlLabel,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Table,
     TableBody,
     TableCell,
@@ -50,31 +36,22 @@ import { useTranslation } from 'react-i18next'
 // icons
 import {
     IconRobot,
-    IconSettings,
-    IconCheck,
-    IconX,
-    IconTool,
     IconWifi,
     IconWifiOff,
     IconEye,
-    IconRefresh,
     IconPlayerPlay,
     IconPlayerPause,
-    IconTrash,
     IconEdit,
     IconPlus,
-    IconChartBar,
     IconClock,
-    IconMessageCircle,
-    IconTarget,
-    IconTrendingUp
+    IconMessageCircle
 } from '@tabler/icons-react'
 
 const AgentManagement = () => {
     const theme = useTheme()
     const navigate = useNavigate()
     const { t } = useTranslation()
-    
+
     const [isLoading, setLoading] = useState(true)
     const [agents, setAgents] = useState([])
     const [selectedAgent, setSelectedAgent] = useState(null)
@@ -99,7 +76,7 @@ const AgentManagement = () => {
                     client.get('/chatflows?type=CHATFLOW'),
                     client.get('/chatflows?type=AGENTFLOW')
                 ])
-                
+
                 const chatflows = chatflowsResponse.data || []
                 const agentflows = agentflowsResponse.data || []
                 const allFlows = [...chatflows, ...agentflows]
@@ -138,22 +115,19 @@ const AgentManagement = () => {
                         deployed: flow.deployed || false
                     }
                 })
-                
+
                 setAgents(agentData)
-                
+
                 // Calculate stats
                 const stats = {
                     totalAgents: agentData.length,
-                    activeAgents: agentData.filter(a => a.status === 'active').length,
-                    inactiveAgents: agentData.filter(a => a.status === 'inactive').length,
+                    activeAgents: agentData.filter((a) => a.status === 'active').length,
+                    inactiveAgents: agentData.filter((a) => a.status === 'inactive').length,
                     totalConversations: agentData.reduce((sum, a) => sum + a.conversations, 0),
-                    avgResponseTime: agentData.length > 0 ? 
-                        agentData.reduce((sum, a) => sum + a.responseTime, 0) / agentData.length : 0,
-                    successRate: agentData.length > 0 ? 
-                        agentData.reduce((sum, a) => sum + a.successRate, 0) / agentData.length : 0
+                    avgResponseTime: agentData.length > 0 ? agentData.reduce((sum, a) => sum + a.responseTime, 0) / agentData.length : 0,
+                    successRate: agentData.length > 0 ? agentData.reduce((sum, a) => sum + a.successRate, 0) / agentData.length : 0
                 }
                 setAgentStats(stats)
-                
             } catch (error) {
                 console.error('Error fetching agents:', error)
             } finally {
@@ -223,14 +197,14 @@ const AgentManagement = () => {
                         <Grid item xs={12} sm={6} md={3} key={item}>
                             <Card>
                                 <CardContent>
-                                    <Skeleton variant="text" height={40} />
-                                    <Skeleton variant="text" height={60} />
+                                    <Skeleton variant='text' height={40} />
+                                    <Skeleton variant='text' height={60} />
                                 </CardContent>
                             </Card>
                         </Grid>
                     ))}
                 </Grid>
-                <Skeleton variant="rectangular" height={400} />
+                <Skeleton variant='rectangular' height={400} />
             </Stack>
         )
     }
@@ -242,35 +216,43 @@ const AgentManagement = () => {
                 <Grid item xs={12} sm={6} md={3}>
                     <Card>
                         <CardContent>
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack direction='row' alignItems='center' spacing={2}>
                                 <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
                                     <IconRobot />
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="h3" sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary.main }}>
+                                    <Typography
+                                        variant='h3'
+                                        sx={{
+                                            color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary.main
+                                        }}
+                                    >
                                         {agentStats.totalAgents}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : 'textSecondary' }}>
-                                         Total Agents
-                                     </Typography>
+                                    <Typography
+                                        variant='body2'
+                                        sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : 'textSecondary' }}
+                                    >
+                                        Total Agents
+                                    </Typography>
                                 </Box>
                             </Stack>
                         </CardContent>
                     </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
                     <Card>
                         <CardContent>
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack direction='row' alignItems='center' spacing={2}>
                                 <Avatar sx={{ bgcolor: theme.palette.success.main }}>
                                     <IconWifi />
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="h3" color="success.main">
+                                    <Typography variant='h3' color='success.main'>
                                         {agentStats.activeAgents}
                                     </Typography>
-                                    <Typography variant="body2" color="textSecondary">
+                                    <Typography variant='body2' color='textSecondary'>
                                         Active Agents
                                     </Typography>
                                 </Box>
@@ -278,19 +260,19 @@ const AgentManagement = () => {
                         </CardContent>
                     </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
                     <Card>
                         <CardContent>
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack direction='row' alignItems='center' spacing={2}>
                                 <Avatar sx={{ bgcolor: theme.palette.info.main }}>
                                     <IconMessageCircle />
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="h3" color="info.main">
+                                    <Typography variant='h3' color='info.main'>
                                         {agentStats.totalConversations}
                                     </Typography>
-                                    <Typography variant="body2" color="textSecondary">
+                                    <Typography variant='body2' color='textSecondary'>
                                         Total Conversations
                                     </Typography>
                                 </Box>
@@ -298,19 +280,19 @@ const AgentManagement = () => {
                         </CardContent>
                     </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
                     <Card>
                         <CardContent>
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack direction='row' alignItems='center' spacing={2}>
                                 <Avatar sx={{ bgcolor: theme.palette.warning.main }}>
                                     <IconClock />
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="h3" color="warning.main">
+                                    <Typography variant='h3' color='warning.main'>
                                         {Math.round(agentStats.avgResponseTime)}ms
                                     </Typography>
-                                    <Typography variant="body2" color="textSecondary">
+                                    <Typography variant='body2' color='textSecondary'>
                                         Avg Response Time
                                     </Typography>
                                 </Box>
@@ -323,20 +305,14 @@ const AgentManagement = () => {
             {/* Agent Management Table */}
             <Card>
                 <CardContent>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                        <Typography variant="h4">
-                            Agent Management
-                        </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<IconPlus />}
-                            onClick={() => navigate('/chatflows')}
-                        >
+                    <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{ mb: 2 }}>
+                        <Typography variant='h4'>Agent Management</Typography>
+                        <Button variant='contained' startIcon={<IconPlus />} onClick={() => navigate('/chatflows')}>
                             Create New Agent
                         </Button>
                     </Stack>
-                    
-                    <TableContainer component={Paper} variant="outlined">
+
+                    <TableContainer component={Paper} variant='outlined'>
                         <Table>
                             <TableHead>
                                 <TableRow>
@@ -347,22 +323,20 @@ const AgentManagement = () => {
                                     <TableCell>Response Time</TableCell>
                                     <TableCell>Success Rate</TableCell>
                                     <TableCell>Last Active</TableCell>
-                                    <TableCell align="center">Actions</TableCell>
+                                    <TableCell align='center'>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {agents.map((agent) => (
                                     <TableRow key={agent.id} hover>
                                         <TableCell>
-                                            <Stack direction="row" alignItems="center" spacing={2}>
+                                            <Stack direction='row' alignItems='center' spacing={2}>
                                                 <Avatar sx={{ bgcolor: theme.palette.primary.light }}>
                                                     <IconRobot size={20} />
                                                 </Avatar>
                                                 <Box>
-                                                    <Typography variant="subtitle2">
-                                                        {agent.name}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="textSecondary">
+                                                    <Typography variant='subtitle2'>{agent.name}</Typography>
+                                                    <Typography variant='body2' color='textSecondary'>
                                                         {agent.description}
                                                     </Typography>
                                                 </Box>
@@ -373,64 +347,51 @@ const AgentManagement = () => {
                                                 icon={getStatusIcon(agent.status)}
                                                 label={agent.status}
                                                 color={getStatusColor(agent.status)}
-                                                size="small"
+                                                size='small'
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Chip
-                                                label={agent.type}
-                                                variant="outlined"
-                                                size="small"
-                                            />
+                                            <Chip label={agent.type} variant='outlined' size='small' />
                                         </TableCell>
                                         <TableCell>{agent.conversations}</TableCell>
                                         <TableCell>{agent.responseTime}ms</TableCell>
                                         <TableCell>
-                                            <Stack direction="row" alignItems="center" spacing={1}>
+                                            <Stack direction='row' alignItems='center' spacing={1}>
                                                 <LinearProgress
-                                                    variant="determinate"
+                                                    variant='determinate'
                                                     value={agent.successRate}
                                                     sx={{ width: 60, height: 6 }}
                                                 />
-                                                <Typography variant="body2">
-                                                    {agent.successRate}%
-                                                </Typography>
+                                                <Typography variant='body2'>{agent.successRate}%</Typography>
                                             </Stack>
                                         </TableCell>
                                         <TableCell>
-                                            <Typography variant="body2">
-                                                {new Date(agent.lastActive).toLocaleDateString()}
-                                            </Typography>
+                                            <Typography variant='body2'>{new Date(agent.lastActive).toLocaleDateString()}</Typography>
                                         </TableCell>
-                                        <TableCell align="center">
-                                            <Stack direction="row" spacing={1}>
-                                                <Tooltip title="View Agent">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleViewAgent(agent.id)}
-                                                    >
+                                        <TableCell align='center'>
+                                            <Stack direction='row' spacing={1}>
+                                                <Tooltip title='View Agent'>
+                                                    <IconButton size='small' onClick={() => handleViewAgent(agent.id)}>
                                                         <IconEye size={16} />
                                                     </IconButton>
                                                 </Tooltip>
-                                                <Tooltip title="Edit Agent">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleEditAgent(agent.id)}
-                                                    >
+                                                <Tooltip title='Edit Agent'>
+                                                    <IconButton size='small' onClick={() => handleEditAgent(agent.id)}>
                                                         <IconEdit size={16} />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title={agent.status === 'active' ? 'Deactivate' : 'Activate'}>
                                                     <IconButton
-                                                        size="small"
+                                                        size='small'
                                                         onClick={() => handleAgentToggle(agent.id, agent.status)}
                                                         color={agent.status === 'active' ? 'error' : 'success'}
                                                         disabled={Boolean(toggleLoading[agent.id])}
                                                     >
-                                                        {agent.status === 'active' ? 
-                                                            <IconPlayerPause size={16} /> : 
+                                                        {agent.status === 'active' ? (
+                                                            <IconPlayerPause size={16} />
+                                                        ) : (
                                                             <IconPlayerPlay size={16} />
-                                                        }
+                                                        )}
                                                     </IconButton>
                                                 </Tooltip>
                                             </Stack>
@@ -440,20 +401,16 @@ const AgentManagement = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    
+
                     {agents.length === 0 && (
                         <Box sx={{ textAlign: 'center', py: 4 }}>
-                            <Typography variant="h6" color="textSecondary">
+                            <Typography variant='h6' color='textSecondary'>
                                 No agents found
                             </Typography>
-                            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                            <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
                                 Create your first agent to get started
                             </Typography>
-                            <Button
-                                variant="contained"
-                                startIcon={<IconPlus />}
-                                onClick={() => navigate('/agentflows')}
-                            >
+                            <Button variant='contained' startIcon={<IconPlus />} onClick={() => navigate('/agentflows')}>
                                 Create Agent
                             </Button>
                         </Box>

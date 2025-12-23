@@ -11,29 +11,32 @@ export class AgentDashboardService {
 
     async getAgentExecutionMetrics(): Promise<any> {
         const q = async <T = any>(sql: string, map: (rows: any[]) => T, fallback: T): Promise<T> => {
-            try { 
+            try {
                 const rows = await this.dataSource.query(sql)
-                return map(rows) 
-            } catch (error) { 
+                return map(rows)
+            } catch (error) {
                 console.error('Query error:', error)
-                return fallback 
+                return fallback
             }
         }
 
         // Agent execution statistics
         const totalExecutions = await q<number>(
             `SELECT COUNT(*) AS c FROM agent_event WHERE type='tool_execution' AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         const successfulExecutions = await q<number>(
             `SELECT COUNT(*) AS c FROM agent_event WHERE type='tool_execution' AND (metadata::json->>'status')='success' AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         const failedExecutions = await q<number>(
             `SELECT COUNT(*) AS c FROM agent_event WHERE type='tool_execution' AND (metadata::json->>'status')='error' AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Tool usage breakdown
@@ -48,11 +51,13 @@ export class AgentDashboardService {
              WHERE type='tool_execution' AND ts >= NOW() - INTERVAL '7 days'
              GROUP BY metadata::json->>'tool'
              ORDER BY count DESC`,
-            rs => rs.map(r => ({
-                tool: r.tool || 'Unknown',
-                count: parseInt(r.count || '0'),
-                success_rate: parseFloat(r.success_rate || '0')
-            })), []
+            (rs) =>
+                rs.map((r) => ({
+                    tool: r.tool || 'Unknown',
+                    count: parseInt(r.count || '0'),
+                    success_rate: parseFloat(r.success_rate || '0')
+                })),
+            []
         )
 
         // Agent performance by agent ID
@@ -68,12 +73,14 @@ export class AgentDashboardService {
              WHERE type='tool_execution' AND ts >= NOW() - INTERVAL '7 days'
              GROUP BY COALESCE("agentId", 'unknown')
              ORDER BY executions DESC`,
-            rs => rs.map(r => ({
-                agentId: r.agent_id,
-                executions: parseInt(r.executions || '0'),
-                success_rate: parseFloat(r.success_rate || '0'),
-                avg_response_time: parseFloat(r.avg_response_time || '0')
-            })), []
+            (rs) =>
+                rs.map((r) => ({
+                    agentId: r.agent_id,
+                    executions: parseInt(r.executions || '0'),
+                    success_rate: parseFloat(r.success_rate || '0'),
+                    avg_response_time: parseFloat(r.avg_response_time || '0')
+                })),
+            []
         )
 
         // Recent agent activities
@@ -88,7 +95,8 @@ export class AgentDashboardService {
              WHERE ts >= NOW() - INTERVAL '2 hours'
              ORDER BY ts DESC 
              LIMIT 50`,
-            rs => rs, []
+            (rs) => rs,
+            []
         )
 
         // Error analysis
@@ -102,11 +110,13 @@ export class AgentDashboardService {
              AND ts >= NOW() - INTERVAL '7 days'
              GROUP BY metadata::json->>'error_type'
              ORDER BY count DESC`,
-            rs => rs.map(r => ({
-                error_type: r.error_type || 'Unknown Error',
-                count: parseInt(r.count || '0'),
-                last_occurrence: r.last_occurrence
-            })), []
+            (rs) =>
+                rs.map((r) => ({
+                    error_type: r.error_type || 'Unknown Error',
+                    count: parseInt(r.count || '0'),
+                    last_occurrence: r.last_occurrence
+                })),
+            []
         )
 
         const successRate = totalExecutions > 0 ? Math.round((successfulExecutions / totalExecutions) * 100) : 0
@@ -126,11 +136,11 @@ export class AgentDashboardService {
 
     async getInventoryIntegrationStatus(): Promise<any> {
         const q = async <T = any>(sql: string, map: (rows: any[]) => T, fallback: T): Promise<T> => {
-            try { 
+            try {
                 const rows = await this.dataSource.query(sql)
-                return map(rows) 
-            } catch { 
-                return fallback 
+                return map(rows)
+            } catch {
+                return fallback
             }
         }
 
@@ -140,7 +150,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND (metadata::json->>'tool' LIKE '%inventory%' OR metadata::json->>'tool' LIKE '%product%')
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Low stock alerts generated by agent
@@ -149,7 +160,8 @@ export class AgentDashboardService {
              FROM product_inventory 
              WHERE stock < 20 
              ORDER BY stock ASC`,
-            rs => rs, []
+            (rs) => rs,
+            []
         )
 
         // Product recommendations made
@@ -158,7 +170,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND metadata::json->>'tool' = 'Get Product Recommendations'
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         return {
@@ -171,11 +184,11 @@ export class AgentDashboardService {
 
     async getSalesIntegrationStatus(): Promise<any> {
         const q = async <T = any>(sql: string, map: (rows: any[]) => T, fallback: T): Promise<T> => {
-            try { 
+            try {
                 const rows = await this.dataSource.query(sql)
-                return map(rows) 
-            } catch { 
-                return fallback 
+                return map(rows)
+            } catch {
+                return fallback
             }
         }
 
@@ -185,7 +198,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND (metadata::json->>'tool' LIKE '%quote%' OR metadata::json->>'tool' LIKE '%sale%')
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Quotes generated by agent
@@ -194,7 +208,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND metadata::json->>'tool' = 'Generate Quote'
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Sales completed through agent
@@ -203,10 +218,11 @@ export class AgentDashboardService {
              FROM sale_record 
              WHERE "agentId" IS NOT NULL 
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => ({
+            (rs) => ({
                 count: parseInt(rs?.[0]?.count || '0'),
                 revenue: parseFloat(rs?.[0]?.revenue || '0')
-            }), { count: 0, revenue: 0 }
+            }),
+            { count: 0, revenue: 0 }
         )
 
         return {
@@ -218,11 +234,11 @@ export class AgentDashboardService {
 
     async getOutboundContactStatus(): Promise<any> {
         const q = async <T = any>(sql: string, map: (rows: any[]) => T, fallback: T): Promise<T> => {
-            try { 
+            try {
                 const rows = await this.dataSource.query(sql)
-                return map(rows) 
-            } catch { 
-                return fallback 
+                return map(rows)
+            } catch {
+                return fallback
             }
         }
 
@@ -232,7 +248,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND metadata::json->>'tool' = 'Send WhatsApp Message'
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Follow-ups scheduled
@@ -241,7 +258,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND metadata::json->>'tool' = 'Schedule Follow-up Contact'
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Pending follow-ups
@@ -251,7 +269,8 @@ export class AgentDashboardService {
              WHERE status = 'pending' 
              AND scheduled_date <= NOW() + INTERVAL '24 hours'
              ORDER BY scheduled_date ASC`,
-            rs => rs, []
+            (rs) => rs,
+            []
         )
 
         return {
@@ -264,11 +283,11 @@ export class AgentDashboardService {
 
     async getPromotionalSystemStatus(): Promise<any> {
         const q = async <T = any>(sql: string, map: (rows: any[]) => T, fallback: T): Promise<T> => {
-            try { 
+            try {
                 const rows = await this.dataSource.query(sql)
-                return map(rows) 
-            } catch { 
-                return fallback 
+                return map(rows)
+            } catch {
+                return fallback
             }
         }
 
@@ -278,7 +297,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND metadata::json->>'tool' = 'Apply Promotional Code'
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Bundles created
@@ -287,7 +307,8 @@ export class AgentDashboardService {
              WHERE type='tool_execution' 
              AND metadata::json->>'tool' = 'Create Custom Bundle'
              AND ts >= NOW() - INTERVAL '24 hours'`,
-            rs => parseInt(rs?.[0]?.c || '0'), 0
+            (rs) => parseInt(rs?.[0]?.c || '0'),
+            0
         )
 
         // Active promotions
@@ -297,7 +318,8 @@ export class AgentDashboardService {
              WHERE status = 'active' 
              AND valid_until >= NOW()
              ORDER BY valid_until ASC`,
-            rs => rs, []
+            (rs) => rs,
+            []
         )
 
         return {
@@ -314,9 +336,9 @@ export class AgentDashboardService {
             `SELECT MAX(ts) as last_activity FROM agent_event WHERE ts >= NOW() - INTERVAL '1 hour'`
         )
 
-        const isHealthy = lastActivity?.[0]?.last_activity ? 
-            (new Date().getTime() - new Date(lastActivity[0].last_activity).getTime()) < 300000 : // 5 minutes
-            false
+        const isHealthy = lastActivity?.[0]?.last_activity
+            ? new Date().getTime() - new Date(lastActivity[0].last_activity).getTime() < 300000 // 5 minutes
+            : false
 
         return {
             isHealthy,

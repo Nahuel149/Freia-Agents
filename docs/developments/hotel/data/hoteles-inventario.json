@@ -1,905 +1,655 @@
 {
-  "hoteles": [
-    {
-      "id": "gran-sol-centro",
-      "nombre": "Hotel Gran Sol - Centro",
-      "sede": "Centro",
-      "ubicacion": "Av. Central 123",
-      "habitaciones": [
+    "hoteles": [
         {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 120,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "cama queen"
+            "id": "gran-sol-centro",
+            "nombre": "Hotel Gran Sol - Centro",
+            "sede": "Centro",
+            "ubicacion": "Av. Central 123",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 120,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "cama queen"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 180,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye late checkout sujeto a disponibilidad"
+                },
+                {
+                    "tipo": "suite",
+                    "capacidad": 4,
+                    "tarifaBase": 260,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "living", "jacuzzi"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "tarifa no reembolsable con upgrade de spa"
+                }
+            ]
         },
         {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 180,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye late checkout sujeto a disponibilidad"
+            "id": "gran-sol-palermo",
+            "nombre": "Hotel Gran Sol - Palermo",
+            "sede": "Palermo",
+            "ubicacion": "Calle Verde 456",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 140,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "pet friendly con cargo unico"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 200,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "terraza", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye traslado aeropuerto sujeto a horario"
+                },
+                {
+                    "tipo": "loft",
+                    "capacidad": 4,
+                    "tarifaBase": 240,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "balcon"],
+                    "refundable": false,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, ideal estadias largas"
+                }
+            ]
         },
         {
-          "tipo": "suite",
-          "capacidad": 4,
-          "tarifaBase": 260,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "living",
-            "jacuzzi"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "tarifa no reembolsable con upgrade de spa"
+            "id": "gran-sol-aeropuerto",
+            "nombre": "Hotel Gran Sol - Aeropuerto",
+            "sede": "Aeropuerto",
+            "ubicacion": "Ruta 8 Km 1",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 110,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye shuttle aeropuerto"
+                },
+                {
+                    "tipo": "familiar",
+                    "capacidad": 4,
+                    "tarifaBase": 190,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "traslado"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, requiere 100% prepago"
+                },
+                {
+                    "tipo": "executive",
+                    "capacidad": 2,
+                    "tarifaBase": 150,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "escritorio", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "ideal negocios, early breakfast"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-centro-x1",
+            "nombre": "Hotel Gran Sol - Centro Plus 1",
+            "sede": "Centro",
+            "ubicacion": "Av. Central 123",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 135,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "cama queen",
+                    "id": "hab-x1"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 195,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye late checkout sujeto a disponibilidad",
+                    "id": "hab-x1"
+                },
+                {
+                    "tipo": "suite",
+                    "capacidad": 4,
+                    "tarifaBase": 275,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "living", "jacuzzi"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "tarifa no reembolsable con upgrade de spa",
+                    "id": "hab-x1"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-palermo-x1",
+            "nombre": "Hotel Gran Sol - Palermo Plus 1",
+            "sede": "Palermo",
+            "ubicacion": "Calle Verde 456",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 155,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "pet friendly con cargo unico",
+                    "id": "hab-x1"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 215,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "terraza", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye traslado aeropuerto sujeto a horario",
+                    "id": "hab-x1"
+                },
+                {
+                    "tipo": "loft",
+                    "capacidad": 4,
+                    "tarifaBase": 255,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "balcon"],
+                    "refundable": false,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, ideal estadias largas",
+                    "id": "hab-x1"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-aeropuerto-x1",
+            "nombre": "Hotel Gran Sol - Aeropuerto Plus 1",
+            "sede": "Aeropuerto",
+            "ubicacion": "Ruta 8 Km 1",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 125,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye shuttle aeropuerto",
+                    "id": "hab-x1"
+                },
+                {
+                    "tipo": "familiar",
+                    "capacidad": 4,
+                    "tarifaBase": 205,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "traslado"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, requiere 100% prepago",
+                    "id": "hab-x1"
+                },
+                {
+                    "tipo": "executive",
+                    "capacidad": 2,
+                    "tarifaBase": 165,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "escritorio", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "ideal negocios, early breakfast",
+                    "id": "hab-x1"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-centro-x2",
+            "nombre": "Hotel Gran Sol - Centro Plus 2",
+            "sede": "Centro",
+            "ubicacion": "Av. Central 123",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 150,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "cama queen",
+                    "id": "hab-x2"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 210,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye late checkout sujeto a disponibilidad",
+                    "id": "hab-x2"
+                },
+                {
+                    "tipo": "suite",
+                    "capacidad": 4,
+                    "tarifaBase": 290,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "living", "jacuzzi"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "tarifa no reembolsable con upgrade de spa",
+                    "id": "hab-x2"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-palermo-x2",
+            "nombre": "Hotel Gran Sol - Palermo Plus 2",
+            "sede": "Palermo",
+            "ubicacion": "Calle Verde 456",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 170,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "pet friendly con cargo unico",
+                    "id": "hab-x2"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 230,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "terraza", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye traslado aeropuerto sujeto a horario",
+                    "id": "hab-x2"
+                },
+                {
+                    "tipo": "loft",
+                    "capacidad": 4,
+                    "tarifaBase": 270,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "balcon"],
+                    "refundable": false,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, ideal estadias largas",
+                    "id": "hab-x2"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-aeropuerto-x2",
+            "nombre": "Hotel Gran Sol - Aeropuerto Plus 2",
+            "sede": "Aeropuerto",
+            "ubicacion": "Ruta 8 Km 1",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 140,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye shuttle aeropuerto",
+                    "id": "hab-x2"
+                },
+                {
+                    "tipo": "familiar",
+                    "capacidad": 4,
+                    "tarifaBase": 220,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "traslado"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, requiere 100% prepago",
+                    "id": "hab-x2"
+                },
+                {
+                    "tipo": "executive",
+                    "capacidad": 2,
+                    "tarifaBase": 180,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "escritorio", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "ideal negocios, early breakfast",
+                    "id": "hab-x2"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-centro-x3",
+            "nombre": "Hotel Gran Sol - Centro Plus 3",
+            "sede": "Centro",
+            "ubicacion": "Av. Central 123",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 165,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "cama queen",
+                    "id": "hab-x3"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 225,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye late checkout sujeto a disponibilidad",
+                    "id": "hab-x3"
+                },
+                {
+                    "tipo": "suite",
+                    "capacidad": 4,
+                    "tarifaBase": 305,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "living", "jacuzzi"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "tarifa no reembolsable con upgrade de spa",
+                    "id": "hab-x3"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-palermo-x3",
+            "nombre": "Hotel Gran Sol - Palermo Plus 3",
+            "sede": "Palermo",
+            "ubicacion": "Calle Verde 456",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 185,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "pet friendly con cargo unico",
+                    "id": "hab-x3"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 245,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "terraza", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye traslado aeropuerto sujeto a horario",
+                    "id": "hab-x3"
+                },
+                {
+                    "tipo": "loft",
+                    "capacidad": 4,
+                    "tarifaBase": 285,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "balcon"],
+                    "refundable": false,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, ideal estadias largas",
+                    "id": "hab-x3"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-aeropuerto-x3",
+            "nombre": "Hotel Gran Sol - Aeropuerto Plus 3",
+            "sede": "Aeropuerto",
+            "ubicacion": "Ruta 8 Km 1",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 155,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye shuttle aeropuerto",
+                    "id": "hab-x3"
+                },
+                {
+                    "tipo": "familiar",
+                    "capacidad": 4,
+                    "tarifaBase": 235,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "traslado"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, requiere 100% prepago",
+                    "id": "hab-x3"
+                },
+                {
+                    "tipo": "executive",
+                    "capacidad": 2,
+                    "tarifaBase": 195,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "escritorio", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "ideal negocios, early breakfast",
+                    "id": "hab-x3"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-centro-x4",
+            "nombre": "Hotel Gran Sol - Centro Plus 4",
+            "sede": "Centro",
+            "ubicacion": "Av. Central 123",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 180,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "cama queen",
+                    "id": "hab-x4"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 240,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye late checkout sujeto a disponibilidad",
+                    "id": "hab-x4"
+                },
+                {
+                    "tipo": "suite",
+                    "capacidad": 4,
+                    "tarifaBase": 320,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "vista", "living", "jacuzzi"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "tarifa no reembolsable con upgrade de spa",
+                    "id": "hab-x4"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-palermo-x4",
+            "nombre": "Hotel Gran Sol - Palermo Plus 4",
+            "sede": "Palermo",
+            "ubicacion": "Calle Verde 456",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 200,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "pet friendly con cargo unico",
+                    "id": "hab-x4"
+                },
+                {
+                    "tipo": "premium",
+                    "capacidad": 3,
+                    "tarifaBase": 260,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "terraza", "cafetera"],
+                    "refundable": true,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye traslado aeropuerto sujeto a horario",
+                    "id": "hab-x4"
+                },
+                {
+                    "tipo": "loft",
+                    "capacidad": 4,
+                    "tarifaBase": 300,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "balcon"],
+                    "refundable": false,
+                    "petFriendly": true,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, ideal estadias largas",
+                    "id": "hab-x4"
+                }
+            ]
+        },
+        {
+            "id": "gran-sol-aeropuerto-x4",
+            "nombre": "Hotel Gran Sol - Aeropuerto Plus 4",
+            "sede": "Aeropuerto",
+            "ubicacion": "Ruta 8 Km 1",
+            "habitaciones": [
+                {
+                    "tipo": "estandar",
+                    "capacidad": 2,
+                    "tarifaBase": 170,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "incluye shuttle aeropuerto",
+                    "id": "hab-x4"
+                },
+                {
+                    "tipo": "familiar",
+                    "capacidad": 4,
+                    "tarifaBase": 250,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "kitchenette", "traslado"],
+                    "refundable": false,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "no reembolsable, requiere 100% prepago",
+                    "id": "hab-x4"
+                },
+                {
+                    "tipo": "executive",
+                    "capacidad": 2,
+                    "tarifaBase": 210,
+                    "moneda": "USD",
+                    "amenities": ["desayuno", "wifi", "tv", "escritorio", "traslado"],
+                    "refundable": true,
+                    "petFriendly": false,
+                    "incluyeDesayuno": true,
+                    "notas": "ideal negocios, early breakfast",
+                    "id": "hab-x4"
+                }
+            ]
         }
-      ]
-    },
-    {
-      "id": "gran-sol-palermo",
-      "nombre": "Hotel Gran Sol - Palermo",
-      "sede": "Palermo",
-      "ubicacion": "Calle Verde 456",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 140,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "pet friendly con cargo unico"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 200,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "terraza",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "incluye traslado aeropuerto sujeto a horario"
-        },
-        {
-          "tipo": "loft",
-          "capacidad": 4,
-          "tarifaBase": 240,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "balcon"
-          ],
-          "refundable": false,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, ideal estadias largas"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-aeropuerto",
-      "nombre": "Hotel Gran Sol - Aeropuerto",
-      "sede": "Aeropuerto",
-      "ubicacion": "Ruta 8 Km 1",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 110,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye shuttle aeropuerto"
-        },
-        {
-          "tipo": "familiar",
-          "capacidad": 4,
-          "tarifaBase": 190,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "traslado"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, requiere 100% prepago"
-        },
-        {
-          "tipo": "executive",
-          "capacidad": 2,
-          "tarifaBase": 150,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "escritorio",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "ideal negocios, early breakfast"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-centro-x1",
-      "nombre": "Hotel Gran Sol - Centro Plus 1",
-      "sede": "Centro",
-      "ubicacion": "Av. Central 123",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 135,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "cama queen",
-          "id": "hab-x1"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 195,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye late checkout sujeto a disponibilidad",
-          "id": "hab-x1"
-        },
-        {
-          "tipo": "suite",
-          "capacidad": 4,
-          "tarifaBase": 275,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "living",
-            "jacuzzi"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "tarifa no reembolsable con upgrade de spa",
-          "id": "hab-x1"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-palermo-x1",
-      "nombre": "Hotel Gran Sol - Palermo Plus 1",
-      "sede": "Palermo",
-      "ubicacion": "Calle Verde 456",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 155,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "pet friendly con cargo unico",
-          "id": "hab-x1"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 215,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "terraza",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "incluye traslado aeropuerto sujeto a horario",
-          "id": "hab-x1"
-        },
-        {
-          "tipo": "loft",
-          "capacidad": 4,
-          "tarifaBase": 255,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "balcon"
-          ],
-          "refundable": false,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, ideal estadias largas",
-          "id": "hab-x1"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-aeropuerto-x1",
-      "nombre": "Hotel Gran Sol - Aeropuerto Plus 1",
-      "sede": "Aeropuerto",
-      "ubicacion": "Ruta 8 Km 1",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 125,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye shuttle aeropuerto",
-          "id": "hab-x1"
-        },
-        {
-          "tipo": "familiar",
-          "capacidad": 4,
-          "tarifaBase": 205,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "traslado"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, requiere 100% prepago",
-          "id": "hab-x1"
-        },
-        {
-          "tipo": "executive",
-          "capacidad": 2,
-          "tarifaBase": 165,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "escritorio",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "ideal negocios, early breakfast",
-          "id": "hab-x1"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-centro-x2",
-      "nombre": "Hotel Gran Sol - Centro Plus 2",
-      "sede": "Centro",
-      "ubicacion": "Av. Central 123",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 150,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "cama queen",
-          "id": "hab-x2"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 210,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye late checkout sujeto a disponibilidad",
-          "id": "hab-x2"
-        },
-        {
-          "tipo": "suite",
-          "capacidad": 4,
-          "tarifaBase": 290,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "living",
-            "jacuzzi"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "tarifa no reembolsable con upgrade de spa",
-          "id": "hab-x2"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-palermo-x2",
-      "nombre": "Hotel Gran Sol - Palermo Plus 2",
-      "sede": "Palermo",
-      "ubicacion": "Calle Verde 456",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 170,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "pet friendly con cargo unico",
-          "id": "hab-x2"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 230,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "terraza",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "incluye traslado aeropuerto sujeto a horario",
-          "id": "hab-x2"
-        },
-        {
-          "tipo": "loft",
-          "capacidad": 4,
-          "tarifaBase": 270,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "balcon"
-          ],
-          "refundable": false,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, ideal estadias largas",
-          "id": "hab-x2"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-aeropuerto-x2",
-      "nombre": "Hotel Gran Sol - Aeropuerto Plus 2",
-      "sede": "Aeropuerto",
-      "ubicacion": "Ruta 8 Km 1",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 140,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye shuttle aeropuerto",
-          "id": "hab-x2"
-        },
-        {
-          "tipo": "familiar",
-          "capacidad": 4,
-          "tarifaBase": 220,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "traslado"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, requiere 100% prepago",
-          "id": "hab-x2"
-        },
-        {
-          "tipo": "executive",
-          "capacidad": 2,
-          "tarifaBase": 180,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "escritorio",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "ideal negocios, early breakfast",
-          "id": "hab-x2"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-centro-x3",
-      "nombre": "Hotel Gran Sol - Centro Plus 3",
-      "sede": "Centro",
-      "ubicacion": "Av. Central 123",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 165,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "cama queen",
-          "id": "hab-x3"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 225,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye late checkout sujeto a disponibilidad",
-          "id": "hab-x3"
-        },
-        {
-          "tipo": "suite",
-          "capacidad": 4,
-          "tarifaBase": 305,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "living",
-            "jacuzzi"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "tarifa no reembolsable con upgrade de spa",
-          "id": "hab-x3"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-palermo-x3",
-      "nombre": "Hotel Gran Sol - Palermo Plus 3",
-      "sede": "Palermo",
-      "ubicacion": "Calle Verde 456",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 185,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "pet friendly con cargo unico",
-          "id": "hab-x3"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 245,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "terraza",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "incluye traslado aeropuerto sujeto a horario",
-          "id": "hab-x3"
-        },
-        {
-          "tipo": "loft",
-          "capacidad": 4,
-          "tarifaBase": 285,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "balcon"
-          ],
-          "refundable": false,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, ideal estadias largas",
-          "id": "hab-x3"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-aeropuerto-x3",
-      "nombre": "Hotel Gran Sol - Aeropuerto Plus 3",
-      "sede": "Aeropuerto",
-      "ubicacion": "Ruta 8 Km 1",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 155,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye shuttle aeropuerto",
-          "id": "hab-x3"
-        },
-        {
-          "tipo": "familiar",
-          "capacidad": 4,
-          "tarifaBase": 235,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "traslado"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, requiere 100% prepago",
-          "id": "hab-x3"
-        },
-        {
-          "tipo": "executive",
-          "capacidad": 2,
-          "tarifaBase": 195,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "escritorio",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "ideal negocios, early breakfast",
-          "id": "hab-x3"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-centro-x4",
-      "nombre": "Hotel Gran Sol - Centro Plus 4",
-      "sede": "Centro",
-      "ubicacion": "Av. Central 123",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 180,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "cama queen",
-          "id": "hab-x4"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 240,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye late checkout sujeto a disponibilidad",
-          "id": "hab-x4"
-        },
-        {
-          "tipo": "suite",
-          "capacidad": 4,
-          "tarifaBase": 320,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "vista",
-            "living",
-            "jacuzzi"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "tarifa no reembolsable con upgrade de spa",
-          "id": "hab-x4"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-palermo-x4",
-      "nombre": "Hotel Gran Sol - Palermo Plus 4",
-      "sede": "Palermo",
-      "ubicacion": "Calle Verde 456",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 200,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "pet friendly con cargo unico",
-          "id": "hab-x4"
-        },
-        {
-          "tipo": "premium",
-          "capacidad": 3,
-          "tarifaBase": 260,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "terraza",
-            "cafetera"
-          ],
-          "refundable": true,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "incluye traslado aeropuerto sujeto a horario",
-          "id": "hab-x4"
-        },
-        {
-          "tipo": "loft",
-          "capacidad": 4,
-          "tarifaBase": 300,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "balcon"
-          ],
-          "refundable": false,
-          "petFriendly": true,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, ideal estadias largas",
-          "id": "hab-x4"
-        }
-      ]
-    },
-    {
-      "id": "gran-sol-aeropuerto-x4",
-      "nombre": "Hotel Gran Sol - Aeropuerto Plus 4",
-      "sede": "Aeropuerto",
-      "ubicacion": "Ruta 8 Km 1",
-      "habitaciones": [
-        {
-          "tipo": "estandar",
-          "capacidad": 2,
-          "tarifaBase": 170,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "incluye shuttle aeropuerto",
-          "id": "hab-x4"
-        },
-        {
-          "tipo": "familiar",
-          "capacidad": 4,
-          "tarifaBase": 250,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "kitchenette",
-            "traslado"
-          ],
-          "refundable": false,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "no reembolsable, requiere 100% prepago",
-          "id": "hab-x4"
-        },
-        {
-          "tipo": "executive",
-          "capacidad": 2,
-          "tarifaBase": 210,
-          "moneda": "USD",
-          "amenities": [
-            "desayuno",
-            "wifi",
-            "tv",
-            "escritorio",
-            "traslado"
-          ],
-          "refundable": true,
-          "petFriendly": false,
-          "incluyeDesayuno": true,
-          "notas": "ideal negocios, early breakfast",
-          "id": "hab-x4"
-        }
-      ]
-    }
-  ]
+    ]
 }

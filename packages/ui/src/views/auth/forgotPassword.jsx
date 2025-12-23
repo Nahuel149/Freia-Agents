@@ -8,7 +8,6 @@ import { Alert, Box, Stack, Typography, useTheme, Container, Card, CardContent }
 
 // project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
-import MainCard from '@/ui-component/cards/MainCard'
 import { Input } from '@/ui-component/input/Input'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
@@ -17,7 +16,6 @@ import accountApi from '@/api/account.api'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import { useConfig } from '@/store/context/ConfigContext'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
@@ -123,29 +121,27 @@ const ForgotPasswordPage = () => {
                         background: customization.isDarkMode ? 'rgba(14, 21, 41, 0.9)' : 'rgba(255, 255, 255, 0.95)',
                         border: customization.isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
                         borderRadius: '24px',
-                        boxShadow: customization.isDarkMode
-                            ? '0 25px 60px rgba(0, 0, 0, 0.45)'
-                            : '0 25px 60px rgba(10, 86, 240, 0.18)',
+                        boxShadow: customization.isDarkMode ? '0 25px 60px rgba(0, 0, 0, 0.45)' : '0 25px 60px rgba(10, 86, 240, 0.18)',
                         position: 'relative',
                         zIndex: 1
                     }}
                 >
                     <CardContent sx={{ p: 4 }}>
                         <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    {responseMsg && responseMsg?.type === 'error' && (
-                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
-                            {responseMsg.msg}
-                        </Alert>
-                    )}
-                    {responseMsg && responseMsg?.type !== 'error' && (
-                        <Alert icon={<IconCircleCheck />} variant='filled' severity='success'>
-                            {responseMsg.msg}
-                        </Alert>
-                    )}
+                            {responseMsg && responseMsg?.type === 'error' && (
+                                <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                                    {responseMsg.msg}
+                                </Alert>
+                            )}
+                            {responseMsg && responseMsg?.type !== 'error' && (
+                                <Alert icon={<IconCircleCheck />} variant='filled' severity='success'>
+                                    {responseMsg.msg}
+                                </Alert>
+                            )}
                             <Stack sx={{ gap: 2, alignItems: 'center', textAlign: 'center', mb: 1 }}>
-                                <Typography 
-                                    variant='h3' 
-                                    sx={{ 
+                                <Typography
+                                    variant='h3'
+                                    sx={{
                                         fontWeight: 700,
                                         fontSize: { xs: '1.75rem', sm: '2rem' },
                                         background: customization.isDarkMode
@@ -159,20 +155,20 @@ const ForgotPasswordPage = () => {
                                 >
                                     ¿Olvidaste tu contraseña?
                                 </Typography>
-                                <Typography 
-                                    variant='body1' 
-                                    sx={{ 
+                                <Typography
+                                    variant='body1'
+                                    sx={{
                                         color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
                                         maxWidth: '400px'
                                     }}
                                 >
                                     ¿Tienes un código de reseteo?{' '}
-                                    <Link 
-                                        style={{ 
+                                    <Link
+                                        style={{
                                             color: customization.isDarkMode ? '#667eea' : '#764ba2',
                                             textDecoration: 'none',
                                             fontWeight: 600
-                                        }} 
+                                        }}
                                         to='/reset-password'
                                     >
                                         Cámbiala aquí
@@ -181,11 +177,13 @@ const ForgotPasswordPage = () => {
                                 </Typography>
                             </Stack>
                             <form onSubmit={sendResetRequest}>
-                                <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 3 }}>
+                                <Stack
+                                    sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 3 }}
+                                >
                                     <Box sx={{ mb: 1 }}>
-                                        <Typography 
-                                            variant='body1' 
-                                            sx={{ 
+                                        <Typography
+                                            variant='body1'
+                                            sx={{
                                                 mb: 1.5,
                                                 fontWeight: 600,
                                                 color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'

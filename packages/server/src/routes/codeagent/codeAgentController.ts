@@ -15,10 +15,7 @@ const createCodeAgent = async (req: Request, res: Response, next: NextFunction) 
         const { name, description, code, language, isPublic } = req.body
 
         if (!name || !code || !language) {
-            throw new InternalFlowiseError(
-                StatusCodes.UNPROCESSABLE_ENTITY,
-                'Name, code, and language are required'
-            )
+            throw new InternalFlowiseError(StatusCodes.UNPROCESSABLE_ENTITY, 'Name, code, and language are required')
         }
 
         const newCodeAgent = new CodeAgent()
@@ -68,10 +65,7 @@ const getCodeAgentById = async (req: Request, res: Response, next: NextFunction)
         })
 
         if (!dbResponse) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                'CodeAgent not found'
-            )
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'CodeAgent not found')
         }
 
         return res.json(dbResponse)
@@ -94,10 +88,7 @@ const updateCodeAgent = async (req: Request, res: Response, next: NextFunction) 
         })
 
         if (!existingCodeAgent) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                'CodeAgent not found'
-            )
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'CodeAgent not found')
         }
 
         const updateCodeAgent = new CodeAgent()
@@ -132,18 +123,15 @@ const deleteCodeAgent = async (req: Request, res: Response, next: NextFunction) 
         })
 
         if (!existingCodeAgent) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                'CodeAgent not found'
-            )
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'CodeAgent not found')
         }
 
         // Delete all executions first
         await codeAgentExecution.delete({ codeAgentId: req.params.id })
-        
+
         // Delete the CodeAgent
         await codeAgent.delete(req.params.id)
-        
+
         return res.json({ message: 'CodeAgent deleted successfully' })
     } catch (error) {
         return next(error)
@@ -166,10 +154,7 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
         })
 
         if (!existingCodeAgent) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                'CodeAgent not found'
-            )
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'CodeAgent not found')
         }
 
         // Create execution record
@@ -210,7 +195,7 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             log(`Chat history length: ${Array.isArray(chatHistory) ? chatHistory.length : 0}`)
 
             // Autoload dataset from selected document IDs (v2) or legacy inline docs
-            const autoload: boolean = !!(req.body?.context?.autoload)
+            const autoload: boolean = !!req.body?.context?.autoload
             const selectedDocIds: string[] | undefined = req.body?.context?.selectedDocIds
             const legacySelectedDocs = req.body?.context?.selectedDocuments
 
@@ -232,7 +217,12 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
                     }
                     log(`Autoload v2: repoRoot=${repoRoot}`)
                     log(`Autoload v2: ids=${JSON.stringify(selectedDocIds)}`)
-                    log(`Autoload v2: stores=${envelope.stores.length}, bytes=${totalBytes}, hash=${datasetHash.slice(0,8)}..., statuses=${JSON.stringify(statuses)}`)
+                    log(
+                        `Autoload v2: stores=${envelope.stores.length}, bytes=${totalBytes}, hash=${datasetHash.slice(
+                            0,
+                            8
+                        )}..., statuses=${JSON.stringify(statuses)}`
+                    )
                 } catch (e) {
                     logger.warn('Failed to resolve selected stores:', e)
                     log(`Autoload v2 failed: ${(e as Error)?.message || String(e)}`)
@@ -266,7 +256,9 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             let parsed
             try {
                 parsed = typeof result.output === 'string' ? JSON.parse(result.output) : null
-            } catch { parsed = null }
+            } catch {
+                parsed = null
+            }
             if (!parsed && typeof result.output === 'string') {
                 log(`Raw stdout len=${result.output.length}`)
             }
@@ -278,7 +270,7 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             savedExecution.error = result.success ? undefined : result.error
             savedExecution.status = result.success ? ExecutionStatus.COMPLETED : ExecutionStatus.FAILED
             savedExecution.endTime = new Date()
-            
+
             await codeAgentExecution.save(savedExecution)
 
             // Ingest analytics (events, follow-ups, datasets on LOAD_DATA)
@@ -288,11 +280,13 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
 
                 // If the input is LOAD_DATA with datasets, try to ingest products/clients
                 if (typeof input === 'string' && /^\s*LOAD_DATA/i.test(input)) {
-                    const jsonPart = String(input).replace(/^\s*LOAD_DATA/i, '').trim()
+                    const jsonPart = String(input)
+                        .replace(/^\s*LOAD_DATA/i, '')
+                        .trim()
                     try {
                         const payload = JSON.parse(jsonPart)
-                        const products = (payload?.productos?.products) || (payload?.productos?.productos) || payload?.productos || []
-                        const clients = (payload?.clientes?.clients) || (payload?.clientes?.clientes) || payload?.clientes || []
+                        const products = payload?.productos?.products || payload?.productos?.productos || payload?.productos || []
+                        const clients = payload?.clientes?.clients || payload?.clientes?.clientes || payload?.clientes || []
                         await svc.ingestDatasets({ products, clients })
                     } catch {}
                 }
@@ -318,11 +312,11 @@ const executeCodeAgent = async (req: Request, res: Response, next: NextFunction)
             savedExecution.error = executionError instanceof Error ? executionError.message : String(executionError)
             savedExecution.status = ExecutionStatus.FAILED
             savedExecution.endTime = new Date()
-            
+
             await codeAgentExecution.save(savedExecution)
 
             logger.error('CodeAgent execution failed:', executionError)
-            
+
             return res.json({
                 executionId: savedExecution.id,
                 output: null,
@@ -341,7 +335,7 @@ const getCodeAgentExecutions = async (req: Request, res: Response, next: NextFun
     try {
         const appServer = getRunningExpressApp()
         const codeAgentExecution = appServer.AppDataSource.getRepository(CodeAgentExecution)
-        
+
         const dbResponse = await codeAgentExecution.find({
             where: {
                 codeAgentId: req.params.id

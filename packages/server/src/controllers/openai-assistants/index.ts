@@ -7,8 +7,6 @@ import { StatusCodes } from 'http-status-codes'
 import { streamStorageFile } from 'flowise-components'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import { Workspace } from '../../oss/database/entities/workspace.entity'
-import { isOssMode } from '../../utils/ossMode'
 
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {

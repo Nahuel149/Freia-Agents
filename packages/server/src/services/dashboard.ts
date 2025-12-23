@@ -1,10 +1,4 @@
-import {
-    DataSource,
-    Repository,
-    LessThan,
-    MoreThanOrEqual,
-    In
-} from 'typeorm'
+import { DataSource, Repository, LessThan, MoreThanOrEqual, In } from 'typeorm'
 import { AgentEvent } from '../database/entities/AgentEvent'
 import { SaleRecord } from '../database/entities/SaleRecord'
 import { ProductInventory } from '../database/entities/ProductInventory'
@@ -17,8 +11,72 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 type SentimentBuckets = { positive: number; neutral: number; negative: number }
 
 const STOP_WORDS = new Set(
-    ['de', 'la', 'en', 'el', 'los', 'las', 'y', 'que', 'por', 'para', 'con', 'se', 'del', 'al', 'un', 'una', 'uno', 'lo', 'su', 'sus', 'te', 'tu', 'vos', 'mi', 'si', 'no', 'es', 'son', 'gracias', 'hola', 'buenas', 'ok', 'dale', 'bien', 'perfecto', 'listo', 'entonces', 'pero', 'solo', 'más', 'menos', 'porque', 'cuando', 'este', 'esta', 'estas', 'estos', 'ser', 'tener', 'hacer', 'vez', 'ahora', 'cliente', 'muchas', 'muchos', 'día', 'dias', 'mañana', 'tarde', 'noche', 'list', '00', '000', '0']
-        .map((word) => word.toLowerCase())
+    [
+        'de',
+        'la',
+        'en',
+        'el',
+        'los',
+        'las',
+        'y',
+        'que',
+        'por',
+        'para',
+        'con',
+        'se',
+        'del',
+        'al',
+        'un',
+        'una',
+        'uno',
+        'lo',
+        'su',
+        'sus',
+        'te',
+        'tu',
+        'vos',
+        'mi',
+        'si',
+        'no',
+        'es',
+        'son',
+        'gracias',
+        'hola',
+        'buenas',
+        'ok',
+        'dale',
+        'bien',
+        'perfecto',
+        'listo',
+        'entonces',
+        'pero',
+        'solo',
+        'más',
+        'menos',
+        'porque',
+        'cuando',
+        'este',
+        'esta',
+        'estas',
+        'estos',
+        'ser',
+        'tener',
+        'hacer',
+        'vez',
+        'ahora',
+        'cliente',
+        'muchas',
+        'muchos',
+        'día',
+        'dias',
+        'mañana',
+        'tarde',
+        'noche',
+        'list',
+        '00',
+        '000',
+        '0'
+    ].map((word) => word.toLowerCase())
 )
 
 export class DashboardService {
@@ -172,21 +230,24 @@ export class DashboardService {
         const pendingPriceApprovals = Number(pendingPriceApprovalsCount || 0)
 
         const responseTimes = responseMetadataRows
-            .map(row => this.parseMetadata(row.metadata)?.responseTime)
-            .map(value => this.normaliseNumber(value))
+            .map((row) => this.parseMetadata(row.metadata)?.responseTime)
+            .map((value) => this.normaliseNumber(value))
             .filter((value): value is number => value !== null)
         const avgResponseTime = this.collectAverage(responseTimes)
 
-        const sentiment = sentimentMetadataRows.reduce<SentimentBuckets>((acc, row) => {
-            const sentimentValue = (this.parseMetadata(row.metadata)?.sentiment || '').toString().toLowerCase()
-            if (sentimentValue === 'positive') acc.positive += 1
-            else if (sentimentValue === 'negative') acc.negative += 1
-            else if (sentimentValue === 'neutral') acc.neutral += 1
-            return acc
-        }, { positive: 0, neutral: 0, negative: 0 })
+        const sentiment = sentimentMetadataRows.reduce<SentimentBuckets>(
+            (acc, row) => {
+                const sentimentValue = (this.parseMetadata(row.metadata)?.sentiment || '').toString().toLowerCase()
+                if (sentimentValue === 'positive') acc.positive += 1
+                else if (sentimentValue === 'negative') acc.negative += 1
+                else if (sentimentValue === 'neutral') acc.neutral += 1
+                return acc
+            },
+            { positive: 0, neutral: 0, negative: 0 }
+        )
 
         const wordCounts = new Map<string, number>()
-        responseMetadataRows.forEach(row => {
+        responseMetadataRows.forEach((row) => {
             const metadata = this.parseMetadata(row.metadata)
             const topWords = metadata?.topWords
             if (Array.isArray(topWords)) {
@@ -219,20 +280,16 @@ export class DashboardService {
             }))
 
         const feedbackScores = feedbackMetadataRows
-            .map(row => this.parseMetadata(row.metadata)?.score)
-            .map(value => this.normaliseNumber(value))
+            .map((row) => this.parseMetadata(row.metadata)?.score)
+            .map((value) => this.normaliseNumber(value))
             .filter((value): value is number => value !== null)
         const feedbackAvg = this.collectAverage(feedbackScores)
 
-        const productIds = mostRequestedRaw
-            .map(row => row.productId)
-            .filter((id): id is string => Boolean(id))
-        const inventoryDetails = productIds.length
-            ? await this.inventoryRepo.find({ where: { productId: In(productIds) } })
-            : []
-        const inventoryMap = new Map(inventoryDetails.map(item => [item.productId, item]))
+        const productIds = mostRequestedRaw.map((row) => row.productId).filter((id): id is string => Boolean(id))
+        const inventoryDetails = productIds.length ? await this.inventoryRepo.find({ where: { productId: In(productIds) } }) : []
+        const inventoryMap = new Map(inventoryDetails.map((item) => [item.productId, item]))
 
-        const mostRequestedProducts = mostRequestedRaw.map(row => {
+        const mostRequestedProducts = mostRequestedRaw.map((row) => {
             const product = inventoryMap.get(row.productId)
             return {
                 productId: row.productId,
@@ -244,7 +301,7 @@ export class DashboardService {
         })
 
         const salesByDate = new Map<string, { sales: number; revenue: number }>()
-        recentSales.forEach(record => {
+        recentSales.forEach((record) => {
             const dateKey = record.ts.toISOString().slice(0, 10)
             const existing = salesByDate.get(dateKey) || { sales: 0, revenue: 0 }
             existing.sales += 1
@@ -278,7 +335,7 @@ export class DashboardService {
             openToolAlerts,
             pendingPriceApprovals,
             topMentionedWords,
-            inventoryAlerts: lowStock.map(item => ({
+            inventoryAlerts: lowStock.map((item) => ({
                 productId: item.productId,
                 name: item.name,
                 brand: item.brand,
@@ -301,10 +358,7 @@ export class DashboardService {
         })
     }
 
-    async resolveToolAlert(
-        id: number,
-        updates: { status?: string; resolvedBy?: string; resolvedNotes?: string }
-    ) {
+    async resolveToolAlert(id: number, updates: { status?: string; resolvedBy?: string; resolvedNotes?: string }) {
         const alert = await this.toolAlertRepo.findOne({ where: { id } })
         if (!alert) {
             throw new Error('Tool alert not found')
@@ -369,34 +423,31 @@ export class DashboardService {
         return this.priceApprovalRepo.save(request)
     }
 
-    async createPriceApprovalRequest(
-        payload: {
-            quoteId: string
-            clientId?: string | null
-            saleId?: number | null
-            requestedDiscount: number
-            requestedTotal?: number | null
-            reason?: string | null
-            clientPhone?: string | null
-            priority?: string
-            estimatedResponseTime?: number | null
-        }
-    ) {
+    async createPriceApprovalRequest(payload: {
+        quoteId: string
+        clientId?: string | null
+        saleId?: number | null
+        requestedDiscount: number
+        requestedTotal?: number | null
+        reason?: string | null
+        clientPhone?: string | null
+        priority?: string
+        estimatedResponseTime?: number | null
+    }) {
         const requestedDiscount = Number(payload.requestedDiscount)
         if (!Number.isFinite(requestedDiscount) || requestedDiscount <= 0) {
             throw new Error('Invalid requested discount')
         }
 
-        const requestedTotalRaw = payload.requestedTotal === null || payload.requestedTotal === undefined ? null : Number(payload.requestedTotal)
+        const requestedTotalRaw =
+            payload.requestedTotal === null || payload.requestedTotal === undefined ? null : Number(payload.requestedTotal)
         const requestedTotal = requestedTotalRaw !== null && Number.isFinite(requestedTotalRaw) ? requestedTotalRaw : null
         const estimatedResponseTimeRaw =
             payload.estimatedResponseTime === null || payload.estimatedResponseTime === undefined
                 ? null
                 : Number(payload.estimatedResponseTime)
         const estimatedResponseTime =
-            estimatedResponseTimeRaw !== null && Number.isFinite(estimatedResponseTimeRaw)
-                ? Math.round(estimatedResponseTimeRaw)
-                : null
+            estimatedResponseTimeRaw !== null && Number.isFinite(estimatedResponseTimeRaw) ? Math.round(estimatedResponseTimeRaw) : null
         const saleId = payload.saleId === null || payload.saleId === undefined ? null : Number(payload.saleId)
 
         const request = this.priceApprovalRepo.create({
@@ -430,7 +481,7 @@ export class DashboardService {
 
         const rows = await qb.getMany()
 
-        return rows.map(row => ({
+        return rows.map((row) => ({
             id: row.id,
             customerId: row.customerId,
             phoneNumber: row.phoneNumber,
@@ -529,10 +580,7 @@ export class DashboardService {
                     .createQueryBuilder('sale')
                     .select('COALESCE(SUM(sale.totalAmount), 0)', 'sum')
                     .getRawOne<{ sum: string | null }>(),
-                this.saleRecordRepo
-                    .createQueryBuilder('sale')
-                    .where('sale.ts >= :start', { start: sevenDaysAgo })
-                    .getCount()
+                this.saleRecordRepo.createQueryBuilder('sale').where('sale.ts >= :start', { start: sevenDaysAgo }).getCount()
             ])
 
             const totalRevenue = Number(totalRevenueRow?.sum || 0)
@@ -563,19 +611,11 @@ export class DashboardService {
 
     async getRecentActivities(limit = 20) {
         const [events, sales] = await Promise.all([
-            this.agentEventRepo
-                .createQueryBuilder('event')
-                .orderBy('event.ts', 'DESC')
-                .take(limit)
-                .getMany(),
-            this.saleRecordRepo
-                .createQueryBuilder('sale')
-                .orderBy('sale.ts', 'DESC')
-                .take(limit)
-                .getMany()
+            this.agentEventRepo.createQueryBuilder('event').orderBy('event.ts', 'DESC').take(limit).getMany(),
+            this.saleRecordRepo.createQueryBuilder('sale').orderBy('sale.ts', 'DESC').take(limit).getMany()
         ])
 
-        const eventActivities = events.map(event => ({
+        const eventActivities = events.map((event) => ({
             id: event.id,
             ts: event.ts,
             type: event.type,
@@ -586,7 +626,7 @@ export class DashboardService {
             message: event.message
         }))
 
-        const saleActivities = sales.map(sale => ({
+        const saleActivities = sales.map((sale) => ({
             id: sale.id,
             ts: sale.ts,
             type: 'sale',
@@ -597,9 +637,7 @@ export class DashboardService {
             message: null
         }))
 
-        return [...eventActivities, ...saleActivities]
-            .sort((a, b) => b.ts.getTime() - a.ts.getTime())
-            .slice(0, limit)
+        return [...eventActivities, ...saleActivities].sort((a, b) => b.ts.getTime() - a.ts.getTime()).slice(0, limit)
     }
 
     async getTopAgents(limit = 5) {
@@ -622,11 +660,9 @@ export class DashboardService {
                 .getRawMany<{ agentId: string | null; conversations: string }>()
         ])
 
-        const conversationsMap = new Map(
-            conversationsByAgent.map(item => [item.agentId || 'unknown', Number(item.conversations || 0)])
-        )
+        const conversationsMap = new Map(conversationsByAgent.map((item) => [item.agentId || 'unknown', Number(item.conversations || 0)]))
 
-        return salesByAgent.map(item => {
+        return salesByAgent.map((item) => {
             const id = item.agentId || 'unknown'
             return {
                 id,

@@ -153,9 +153,7 @@ class MongoDBAtlas_VectorStores implements INode {
                 try {
                     const probe = await (embeddings as any).embedDocuments(['__flowise_probe__'])
                     const isTypedArray = (val: any) => ArrayBuffer.isView(val) && !(val instanceof DataView)
-                    const hasValidRows =
-                        Array.isArray(probe) &&
-                        (probe.length === 0 || Array.isArray(probe[0]) || isTypedArray(probe[0]))
+                    const hasValidRows = Array.isArray(probe) && (probe.length === 0 || Array.isArray(probe[0]) || isTypedArray(probe[0]))
                     if (!hasValidRows) {
                         throw new Error('Unexpected embeddings output shape')
                     }

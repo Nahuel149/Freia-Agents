@@ -29,4 +29,3 @@ export class SupportTicket {
     @CreateDateColumn({ type: 'timestamp' })
     createdDate: Date
 }
-

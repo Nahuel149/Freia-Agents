@@ -11,7 +11,7 @@ const getSingleFlowConfig = async (chatflowId: string, workspaceId: string): Pro
         const appServer = getRunningExpressApp()
         const chatflow = await chatflowsService.getChatflowById(chatflowId)
         if (workspaceId !== 'oss-mode' && chatflow.workspaceId !== workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don\'t have access to this chatflow`)
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You don't have access to this chatflow`)
         }
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)

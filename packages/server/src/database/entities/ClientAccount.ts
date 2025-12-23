@@ -17,4 +17,3 @@ export class ClientAccount {
     @UpdateDateColumn({ type: 'timestamp' })
     updatedDate: Date
 }
-

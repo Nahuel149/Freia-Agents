@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { useContext, useState, useEffect, memo } from 'react'
 import { useSelector } from 'react-redux'
-import { Handle, Position, useUpdateNodeInternals, NodeToolbar } from 'reactflow'
+import { NodeToolbar } from 'reactflow'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'

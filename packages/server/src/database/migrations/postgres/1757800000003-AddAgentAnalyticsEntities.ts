@@ -69,4 +69,3 @@ export class AddAgentAnalyticsEntities1757800000003 implements MigrationInterfac
         await queryRunner.query(`DROP TABLE IF EXISTS agent_event`)
     }
 }
-

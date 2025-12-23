@@ -19,8 +19,7 @@ export const logWithFallback = (
         target(...payload)
         return
     }
-    const fallback =
-        level === 'error' ? console.error : level === 'warn' ? console.warn : level === 'info' ? console.info : console.debug
+    const fallback = level === 'error' ? console.error : level === 'warn' ? console.warn : level === 'info' ? console.info : console.debug
     fallback(...payload)
 }
 
@@ -69,10 +68,7 @@ export const describeEmbeddingResult = (result: any) => {
 }
 
 export const hasValidEmbeddingRows = (result: any) => {
-    return (
-        Array.isArray(result) &&
-        (result.length === 0 || Array.isArray(result[0]) || isTypedArray(result[0]))
-    )
+    return Array.isArray(result) && (result.length === 0 || Array.isArray(result[0]) || isTypedArray(result[0]))
 }
 
 const coerceEmbeddingVector = (candidate: any) => {
@@ -99,11 +95,7 @@ const extractRowSet = (response: any): any[] | undefined => {
     return undefined
 }
 
-const fallbackEmbedDocuments = async (
-    embeddings: any,
-    inputs: string[],
-    logger?: LoggerLike
-) => {
+const fallbackEmbedDocuments = async (embeddings: any, inputs: string[], logger?: LoggerLike) => {
     const stripNewLines = embeddings?.stripNewLines ?? true
     const batchSize = embeddings?.batchSize ?? 512
     const model = embeddings?.model ?? embeddings?.modelName
@@ -121,11 +113,7 @@ const fallbackEmbedDocuments = async (
 
         const response = await embeddings.embeddingWithRetry(params)
         if (typeof response === 'string') {
-            logWithFallback(
-                logger,
-                'error',
-                `[embeddings] fallback raw response (string): ${response.slice(0, 500)}`
-            )
+            logWithFallback(logger, 'error', `[embeddings] fallback raw response (string): ${response.slice(0, 500)}`)
             throw new Error(response)
         }
         logWithFallback(

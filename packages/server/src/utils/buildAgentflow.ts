@@ -2002,8 +2002,8 @@ export const executeAgentFlow = async ({
             databaseEntities
         })
         if (followUpPrompts && (followUpPrompts as any).questions) {
-                apiMessage.followUpPrompts = JSON.stringify((followUpPrompts as any).questions)
-            }
+            apiMessage.followUpPrompts = JSON.stringify((followUpPrompts as any).questions)
+        }
     }
     if (lastNodeOutput?.humanInputAction && Object.keys(lastNodeOutput.humanInputAction).length)
         apiMessage.action = JSON.stringify(lastNodeOutput.humanInputAction)

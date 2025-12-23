@@ -7,9 +7,6 @@ import { useTranslation } from 'react-i18next'
 import {
     Box,
     Button,
-    Card,
-    CardContent,
-    Grid,
     Typography,
     Stack,
     Divider,
@@ -17,7 +14,6 @@ import {
     TextField,
     IconButton,
     Chip,
-    Alert,
     CircularProgress,
     FormControlLabel,
     Switch,
@@ -41,7 +37,7 @@ import useNotifier from '@/utils/useNotifier'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // icons
-import { IconCode, IconSend, IconArrowLeft, IconPlayerPlay, IconRefresh } from '@tabler/icons-react'
+import { IconSend, IconRefresh } from '@tabler/icons-react'
 
 // ==============================|| CODEAGENT EXECUTION ||============================== //
 
@@ -65,9 +61,8 @@ const CodeAgentExecution = () => {
     const [isExecuting, setIsExecuting] = useState(false)
     const [executionStatus, setExecutionStatus] = useState('idle') // idle, running, success, error
     const DEFAULT_V2_STORE_IDS = ['productosgomerias', 'clientesgomeria', 'ventasgomeria', 'manualgomeria']
-    const effectiveSelectedDocIds = (location?.state?.selectedDocIds && location.state.selectedDocIds.length > 0)
-        ? location.state.selectedDocIds
-        : DEFAULT_V2_STORE_IDS
+    const effectiveSelectedDocIds =
+        location?.state?.selectedDocIds && location.state.selectedDocIds.length > 0 ? location.state.selectedDocIds : DEFAULT_V2_STORE_IDS
     const [autoloadOn, setAutoloadOn] = useState(() => {
         const preset = location?.state?.autoload
         if (typeof preset === 'boolean') return preset
@@ -91,12 +86,14 @@ const CodeAgentExecution = () => {
             const response = await getCodeAgentApi.request(id)
             setCodeAgent(response.data)
             // Add welcome message
-            setMessages([{
-                id: 'welcome',
-                type: 'system',
-                content: `Welcome to ${response.data.name}! You can now interact with your CodeAgent.`,
-                timestamp: new Date().toISOString()
-            }])
+            setMessages([
+                {
+                    id: 'welcome',
+                    type: 'system',
+                    content: `Welcome to ${response.data.name}! You can now interact with your CodeAgent.`,
+                    timestamp: new Date().toISOString()
+                }
+            ])
         } catch (error) {
             console.error('Error fetching code agent:', error)
             enqueueSnackbar({
@@ -128,7 +125,7 @@ const CodeAgentExecution = () => {
             timestamp: new Date().toISOString()
         }
 
-        setMessages(prev => [...prev, userMessage])
+        setMessages((prev) => [...prev, userMessage])
         setInputMessage('')
         setIsExecuting(true)
         setExecutionStatus('running')
@@ -190,14 +187,14 @@ const CodeAgentExecution = () => {
                 timestamp: new Date().toISOString()
             }
 
-            setMessages(prev => [...prev, agentMessage])
+            setMessages((prev) => [...prev, agentMessage])
             setExecutionStatus('success')
 
             // Optional banner about autoload
             if (response?.data?.autoloadSummary) {
                 const summary = response.data.autoloadSummary
                 enqueueSnackbar({
-                    message: `Loaded ${summary.stores} store(s) · ${(summary.bytes/1024/1024).toFixed(1)} MB`,
+                    message: `Loaded ${summary.stores} store(s) · ${(summary.bytes / 1024 / 1024).toFixed(1)} MB`,
                     options: { key: new Date().getTime() + Math.random(), variant: 'info' }
                 })
             }
@@ -210,7 +207,7 @@ const CodeAgentExecution = () => {
                 error: error.response?.data?.error,
                 timestamp: new Date().toISOString()
             }
-            setMessages(prev => [...prev, errorMessage])
+            setMessages((prev) => [...prev, errorMessage])
             setExecutionStatus('error')
         } finally {
             setIsExecuting(false)
@@ -225,12 +222,14 @@ const CodeAgentExecution = () => {
     }
 
     const clearChat = () => {
-        setMessages([{
-            id: 'welcome',
-            type: 'system',
-            content: `Welcome to ${codeAgent.name}! You can now interact with your CodeAgent.`,
-            timestamp: new Date().toISOString()
-        }])
+        setMessages([
+            {
+                id: 'welcome',
+                type: 'system',
+                content: `Welcome to ${codeAgent.name}! You can now interact with your CodeAgent.`,
+                timestamp: new Date().toISOString()
+            }
+        ])
         setExecutionStatus('idle')
     }
 
@@ -265,7 +264,7 @@ const CodeAgentExecution = () => {
                     <Typography variant='body1' sx={{ whiteSpace: 'pre-wrap' }}>
                         {message.content}
                     </Typography>
-                    
+
                     {message.data && (
                         <Box sx={{ mt: 1 }}>
                             <Divider sx={{ my: 1 }} />
@@ -287,7 +286,7 @@ const CodeAgentExecution = () => {
                             </Box>
                         </Box>
                     )}
-                    
+
                     {message.logs && message.logs.length > 0 && (
                         <Box sx={{ mt: 1 }}>
                             <Divider sx={{ my: 1 }} />
@@ -332,7 +331,7 @@ const CodeAgentExecution = () => {
                             </Box>
                         </Box>
                     )}
-                    
+
                     <Typography variant='caption' color='text.secondary' sx={{ mt: 1, display: 'block' }}>
                         {new Date(message.timestamp).toLocaleTimeString()}
                     </Typography>
@@ -360,12 +359,7 @@ const CodeAgentExecution = () => {
                                 label='Autoload selected docs'
                             />
                         </Tooltip>
-                        <Chip
-                            label={codeAgent?.language || 'JavaScript'}
-                            color='primary'
-                            variant='outlined'
-                            size='small'
-                        />
+                        <Chip label={codeAgent?.language || 'JavaScript'} color='primary' variant='outlined' size='small' />
                         <Chip
                             label={executionStatus}
                             color={
@@ -379,16 +373,12 @@ const CodeAgentExecution = () => {
                             }
                             size='small'
                         />
-                        <Button
-                            size='small'
-                            startIcon={<IconRefresh />}
-                            onClick={clearChat}
-                        >
+                        <Button size='small' startIcon={<IconRefresh />} onClick={clearChat}>
                             Clear Chat
                         </Button>
                     </Stack>
                 </ViewHeader>
-                
+
                 {/* Chat Messages */}
                 <Box
                     sx={{
@@ -413,7 +403,7 @@ const CodeAgentExecution = () => {
                     )}
                     <div ref={messagesEndRef} />
                 </Box>
-                
+
                 {/* Input Area */}
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
                     <TextField
@@ -427,12 +417,7 @@ const CodeAgentExecution = () => {
                         disabled={isExecuting}
                         variant='outlined'
                     />
-                    <IconButton
-                        color='primary'
-                        onClick={handleSendMessage}
-                        disabled={!inputMessage.trim() || isExecuting}
-                        sx={{ mb: 0.5 }}
-                    >
+                    <IconButton color='primary' onClick={handleSendMessage} disabled={!inputMessage.trim() || isExecuting} sx={{ mb: 0.5 }}>
                         <IconSend />
                     </IconButton>
                 </Box>

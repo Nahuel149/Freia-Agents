@@ -38,9 +38,6 @@ export const addChatflowsCount = async (keys: any[]) => {
         }
         return tmpResult
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: addChatflowsCount - ${getErrorMessage(error)}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: addChatflowsCount - ${getErrorMessage(error)}`)
     }
 }

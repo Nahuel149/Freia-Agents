@@ -6,9 +6,28 @@ import { IUsedTool } from '../../../src/Interface'
  */
 export class ToolValidator {
     private static readonly PRODUCT_KEYWORDS = [
-        'product', 'item', 'buy', 'purchase', 'price', 'cost', 'catalog', 'inventory',
-        'stock', 'available', 'specification', 'spec', 'feature', 'model', 'brand',
-        'category', 'search', 'find', 'recommend', 'suggestion', 'compare', 'review'
+        'product',
+        'item',
+        'buy',
+        'purchase',
+        'price',
+        'cost',
+        'catalog',
+        'inventory',
+        'stock',
+        'available',
+        'specification',
+        'spec',
+        'feature',
+        'model',
+        'brand',
+        'category',
+        'search',
+        'find',
+        'recommend',
+        'suggestion',
+        'compare',
+        'review'
     ]
 
     private static readonly GOMERIA_CONSULTATION_TOOL = 'gomeria_consultation'
@@ -18,21 +37,21 @@ export class ToolValidator {
      */
     static isProductQuery(input: string): boolean {
         const lowercaseInput = input.toLowerCase()
-        return this.PRODUCT_KEYWORDS.some(keyword => lowercaseInput.includes(keyword))
+        return this.PRODUCT_KEYWORDS.some((keyword) => lowercaseInput.includes(keyword))
     }
 
     /**
      * Checks if gomeria_consultation tool is available in the tools list
      */
     static hasGomeriaConsultationTool(tools: Tool[]): boolean {
-        return tools.some(tool => tool.name === this.GOMERIA_CONSULTATION_TOOL)
+        return tools.some((tool) => tool.name === this.GOMERIA_CONSULTATION_TOOL)
     }
 
     /**
      * Checks if gomeria_consultation has been called in the used tools
      */
     static hasCalledGomeriaConsultation(usedTools: IUsedTool[]): boolean {
-        return usedTools.some(tool => tool.tool === this.GOMERIA_CONSULTATION_TOOL)
+        return usedTools.some((tool) => tool.tool === this.GOMERIA_CONSULTATION_TOOL)
     }
 
     /**

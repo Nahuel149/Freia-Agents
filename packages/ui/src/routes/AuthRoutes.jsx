@@ -43,7 +43,7 @@ const AuthRoutes = {
         {
             path: '/unauthorized',
             element: <UnauthorizedPage />
-        },
+        }
         // OSS mode - organization setup and license expired routes removed
     ]
 }

@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 
 // material-ui
 import {
     Box,
     Button,
-    Card,
-    CardContent,
     FormControl,
     InputLabel,
     MenuItem,
@@ -53,7 +51,7 @@ const AgentflowGenerator = () => {
     const navigate = useNavigate()
     const theme = useTheme()
     const dispatch = useDispatch()
-    
+
     // ==============================|| Snackbar ||============================== //
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -103,7 +101,7 @@ const AgentflowGenerator = () => {
         try {
             // Simulate progress updates
             const progressInterval = setInterval(() => {
-                setProgress(prev => {
+                setProgress((prev) => {
                     if (prev >= 90) {
                         clearInterval(progressInterval)
                         return 90
@@ -136,7 +134,7 @@ const AgentflowGenerator = () => {
         } catch (err) {
             console.error('Generation error:', err)
             let errorMessage = 'Failed to generate workflow. Please try again.'
-            
+
             if (err.response?.status === 400) {
                 errorMessage = 'Invalid request. Please check your inputs and try again.'
             } else if (err.response?.status === 401) {
@@ -152,7 +150,7 @@ const AgentflowGenerator = () => {
             } else if (err.message) {
                 errorMessage = err.message
             }
-            
+
             setError(errorMessage)
             setProgress(0)
             enqueueSnackbar({
@@ -171,11 +169,11 @@ const AgentflowGenerator = () => {
         if (generatedWorkflow) {
             try {
                 // Navigate to canvas with generated workflow data
-                navigate('/v2/agentcanvas', { 
-                    state: { 
+                navigate('/v2/agentcanvas', {
+                    state: {
                         generatedWorkflow,
-                        isFromGenerator: true 
-                    } 
+                        isFromGenerator: true
+                    }
                 })
             } catch (err) {
                 console.error('Navigation error:', err)
@@ -203,29 +201,31 @@ const AgentflowGenerator = () => {
                 subtitle={t('Generate AI workflows from natural language descriptions')}
                 icon={<IconSparkles />}
             />
-            
+
             <MainCard>
                 <Stack spacing={3}>
                     {/* Input Form */}
                     <Paper elevation={1} sx={{ p: 3 }}>
                         <Stack spacing={3}>
-                            <Box display="flex" alignItems="center" gap={1}>
+                            <Box display='flex' alignItems='center' gap={1}>
                                 <IconWand size={24} color={theme.palette.primary.main} />
-                                <Typography variant="h4" color="primary">
+                                <Typography variant='h4' color='primary'>
                                     {t('Describe Your Workflow')}
                                 </Typography>
                             </Box>
-                            
+
                             <TextField
                                 fullWidth
                                 multiline
                                 rows={4}
                                 label={t('What do you want your AI workflow to do?')}
-                                placeholder={t('Example: Create a customer support agent that can answer questions about our products and escalate complex issues to human agents')}
+                                placeholder={t(
+                                    'Example: Create a customer support agent that can answer questions about our products and escalate complex issues to human agents'
+                                )}
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 disabled={isGenerating}
-                                variant="outlined"
+                                variant='outlined'
                             />
 
                             <FormControl fullWidth disabled={isGenerating}>
@@ -245,35 +245,31 @@ const AgentflowGenerator = () => {
 
                             {isGenerating && (
                                 <Box sx={{ width: '100%' }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                    <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
                                         Generating workflow... {progress}%
                                     </Typography>
-                                    <LinearProgress variant="determinate" value={progress} />
+                                    <LinearProgress variant='determinate' value={progress} />
                                 </Box>
                             )}
 
                             {error && (
-                                <Alert severity="error" onClose={() => setError('')}>
+                                <Alert severity='error' onClose={() => setError('')}>
                                     {error}
                                 </Alert>
                             )}
 
-                            <Stack direction="row" spacing={2}>
+                            <Stack direction='row' spacing={2}>
                                 <Button
-                                    variant="contained"
+                                    variant='contained'
                                     onClick={handleGenerate}
                                     disabled={isGenerating || !question.trim() || !selectedChatModel}
                                     startIcon={isGenerating ? <CircularProgress size={20} /> : <IconRobot />}
-                                    size="large"
+                                    size='large'
                                 >
                                     {isGenerating ? t('Generating...') : t('Generate Workflow')}
                                 </Button>
-                                
-                                <Button
-                                    variant="outlined"
-                                    onClick={handleReset}
-                                    disabled={isGenerating}
-                                >
+
+                                <Button variant='outlined' onClick={handleReset} disabled={isGenerating}>
                                     {t('Reset')}
                                 </Button>
                             </Stack>
@@ -286,19 +282,15 @@ const AgentflowGenerator = () => {
                             <Divider />
                             <Paper elevation={1} sx={{ p: 3 }}>
                                 <Stack spacing={3}>
-                                    <Box display="flex" alignItems="center" justifyContent="space-between">
-                                        <Typography variant="h4" color="primary">
+                                    <Box display='flex' alignItems='center' justifyContent='space-between'>
+                                        <Typography variant='h4' color='primary'>
                                             {t('Generated Workflow')}
                                         </Typography>
-                                        <Button
-                                            variant="contained"
-                                            onClick={handleCreateWorkflow}
-                                            color="success"
-                                        >
+                                        <Button variant='contained' onClick={handleCreateWorkflow} color='success'>
                                             {t('Create Workflow')}
                                         </Button>
                                     </Box>
-                                    
+
                                     <WorkflowPreview workflow={generatedWorkflow} />
                                 </Stack>
                             </Paper>
@@ -306,7 +298,7 @@ const AgentflowGenerator = () => {
                     )}
                 </Stack>
             </MainCard>
-            
+
             {/* Success/Error Snackbar */}
             <Snackbar
                 open={!!success || !!error}
@@ -317,13 +309,13 @@ const AgentflowGenerator = () => {
                 <Alert
                     onClose={handleCloseSnackbar}
                     severity={success ? 'success' : 'error'}
-                    variant="filled"
+                    variant='filled'
                     icon={success ? <IconCheck /> : <IconAlertCircle />}
                 >
                     {success || error}
                 </Alert>
             </Snackbar>
-            
+
             {isGenerating && <BackdropLoader open={isGenerating} />}
         </ErrorBoundary>
     )

@@ -33,9 +33,7 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
                 </div>
             </DialogTitle>
             <DialogContent>
-                <p style={{ marginBottom: '10px' }}>
-                    {t('variables.howToUseText1')}
-                </p>
+                <p style={{ marginBottom: '10px' }}>{t('variables.howToUseText1')}</p>
                 <CodeEditor
                     disabled={true}
                     value={`$vars.<variable-name>`}
@@ -44,9 +42,7 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
                     lang={'js'}
                     basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                 />
-                <p style={{ marginBottom: '10px' }}>
-                    {t('variables.howToUseText2')}
-                </p>
+                <p style={{ marginBottom: '10px' }}>{t('variables.howToUseText2')}</p>
                 <CodeEditor
                     disabled={true}
                     value={`You are a {{$vars.personality}} AI assistant`}
@@ -55,9 +51,7 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
                     lang={'js'}
                     basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                 />
-                <p style={{ marginBottom: '10px' }}>
-                    {t('variables.howToUseText3')}
-                </p>
+                <p style={{ marginBottom: '10px' }}>{t('variables.howToUseText3')}</p>
                 <p style={{ marginBottom: '10px' }}>
                     {t('variables.howToUseText4')} <b>vars</b>:
                 </p>

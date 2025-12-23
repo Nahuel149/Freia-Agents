@@ -79,16 +79,9 @@ router.get('/health', async (req, res) => {
 router.get('/overview', async (req, res) => {
     try {
         const service = new AgentDashboardService()
-        
+
         // Fetch all data in parallel
-        const [
-            metrics,
-            inventoryStatus,
-            salesStatus,
-            outboundStatus,
-            promotionalStatus,
-            health
-        ] = await Promise.all([
+        const [metrics, inventoryStatus, salesStatus, outboundStatus, promotionalStatus, health] = await Promise.all([
             service.getAgentExecutionMetrics(),
             service.getInventoryIntegrationStatus(),
             service.getSalesIntegrationStatus(),

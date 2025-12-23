@@ -20,7 +20,7 @@ router.get('/default', async (req, res) => {
                 type: 'local'
             }
         }
-        
+
         return res.json([defaultLoginMethod])
     } catch (error) {
         console.error('Error getting default login methods:', error)

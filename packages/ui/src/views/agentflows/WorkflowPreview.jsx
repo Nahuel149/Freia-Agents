@@ -100,43 +100,38 @@ const WorkflowPreview = ({ workflow }) => {
                 <Paper elevation={0} sx={{ p: 2, bgcolor: theme.palette.background.default }}>
                     <Grid container spacing={2}>
                         <Grid item xs={6} sm={3}>
-                            <Box textAlign="center">
-                                <Typography variant="h3" color="primary">
+                            <Box textAlign='center'>
+                                <Typography variant='h3' color='primary'>
                                     {nodes.length}
                                 </Typography>
-                                <Typography variant="body2" color="textSecondary">
+                                <Typography variant='body2' color='textSecondary'>
                                     Nodes
                                 </Typography>
                             </Box>
                         </Grid>
                         <Grid item xs={6} sm={3}>
-                            <Box textAlign="center">
-                                <Typography variant="h3" color="primary">
+                            <Box textAlign='center'>
+                                <Typography variant='h3' color='primary'>
                                     {edges.length}
                                 </Typography>
-                                <Typography variant="body2" color="textSecondary">
+                                <Typography variant='body2' color='textSecondary'>
                                     Connections
                                 </Typography>
                             </Box>
                         </Grid>
                         <Grid item xs={6} sm={3}>
-                            <Box textAlign="center">
-                                <Typography variant="h3" color="primary">
-                                    {new Set(nodes.map(n => n.data?.name || n.data?.type)).size}
+                            <Box textAlign='center'>
+                                <Typography variant='h3' color='primary'>
+                                    {new Set(nodes.map((n) => n.data?.name || n.data?.type)).size}
                                 </Typography>
-                                <Typography variant="body2" color="textSecondary">
+                                <Typography variant='body2' color='textSecondary'>
                                     Node Types
                                 </Typography>
                             </Box>
                         </Grid>
                         <Grid item xs={6} sm={3}>
-                            <Box textAlign="center">
-                                <Chip
-                                    label="AI Generated"
-                                    color="success"
-                                    variant="outlined"
-                                    size="small"
-                                />
+                            <Box textAlign='center'>
+                                <Chip label='AI Generated' color='success' variant='outlined' size='small' />
                             </Box>
                         </Grid>
                     </Grid>
@@ -144,14 +139,10 @@ const WorkflowPreview = ({ workflow }) => {
 
                 {/* Nodes Accordion */}
                 <Accordion expanded={expanded === 'nodes'} onChange={handleChange('nodes')}>
-                    <AccordionSummary
-                        expandIcon={<IconChevronDown />}
-                        aria-controls="nodes-content"
-                        id="nodes-header"
-                    >
-                        <Box display="flex" alignItems="center" gap={1}>
+                    <AccordionSummary expandIcon={<IconChevronDown />} aria-controls='nodes-content' id='nodes-header'>
+                        <Box display='flex' alignItems='center' gap={1}>
                             <IconHierarchy size={20} />
-                            <Typography variant="h5">Workflow Nodes ({nodes.length})</Typography>
+                            <Typography variant='h5'>Workflow Nodes ({nodes.length})</Typography>
                         </Box>
                     </AccordionSummary>
                     <AccordionDetails>
@@ -159,15 +150,15 @@ const WorkflowPreview = ({ workflow }) => {
                             {nodes.map((node, index) => {
                                 const nodeType = node.data?.name || node.data?.type || 'Unknown'
                                 const nodeLabel = node.data?.label || node.id
-                                
+
                                 return (
                                     <Grid item xs={12} sm={6} md={4} key={node.id || index}>
-                                        <Card variant="outlined" sx={{ height: '100%' }}>
+                                        <Card variant='outlined' sx={{ height: '100%' }}>
                                             <CardContent>
                                                 <Stack spacing={1}>
-                                                    <Box display="flex" alignItems="center" gap={1}>
-                                                        <Box 
-                                                            sx={{ 
+                                                    <Box display='flex' alignItems='center' gap={1}>
+                                                        <Box
+                                                            sx={{
                                                                 color: getNodeColor(nodeType),
                                                                 display: 'flex',
                                                                 alignItems: 'center'
@@ -175,23 +166,23 @@ const WorkflowPreview = ({ workflow }) => {
                                                         >
                                                             {getNodeIcon(nodeType)}
                                                         </Box>
-                                                        <Typography variant="subtitle2" noWrap>
+                                                        <Typography variant='subtitle2' noWrap>
                                                             {nodeLabel}
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Chip
                                                         label={nodeType}
-                                                        size="small"
-                                                        variant="outlined"
-                                                        sx={{ 
+                                                        size='small'
+                                                        variant='outlined'
+                                                        sx={{
                                                             borderColor: getNodeColor(nodeType),
                                                             color: getNodeColor(nodeType)
                                                         }}
                                                     />
-                                                    
+
                                                     {node.data?.description && (
-                                                        <Typography variant="body2" color="textSecondary" sx={{ fontSize: '0.75rem' }}>
+                                                        <Typography variant='body2' color='textSecondary' sx={{ fontSize: '0.75rem' }}>
                                                             {node.data.description}
                                                         </Typography>
                                                     )}
@@ -207,24 +198,20 @@ const WorkflowPreview = ({ workflow }) => {
 
                 {/* Connections Accordion */}
                 <Accordion expanded={expanded === 'connections'} onChange={handleChange('connections')}>
-                    <AccordionSummary
-                        expandIcon={<IconChevronDown />}
-                        aria-controls="connections-content"
-                        id="connections-header"
-                    >
-                        <Box display="flex" alignItems="center" gap={1}>
+                    <AccordionSummary expandIcon={<IconChevronDown />} aria-controls='connections-content' id='connections-header'>
+                        <Box display='flex' alignItems='center' gap={1}>
                             <IconArrowRight size={20} />
-                            <Typography variant="h5">Node Connections ({edges.length})</Typography>
+                            <Typography variant='h5'>Node Connections ({edges.length})</Typography>
                         </Box>
                     </AccordionSummary>
                     <AccordionDetails>
                         <List>
                             {edges.map((edge, index) => {
-                                const sourceNode = nodes.find(n => n.id === edge.source)
-                                const targetNode = nodes.find(n => n.id === edge.target)
+                                const sourceNode = nodes.find((n) => n.id === edge.source)
+                                const targetNode = nodes.find((n) => n.id === edge.target)
                                 const sourceLabel = sourceNode?.data?.label || edge.source
                                 const targetLabel = targetNode?.data?.label || edge.target
-                                
+
                                 return (
                                     <div key={edge.id || index}>
                                         <ListItem>
@@ -233,18 +220,16 @@ const WorkflowPreview = ({ workflow }) => {
                                             </ListItemIcon>
                                             <ListItemText
                                                 primary={
-                                                    <Box display="flex" alignItems="center" gap={1}>
-                                                        <Typography variant="body2">
-                                                            {sourceLabel}
-                                                        </Typography>
+                                                    <Box display='flex' alignItems='center' gap={1}>
+                                                        <Typography variant='body2'>{sourceLabel}</Typography>
                                                         <IconArrowRight size={14} color={theme.palette.text.secondary} />
-                                                        <Typography variant="body2">
-                                                            {targetLabel}
-                                                        </Typography>
+                                                        <Typography variant='body2'>{targetLabel}</Typography>
                                                     </Box>
                                                 }
-                                                secondary={edge.sourceHandle && edge.targetHandle ? 
-                                                    `${edge.sourceHandle} → ${edge.targetHandle}` : null
+                                                secondary={
+                                                    edge.sourceHandle && edge.targetHandle
+                                                        ? `${edge.sourceHandle} → ${edge.targetHandle}`
+                                                        : null
                                                 }
                                             />
                                         </ListItem>

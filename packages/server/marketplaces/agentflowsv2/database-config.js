@@ -1,31 +1,31 @@
 // Configuración de base de datos para B2B Sales Agents
-const { Pool } = require('pg');
+const { Pool } = require('pg')
 
 // Configuración de conexión PostgreSQL
 class B2BSalesDB {
     constructor(connectionString) {
         this.pool = new Pool({
             connectionString: connectionString || process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/b2b_sales'
-        });
+        })
     }
 
     // Buscar cliente por número de teléfono
     async findCustomerByPhone(phoneNumber) {
         try {
-            const query = 'SELECT * FROM customers WHERE phone_number = $1';
-            const result = await this.pool.query(query, [phoneNumber]);
-            return result.rows[0] || null;
+            const query = 'SELECT * FROM customers WHERE phone_number = $1'
+            const result = await this.pool.query(query, [phoneNumber])
+            return result.rows[0] || null
         } catch (error) {
-            console.error('Error finding customer:', error);
-            return null;
+            console.error('Error finding customer:', error)
+            return null
         }
     }
 
     // Crear o actualizar cliente
     async upsertCustomer(customerData) {
         try {
-            const { phoneNumber, firstName, lastName, email, defaultAddress, defaultPaymentMethod, previousPurchases } = customerData;
-            
+            const { phoneNumber, firstName, lastName, email, defaultAddress, defaultPaymentMethod, previousPurchases } = customerData
+
             const query = `
                 INSERT INTO customers (phone_number, first_name, last_name, email, default_address, default_payment_method, previous_purchases)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -39,17 +39,22 @@ class B2BSalesDB {
                     previous_purchases = COALESCE($7, customers.previous_purchases),
                     updated_at = CURRENT_TIMESTAMP
                 RETURNING *;
-            `;
-            
+            `
+
             const result = await this.pool.query(query, [
-                phoneNumber, firstName, lastName, email, defaultAddress, defaultPaymentMethod, 
+                phoneNumber,
+                firstName,
+                lastName,
+                email,
+                defaultAddress,
+                defaultPaymentMethod,
                 JSON.stringify(previousPurchases || [])
-            ]);
-            
-            return result.rows[0];
+            ])
+
+            return result.rows[0]
         } catch (error) {
-            console.error('Error upserting customer:', error);
-            return null;
+            console.error('Error upserting customer:', error)
+            return null
         }
     }
 
@@ -57,10 +62,23 @@ class B2BSalesDB {
     async createSale(saleData) {
         try {
             const {
-                customerId, phoneNumber, productSku, productBrand, productModel, wheelSize,
-                quantity, unitPrice, totalPrice, discountPercentage, finalPrice,
-                paymentMethod, deliveryMethod, deliveryAddress, negotiationAttempts, agentNotes
-            } = saleData;
+                customerId,
+                phoneNumber,
+                productSku,
+                productBrand,
+                productModel,
+                wheelSize,
+                quantity,
+                unitPrice,
+                totalPrice,
+                discountPercentage,
+                finalPrice,
+                paymentMethod,
+                deliveryMethod,
+                deliveryAddress,
+                negotiationAttempts,
+                agentNotes
+            } = saleData
 
             const query = `
                 INSERT INTO sales (
@@ -69,28 +87,39 @@ class B2BSalesDB {
                     payment_method, delivery_method, delivery_address, negotiation_attempts, agent_notes
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
                 RETURNING *;
-            `;
+            `
 
             const result = await this.pool.query(query, [
-                customerId, phoneNumber, productSku, productBrand, productModel, wheelSize,
-                quantity, unitPrice, totalPrice, discountPercentage, finalPrice,
-                paymentMethod, deliveryMethod, deliveryAddress, negotiationAttempts, agentNotes
-            ]);
+                customerId,
+                phoneNumber,
+                productSku,
+                productBrand,
+                productModel,
+                wheelSize,
+                quantity,
+                unitPrice,
+                totalPrice,
+                discountPercentage,
+                finalPrice,
+                paymentMethod,
+                deliveryMethod,
+                deliveryAddress,
+                negotiationAttempts,
+                agentNotes
+            ])
 
-            return result.rows[0];
+            return result.rows[0]
         } catch (error) {
-            console.error('Error creating sale:', error);
-            return null;
+            console.error('Error creating sale:', error)
+            return null
         }
     }
 
     // Programar seguimiento
     async scheduleFollowUp(followUpData) {
         try {
-            const {
-                customerId, phoneNumber, saleId, followUpType, scheduledAt,
-                attemptNumber, maxAttempts, messageSent, nextAction
-            } = followUpData;
+            const { customerId, phoneNumber, saleId, followUpType, scheduledAt, attemptNumber, maxAttempts, messageSent, nextAction } =
+                followUpData
 
             const query = `
                 INSERT INTO follow_ups (
@@ -98,17 +127,24 @@ class B2BSalesDB {
                     attempt_number, max_attempts, message_sent, next_action
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING *;
-            `;
+            `
 
             const result = await this.pool.query(query, [
-                customerId, phoneNumber, saleId, followUpType, scheduledAt,
-                attemptNumber, maxAttempts, messageSent, nextAction
-            ]);
+                customerId,
+                phoneNumber,
+                saleId,
+                followUpType,
+                scheduledAt,
+                attemptNumber,
+                maxAttempts,
+                messageSent,
+                nextAction
+            ])
 
-            return result.rows[0];
+            return result.rows[0]
         } catch (error) {
-            console.error('Error scheduling follow-up:', error);
-            return null;
+            console.error('Error scheduling follow-up:', error)
+            return null
         }
     }
 
@@ -123,13 +159,13 @@ class B2BSalesDB {
                 AND f.scheduled_at <= CURRENT_TIMESTAMP
                 ORDER BY f.scheduled_at ASC
                 LIMIT $1;
-            `;
+            `
 
-            const result = await this.pool.query(query, [limit]);
-            return result.rows;
+            const result = await this.pool.query(query, [limit])
+            return result.rows
         } catch (error) {
-            console.error('Error getting pending follow-ups:', error);
-            return [];
+            console.error('Error getting pending follow-ups:', error)
+            return []
         }
     }
 
@@ -145,23 +181,23 @@ class B2BSalesDB {
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = $1
                 RETURNING *;
-            `;
+            `
 
-            const result = await this.pool.query(query, [followUpId, customerResponse, nextAction]);
-            return result.rows[0];
+            const result = await this.pool.query(query, [followUpId, customerResponse, nextAction])
+            return result.rows[0]
         } catch (error) {
-            console.error('Error completing follow-up:', error);
-            return null;
+            console.error('Error completing follow-up:', error)
+            return null
         }
     }
 
     // Cerrar conexión
     async close() {
-        await this.pool.end();
+        await this.pool.end()
     }
 }
 
-module.exports = B2BSalesDB;
+module.exports = B2BSalesDB
 
 // Ejemplo de uso:
 // const db = new B2BSalesDB();

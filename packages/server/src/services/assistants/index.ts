@@ -2,11 +2,10 @@ import { ICommonObject } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, isEqual, uniqWith } from 'lodash'
 import OpenAI from 'openai'
-import { DeleteResult, In, QueryRunner } from 'typeorm'
+import { DeleteResult, QueryRunner } from 'typeorm'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
 import { DocumentStore } from '../../database/entities/DocumentStore'
-import { isOssMode } from '../../utils/ossMode'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { AssistantType } from '../../Interface'
@@ -247,7 +246,7 @@ const getAssistantsCountByOrganization = async (type: AssistantType, orgId: stri
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).countBy({
-            type,
+            type
             // Note: Assistant entity might not have orgId field, using type only for now
         })
         return dbResponse

@@ -50,14 +50,328 @@ const BATCH_LIMIT = parseInt(process.env.MONGO_HISTORY_BATCH_LIMIT || '0', 10)
 
 const PHONE_REGEX = /\+?\d[\d\s-]{6,}\d/g
 const STOP_WORDS = new Set<string>([
-    'el','la','los','las','un','una','unos','unas','lo','al','del','de','y','o','u','es','soy','era','fue','será','para','por','con','sin','sobre','entre','desde','hasta','donde','como','qué','que','quien','quién','cual','cuál','cuales','cuáles','cuanto','cuánto','cuantos','cuántos','cuanta','cuánta','mi','mis','tu','tus','su','sus','nuestro','nuestra','nuestros','nuestras','vuestro','vuestra','vuestros','vuestras','este','esta','estos','estas','ese','esa','esos','esas','aquel','aquella','aquellos','aquellas','eso','esto','aquello','muy','más','menor','mayor','poco','poca','pocos','pocas','mucho','mucha','muchos','muchas','ya','todavía','aún','hoy','ayer','mañana','entonces','también','tampoco','solo','solamente','tal','tales','cada','cualquier','cualesquiera','ningún','ninguna','ninguno','ningunos','ningunas','algunos','algunas','alguno','alguna','algún','porque','pero','aunque','además','asi','así','si','sí','no','sea','tengo','tenemos','tienen','tenés','quiero','quieres','quiere','queremos','quieren','pagar','pago','cliente','clientes','hola','gracias','favor','saludos','buen','buenas','bueno','buena','día','dias','tarde','tardes','noche','noches','hola','listo','ok','dale','perfecto','gracias','favor','puedo','podemos','necesito','necesitamos','quiero','queremos','tenes','tienes','tienen','hay','habrá','hoy','mañana','ahora','luego','después','entonces','mientras','cuando','donde','sobre','precio','precios','unidad','unidades','total','stock','pagar','pago','cliente','consumidor','final','empresa','retiro','retiros','retiro','gomeria','gomería','neumático','neumatico','neumáticos','neumaticos','auto','autos','vehiculo','vehículo','hola','buenas','gracias','saludos','ninguno','ninguna','ningunos','ningunas','nada','todo','todos','todas','algo','alguien','sin','con','segun','según','aprox','aproximado','aproximada','aproximados','aproximadas','etc','etcetera','etcétera','usd','ars'
+    'el',
+    'la',
+    'los',
+    'las',
+    'un',
+    'una',
+    'unos',
+    'unas',
+    'lo',
+    'al',
+    'del',
+    'de',
+    'y',
+    'o',
+    'u',
+    'es',
+    'soy',
+    'era',
+    'fue',
+    'será',
+    'para',
+    'por',
+    'con',
+    'sin',
+    'sobre',
+    'entre',
+    'desde',
+    'hasta',
+    'donde',
+    'como',
+    'qué',
+    'que',
+    'quien',
+    'quién',
+    'cual',
+    'cuál',
+    'cuales',
+    'cuáles',
+    'cuanto',
+    'cuánto',
+    'cuantos',
+    'cuántos',
+    'cuanta',
+    'cuánta',
+    'mi',
+    'mis',
+    'tu',
+    'tus',
+    'su',
+    'sus',
+    'nuestro',
+    'nuestra',
+    'nuestros',
+    'nuestras',
+    'vuestro',
+    'vuestra',
+    'vuestros',
+    'vuestras',
+    'este',
+    'esta',
+    'estos',
+    'estas',
+    'ese',
+    'esa',
+    'esos',
+    'esas',
+    'aquel',
+    'aquella',
+    'aquellos',
+    'aquellas',
+    'eso',
+    'esto',
+    'aquello',
+    'muy',
+    'más',
+    'menor',
+    'mayor',
+    'poco',
+    'poca',
+    'pocos',
+    'pocas',
+    'mucho',
+    'mucha',
+    'muchos',
+    'muchas',
+    'ya',
+    'todavía',
+    'aún',
+    'hoy',
+    'ayer',
+    'mañana',
+    'entonces',
+    'también',
+    'tampoco',
+    'solo',
+    'solamente',
+    'tal',
+    'tales',
+    'cada',
+    'cualquier',
+    'cualesquiera',
+    'ningún',
+    'ninguna',
+    'ninguno',
+    'ningunos',
+    'ningunas',
+    'algunos',
+    'algunas',
+    'alguno',
+    'alguna',
+    'algún',
+    'porque',
+    'pero',
+    'aunque',
+    'además',
+    'asi',
+    'así',
+    'si',
+    'sí',
+    'no',
+    'sea',
+    'tengo',
+    'tenemos',
+    'tienen',
+    'tenés',
+    'quiero',
+    'quieres',
+    'quiere',
+    'queremos',
+    'quieren',
+    'pagar',
+    'pago',
+    'cliente',
+    'clientes',
+    'hola',
+    'gracias',
+    'favor',
+    'saludos',
+    'buen',
+    'buenas',
+    'bueno',
+    'buena',
+    'día',
+    'dias',
+    'tarde',
+    'tardes',
+    'noche',
+    'noches',
+    'hola',
+    'listo',
+    'ok',
+    'dale',
+    'perfecto',
+    'gracias',
+    'favor',
+    'puedo',
+    'podemos',
+    'necesito',
+    'necesitamos',
+    'quiero',
+    'queremos',
+    'tenes',
+    'tienes',
+    'tienen',
+    'hay',
+    'habrá',
+    'hoy',
+    'mañana',
+    'ahora',
+    'luego',
+    'después',
+    'entonces',
+    'mientras',
+    'cuando',
+    'donde',
+    'sobre',
+    'precio',
+    'precios',
+    'unidad',
+    'unidades',
+    'total',
+    'stock',
+    'pagar',
+    'pago',
+    'cliente',
+    'consumidor',
+    'final',
+    'empresa',
+    'retiro',
+    'retiros',
+    'retiro',
+    'gomeria',
+    'gomería',
+    'neumático',
+    'neumatico',
+    'neumáticos',
+    'neumaticos',
+    'auto',
+    'autos',
+    'vehiculo',
+    'vehículo',
+    'hola',
+    'buenas',
+    'gracias',
+    'saludos',
+    'ninguno',
+    'ninguna',
+    'ningunos',
+    'ningunas',
+    'nada',
+    'todo',
+    'todos',
+    'todas',
+    'algo',
+    'alguien',
+    'sin',
+    'con',
+    'segun',
+    'según',
+    'aprox',
+    'aproximado',
+    'aproximada',
+    'aproximados',
+    'aproximadas',
+    'etc',
+    'etcetera',
+    'etcétera',
+    'usd',
+    'ars'
 ])
 
-const POSITIVE_WORDS = ['excelente','perfecto','genial','buen','buena','buenas','buenísimo','increíble','fantástico','barato','económico','rápido','rapido','fácil','facil','gracias','vale','ok','listo','mejor','ideal','sirve','sirven','sirvió','sirvio','satisfecho','satisfecha','bien','okey','dale']
-const NEGATIVE_WORDS = ['malo','mala','mal','caro','caros','caras','carísimo','carisimo','problema','problemas','tarde','demora','demoras','lento','lenta','no','nunca','jamás','duda','dudas','error','errores','fallo','fallos','falla','fallas','defecto','defectos','queja','quejas','reclamo','reclamos','cancelar','cancelado']
+const POSITIVE_WORDS = [
+    'excelente',
+    'perfecto',
+    'genial',
+    'buen',
+    'buena',
+    'buenas',
+    'buenísimo',
+    'increíble',
+    'fantástico',
+    'barato',
+    'económico',
+    'rápido',
+    'rapido',
+    'fácil',
+    'facil',
+    'gracias',
+    'vale',
+    'ok',
+    'listo',
+    'mejor',
+    'ideal',
+    'sirve',
+    'sirven',
+    'sirvió',
+    'sirvio',
+    'satisfecho',
+    'satisfecha',
+    'bien',
+    'okey',
+    'dale'
+]
+const NEGATIVE_WORDS = [
+    'malo',
+    'mala',
+    'mal',
+    'caro',
+    'caros',
+    'caras',
+    'carísimo',
+    'carisimo',
+    'problema',
+    'problemas',
+    'tarde',
+    'demora',
+    'demoras',
+    'lento',
+    'lenta',
+    'no',
+    'nunca',
+    'jamás',
+    'duda',
+    'dudas',
+    'error',
+    'errores',
+    'fallo',
+    'fallos',
+    'falla',
+    'fallas',
+    'defecto',
+    'defectos',
+    'queja',
+    'quejas',
+    'reclamo',
+    'reclamos',
+    'cancelar',
+    'cancelado'
+]
 
 const PROPOSAL_KEYWORDS = ['descu', 'cotiz', 'presup', 'propuest', 'reserva', 'pedido', 'orden', 'precio final']
-const SALE_KEYWORDS = ['confirmo', 'confirmamos', 'compro', 'comprar', 'compré', 'compre', 'pago', 'pagamos', 'pagé', 'pague', 'retiro', 'retiro', 'retirar', 'retiramos', 'listo', 'cerramos', 'adelanto', 'transferencia', 'efectivo']
+const SALE_KEYWORDS = [
+    'confirmo',
+    'confirmamos',
+    'compro',
+    'comprar',
+    'compré',
+    'compre',
+    'pago',
+    'pagamos',
+    'pagé',
+    'pague',
+    'retiro',
+    'retiro',
+    'retirar',
+    'retiramos',
+    'listo',
+    'cerramos',
+    'adelanto',
+    'transferencia',
+    'efectivo'
+]
 const TOOL_ERROR_KEYWORDS = ['error', 'fallo', 'falló', 'no se pudo', 'problema', 'inconveniente', 'bloqueo', 'fallando']
 
 const normalizeString = (value: unknown): string | null => {
@@ -383,11 +697,7 @@ const ensureFunnelEvent = async (
     await agentEventRepo.save(event)
 }
 
-const ensureSaleRecord = async (
-    sessionKey: string,
-    summary: ConversationSummary,
-    saleRepo: Repository<SaleRecord>
-) => {
+const ensureSaleRecord = async (sessionKey: string, summary: ConversationSummary, saleRepo: Repository<SaleRecord>) => {
     const clientId = summary.metadata.customerPhone || sessionKey
     const existing = await saleRepo.findOne({ where: { clientId }, order: { ts: 'DESC' } })
     if (existing) return
@@ -426,19 +736,11 @@ const ensurePriceRequest = async (
     await priceRepo.save(request)
 }
 
-const upsertChatMessages = async (
-    sessionKey: string,
-    summary: ConversationSummary,
-    chatMessageRepo: Repository<ChatMessage>
-) => {
+const upsertChatMessages = async (sessionKey: string, summary: ConversationSummary, chatMessageRepo: Repository<ChatMessage>) => {
     const isUuid = (value: string | null | undefined) =>
         typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 
-    const chatflowId = isUuid(summary.metadata.sessionId)
-        ? summary.metadata.sessionId
-        : isUuid(summary.agentId)
-        ? summary.agentId
-        : null
+    const chatflowId = isUuid(summary.metadata.sessionId) ? summary.metadata.sessionId : isUuid(summary.agentId) ? summary.agentId : null
 
     if (!chatflowId) return
 
@@ -463,12 +765,7 @@ const upsertChatMessages = async (
     }
 }
 
-const ensureToolAlert = async (
-    sessionKey: string,
-    summary: ConversationSummary,
-    message: string,
-    toolRepo: Repository<ToolAlert>
-) => {
+const ensureToolAlert = async (sessionKey: string, summary: ConversationSummary, message: string, toolRepo: Repository<ToolAlert>) => {
     const existing = await toolRepo.findOne({ where: { toolName: 'conversation_ingest', errorMessage: message, status: 'open' } })
     if (existing) {
         existing.occurrences += 1
@@ -494,7 +791,9 @@ const ensureToolAlert = async (
     await toolRepo.save(alert)
 }
 
-const detectStages = (summary: ConversationSummary): {
+const detectStages = (
+    summary: ConversationSummary
+): {
     stages: FunnelStage[]
     discountPercent: number | null
     toolErrors: string[]

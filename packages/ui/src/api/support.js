@@ -11,7 +11,7 @@ const submitTicket = (payload) => {
 
 export default {
     submitTicket,
-    getTickets: (params={}) => client.get('/support/tickets', { params }),
+    getTickets: (params = {}) => client.get('/support/tickets', { params }),
     getTicket: (id) => client.get(`/support/tickets/${id}`),
     updateTicket: (id, body) => client.patch(`/support/tickets/${id}`, body)
 }

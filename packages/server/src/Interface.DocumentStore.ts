@@ -281,10 +281,7 @@ export class DocumentStoreDTO {
                 documentStoreDTO.totalChars += loader.totalChars || 0
                 documentStoreDTO.totalChunks += loader.totalChunks || 0
                 loader.source = addLoaderSource(loader)
-                if (
-                    documentStoreDTO.status === DocumentStoreStatus.SYNC &&
-                    loader.status !== DocumentStoreStatus.SYNC
-                ) {
+                if (documentStoreDTO.status === DocumentStoreStatus.SYNC && loader.status !== DocumentStoreStatus.SYNC) {
                     documentStoreDTO.status = DocumentStoreStatus.STALE
                 }
             })

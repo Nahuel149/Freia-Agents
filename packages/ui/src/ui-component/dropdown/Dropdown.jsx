@@ -18,7 +18,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({
             margin: 10
         }
     }
-}));
+}))
 
 export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, freeSolo = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)
@@ -80,26 +80,27 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                 renderOption={(props, option) => {
                     const { key, ...rest } = props
                     return (
-                    <Box component='li' key={key} {...rest} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {option.imageSrc && (
-                            <img
-                                src={option.imageSrc}
-                                alt={option.description}
-                                style={{
-                                    width: 30,
-                                    height: 30,
-                                    padding: 1,
-                                    borderRadius: '50%'
-                                }}
-                            />
-                        )}
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Typography variant='h5'>{option.label}</Typography>
-                            {option.description && (
-                                <Typography sx={{ color: customization.isDarkMode ? '#9e9e9e' : '' }}>{option.description}</Typography>
+                        <Box component='li' key={key} {...rest} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {option.imageSrc && (
+                                <img
+                                    src={option.imageSrc}
+                                    alt={option.description}
+                                    style={{
+                                        width: 30,
+                                        height: 30,
+                                        padding: 1,
+                                        borderRadius: '50%'
+                                    }}
+                                />
                             )}
-                        </div>
-                    </Box>)
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant='h5'>{option.label}</Typography>
+                                {option.description && (
+                                    <Typography sx={{ color: customization.isDarkMode ? '#9e9e9e' : '' }}>{option.description}</Typography>
+                                )}
+                            </div>
+                        </Box>
+                    )
                 }}
                 sx={{ height: '100%' }}
             />

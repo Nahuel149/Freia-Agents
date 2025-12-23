@@ -615,7 +615,7 @@ export const buildFlow = async ({
                     // Ensure document is an array for providers that expect list inputs
                     if (docVal && !Array.isArray(docVal)) {
                         try {
-                            (reactFlowNodeData.inputs as any).document = [docVal]
+                            ;(reactFlowNodeData.inputs as any).document = [docVal]
                             docVal = (reactFlowNodeData.inputs as any).document
                         } catch (_) {}
                     }
@@ -628,11 +628,15 @@ export const buildFlow = async ({
                             if (typeof pc === 'string' && pc.trim()) valid++
                         }
                         logger.info(
-                            `[vector-upsert:canvas] docs=${arr.length} validDocs=${valid} embeddings=${embVal ? typeof embVal : 'undefined'}`
+                            `[vector-upsert:canvas] docs=${arr.length} validDocs=${valid} embeddings=${
+                                embVal ? typeof embVal : 'undefined'
+                            }`
                         )
                     } catch (_) {
                         logger.info(
-                            `[vector-upsert:canvas] docs=${Array.isArray(docVal) ? docVal.length : (docVal ? 1 : 0)} embeddings=${embVal ? typeof embVal : 'undefined'}`
+                            `[vector-upsert:canvas] docs=${Array.isArray(docVal) ? docVal.length : docVal ? 1 : 0} embeddings=${
+                                embVal ? typeof embVal : 'undefined'
+                            }`
                         )
                     }
                     // Required embedding instance
@@ -1990,7 +1994,7 @@ export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
 
 export const getUploadPath = (): string => {
     let uploadPath: string
-    
+
     if (process.env.BLOB_STORAGE_PATH) {
         // Validate and sanitize the BLOB_STORAGE_PATH
         const sanitizedPath = path.resolve(process.env.BLOB_STORAGE_PATH)
@@ -1998,23 +2002,23 @@ export const getUploadPath = (): string => {
     } else {
         uploadPath = path.join(getUserHome(), '.flowise', 'uploads')
     }
-    
+
     // Ensure the upload directory exists and is secure
     try {
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true, mode: 0o755 })
         }
-        
+
         // Verify the path is within expected boundaries (prevent path traversal)
         const resolvedPath = path.resolve(uploadPath)
-        const expectedBasePath = process.env.BLOB_STORAGE_PATH 
+        const expectedBasePath = process.env.BLOB_STORAGE_PATH
             ? path.resolve(process.env.BLOB_STORAGE_PATH)
             : path.resolve(getUserHome(), '.flowise')
-            
+
         if (!resolvedPath.startsWith(expectedBasePath)) {
             throw new Error('Upload path is outside of allowed directory')
         }
-        
+
         return resolvedPath
     } catch (error) {
         logger.error('Error setting up upload path:', error)
@@ -2028,9 +2032,16 @@ export function generateId() {
 
 // Security configuration for file uploads
 const ALLOWED_FILE_TYPES = [
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-    'text/plain', 'text/csv', 'text/markdown',
-    'application/pdf', 'application/json',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml',
+    'text/plain',
+    'text/csv',
+    'text/markdown',
+    'application/pdf',
+    'application/json',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation'
@@ -2043,18 +2054,18 @@ const validateFile = (req: any, file: any, cb: any) => {
     if (!ALLOWED_FILE_TYPES.includes(file.mimetype)) {
         return cb(new Error(`File type ${file.mimetype} is not allowed. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`), false)
     }
-    
+
     // Check for path traversal in filename
     if (file.originalname.includes('..') || file.originalname.includes('/') || file.originalname.includes('\\')) {
         return cb(new Error('Invalid filename: path traversal detected'), false)
     }
-    
+
     // Additional filename validation
     const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '')
     if (sanitizedName !== file.originalname) {
         return cb(new Error('Invalid filename: contains illegal characters'), false)
     }
-    
+
     cb(null, true)
 }
 
@@ -2099,7 +2110,7 @@ export const getMulterStorage = () => {
             }
         })
     } else {
-        return multer({ 
+        return multer({
             dest: getUploadPath(),
             fileFilter: validateFile,
             limits: {

@@ -64,7 +64,7 @@ const Canvas = () => {
     const theme = useTheme()
     const navigate = useNavigate()
     // OSS mode: Workspace assignment checks removed
-    const { } = useAuth()
+    useAuth()
 
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
@@ -567,9 +567,7 @@ const Canvas = () => {
                         bgcolor: theme.palette.background.default,
                         borderBottom: `1px solid ${theme.palette.divider}`,
                         backdropFilter: 'blur(10px)',
-                        background: theme.palette.mode === 'dark' 
-                            ? 'rgba(18, 18, 18, 0.8)' 
-                            : 'rgba(255, 255, 255, 0.8)'
+                        background: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.8)' : 'rgba(255, 255, 255, 0.8)'
                     }}
                 >
                     <Toolbar>
@@ -582,27 +580,38 @@ const Canvas = () => {
                         />
                     </Toolbar>
                 </AppBar>
-                <Box sx={{ 
-                    pt: '70px', 
-                    height: '100vh', 
-                    width: '100%',
-                    background: theme.palette.mode === 'dark'
-                        ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
-                        : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
-                }}>
-                    <div className='reactflow-parent-wrapper' style={{
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        margin: '16px',
-                        height: 'calc(100vh - 102px)',
-                        boxShadow: theme.palette.mode === 'dark'
-                            ? '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1)'
-                            : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-                    }}>
-                        <div className='reactflow-wrapper' ref={reactFlowWrapper} style={{
+                <Box
+                    sx={{
+                        pt: '70px',
+                        height: '100vh',
+                        width: '100%',
+                        background:
+                            theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+                                : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+                    }}
+                >
+                    <div
+                        className='reactflow-parent-wrapper'
+                        style={{
                             borderRadius: '12px',
-                            overflow: 'hidden'
-                        }}>
+                            overflow: 'hidden',
+                            margin: '16px',
+                            height: 'calc(100vh - 102px)',
+                            boxShadow:
+                                theme.palette.mode === 'dark'
+                                    ? '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1)'
+                                    : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                        }}
+                    >
+                        <div
+                            className='reactflow-wrapper'
+                            ref={reactFlowWrapper}
+                            style={{
+                                borderRadius: '12px',
+                                overflow: 'hidden'
+                            }}
+                        >
                             <ReactFlow
                                 nodes={nodes}
                                 edges={edges}
@@ -630,15 +639,14 @@ const Canvas = () => {
                                         flexDirection: 'row',
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)',
-                                        background: theme.palette.mode === 'dark'
-                                            ? 'rgba(30, 30, 30, 0.9)'
-                                            : 'rgba(255, 255, 255, 0.9)',
+                                        background: theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                                         borderRadius: '12px',
                                         backdropFilter: 'blur(10px)',
                                         border: `1px solid ${theme.palette.divider}`,
-                                        boxShadow: theme.palette.mode === 'dark'
-                                            ? '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)'
-                                            : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                                        boxShadow:
+                                            theme.palette.mode === 'dark'
+                                                ? '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)'
+                                                : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                                     }}
                                 >
                                     <button
@@ -652,9 +660,9 @@ const Canvas = () => {
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
                                 </Controls>
-                                <Background 
-                                    color={theme.palette.mode === 'dark' ? '#404040' : '#e2e8f0'} 
-                                    gap={20} 
+                                <Background
+                                    color={theme.palette.mode === 'dark' ? '#404040' : '#e2e8f0'}
+                                    gap={20}
                                     variant='dots'
                                     size={1}
                                 />

@@ -1,6 +1,5 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { In } from 'typeorm'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { UsageCacheManager } from '../../UsageCacheManager'
@@ -191,7 +190,7 @@ const getAllChatflowsCount = async (type?: ChatflowType): Promise<number> => {
 const getAllChatflowsCountByOrganization = async (type: ChatflowType, orgId: string): Promise<number> => {
     try {
         const appServer = getRunningExpressApp()
-        
+
         // In OSS mode, ignore organization filtering and just count by type
         if (isOssMode()) {
             const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
@@ -199,7 +198,7 @@ const getAllChatflowsCountByOrganization = async (type: ChatflowType, orgId: str
             })
             return dbResponse
         }
-        
+
         // In enterprise mode, we would filter by organization through workspace relationship
         // For now, just count by type since ChatFlow doesn't have direct orgId field
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
@@ -256,10 +255,7 @@ const getChatflowById = async (chatflowId: string): Promise<any> => {
     }
 }
 
-const saveChatflow = async (
-    newChatFlow: ChatFlow,
-    usageCacheManager?: UsageCacheManager
-): Promise<any> => {
+const saveChatflow = async (newChatFlow: ChatFlow, usageCacheManager?: UsageCacheManager): Promise<any> => {
     newChatFlow.type = validateChatflowType(newChatFlow.type)
     const appServer = getRunningExpressApp()
 
@@ -312,11 +308,7 @@ const saveChatflow = async (
     return dbResponse
 }
 
-const updateChatflow = async (
-    chatflow: ChatFlow,
-    updateChatFlow: ChatFlow,
-    usageCacheManager?: UsageCacheManager
-): Promise<ChatFlow> => {
+const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow, usageCacheManager?: UsageCacheManager): Promise<ChatFlow> => {
     const appServer = getRunningExpressApp()
 
     // Remove workspace restrictions - always delete workspaceId for free access

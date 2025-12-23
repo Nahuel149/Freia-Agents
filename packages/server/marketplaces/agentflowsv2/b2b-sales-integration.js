@@ -1,9 +1,9 @@
 // Integración principal del sistema B2B Sales
-const B2BSalesDB = require('./database-config');
-const AddressManager = require('./address-manager');
-const FollowUpSystem = require('./followup-system');
-const SalesTracker = require('./sales-tracker');
-const ScheduledFollowUps = require('./scheduled-followups');
+const B2BSalesDB = require('./database-config')
+const AddressManager = require('./address-manager')
+const FollowUpSystem = require('./followup-system')
+const SalesTracker = require('./sales-tracker')
+const ScheduledFollowUps = require('./scheduled-followups')
 
 class B2BSalesIntegration {
     constructor(config = {}) {
@@ -13,43 +13,42 @@ class B2BSalesIntegration {
             schedulerInterval: config.schedulerInterval || 5, // minutos
             followUpInterval: config.followUpInterval || 15, // minutos
             ...config
-        };
+        }
 
         // Inicializar componentes
-        this.db = new B2BSalesDB(this.config.dbConnectionString);
-        this.addressManager = new AddressManager(this.config.dbConnectionString);
-        this.followUpSystem = new FollowUpSystem(this.config.dbConnectionString);
-        this.salesTracker = new SalesTracker(this.config.dbConnectionString);
-        this.scheduledFollowUps = new ScheduledFollowUps(this.config.dbConnectionString);
-        
-        this.initialized = false;
+        this.db = new B2BSalesDB(this.config.dbConnectionString)
+        this.addressManager = new AddressManager(this.config.dbConnectionString)
+        this.followUpSystem = new FollowUpSystem(this.config.dbConnectionString)
+        this.salesTracker = new SalesTracker(this.config.dbConnectionString)
+        this.scheduledFollowUps = new ScheduledFollowUps(this.config.dbConnectionString)
+
+        this.initialized = false
     }
 
     // Inicializar todo el sistema
     async initialize() {
         try {
-            console.log('🚀 Initializing B2B Sales Integration System...');
-            
+            console.log('🚀 Initializing B2B Sales Integration System...')
+
             // Inicializar base de datos
-            await this.db.initialize();
-            
+            await this.db.initialize()
+
             // Inicializar componentes
-            await this.addressManager.initialize();
-            await this.followUpSystem.initialize();
-            await this.scheduledFollowUps.initialize();
-            
+            await this.addressManager.initialize()
+            await this.followUpSystem.initialize()
+            await this.scheduledFollowUps.initialize()
+
             // Iniciar procesadores automáticos si está configurado
             if (this.config.autoStartScheduler) {
-                this.followUpSystem.startAutomaticProcessing(this.config.followUpInterval);
-                this.scheduledFollowUps.startScheduler(this.config.schedulerInterval);
+                this.followUpSystem.startAutomaticProcessing(this.config.followUpInterval)
+                this.scheduledFollowUps.startScheduler(this.config.schedulerInterval)
             }
-            
-            this.initialized = true;
-            console.log('✅ B2B Sales Integration System initialized successfully');
-            
+
+            this.initialized = true
+            console.log('✅ B2B Sales Integration System initialized successfully')
         } catch (error) {
-            console.error('❌ Error initializing B2B Sales Integration:', error);
-            throw error;
+            console.error('❌ Error initializing B2B Sales Integration:', error)
+            throw error
         }
     }
 
@@ -57,7 +56,7 @@ class B2BSalesIntegration {
     async processCustomerInteraction(interactionData, flowState) {
         try {
             if (!this.initialized) {
-                await this.initialize();
+                await this.initialize()
             }
 
             const {
@@ -71,17 +70,17 @@ class B2BSalesIntegration {
                 interactionType, // 'inquiry', 'negotiation', 'sale_completed', 'follow_up'
                 saleData = null,
                 customMessage = null
-            } = interactionData;
+            } = interactionData
 
             let result = {
                 success: true,
                 customerId: null,
                 actions: [],
                 message: ''
-            };
+            }
 
             // 1. Buscar o crear cliente
-            let customer = await this.db.findCustomerByPhone(phoneNumber);
+            let customer = await this.db.findCustomerByPhone(phoneNumber)
             if (!customer) {
                 customer = await this.db.upsertCustomer({
                     phoneNumber,
@@ -90,8 +89,8 @@ class B2BSalesIntegration {
                     email,
                     businessName,
                     businessType
-                });
-                result.actions.push('customer_created');
+                })
+                result.actions.push('customer_created')
             } else {
                 // Actualizar datos si hay cambios
                 const updatedCustomer = await this.db.upsertCustomer({
@@ -101,49 +100,49 @@ class B2BSalesIntegration {
                     email: email || customer.email,
                     businessName: businessName || customer.business_name,
                     businessType: businessType || customer.business_type
-                });
+                })
                 if (updatedCustomer.updated_at > customer.updated_at) {
-                    result.actions.push('customer_updated');
+                    result.actions.push('customer_updated')
                 }
-                customer = updatedCustomer;
+                customer = updatedCustomer
             }
 
-            result.customerId = customer.id;
+            result.customerId = customer.id
 
             // 2. Procesar según tipo de interacción
             switch (interactionType) {
                 case 'inquiry':
-                    result.message = await this.handleInquiry(customer, productInterest, flowState);
-                    break;
-                    
+                    result.message = await this.handleInquiry(customer, productInterest, flowState)
+                    break
+
                 case 'negotiation':
-                    result.message = await this.handleNegotiation(customer, productInterest, flowState);
-                    break;
-                    
-                case 'sale_completed':
-                    const saleResult = await this.handleSaleCompleted(customer, saleData, flowState);
-                    result.saleId = saleResult.saleId;
-                    result.message = saleResult.message;
-                    result.actions.push('sale_recorded');
-                    break;
-                    
+                    result.message = await this.handleNegotiation(customer, productInterest, flowState)
+                    break
+
+                case 'sale_completed': {
+                    const saleResult = await this.handleSaleCompleted(customer, saleData, flowState)
+                    result.saleId = saleResult.saleId
+                    result.message = saleResult.message
+                    result.actions.push('sale_recorded')
+                    break
+                }
+
                 case 'follow_up':
-                    result.message = await this.handleFollowUp(customer, customMessage, flowState);
-                    break;
-                    
+                    result.message = await this.handleFollowUp(customer, customMessage, flowState)
+                    break
+
                 default:
-                    result.message = `Hola ${firstName || 'Cliente'}, ¿en qué te puedo ayudar hoy?`;
+                    result.message = `Hola ${firstName || 'Cliente'}, ¿en qué te puedo ayudar hoy?`
             }
 
-            return result;
-            
+            return result
         } catch (error) {
-            console.error('Error processing customer interaction:', error);
+            console.error('Error processing customer interaction:', error)
             return {
                 success: false,
                 error: error.message,
                 message: 'Disculpá, tuve un problema técnico. ¿Podés intentar de nuevo?'
-            };
+            }
         }
     }
 
@@ -151,21 +150,21 @@ class B2BSalesIntegration {
     async handleInquiry(customer, productInterest, flowState) {
         try {
             // Buscar ventas anteriores
-            const previousSales = await this.salesTracker.getCustomerSales(customer.id, 3);
-            
-            let message = `¡Hola ${customer.first_name}! `;
-            
+            const previousSales = await this.salesTracker.getCustomerSales(customer.id, 3)
+
+            let message = `¡Hola ${customer.first_name}! `
+
             if (previousSales.length > 0) {
-                const lastSale = previousSales[0];
-                message += `Veo que ya compraste ${lastSale.product_name} anteriormente. `;
+                const lastSale = previousSales[0]
+                message += `Veo que ya compraste ${lastSale.product_name} anteriormente. `
             }
-            
-            message += `Te ayudo con ${productInterest}. ¿Qué necesitás saber específicamente?`;
-            
-            return message;
+
+            message += `Te ayudo con ${productInterest}. ¿Qué necesitás saber específicamente?`
+
+            return message
         } catch (error) {
-            console.error('Error handling inquiry:', error);
-            return `¡Hola ${customer.first_name}! ¿En qué te puedo ayudar con ${productInterest}?`;
+            console.error('Error handling inquiry:', error)
+            return `¡Hola ${customer.first_name}! ¿En qué te puedo ayudar con ${productInterest}?`
         }
     }
 
@@ -173,51 +172,57 @@ class B2BSalesIntegration {
     async handleNegotiation(customer, productInterest, flowState) {
         try {
             // Programar seguimiento si no cierra
-            await this.followUpSystem.scheduleFollowUp({
-                phoneNumber: customer.phone_number,
-                firstName: customer.first_name,
-                lastName: customer.last_name,
-                productInterest,
-                lastInteraction: new Date(),
-                negotiationAttempts: 1
-            }, flowState);
-            
-            return `Perfecto ${customer.first_name}, entiendo tu interés en ${productInterest}. Te voy a preparar la mejor propuesta. Si no llegamos a un acuerdo hoy, te contacto mañana con más opciones.`;
+            await this.followUpSystem.scheduleFollowUp(
+                {
+                    phoneNumber: customer.phone_number,
+                    firstName: customer.first_name,
+                    lastName: customer.last_name,
+                    productInterest,
+                    lastInteraction: new Date(),
+                    negotiationAttempts: 1
+                },
+                flowState
+            )
+
+            return `Perfecto ${customer.first_name}, entiendo tu interés en ${productInterest}. Te voy a preparar la mejor propuesta. Si no llegamos a un acuerdo hoy, te contacto mañana con más opciones.`
         } catch (error) {
-            console.error('Error handling negotiation:', error);
-            return `Perfecto ${customer.first_name}, trabajemos juntos para encontrar la mejor opción para ${productInterest}.`;
+            console.error('Error handling negotiation:', error)
+            return `Perfecto ${customer.first_name}, trabajemos juntos para encontrar la mejor opción para ${productInterest}.`
         }
     }
 
     // Manejar venta completada
     async handleSaleCompleted(customer, saleData, flowState) {
         try {
-            const result = await this.salesTracker.recordSale({
-                customerData: {
-                    phoneNumber: customer.phone_number,
-                    firstName: customer.first_name,
-                    lastName: customer.last_name,
-                    email: customer.email,
-                    businessName: customer.business_name,
-                    businessType: customer.business_type
+            const result = await this.salesTracker.recordSale(
+                {
+                    customerData: {
+                        phoneNumber: customer.phone_number,
+                        firstName: customer.first_name,
+                        lastName: customer.last_name,
+                        email: customer.email,
+                        businessName: customer.business_name,
+                        businessType: customer.business_type
+                    },
+                    ...saleData
                 },
-                ...saleData
-            }, flowState);
-            
+                flowState
+            )
+
             if (result.success) {
                 return {
                     saleId: result.saleId,
                     message: `¡Excelente ${customer.first_name}! Tu compra de ${saleData.productDetails.name} está confirmada. Te voy a estar contactando para confirmar la entrega y asegurarme de que todo salga perfecto. ¡Gracias por confiar en nosotros!`
-                };
+                }
             } else {
-                throw new Error(result.error);
+                throw new Error(result.error)
             }
         } catch (error) {
-            console.error('Error handling sale completion:', error);
+            console.error('Error handling sale completion:', error)
             return {
                 saleId: null,
                 message: `¡Perfecto ${customer.first_name}! Tu compra está confirmada. Te contacto pronto con los detalles de entrega.`
-            };
+            }
         }
     }
 
@@ -225,38 +230,38 @@ class B2BSalesIntegration {
     async handleFollowUp(customer, customMessage, flowState) {
         try {
             if (customMessage) {
-                return customMessage;
+                return customMessage
             }
-            
+
             // Generar mensaje de follow-up automático
-            const previousSales = await this.salesTracker.getCustomerSales(customer.id, 1);
-            
+            const previousSales = await this.salesTracker.getCustomerSales(customer.id, 1)
+
             if (previousSales.length > 0) {
-                const lastSale = previousSales[0];
-                return `¡Hola ${customer.first_name}! ¿Cómo va todo con tu ${lastSale.product_name}? ¿Necesitás algo más o tenés alguna consulta?`;
+                const lastSale = previousSales[0]
+                return `¡Hola ${customer.first_name}! ¿Cómo va todo con tu ${lastSale.product_name}? ¿Necesitás algo más o tenés alguna consulta?`
             } else {
-                return `¡Hola ${customer.first_name}! ¿Cómo andás? Te escribo para ver si seguís interesado en nuestros productos. ¿Hay algo en lo que te pueda ayudar?`;
+                return `¡Hola ${customer.first_name}! ¿Cómo andás? Te escribo para ver si seguís interesado en nuestros productos. ¿Hay algo en lo que te pueda ayudar?`
             }
         } catch (error) {
-            console.error('Error handling follow-up:', error);
-            return `¡Hola ${customer.first_name}! ¿Cómo andás? ¿En qué te puedo ayudar hoy?`;
+            console.error('Error handling follow-up:', error)
+            return `¡Hola ${customer.first_name}! ¿Cómo andás? ¿En qué te puedo ayudar hoy?`
         }
     }
 
     // Obtener información del cliente para el agente
     async getCustomerContext(phoneNumber) {
         try {
-            const customer = await this.db.findCustomerByPhone(phoneNumber);
+            const customer = await this.db.findCustomerByPhone(phoneNumber)
             if (!customer) {
                 return {
                     isNewCustomer: true,
                     message: 'Cliente nuevo - recopilar información básica'
-                };
+                }
             }
 
-            const sales = await this.salesTracker.getCustomerSales(customer.id, 5);
-            const addresses = await this.addressManager.getCustomerAddresses(customer.id);
-            const pendingFollowUps = await this.db.getPendingFollowUps(10, customer.id);
+            const sales = await this.salesTracker.getCustomerSales(customer.id, 5)
+            const addresses = await this.addressManager.getCustomerAddresses(customer.id)
+            const pendingFollowUps = await this.db.getPendingFollowUps(10, customer.id)
 
             return {
                 isNewCustomer: false,
@@ -267,7 +272,7 @@ class B2BSalesIntegration {
                     phone: customer.phone_number,
                     email: customer.email
                 },
-                salesHistory: sales.map(sale => ({
+                salesHistory: sales.map((sale) => ({
                     product: sale.product_name,
                     date: sale.sale_date,
                     amount: sale.total_amount,
@@ -276,25 +281,25 @@ class B2BSalesIntegration {
                 addresses: addresses,
                 pendingFollowUps: pendingFollowUps.length,
                 message: `Cliente existente: ${customer.first_name} - ${sales.length} compras anteriores`
-            };
+            }
         } catch (error) {
-            console.error('Error getting customer context:', error);
+            console.error('Error getting customer context:', error)
             return {
                 isNewCustomer: true,
                 message: 'Error obteniendo contexto - tratar como cliente nuevo'
-            };
+            }
         }
     }
 
     // Obtener estadísticas del sistema
     async getSystemStats() {
         try {
-            const today = new Date();
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            
-            const salesStats = await this.salesTracker.getSalesStats(weekAgo, today);
-            const followUpStats = await this.scheduledFollowUps.getSchedulerStats();
-            
+            const today = new Date()
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+            const salesStats = await this.salesTracker.getSalesStats(weekAgo, today)
+            const followUpStats = await this.scheduledFollowUps.getSchedulerStats()
+
             return {
                 sales: salesStats,
                 followUps: followUpStats,
@@ -303,31 +308,31 @@ class B2BSalesIntegration {
                     followUpSystemRunning: this.followUpSystem.isRunning,
                     schedulerRunning: this.scheduledFollowUps.schedulerRunning
                 }
-            };
+            }
         } catch (error) {
-            console.error('Error getting system stats:', error);
-            return null;
+            console.error('Error getting system stats:', error)
+            return null
         }
     }
 
     // Cerrar conexiones y detener procesos
     async shutdown() {
         try {
-            console.log('🔄 Shutting down B2B Sales Integration...');
-            
-            this.followUpSystem.stopAutomaticProcessing();
-            this.scheduledFollowUps.stopScheduler();
-            
-            await this.db.close();
-            
-            console.log('✅ B2B Sales Integration shutdown complete');
+            console.log('🔄 Shutting down B2B Sales Integration...')
+
+            this.followUpSystem.stopAutomaticProcessing()
+            this.scheduledFollowUps.stopScheduler()
+
+            await this.db.close()
+
+            console.log('✅ B2B Sales Integration shutdown complete')
         } catch (error) {
-            console.error('Error during shutdown:', error);
+            console.error('Error during shutdown:', error)
         }
     }
 }
 
-module.exports = B2BSalesIntegration;
+module.exports = B2BSalesIntegration
 
 // Ejemplo de uso en el agente:
 /*

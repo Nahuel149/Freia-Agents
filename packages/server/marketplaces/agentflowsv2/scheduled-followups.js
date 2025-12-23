@@ -1,23 +1,23 @@
 // Sistema de programación de follow-ups con horarios configurables
-const B2BSalesDB = require('./database-config');
-const FollowUpSystem = require('./followup-system');
+const B2BSalesDB = require('./database-config')
+const FollowUpSystem = require('./followup-system')
 
 class ScheduledFollowUps {
     constructor(dbConnectionString) {
-        this.db = new B2BSalesDB(dbConnectionString);
-        this.followUpSystem = new FollowUpSystem(dbConnectionString);
-        this.schedulerRunning = false;
-        this.schedulerInterval = null;
+        this.db = new B2BSalesDB(dbConnectionString)
+        this.followUpSystem = new FollowUpSystem(dbConnectionString)
+        this.schedulerRunning = false
+        this.schedulerInterval = null
     }
 
     // Inicializar el sistema de programación
     async initialize() {
         try {
-            await this.db.initialize();
-            await this.followUpSystem.initialize();
-            console.log('Scheduled follow-ups system initialized');
+            await this.db.initialize()
+            await this.followUpSystem.initialize()
+            console.log('Scheduled follow-ups system initialized')
         } catch (error) {
-            console.error('Error initializing scheduled follow-ups:', error);
+            console.error('Error initializing scheduled follow-ups:', error)
         }
     }
 
@@ -38,23 +38,23 @@ class ScheduledFollowUps {
                 priority = 'medium',
                 tags = [],
                 metadata = {}
-            } = config;
+            } = config
 
             // Validar que el cliente existe
-            const customer = await this.db.findCustomerById(customerId);
+            const customer = await this.db.findCustomerById(customerId)
             if (!customer) {
-                throw new Error(`Customer with ID ${customerId} not found`);
+                throw new Error(`Customer with ID ${customerId} not found`)
             }
 
             // Ajustar fecha/hora si es necesario
-            let adjustedDateTime = new Date(scheduledDateTime);
+            let adjustedDateTime = new Date(scheduledDateTime)
             if (businessHoursOnly || workDaysOnly) {
                 const flowState = {
                     businessHoursStart: '09:00',
                     businessHoursEnd: '18:00',
                     followUpDaysOfWeek: workDaysOnly ? '1,2,3,4,5' : '0,1,2,3,4,5,6'
-                };
-                adjustedDateTime = this.followUpSystem.adjustToBusinessHours(adjustedDateTime, flowState);
+                }
+                adjustedDateTime = this.followUpSystem.adjustToBusinessHours(adjustedDateTime, flowState)
             }
 
             const followUpData = {
@@ -71,16 +71,15 @@ class ScheduledFollowUps {
                 tags: tags.join(','),
                 metadata: JSON.stringify(metadata),
                 intervalHours
-            };
+            }
 
-            const followUp = await this.db.scheduleFollowUp(followUpData);
-            
-            console.log(`📅 Custom follow-up scheduled: ID ${followUp.id} for ${adjustedDateTime}`);
-            return followUp;
-            
+            const followUp = await this.db.scheduleFollowUp(followUpData)
+
+            console.log(`📅 Custom follow-up scheduled: ID ${followUp.id} for ${adjustedDateTime}`)
+            return followUp
         } catch (error) {
-            console.error('Error scheduling custom follow-up:', error);
-            throw error;
+            console.error('Error scheduling custom follow-up:', error)
+            throw error
         }
     }
 
@@ -89,25 +88,25 @@ class ScheduledFollowUps {
         const results = {
             successful: [],
             failed: []
-        };
+        }
 
         for (const config of followUps) {
             try {
-                const followUp = await this.scheduleCustomFollowUp(config);
+                const followUp = await this.scheduleCustomFollowUp(config)
                 results.successful.push({
                     config,
                     followUp
-                });
+                })
             } catch (error) {
                 results.failed.push({
                     config,
                     error: error.message
-                });
+                })
             }
         }
 
-        console.log(`✅ Bulk scheduling completed: ${results.successful.length} successful, ${results.failed.length} failed`);
-        return results;
+        console.log(`✅ Bulk scheduling completed: ${results.successful.length} successful, ${results.failed.length} failed`)
+        return results
     }
 
     // Programar follow-ups recurrentes
@@ -126,16 +125,16 @@ class ScheduledFollowUps {
                 businessHoursOnly = true,
                 workDaysOnly = true,
                 priority = 'medium'
-            } = config;
+            } = config
 
-            const followUps = [];
-            let currentDate = new Date(startDate);
-            let occurrenceCount = 0;
+            const followUps = []
+            let currentDate = new Date(startDate)
+            let occurrenceCount = 0
+            const endDateValue = endDate ? new Date(endDate) : null
 
-            while (true) {
+            while (!maxOccurrences || occurrenceCount < maxOccurrences) {
                 // Verificar condiciones de parada
-                if (endDate && currentDate > new Date(endDate)) break;
-                if (maxOccurrences && occurrenceCount >= maxOccurrences) break;
+                if (endDateValue && currentDate > endDateValue) break
 
                 // Programar follow-up para esta fecha
                 const followUpConfig = {
@@ -158,61 +157,60 @@ class ScheduledFollowUps {
                         occurrenceNumber: occurrenceCount + 1,
                         originalStartDate: startDate
                     }
-                };
+                }
 
-                const followUp = await this.scheduleCustomFollowUp(followUpConfig);
-                followUps.push(followUp);
+                const followUp = await this.scheduleCustomFollowUp(followUpConfig)
+                followUps.push(followUp)
 
                 // Calcular próxima fecha
-                currentDate = this.calculateNextRecurrence(currentDate, recurrencePattern, recurrenceInterval);
-                occurrenceCount++;
+                currentDate = this.calculateNextRecurrence(currentDate, recurrencePattern, recurrenceInterval)
+                occurrenceCount++
             }
 
-            console.log(`🔄 Scheduled ${followUps.length} recurring follow-ups`);
-            return followUps;
-            
+            console.log(`🔄 Scheduled ${followUps.length} recurring follow-ups`)
+            return followUps
         } catch (error) {
-            console.error('Error scheduling recurring follow-up:', error);
-            throw error;
+            console.error('Error scheduling recurring follow-up:', error)
+            throw error
         }
     }
 
     // Procesar plantilla de mensaje
     processMessageTemplate(template, variables) {
-        let message = template;
-        
+        let message = template
+
         // Reemplazar variables
-        Object.keys(variables).forEach(key => {
-            const placeholder = `{{${key}}}`;
-            message = message.replace(new RegExp(placeholder, 'g'), variables[key]);
-        });
+        Object.keys(variables).forEach((key) => {
+            const placeholder = `{{${key}}}`
+            message = message.replace(new RegExp(placeholder, 'g'), variables[key])
+        })
 
         // Reemplazar fechas
-        message = message.replace(/{{date}}/g, variables.date.toLocaleDateString('es-AR'));
-        message = message.replace(/{{time}}/g, variables.date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }));
-        
-        return message;
+        message = message.replace(/{{date}}/g, variables.date.toLocaleDateString('es-AR'))
+        message = message.replace(/{{time}}/g, variables.date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }))
+
+        return message
     }
 
     // Calcular próxima recurrencia
     calculateNextRecurrence(currentDate, pattern, interval) {
-        const nextDate = new Date(currentDate);
-        
+        const nextDate = new Date(currentDate)
+
         switch (pattern) {
             case 'daily':
-                nextDate.setDate(nextDate.getDate() + interval);
-                break;
+                nextDate.setDate(nextDate.getDate() + interval)
+                break
             case 'weekly':
-                nextDate.setDate(nextDate.getDate() + (interval * 7));
-                break;
+                nextDate.setDate(nextDate.getDate() + interval * 7)
+                break
             case 'monthly':
-                nextDate.setMonth(nextDate.getMonth() + interval);
-                break;
+                nextDate.setMonth(nextDate.getMonth() + interval)
+                break
             default:
-                throw new Error(`Unknown recurrence pattern: ${pattern}`);
+                throw new Error(`Unknown recurrence pattern: ${pattern}`)
         }
-        
-        return nextDate;
+
+        return nextDate
     }
 
     // Obtener follow-ups programados
@@ -228,66 +226,65 @@ class ScheduledFollowUps {
                 tags = null,
                 limit = 50,
                 offset = 0
-            } = filters;
+            } = filters
 
             let query = `
                 SELECT f.*, c.first_name, c.last_name, c.business_name
                 FROM follow_ups f
                 JOIN customers c ON f.customer_id = c.id
                 WHERE 1=1
-            `;
-            
-            const params = [];
-            let paramCount = 0;
+            `
+
+            const params = []
+            let paramCount = 0
 
             if (customerId) {
-                query += ` AND f.customer_id = $${++paramCount}`;
-                params.push(customerId);
+                query += ` AND f.customer_id = $${++paramCount}`
+                params.push(customerId)
             }
 
             if (followUpType) {
-                query += ` AND f.follow_up_type = $${++paramCount}`;
-                params.push(followUpType);
+                query += ` AND f.follow_up_type = $${++paramCount}`
+                params.push(followUpType)
             }
 
             if (status) {
-                query += ` AND f.status = $${++paramCount}`;
-                params.push(status);
+                query += ` AND f.status = $${++paramCount}`
+                params.push(status)
             }
 
             if (dateFrom) {
-                query += ` AND f.scheduled_at >= $${++paramCount}`;
-                params.push(dateFrom);
+                query += ` AND f.scheduled_at >= $${++paramCount}`
+                params.push(dateFrom)
             }
 
             if (dateTo) {
-                query += ` AND f.scheduled_at <= $${++paramCount}`;
-                params.push(dateTo);
+                query += ` AND f.scheduled_at <= $${++paramCount}`
+                params.push(dateTo)
             }
 
             if (priority) {
-                query += ` AND f.priority = $${++paramCount}`;
-                params.push(priority);
+                query += ` AND f.priority = $${++paramCount}`
+                params.push(priority)
             }
 
             if (tags) {
-                query += ` AND f.tags LIKE $${++paramCount}`;
-                params.push(`%${tags}%`);
+                query += ` AND f.tags LIKE $${++paramCount}`
+                params.push(`%${tags}%`)
             }
 
             query += `
                 ORDER BY f.scheduled_at ASC
                 LIMIT $${++paramCount} OFFSET $${++paramCount}
-            `;
-            
-            params.push(limit, offset);
+            `
 
-            const result = await this.db.pool.query(query, params);
-            return result.rows;
-            
+            params.push(limit, offset)
+
+            const result = await this.db.pool.query(query, params)
+            return result.rows
         } catch (error) {
-            console.error('Error getting scheduled follow-ups:', error);
-            return [];
+            console.error('Error getting scheduled follow-ups:', error)
+            return []
         }
     }
 
@@ -302,19 +299,19 @@ class ScheduledFollowUps {
                     updated_at = NOW()
                 WHERE id = $1 AND status = 'pending'
                 RETURNING *;
-            `;
-            
-            const result = await this.db.pool.query(query, [followUpId, `Cancelled: ${reason}`]);
-            
+            `
+
+            const result = await this.db.pool.query(query, [followUpId, `Cancelled: ${reason}`])
+
             if (result.rows.length > 0) {
-                console.log(`❌ Follow-up ${followUpId} cancelled: ${reason}`);
-                return result.rows[0];
+                console.log(`❌ Follow-up ${followUpId} cancelled: ${reason}`)
+                return result.rows[0]
             }
-            
-            return null;
+
+            return null
         } catch (error) {
-            console.error('Error cancelling follow-up:', error);
-            return null;
+            console.error('Error cancelling follow-up:', error)
+            return null
         }
     }
 
@@ -328,52 +325,52 @@ class ScheduledFollowUps {
                     result = CONCAT(COALESCE(result, ''), '\nRescheduled: ', $3)
                 WHERE id = $1 AND status = 'pending'
                 RETURNING *;
-            `;
-            
-            const result = await this.db.pool.query(query, [followUpId, newDateTime, reason]);
-            
+            `
+
+            const result = await this.db.pool.query(query, [followUpId, newDateTime, reason])
+
             if (result.rows.length > 0) {
-                console.log(`📅 Follow-up ${followUpId} rescheduled to ${newDateTime}`);
-                return result.rows[0];
+                console.log(`📅 Follow-up ${followUpId} rescheduled to ${newDateTime}`)
+                return result.rows[0]
             }
-            
-            return null;
+
+            return null
         } catch (error) {
-            console.error('Error rescheduling follow-up:', error);
-            return null;
+            console.error('Error rescheduling follow-up:', error)
+            return null
         }
     }
 
     // Iniciar procesador automático
     startScheduler(intervalMinutes = 5) {
         if (this.schedulerRunning) {
-            console.log('Scheduler is already running');
-            return;
+            console.log('Scheduler is already running')
+            return
         }
 
-        this.schedulerRunning = true;
-        console.log(`🚀 Starting follow-up scheduler (checking every ${intervalMinutes} minutes)`);
-        
+        this.schedulerRunning = true
+        console.log(`🚀 Starting follow-up scheduler (checking every ${intervalMinutes} minutes)`)
+
         this.schedulerInterval = setInterval(async () => {
             try {
-                const processed = await this.followUpSystem.processPendingFollowUps();
+                const processed = await this.followUpSystem.processPendingFollowUps()
                 if (processed > 0) {
-                    console.log(`⚡ Processed ${processed} scheduled follow-ups`);
+                    console.log(`⚡ Processed ${processed} scheduled follow-ups`)
                 }
             } catch (error) {
-                console.error('Error in scheduler:', error);
+                console.error('Error in scheduler:', error)
             }
-        }, intervalMinutes * 60 * 1000);
+        }, intervalMinutes * 60 * 1000)
     }
 
     // Detener procesador automático
     stopScheduler() {
         if (this.schedulerInterval) {
-            clearInterval(this.schedulerInterval);
-            this.schedulerInterval = null;
+            clearInterval(this.schedulerInterval)
+            this.schedulerInterval = null
         }
-        this.schedulerRunning = false;
-        console.log('📴 Follow-up scheduler stopped');
+        this.schedulerRunning = false
+        console.log('📴 Follow-up scheduler stopped')
     }
 
     // Obtener estadísticas del programador
@@ -391,22 +388,22 @@ class ScheduledFollowUps {
                 WHERE scheduled_at >= NOW() - INTERVAL '7 days'
                 GROUP BY status, follow_up_type, priority
                 ORDER BY status, follow_up_type, priority;
-            `;
-            
-            const result = await this.db.pool.query(query);
+            `
+
+            const result = await this.db.pool.query(query)
             return {
                 stats: result.rows,
                 schedulerRunning: this.schedulerRunning,
                 lastCheck: new Date()
-            };
+            }
         } catch (error) {
-            console.error('Error getting scheduler stats:', error);
-            return null;
+            console.error('Error getting scheduler stats:', error)
+            return null
         }
     }
 }
 
-module.exports = ScheduledFollowUps;
+module.exports = ScheduledFollowUps
 
 // Ejemplo de uso:
 // const scheduler = new ScheduledFollowUps(process.env.DB_CONNECTION_STRING);

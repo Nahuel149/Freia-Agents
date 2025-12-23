@@ -25,4 +25,3 @@ export class SaleRecord {
     @Column({ type: 'text', nullable: true })
     items?: string // JSON array of {productId, name, qty, price, total}
 }
-

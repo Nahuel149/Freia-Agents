@@ -26,7 +26,7 @@ const submitTicket = async (req: Request, res: Response, next: NextFunction) => 
         if (!message) return res.status(400).json({ message: 'Message is required' })
 
         const to = process.env.SUPPORT_EMAIL_TO || 'freia-agents@gmail.com'
-        const from = process.env.SUPPORT_EMAIL_FROM || (process.env.SMTP_USER || 'no-reply@support.local')
+        const from = process.env.SUPPORT_EMAIL_FROM || process.env.SMTP_USER || 'no-reply@support.local'
         const _subject = subject || `[${category || 'Support'}] New ticket`
 
         const files = Array.isArray((req as any).files) ? ((req as any).files as any[]) : []
@@ -47,7 +47,9 @@ const submitTicket = async (req: Request, res: Response, next: NextFunction) => 
             </div>
         `
 
-        const text = `Category: ${category || 'N/A'}\nFrom: ${name || 'Anonymous'} ${email ? '<' + email + '>' : ''}\n\n${String(message)}\n\n${uploadedLinks ? 'Attachments (links):\n' + uploadedLinks : ''}`
+        const text = `Category: ${category || 'N/A'}\nFrom: ${name || 'Anonymous'} ${email ? '<' + email + '>' : ''}\n\n${String(
+            message
+        )}\n\n${uploadedLinks ? 'Attachments (links):\n' + uploadedLinks : ''}`
 
         const transporter = buildTransporter()
         if (!transporter) {
@@ -57,9 +59,7 @@ const submitTicket = async (req: Request, res: Response, next: NextFunction) => 
         }
 
         const attachments = hasLocalPaths
-            ? files
-                  .filter((f: any) => f.path)
-                  .map((f: any) => ({ filename: f.originalname, path: f.path, contentType: f.mimetype }))
+            ? files.filter((f: any) => f.path).map((f: any) => ({ filename: f.originalname, path: f.path, contentType: f.mimetype }))
             : undefined
 
         await transporter.sendMail({ to, from, replyTo: email || from, subject: _subject, text, html, attachments })

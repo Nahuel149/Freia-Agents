@@ -58,7 +58,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
                     ...(typeof data === 'object' ? data : {}),
                     streamedAt: new Date().toISOString()
                 }
-            }).catch(err => {
+            }).catch((err) => {
                 logger.warn('Failed to record tool alert', err)
             })
         }

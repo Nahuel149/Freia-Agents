@@ -6,7 +6,6 @@ import { z } from 'zod'
 import { Alert, Box, Button, Divider, List, ListItemText, Stack, Typography, useTheme, Container, Card, CardContent } from '@mui/material'
 
 // project imports
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Input } from '@/ui-component/input/Input'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import { useSelector } from 'react-redux'
@@ -18,7 +17,6 @@ import ssoApi from '@/api/sso'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import { useConfig } from '@/store/context/ConfigContext'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
@@ -127,7 +125,9 @@ const RegisterPage = () => {
 
     useEffect(() => {
         if (registerApi.error) {
-            setAuthError(`Error in registering user. Please try again. (${registerApi.error?.response?.data?.message || registerApi.error.message})`)
+            setAuthError(
+                `Error in registering user. Please try again. (${registerApi.error?.response?.data?.message || registerApi.error.message})`
+            )
             setLoading(false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -225,269 +225,296 @@ const RegisterPage = () => {
                             maxWidth: { xs: '100%', sm: 620, md: 760 },
                             background: customization.isDarkMode ? 'rgba(14, 21, 41, 0.9)' : 'rgba(255, 255, 255, 0.95)',
                             backdropFilter: 'blur(20px)',
-                            border: customization.isDarkMode
-                                ? '1px solid rgba(255, 255, 255, 0.1)'
-                                : '1px solid rgba(0, 0, 0, 0.08)',
+                            border: customization.isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
                             borderRadius: '24px',
-                            boxShadow: customization.isDarkMode
-                                ? '0 25px 60px rgba(0, 0, 0, 0.45)'
-                                : '0 25px 60px rgba(10, 86, 240, 0.18)',
+                            boxShadow: customization.isDarkMode ? '0 25px 60px rgba(0, 0, 0, 0.45)' : '0 25px 60px rgba(10, 86, 240, 0.18)',
                             overflow: 'visible'
                         }}
                     >
                         <CardContent sx={{ p: 4 }}>
-                <Stack flexDirection='column' sx={{ width: '100%', gap: 3 }}>
-                    {authError && (
-                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
-                            {authError.split(', ').length > 0 ? (
-                                <List dense sx={{ py: 0 }}>
-                                    {authError.split(', ').map((error, index) => (
-                                        <ListItemText key={index} primary={error} primaryTypographyProps={{ color: '#fff !important' }} />
-                                    ))}
-                                </List>
-                            ) : (
-                                authError
-                            )}
-                        </Alert>
-                    )}
-                    {successMsg && (
-                        <Alert icon={<IconCircleCheck />} variant='filled' severity='success'>
-                            {successMsg}
-                        </Alert>
-                    )}
-                    <Stack sx={{ gap: 2, textAlign: 'center', mb: 1 }}>
-                       <Typography 
-                           variant='h3' 
-                           sx={{ 
-                               fontWeight: 700,
-                               background: customization.isDarkMode
-                                   ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                   : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                               backgroundClip: 'text',
-                               WebkitBackgroundClip: 'text',
-                               WebkitTextFillColor: 'transparent',
-                               mb: 1
-                           }}
-                       >
-                           Regístrate
-                       </Typography>
-                       <Typography 
-                           variant='body1' 
-                           sx={{ 
-                               color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
-                               fontSize: '1rem'
-                           }}
-                       >
-                           ¿Ya tienes una cuenta?{' '}
-                           <Link 
-                               style={{ 
-                                   color: customization.isDarkMode ? '#667eea' : '#764ba2',
-                                   textDecoration: 'none',
-                                   fontWeight: 600
-                               }} 
-                               to='/signin'
-                           >
-                               Iniciar sesión
-                           </Link>
-                           .
-                       </Typography>
-                    </Stack>
-                    <form onSubmit={register} data-rewardful>
-                        <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 3 }}>
-                            <Box sx={{ mb: 1 }}>
-                                <Typography 
-                                    variant='body2' 
-                                    sx={{ 
-                                        mb: 1.5,
-                                        fontWeight: 600,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
-                                    }}
-                                >
-                                    Nombre para mostrar<span style={{ color: '#f44336' }}>&nbsp;*</span>
-                                </Typography>
-                                <Input
-                                    inputParam={usernameInput}
-                                    placeholder='John Doe'
-                                    onChange={(newValue) => setUsername(newValue)}
-                                    value={username}
-                                    showDialog={false}
-                                />
-                                <Typography 
-                                    variant='caption' 
-                                    sx={{ 
-                                        mt: 0.5,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
-                                        fontStyle: 'italic'
-                                    }}
-                                >
-                                    Se utiliza solo con fines de visualización.
-                                </Typography>
-                            </Box>
-                            <Box sx={{ mb: 1 }}>
-                                <Typography 
-                                    variant='body2' 
-                                    sx={{ 
-                                        mb: 1.5,
-                                        fontWeight: 600,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
-                                    }}
-                                >
-                                    Correo electrónico<span style={{ color: '#f44336' }}>&nbsp;*</span>
-                                </Typography>
-                                <Input
-                                    inputParam={emailInput}
-                                    onChange={(newValue) => setEmail(newValue)}
-                                    value={email}
-                                    showDialog={false}
-                                />
-                                <Typography 
-                                    variant='caption' 
-                                    sx={{ 
-                                        mt: 0.5,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
-                                        fontStyle: 'italic'
-                                    }}
-                                >
-                                    Usa un correo válido. Se utilizará como tu ID de inicio de sesión.
-                                </Typography>
-                            </Box>
-
-                            <Box sx={{ mb: 1 }}>
-                                <Typography 
-                                    variant='body2' 
-                                    sx={{ 
-                                        mb: 1.5,
-                                        fontWeight: 600,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
-                                    }}
-                                >
-                                    Contraseña<span style={{ color: '#f44336' }}>&nbsp;*</span>
-                                </Typography>
-                                <Input inputParam={passwordInput} onChange={(newValue) => setPassword(newValue)} value={password} />
-                                <Typography 
-                                    variant='caption' 
-                                    sx={{ 
-                                        mt: 0.5,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
-                                        fontStyle: 'italic'
-                                    }}
-                                >
-                                    La contraseña debe tener al menos 8 caracteres e incluir una minúscula, una mayúscula, un dígito y un carácter especial.
-                                </Typography>
-                            </Box>
-                            <Box sx={{ mb: 2 }}>
-                                <Typography 
-                                    variant='body2' 
-                                    sx={{ 
-                                        mb: 1.5,
-                                        fontWeight: 600,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
-                                    }}
-                                >
-                                    Confirmar contraseña<span style={{ color: '#f44336' }}>&nbsp;*</span>
-                                </Typography>
-                                <Input
-                                    inputParam={confirmPasswordInput}
-                                    onChange={(newValue) => setConfirmPassword(newValue)}
-                                    value={confirmPassword}
-                                />
-                                <Typography 
-                                    variant='caption' 
-                                    sx={{ 
-                                        mt: 0.5,
-                                        color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
-                                        fontStyle: 'italic'
-                                    }}
-                                >
-                                    Debe coincidir con la contraseña anterior.
-                                </Typography>
-                            </Box>
-                            <Button 
-                                variant='contained' 
-                                type='submit'
-                                fullWidth
-                                sx={{
-                                    height: 48,
-                                    borderRadius: 3,
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                                    fontSize: '1rem',
-                                    fontWeight: 600,
-                                    textTransform: 'none',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #5a67d8 0%, #667eea 100%)',
-                                        boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
-                                        transform: 'translateY(-2px)'
-                                    },
-                                    '&:active': {
-                                        transform: 'translateY(0px)'
-                                    }
-                                }}
-                            >
-                                Crear cuenta
-                            </Button>
-                            {configuredSsoProviders.length > 0 && (
-                                <>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', my: 3 }}>
-                                        <Divider 
-                                            sx={{ 
-                                                flexGrow: 1,
-                                                borderColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
-                                            }} 
-                                        />
-                                        <Typography 
-                                            variant='body2' 
-                                            sx={{ 
-                                                mx: 2, 
-                                                color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                                                fontWeight: 500
+                            <Stack flexDirection='column' sx={{ width: '100%', gap: 3 }}>
+                                {authError && (
+                                    <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                                        {authError.split(', ').length > 0 ? (
+                                            <List dense sx={{ py: 0 }}>
+                                                {authError.split(', ').map((error, index) => (
+                                                    <ListItemText
+                                                        key={index}
+                                                        primary={error}
+                                                        primaryTypographyProps={{ color: '#fff !important' }}
+                                                    />
+                                                ))}
+                                            </List>
+                                        ) : (
+                                            authError
+                                        )}
+                                    </Alert>
+                                )}
+                                {successMsg && (
+                                    <Alert icon={<IconCircleCheck />} variant='filled' severity='success'>
+                                        {successMsg}
+                                    </Alert>
+                                )}
+                                <Stack sx={{ gap: 2, textAlign: 'center', mb: 1 }}>
+                                    <Typography
+                                        variant='h3'
+                                        sx={{
+                                            fontWeight: 700,
+                                            background: customization.isDarkMode
+                                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            backgroundClip: 'text',
+                                            WebkitBackgroundClip: 'text',
+                                            WebkitTextFillColor: 'transparent',
+                                            mb: 1
+                                        }}
+                                    >
+                                        Regístrate
+                                    </Typography>
+                                    <Typography
+                                        variant='body1'
+                                        sx={{
+                                            color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                                            fontSize: '1rem'
+                                        }}
+                                    >
+                                        ¿Ya tienes una cuenta?{' '}
+                                        <Link
+                                            style={{
+                                                color: customization.isDarkMode ? '#667eea' : '#764ba2',
+                                                textDecoration: 'none',
+                                                fontWeight: 600
                                             }}
+                                            to='/signin'
                                         >
-                                            O
-                                        </Typography>
-                                        <Divider 
-                                            sx={{ 
-                                                flexGrow: 1,
-                                                borderColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
-                                            }} 
-                                        />
-                                    </Box>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                        {configuredSsoProviders.map((provider) => (
-                                            <Button
-                                                key={provider}
-                                                variant='outlined'
-                                                fullWidth
-                                                onClick={() => signInWithSSO(provider)}
+                                            Iniciar sesión
+                                        </Link>
+                                        .
+                                    </Typography>
+                                </Stack>
+                                <form onSubmit={register} data-rewardful>
+                                    <Stack
+                                        sx={{
+                                            width: '100%',
+                                            flexDirection: 'column',
+                                            alignItems: 'left',
+                                            justifyContent: 'center',
+                                            gap: 3
+                                        }}
+                                    >
+                                        <Box sx={{ mb: 1 }}>
+                                            <Typography
+                                                variant='body2'
                                                 sx={{
-                                                    height: 48,
-                                                    borderRadius: 3,
-                                                    textTransform: 'none',
-                                                    fontSize: '1rem',
-                                                    fontWeight: 500,
-                                                    borderColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
-                                                    background: customization.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)',
-                                                    backdropFilter: 'blur(10px)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        borderColor: '#667eea',
-                                                        background: customization.isDarkMode ? 'rgba(102, 126, 234, 0.1)' : 'rgba(102, 126, 234, 0.05)',
-                                                        transform: 'translateY(-1px)',
-                                                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
-                                                    }
+                                                    mb: 1.5,
+                                                    fontWeight: 600,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
                                                 }}
                                             >
-                                                Continue with {provider}
-                                            </Button>
-                                        ))}
-                                    </Box>
-                                </>
-                            )}
-                        </Stack>
-                    </form>
-                        </Stack>
+                                                Nombre para mostrar<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                            </Typography>
+                                            <Input
+                                                inputParam={usernameInput}
+                                                placeholder='John Doe'
+                                                onChange={(newValue) => setUsername(newValue)}
+                                                value={username}
+                                                showDialog={false}
+                                            />
+                                            <Typography
+                                                variant='caption'
+                                                sx={{
+                                                    mt: 0.5,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
+                                                    fontStyle: 'italic'
+                                                }}
+                                            >
+                                                Se utiliza solo con fines de visualización.
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ mb: 1 }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    mb: 1.5,
+                                                    fontWeight: 600,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
+                                                }}
+                                            >
+                                                Correo electrónico<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                            </Typography>
+                                            <Input
+                                                inputParam={emailInput}
+                                                onChange={(newValue) => setEmail(newValue)}
+                                                value={email}
+                                                showDialog={false}
+                                            />
+                                            <Typography
+                                                variant='caption'
+                                                sx={{
+                                                    mt: 0.5,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
+                                                    fontStyle: 'italic'
+                                                }}
+                                            >
+                                                Usa un correo válido. Se utilizará como tu ID de inicio de sesión.
+                                            </Typography>
+                                        </Box>
+
+                                        <Box sx={{ mb: 1 }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    mb: 1.5,
+                                                    fontWeight: 600,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
+                                                }}
+                                            >
+                                                Contraseña<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                            </Typography>
+                                            <Input
+                                                inputParam={passwordInput}
+                                                onChange={(newValue) => setPassword(newValue)}
+                                                value={password}
+                                            />
+                                            <Typography
+                                                variant='caption'
+                                                sx={{
+                                                    mt: 0.5,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
+                                                    fontStyle: 'italic'
+                                                }}
+                                            >
+                                                La contraseña debe tener al menos 8 caracteres e incluir una minúscula, una mayúscula, un
+                                                dígito y un carácter especial.
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ mb: 2 }}>
+                                            <Typography
+                                                variant='body2'
+                                                sx={{
+                                                    mb: 1.5,
+                                                    fontWeight: 600,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'
+                                                }}
+                                            >
+                                                Confirmar contraseña<span style={{ color: '#f44336' }}>&nbsp;*</span>
+                                            </Typography>
+                                            <Input
+                                                inputParam={confirmPasswordInput}
+                                                onChange={(newValue) => setConfirmPassword(newValue)}
+                                                value={confirmPassword}
+                                            />
+                                            <Typography
+                                                variant='caption'
+                                                sx={{
+                                                    mt: 0.5,
+                                                    color: customization.isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
+                                                    fontStyle: 'italic'
+                                                }}
+                                            >
+                                                Debe coincidir con la contraseña anterior.
+                                            </Typography>
+                                        </Box>
+                                        <Button
+                                            variant='contained'
+                                            type='submit'
+                                            fullWidth
+                                            sx={{
+                                                height: 48,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                                                fontSize: '1rem',
+                                                fontWeight: 600,
+                                                textTransform: 'none',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(135deg, #5a67d8 0%, #667eea 100%)',
+                                                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                                                    transform: 'translateY(-2px)'
+                                                },
+                                                '&:active': {
+                                                    transform: 'translateY(0px)'
+                                                }
+                                            }}
+                                        >
+                                            Crear cuenta
+                                        </Button>
+                                        {configuredSsoProviders.length > 0 && (
+                                            <>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', my: 3 }}>
+                                                    <Divider
+                                                        sx={{
+                                                            flexGrow: 1,
+                                                            borderColor: customization.isDarkMode
+                                                                ? 'rgba(255, 255, 255, 0.2)'
+                                                                : 'rgba(0, 0, 0, 0.2)'
+                                                        }}
+                                                    />
+                                                    <Typography
+                                                        variant='body2'
+                                                        sx={{
+                                                            mx: 2,
+                                                            color: customization.isDarkMode
+                                                                ? 'rgba(255, 255, 255, 0.6)'
+                                                                : 'rgba(0, 0, 0, 0.6)',
+                                                            fontWeight: 500
+                                                        }}
+                                                    >
+                                                        O
+                                                    </Typography>
+                                                    <Divider
+                                                        sx={{
+                                                            flexGrow: 1,
+                                                            borderColor: customization.isDarkMode
+                                                                ? 'rgba(255, 255, 255, 0.2)'
+                                                                : 'rgba(0, 0, 0, 0.2)'
+                                                        }}
+                                                    />
+                                                </Box>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                    {configuredSsoProviders.map((provider) => (
+                                                        <Button
+                                                            key={provider}
+                                                            variant='outlined'
+                                                            fullWidth
+                                                            onClick={() => signInWithSSO(provider)}
+                                                            sx={{
+                                                                height: 48,
+                                                                borderRadius: 3,
+                                                                textTransform: 'none',
+                                                                fontSize: '1rem',
+                                                                fontWeight: 500,
+                                                                borderColor: customization.isDarkMode
+                                                                    ? 'rgba(255, 255, 255, 0.2)'
+                                                                    : 'rgba(0, 0, 0, 0.2)',
+                                                                color: customization.isDarkMode
+                                                                    ? 'rgba(255, 255, 255, 0.9)'
+                                                                    : 'rgba(0, 0, 0, 0.8)',
+                                                                background: customization.isDarkMode
+                                                                    ? 'rgba(255, 255, 255, 0.05)'
+                                                                    : 'rgba(255, 255, 255, 0.8)',
+                                                                backdropFilter: 'blur(10px)',
+                                                                transition: 'all 0.3s ease',
+                                                                '&:hover': {
+                                                                    borderColor: '#667eea',
+                                                                    background: customization.isDarkMode
+                                                                        ? 'rgba(102, 126, 234, 0.1)'
+                                                                        : 'rgba(102, 126, 234, 0.05)',
+                                                                    transform: 'translateY(-1px)',
+                                                                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            Continue with {provider}
+                                                        </Button>
+                                                    ))}
+                                                </Box>
+                                            </>
+                                        )}
+                                    </Stack>
+                                </form>
+                            </Stack>
                         </CardContent>
                     </Card>
                 </Container>

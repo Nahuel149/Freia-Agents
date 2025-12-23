@@ -5,9 +5,7 @@ import exportImportService from '../../services/export-import'
 
 const exportData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await exportImportService.exportData(
-            exportImportService.convertExportInput(req.body)
-        )
+        const apiResponse = await exportImportService.exportData(exportImportService.convertExportInput(req.body))
         return res.json(apiResponse)
     } catch (error) {
         next(error)

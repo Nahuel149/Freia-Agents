@@ -1160,20 +1160,20 @@ interface JSONSchema {
 const formatToOpenAIAssistantTool = (tool: any): OpenAI.Beta.FunctionTool => {
     console.log(`[SCHEMA DEBUG] Converting tool '${tool.name}' schema to OpenAI format`)
     console.log(`[SCHEMA DEBUG] Original Zod schema:`, tool.schema)
-    
+
     const parameters = zodToJsonSchema(tool.schema) as JSONSchema
-    
+
     // Recursively traverse schema and ensure every array definition has an `items` field
     const addItemsToArrays = (schema: JSONSchema) => {
         if (!schema || typeof schema !== 'object') return
-    
+
         if (schema.type === 'array') {
             if (!('items' in schema)) {
                 // If the array element schema is missing, default to an object type to satisfy OpenAI requirements
                 schema.items = { type: 'object' }
             }
         }
-    
+
         // Recurse into nested objects and arrays
         if (schema.properties) {
             Object.values(schema.properties).forEach((prop: any) => addItemsToArrays(prop as JSONSchema))

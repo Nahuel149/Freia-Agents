@@ -381,11 +381,9 @@ const prepareAgent = async (
 
     // Helper function to convert ToolsAgentStep[] to IUsedTool[]
     const convertAgentStepsToUsedTools = (steps: ToolsAgentStep[]): IUsedTool[] => {
-        return steps.map(step => ({
+        return steps.map((step) => ({
             tool: step.action.tool,
-            toolInput: typeof step.action.toolInput === 'string' 
-                ? { input: step.action.toolInput } 
-                : step.action.toolInput,
+            toolInput: typeof step.action.toolInput === 'string' ? { input: step.action.toolInput } : step.action.toolInput,
             toolOutput: step.observation || '',
             sourceDocuments: undefined,
             error: undefined
@@ -394,7 +392,7 @@ const prepareAgent = async (
 
     // Override the _takeNextStep method to add validation
     const originalTakeNextStep = executor._takeNextStep.bind(executor)
-    executor._takeNextStep = async function(nameToolMap, inputs, intermediateSteps: ToolsAgentStep[], runManager, config) {
+    executor._takeNextStep = async function (nameToolMap, inputs, intermediateSteps: ToolsAgentStep[], runManager, config) {
         // Get the planned actions first
         let output
         try {
@@ -444,22 +442,17 @@ const prepareAgent = async (
 
         // Validate each action before execution
         for (const action of actions) {
-            const validationResult = ToolValidator.validateToolCall(
-                action.tool,
-                inputs.input || flowObj?.input || '',
-                usedTools,
-                tools
-            )
+            const validationResult = ToolValidator.validateToolCall(action.tool, inputs.input || flowObj?.input || '', usedTools, tools)
 
             if (!validationResult.isValid) {
                 // If validation fails, force the use of gomeria_consultation
                 console.log(`Tool validation failed for ${action.tool}: ${validationResult.reason}`)
-                
+
                 // Replace the action with gomeria_consultation
                 action.tool = 'gomeria_consultation'
                 action.toolInput = { query: inputs.input || flowObj?.input || '' }
                 action.log = `Redirecting to gomeria_consultation: ${validationResult.reason}`
-                
+
                 console.log(`Redirected to gomeria_consultation for query: ${inputs.input || flowObj?.input}`)
             }
         }

@@ -2,14 +2,16 @@
  * Code Analysis System
  * Automated code analysis and improvement suggestions for generated code
  */
-const { Pool } = require('pg');
+const { Pool } = require('pg')
 
 class CodeAnalysisSystem {
     constructor(config = {}) {
-        this.pool = config.pool || new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/freia_dev'
-        });
-        
+        this.pool =
+            config.pool ||
+            new Pool({
+                connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/freia_dev'
+            })
+
         this.analysisRules = {
             security: {
                 patterns: [
@@ -125,8 +127,8 @@ class CodeAnalysisSystem {
                     }
                 ]
             }
-        };
-        
+        }
+
         this.languageSpecificRules = {
             javascript: {
                 patterns: [
@@ -175,8 +177,8 @@ class CodeAnalysisSystem {
                     }
                 ]
             }
-        };
-        
+        }
+
         this.complexityMetrics = {
             cyclomaticComplexity: {
                 patterns: [
@@ -191,30 +193,29 @@ class CodeAnalysisSystem {
                     /\b\|\|\b/gi
                 ]
             }
-        };
-        
-        this.isInitialized = false;
+        }
+
+        this.isInitialized = false
     }
-    
+
     async initialize() {
         try {
-            console.log('Initializing Code Analysis System...');
-            
+            console.log('Initializing Code Analysis System...')
+
             // Test database connection
-            await this.pool.query('SELECT 1');
-            
+            await this.pool.query('SELECT 1')
+
             // Create analysis results table if it doesn't exist
-            await this.createAnalysisTable();
-            
-            this.isInitialized = true;
-            console.log('Code Analysis System initialized successfully');
-            
+            await this.createAnalysisTable()
+
+            this.isInitialized = true
+            console.log('Code Analysis System initialized successfully')
         } catch (error) {
-            console.error('Failed to initialize Code Analysis System:', error);
-            throw error;
+            console.error('Failed to initialize Code Analysis System:', error)
+            throw error
         }
     }
-    
+
     async createAnalysisTable() {
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS code_analysis_results (
@@ -238,24 +239,18 @@ class CodeAnalysisSystem {
             CREATE INDEX IF NOT EXISTS idx_code_analysis_task ON code_analysis_results(task_id);
             CREATE INDEX IF NOT EXISTS idx_code_analysis_language ON code_analysis_results(language);
             CREATE INDEX IF NOT EXISTS idx_code_analysis_scores ON code_analysis_results(quality_score, security_score);
-        `;
-        
-        await this.pool.query(createTableQuery);
+        `
+
+        await this.pool.query(createTableQuery)
     }
-    
+
     /**
      * Analyze code and provide suggestions
      */
-    async analyzeCode({
-        code,
-        language = 'javascript',
-        sessionId = null,
-        taskId = null,
-        context = {}
-    }) {
+    async analyzeCode({ code, language = 'javascript', sessionId = null, taskId = null, context = {} }) {
         try {
-            console.log(`Analyzing ${language} code (${code.length} characters)`);
-            
+            console.log(`Analyzing ${language} code (${code.length} characters)`)
+
             const analysis = {
                 language,
                 timestamp: new Date().toISOString(),
@@ -269,23 +264,23 @@ class CodeAnalysisSystem {
                     quality: 100,
                     maintainability: 100
                 }
-            };
-            
+            }
+
             // Run general analysis rules
-            await this.runGeneralAnalysis(code, analysis);
-            
+            await this.runGeneralAnalysis(code, analysis)
+
             // Run language-specific analysis
-            await this.runLanguageSpecificAnalysis(code, language, analysis);
-            
+            await this.runLanguageSpecificAnalysis(code, language, analysis)
+
             // Calculate complexity metrics
-            await this.calculateComplexityMetrics(code, analysis);
-            
+            await this.calculateComplexityMetrics(code, analysis)
+
             // Calculate scores
-            this.calculateScores(analysis);
-            
+            this.calculateScores(analysis)
+
             // Generate improvement suggestions
-            await this.generateImprovementSuggestions(code, analysis, context);
-            
+            await this.generateImprovementSuggestions(code, analysis, context)
+
             // Store analysis results
             const analysisId = await this.storeAnalysisResults({
                 sessionId,
@@ -293,25 +288,24 @@ class CodeAnalysisSystem {
                 code,
                 language,
                 analysis
-            });
-            
-            analysis.id = analysisId;
-            
-            console.log(`Code analysis completed. Overall score: ${analysis.scores.overall}`);
-            
-            return analysis;
-            
+            })
+
+            analysis.id = analysisId
+
+            console.log(`Code analysis completed. Overall score: ${analysis.scores.overall}`)
+
+            return analysis
         } catch (error) {
-            console.error('Error analyzing code:', error);
-            throw error;
+            console.error('Error analyzing code:', error)
+            throw error
         }
     }
-    
+
     async runGeneralAnalysis(code, analysis) {
         for (const [category, rules] of Object.entries(this.analysisRules)) {
             for (const rule of rules.patterns) {
-                const matches = code.match(rule.pattern);
-                
+                const matches = code.match(rule.pattern)
+
                 if (matches) {
                     const issue = {
                         id: rule.id,
@@ -321,40 +315,40 @@ class CodeAnalysisSystem {
                         suggestion: rule.suggestion,
                         occurrences: matches.length,
                         locations: this.findPatternLocations(code, rule.pattern)
-                    };
-                    
-                    analysis.issues.push(issue);
-                    
+                    }
+
+                    analysis.issues.push(issue)
+
                     // Adjust scores based on severity
-                    const scoreImpact = this.getSeverityImpact(rule.severity) * matches.length;
-                    
+                    const scoreImpact = this.getSeverityImpact(rule.severity) * matches.length
+
                     switch (category) {
                         case 'security':
-                            analysis.scores.security = Math.max(0, analysis.scores.security - scoreImpact);
-                            break;
+                            analysis.scores.security = Math.max(0, analysis.scores.security - scoreImpact)
+                            break
                         case 'performance':
-                            analysis.scores.performance = Math.max(0, analysis.scores.performance - scoreImpact);
-                            break;
+                            analysis.scores.performance = Math.max(0, analysis.scores.performance - scoreImpact)
+                            break
                         case 'codeQuality':
                         case 'bestPractices':
-                            analysis.scores.quality = Math.max(0, analysis.scores.quality - scoreImpact);
-                            break;
+                            analysis.scores.quality = Math.max(0, analysis.scores.quality - scoreImpact)
+                            break
                     }
                 }
             }
         }
     }
-    
+
     async runLanguageSpecificAnalysis(code, language, analysis) {
-        const languageRules = this.languageSpecificRules[language.toLowerCase()];
-        
+        const languageRules = this.languageSpecificRules[language.toLowerCase()]
+
         if (!languageRules) {
-            return;
+            return
         }
-        
+
         for (const rule of languageRules.patterns) {
-            const matches = code.match(rule.pattern);
-            
+            const matches = code.match(rule.pattern)
+
             if (matches) {
                 const issue = {
                     id: rule.id,
@@ -364,16 +358,16 @@ class CodeAnalysisSystem {
                     suggestion: rule.suggestion,
                     occurrences: matches.length,
                     locations: this.findPatternLocations(code, rule.pattern)
-                };
-                
-                analysis.issues.push(issue);
-                
-                const scoreImpact = this.getSeverityImpact(rule.severity) * matches.length;
-                analysis.scores.quality = Math.max(0, analysis.scores.quality - scoreImpact);
+                }
+
+                analysis.issues.push(issue)
+
+                const scoreImpact = this.getSeverityImpact(rule.severity) * matches.length
+                analysis.scores.quality = Math.max(0, analysis.scores.quality - scoreImpact)
             }
         }
     }
-    
+
     async calculateComplexityMetrics(code, analysis) {
         const metrics = {
             linesOfCode: code.split('\n').length,
@@ -382,101 +376,101 @@ class CodeAnalysisSystem {
             nestingDepth: 0,
             functionCount: 0,
             classCount: 0
-        };
-        
+        }
+
         // Calculate cyclomatic complexity
         for (const pattern of this.complexityMetrics.cyclomaticComplexity.patterns) {
-            const matches = code.match(pattern);
+            const matches = code.match(pattern)
             if (matches) {
-                metrics.cyclomaticComplexity += matches.length;
+                metrics.cyclomaticComplexity += matches.length
             }
         }
-        
+
         // Count functions and classes
-        const functionMatches = code.match(/\bfunction\b|\b=>\b|\bdef\b/gi);
+        const functionMatches = code.match(/\bfunction\b|\b=>\b|\bdef\b/gi)
         if (functionMatches) {
-            metrics.functionCount = functionMatches.length;
+            metrics.functionCount = functionMatches.length
         }
-        
-        const classMatches = code.match(/\bclass\b/gi);
+
+        const classMatches = code.match(/\bclass\b/gi)
         if (classMatches) {
-            metrics.classCount = classMatches.length;
+            metrics.classCount = classMatches.length
         }
-        
+
         // Calculate nesting depth
-        metrics.nestingDepth = this.calculateNestingDepth(code);
-        
+        metrics.nestingDepth = this.calculateNestingDepth(code)
+
         // Adjust maintainability score based on complexity
         if (metrics.cyclomaticComplexity > 10) {
-            analysis.scores.maintainability -= (metrics.cyclomaticComplexity - 10) * 2;
+            analysis.scores.maintainability -= (metrics.cyclomaticComplexity - 10) * 2
         }
-        
+
         if (metrics.linesOfCode > 100) {
-            analysis.scores.maintainability -= Math.floor((metrics.linesOfCode - 100) / 50) * 5;
+            analysis.scores.maintainability -= Math.floor((metrics.linesOfCode - 100) / 50) * 5
         }
-        
-        analysis.metrics = metrics;
+
+        analysis.metrics = metrics
     }
-    
+
     calculateNestingDepth(code) {
-        let maxDepth = 0;
-        let currentDepth = 0;
-        
+        let maxDepth = 0
+        let currentDepth = 0
+
         for (let i = 0; i < code.length; i++) {
             if (code[i] === '{') {
-                currentDepth++;
-                maxDepth = Math.max(maxDepth, currentDepth);
+                currentDepth++
+                maxDepth = Math.max(maxDepth, currentDepth)
             } else if (code[i] === '}') {
-                currentDepth--;
+                currentDepth--
             }
         }
-        
-        return maxDepth;
+
+        return maxDepth
     }
-    
+
     calculateScores(analysis) {
         // Ensure scores don't go below 0
-        analysis.scores.security = Math.max(0, analysis.scores.security);
-        analysis.scores.performance = Math.max(0, analysis.scores.performance);
-        analysis.scores.quality = Math.max(0, analysis.scores.quality);
-        analysis.scores.maintainability = Math.max(0, analysis.scores.maintainability);
-        
+        analysis.scores.security = Math.max(0, analysis.scores.security)
+        analysis.scores.performance = Math.max(0, analysis.scores.performance)
+        analysis.scores.quality = Math.max(0, analysis.scores.quality)
+        analysis.scores.maintainability = Math.max(0, analysis.scores.maintainability)
+
         // Calculate overall score
         analysis.scores.overall = Math.round(
-            (analysis.scores.security * 0.3 +
-             analysis.scores.performance * 0.25 +
-             analysis.scores.quality * 0.25 +
-             analysis.scores.maintainability * 0.2)
-        );
+            analysis.scores.security * 0.3 +
+                analysis.scores.performance * 0.25 +
+                analysis.scores.quality * 0.25 +
+                analysis.scores.maintainability * 0.2
+        )
     }
-    
+
     async generateImprovementSuggestions(code, analysis, context) {
-        const suggestions = [];
-        
+        const suggestions = []
+
         // Generate suggestions based on issues found
-        const criticalIssues = analysis.issues.filter(issue => issue.severity === 'critical');
-        const highIssues = analysis.issues.filter(issue => issue.severity === 'high');
-        
+        const criticalIssues = analysis.issues.filter((issue) => issue.severity === 'critical')
+        const highIssues = analysis.issues.filter((issue) => issue.severity === 'high')
+
         if (criticalIssues.length > 0) {
             suggestions.push({
                 type: 'security',
                 priority: 'critical',
                 title: 'Critical Security Issues Detected',
                 description: `Found ${criticalIssues.length} critical security issues that need immediate attention.`,
-                actions: criticalIssues.map(issue => issue.suggestion)
-            });
+                actions: criticalIssues.map((issue) => issue.suggestion)
+            })
         }
-        
+
         if (highIssues.length > 0) {
             suggestions.push({
                 type: 'security',
                 priority: 'high',
                 title: 'High Priority Security Issues',
                 description: `Found ${highIssues.length} high priority security issues.`,
-                actions: highIssues.map(issue => issue.suggestion)
-            });
+                actions: highIssues.map((issue) => issue.suggestion)
+            })
         }
-        
+
         // Performance suggestions
         if (analysis.scores.performance < 80) {
             suggestions.push({
@@ -490,9 +484,9 @@ class CodeAnalysisSystem {
                     'Consider caching frequently accessed data',
                     'Optimize database queries and API calls'
                 ]
-            });
+            })
         }
-        
+
         // Code quality suggestions
         if (analysis.scores.quality < 80) {
             suggestions.push({
@@ -506,9 +500,9 @@ class CodeAnalysisSystem {
                     'Use consistent naming conventions',
                     'Break down large functions into smaller ones'
                 ]
-            });
+            })
         }
-        
+
         // Maintainability suggestions
         if (analysis.scores.maintainability < 80) {
             suggestions.push({
@@ -522,48 +516,42 @@ class CodeAnalysisSystem {
                     'Add unit tests for better code coverage',
                     'Use design patterns for better structure'
                 ]
-            });
+            })
         }
-        
-        analysis.suggestions = suggestions;
+
+        analysis.suggestions = suggestions
     }
-    
+
     findPatternLocations(code, pattern) {
-        const locations = [];
-        const lines = code.split('\n');
-        
+        const locations = []
+        const lines = code.split('\n')
+
         lines.forEach((line, index) => {
-            const matches = line.match(pattern);
+            const matches = line.match(pattern)
             if (matches) {
                 locations.push({
                     line: index + 1,
                     column: line.indexOf(matches[0]) + 1,
                     length: matches[0].length
-                });
+                })
             }
-        });
-        
-        return locations;
+        })
+
+        return locations
     }
-    
+
     getSeverityImpact(severity) {
         const impacts = {
-            'critical': 25,
-            'high': 15,
-            'medium': 8,
-            'low': 3
-        };
-        
-        return impacts[severity] || 5;
+            critical: 25,
+            high: 15,
+            medium: 8,
+            low: 3
+        }
+
+        return impacts[severity] || 5
     }
-    
-    async storeAnalysisResults({
-        sessionId,
-        taskId,
-        code,
-        language,
-        analysis
-    }) {
+
+    async storeAnalysisResults({ sessionId, taskId, code, language, analysis }) {
         try {
             const query = `
                 INSERT INTO code_analysis_results (
@@ -572,10 +560,10 @@ class CodeAnalysisSystem {
                     suggestions_count, critical_issues_count
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING id
-            `;
-            
-            const criticalIssues = analysis.issues.filter(issue => issue.severity === 'critical').length;
-            
+            `
+
+            const criticalIssues = analysis.issues.filter((issue) => issue.severity === 'critical').length
+
             const values = [
                 sessionId,
                 taskId,
@@ -588,17 +576,16 @@ class CodeAnalysisSystem {
                 analysis.scores.performance || 0,
                 analysis.suggestions.length || 0,
                 criticalIssues
-            ];
-            
-            const result = await this.pool.query(query, values);
-            return result.rows[0].id;
-            
+            ]
+
+            const result = await this.pool.query(query, values)
+            return result.rows[0].id
         } catch (error) {
-            console.error('Error storing analysis results:', error);
-            throw error;
+            console.error('Error storing analysis results:', error)
+            throw error
         }
     }
-    
+
     /**
      * Get analysis history for a session
      */
@@ -613,17 +600,16 @@ class CodeAnalysisSystem {
                 WHERE session_id = $1
                 ORDER BY created_at DESC
                 LIMIT $2
-            `;
-            
-            const result = await this.pool.query(query, [sessionId, limit]);
-            return result.rows;
-            
+            `
+
+            const result = await this.pool.query(query, [sessionId, limit])
+            return result.rows
         } catch (error) {
-            console.error('Error getting session analysis history:', error);
-            throw error;
+            console.error('Error getting session analysis history:', error)
+            throw error
         }
     }
-    
+
     /**
      * Get analysis statistics
      */
@@ -633,11 +619,11 @@ class CodeAnalysisSystem {
                 '1d': 24 * 60 * 60 * 1000,
                 '7d': 7 * 24 * 60 * 60 * 1000,
                 '30d': 30 * 24 * 60 * 60 * 1000
-            };
-            
-            const rangeMs = timeRangeMs[timeRange] || timeRangeMs['7d'];
-            const startTime = new Date(Date.now() - rangeMs);
-            
+            }
+
+            const rangeMs = timeRangeMs[timeRange] || timeRangeMs['7d']
+            const startTime = new Date(Date.now() - rangeMs)
+
             const query = `
                 SELECT 
                     COUNT(*) as total_analyses,
@@ -652,10 +638,10 @@ class CodeAnalysisSystem {
                 WHERE created_at >= $1
                 GROUP BY language
                 ORDER BY language_count DESC
-            `;
-            
-            const result = await this.pool.query(query, [startTime]);
-            
+            `
+
+            const result = await this.pool.query(query, [startTime])
+
             return {
                 timeRange,
                 period: {
@@ -663,14 +649,13 @@ class CodeAnalysisSystem {
                     end: new Date().toISOString()
                 },
                 statistics: result.rows
-            };
-            
+            }
         } catch (error) {
-            console.error('Error getting analysis statistics:', error);
-            throw error;
+            console.error('Error getting analysis statistics:', error)
+            throw error
         }
     }
-    
+
     /**
      * Get detailed analysis by ID
      */
@@ -680,44 +665,42 @@ class CodeAnalysisSystem {
                 SELECT *
                 FROM code_analysis_results
                 WHERE id = $1
-            `;
-            
-            const result = await this.pool.query(query, [analysisId]);
-            
+            `
+
+            const result = await this.pool.query(query, [analysisId])
+
             if (result.rows.length === 0) {
-                throw new Error(`Analysis with ID ${analysisId} not found`);
+                throw new Error(`Analysis with ID ${analysisId} not found`)
             }
-            
-            const analysis = result.rows[0];
-            analysis.analysis_results = JSON.parse(analysis.analysis_results);
-            
-            return analysis;
-            
+
+            const analysis = result.rows[0]
+            analysis.analysis_results = JSON.parse(analysis.analysis_results)
+
+            return analysis
         } catch (error) {
-            console.error('Error getting analysis by ID:', error);
-            throw error;
+            console.error('Error getting analysis by ID:', error)
+            throw error
         }
     }
-    
+
     /**
      * Shutdown the analysis system
      */
     async shutdown() {
         try {
-            console.log('Shutting down Code Analysis System...');
-            
+            console.log('Shutting down Code Analysis System...')
+
             if (this.pool) {
-                await this.pool.end();
+                await this.pool.end()
             }
-            
-            this.isInitialized = false;
-            console.log('Code Analysis System shut down successfully');
-            
+
+            this.isInitialized = false
+            console.log('Code Analysis System shut down successfully')
         } catch (error) {
-            console.error('Error shutting down Code Analysis System:', error);
-            throw error;
+            console.error('Error shutting down Code Analysis System:', error)
+            throw error
         }
     }
 }
 
-module.exports = { CodeAnalysisSystem };
+module.exports = { CodeAnalysisSystem }

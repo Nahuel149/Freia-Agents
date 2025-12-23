@@ -25,4 +25,3 @@ export class AddSupportTicketEntity1757800000002 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE support_ticket`)
     }
 }
-

@@ -89,7 +89,9 @@ export class App {
         try {
             // Log OSS banner if enforced
             if (process.env.OSS_MODE === 'true') {
-                logger.info('🟢 [server]: OSS mode enforced (OSS_MODE=true, FORCE_OSS=true) — full access enabled; feature gates and workspace checks disabled')
+                logger.info(
+                    '🟢 [server]: OSS mode enforced (OSS_MODE=true, FORCE_OSS=true) — full access enabled; feature gates and workspace checks disabled'
+                )
             }
             this.AppDataSource = getDataSource()
             await this.AppDataSource.initialize()
@@ -271,7 +273,7 @@ export class App {
                     if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
                         // Step 3: Check if the req path is in the whitelist
                         const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
-                        
+
                         if (isWhitelisted) {
                             // In OSS mode, set default user context for whitelisted endpoints
                             if (isOssMode()) {
@@ -323,83 +325,83 @@ export class App {
                                 return next()
                             }
 
-                        // Find workspace
-                        const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
-                            where: { id: apiKeyWorkSpaceId }
-                        })
-                        if (!workspace) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
-
-                        // Find owner role
-                        const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
-                            where: { name: GeneralRole.OWNER, organizationId: IsNull() }
-                        })
-                        if (!ownerRole) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
-
-                        // Handle organization lookup - in OSS mode, organization might not exist
-                        let activeOrganizationId = workspace.organizationId
-                        let subscriptionId = ''
-                        let customerId = ''
-                        let productId = ''
-                        
-                        if (this.identityManager.getPlatformType() === Platform.OPEN_SOURCE) {
-                            // In OSS mode, use default values
-                            activeOrganizationId = activeOrganizationId || 'default-org'
-                            subscriptionId = 'oss-subscription'
-                            customerId = 'oss-customer'
-                            productId = 'oss-product'
-                        } else {
-                            // In enterprise mode, find the actual organization
-                            if (!activeOrganizationId) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
-                            
-                            const org = await this.AppDataSource.getRepository(Organization).findOne({
-                                where: { id: activeOrganizationId }
+                            // Find workspace
+                            const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
+                                where: { id: apiKeyWorkSpaceId }
                             })
-                            if (!org) {
+                            if (!workspace) {
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
-                            
-                            subscriptionId = org.subscriptionId ?? ''
-                            customerId = org.customerId ?? ''
-                            productId = this.identityManager
-                                ? await this.identityManager.getProductIdFromSubscription(subscriptionId)
-                                : ''
-                        }
-                        
-                        const features = this.identityManager
-                            ? await this.identityManager.getFeaturesByPlan(subscriptionId)
-                            : ({} as Record<string, string>)
 
-                        // @ts-ignore
-                        req.user = {
-                            permissions: [...JSON.parse(ownerRole.permissions)],
-                            features,
-                            activeOrganizationId: activeOrganizationId,
-                            activeOrganizationSubscriptionId: subscriptionId,
-                            activeOrganizationCustomerId: customerId,
-                            activeOrganizationProductId: productId,
-                            isOrganizationAdmin: true,
-                            activeWorkspaceId: apiKeyWorkSpaceId!,
-                            activeWorkspace: workspace.name,
-                            isApiKeyValidated: true
+                            // Find owner role
+                            const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
+                                where: { name: GeneralRole.OWNER, organizationId: IsNull() }
+                            })
+                            if (!ownerRole) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+
+                            // Handle organization lookup - in OSS mode, organization might not exist
+                            let activeOrganizationId = workspace.organizationId
+                            let subscriptionId = ''
+                            let customerId = ''
+                            let productId = ''
+
+                            if (this.identityManager.getPlatformType() === Platform.OPEN_SOURCE) {
+                                // In OSS mode, use default values
+                                activeOrganizationId = activeOrganizationId || 'default-org'
+                                subscriptionId = 'oss-subscription'
+                                customerId = 'oss-customer'
+                                productId = 'oss-product'
+                            } else {
+                                // In enterprise mode, find the actual organization
+                                if (!activeOrganizationId) {
+                                    return res.status(401).json({ error: 'Unauthorized Access' })
+                                }
+
+                                const org = await this.AppDataSource.getRepository(Organization).findOne({
+                                    where: { id: activeOrganizationId }
+                                })
+                                if (!org) {
+                                    return res.status(401).json({ error: 'Unauthorized Access' })
+                                }
+
+                                subscriptionId = org.subscriptionId ?? ''
+                                customerId = org.customerId ?? ''
+                                productId = this.identityManager
+                                    ? await this.identityManager.getProductIdFromSubscription(subscriptionId)
+                                    : ''
+                            }
+
+                            const features = this.identityManager
+                                ? await this.identityManager.getFeaturesByPlan(subscriptionId)
+                                : ({} as Record<string, string>)
+
+                            // @ts-ignore
+                            req.user = {
+                                permissions: [...JSON.parse(ownerRole.permissions)],
+                                features,
+                                activeOrganizationId: activeOrganizationId,
+                                activeOrganizationSubscriptionId: subscriptionId,
+                                activeOrganizationCustomerId: customerId,
+                                activeOrganizationProductId: productId,
+                                isOrganizationAdmin: true,
+                                activeWorkspaceId: apiKeyWorkSpaceId!,
+                                activeWorkspace: workspace.name,
+                                isApiKeyValidated: true
+                            }
+                            next()
                         }
-                        next()
+                    } else {
+                        return res.status(401).json({ error: 'Unauthorized Access' })
                     }
                 } else {
-                    return res.status(401).json({ error: 'Unauthorized Access' })
+                    // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
+                    next()
                 }
-            } else {
-                // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
-                next()
+            } catch (error) {
+                return res.status(500).json({ error: 'Internal Server Error' })
             }
-        } catch (error) {
-            return res.status(500).json({ error: 'Internal Server Error' })
-        }
         })
 
         // this is for SSO and must be after the JWT cookie middleware
@@ -430,8 +432,6 @@ export class App {
                 )
             }
         }
-
-
 
         this.app.use('/api/v1', flowiseApiV1Router)
 

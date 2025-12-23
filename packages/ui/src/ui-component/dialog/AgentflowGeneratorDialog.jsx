@@ -280,7 +280,8 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                             <Box sx={{ mt: 2 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        {t('agentflowGenerator.selectModel')}<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('agentflowGenerator.selectModel')}
+                                        <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                 </div>
                                 <Dropdown

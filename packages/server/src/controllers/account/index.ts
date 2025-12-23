@@ -10,13 +10,13 @@ const registerAccount = async (req: Request, res: Response, next: NextFunction) 
         if (!user) {
             return res.status(400).json({ message: 'User data is required' })
         }
-        
+
         const registerData = {
             name: user.name,
             email: user.email,
             password: user.credential
         }
-        
+
         const result = await accountService.registerAccount(registerData)
         return res.status(201).json(result)
     } catch (error) {

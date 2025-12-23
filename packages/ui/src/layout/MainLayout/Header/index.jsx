@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 // material-ui
 import { Button, Avatar, Box, ButtonBase, Switch, Typography, Link, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import { useTheme, styled, darken } from '@mui/material/styles'
+import { useTheme, styled } from '@mui/material/styles'
 
 // project imports
 import LogoSection from '../LogoSection'
@@ -16,7 +16,7 @@ import ProfileSection from './ProfileSection'
 // OSS mode: PricingDialog removed
 
 // assets
-import { IconMenu2, IconX, IconSparkles, IconBrandGithub } from '@tabler/icons-react'
+import { IconMenu2, IconX, IconBrandGithub } from '@tabler/icons-react'
 
 // store
 import { store } from '@/store'
@@ -81,8 +81,6 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     }
 }))
 
-
-
 const Header = ({ handleLeftDrawerToggle }) => {
     const theme = useTheme()
     const navigate = useNavigate()
@@ -92,6 +90,11 @@ const Header = ({ handleLeftDrawerToggle }) => {
     const logoutApi = useApi(accountApi.logout)
 
     const [isDark, setIsDark] = useState(customization.isDarkMode)
+    const [selectedLang, setSelectedLang] = useState((i18n.language && i18n.language.split('-')[0]) || 'en')
+
+    useEffect(() => {
+        setSelectedLang((i18n.language && i18n.language.split('-')[0]) || 'en')
+    }, [i18n.language])
     const dispatch = useDispatch()
     // OSS mode: Enterprise license checks removed
     const { isCloud, isOpenSource } = useConfig()
@@ -117,6 +120,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
         if (!nextLang) return
         i18n.changeLanguage(nextLang)
         if (typeof window !== 'undefined') localStorage.setItem('app_lang', nextLang)
+        setSelectedLang(nextLang)
     }
 
     const signOutClicked = () => {
@@ -168,7 +172,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
             clearInterval(id)
         }
     }, [isOpenSource])
-
 
     return (
         <>
@@ -267,43 +270,32 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 sx={{
                     borderRadius: '12px',
                     maxHeight: 40,
-                    background: theme.palette.mode === 'dark' 
-                        ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)'
-                        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                    background:
+                        theme.palette.mode === 'dark'
+                            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)'
+                            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
                     backdropFilter: 'blur(10px)',
-                    border: theme.palette.mode === 'dark' 
-                        ? '1px solid rgba(255, 255, 255, 0.1)'
-                        : '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: theme.palette.mode === 'dark'
-                        ? '0 4px 16px rgba(0, 0, 0, 0.3)'
-                        : '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: theme.palette.mode === 'dark' ? '0 4px 16px rgba(0, 0, 0, 0.3)' : '0 4px 16px rgba(0, 0, 0, 0.1)',
                     mr: 2.5
                 }}
-                value={(i18n.language && i18n.language.split('-')[0]) || 'en'}
+                value={selectedLang}
                 color='primary'
                 exclusive
                 onChange={handleLangToggle}
             >
                 <ToggleButton
                     sx={{
-                        borderColor: theme.palette.mode === 'dark' 
-                            ? 'rgba(255, 255, 255, 0.1)'
-                            : 'rgba(255, 255, 255, 0.2)',
+                        borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
                         borderRadius: '10px',
                         color: theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.text.primary,
-                        background: theme.palette.mode === 'dark'
-                            ? 'rgba(255, 255, 255, 0.05)'
-                            : 'rgba(255, 255, 255, 0.1)',
+                        background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.1)',
                         backdropFilter: 'blur(5px)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                            background: theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.1)'
-                                : 'rgba(255, 255, 255, 0.2)',
+                            background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
                             transform: 'translateY(-2px)',
-                            boxShadow: theme.palette.mode === 'dark'
-                                ? '0 4px 12px rgba(0, 0, 0, 0.4)'
-                                : '0 4px 12px rgba(0, 0, 0, 0.15)'
+                            boxShadow: theme.palette.mode === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.15)'
                         },
                         '&.Mui-selected': {
                             background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',
@@ -318,24 +310,16 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 </ToggleButton>
                 <ToggleButton
                     sx={{
-                        borderColor: theme.palette.mode === 'dark' 
-                            ? 'rgba(255, 255, 255, 0.1)'
-                            : 'rgba(255, 255, 255, 0.2)',
+                        borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
                         borderRadius: '10px',
                         color: theme.palette.mode === 'dark' ? '#ffffff' : theme.palette.text.primary,
-                        background: theme.palette.mode === 'dark'
-                            ? 'rgba(255, 255, 255, 0.05)'
-                            : 'rgba(255, 255, 255, 0.1)',
+                        background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.1)',
                         backdropFilter: 'blur(5px)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                            background: theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.1)'
-                                : 'rgba(255, 255, 255, 0.2)',
+                            background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
                             transform: 'translateY(-2px)',
-                            boxShadow: theme.palette.mode === 'dark'
-                                ? '0 4px 12px rgba(0, 0, 0, 0.4)'
-                                : '0 4px 12px rgba(0, 0, 0, 0.15)'
+                            boxShadow: theme.palette.mode === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.15)'
                         },
                         '&.Mui-selected': {
                             background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',

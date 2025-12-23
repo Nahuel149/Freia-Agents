@@ -109,12 +109,9 @@ const createEvaluation = async (body: ICommonObject, baseURL: string) => {
         row.additionalConfig = JSON.stringify(additionalConfig)
         const newEvaluation = await appServer.AppDataSource.getRepository(Evaluation).save(row)
 
-        await appServer.telemetry.sendTelemetry(
-            'evaluation_created',
-            {
-                version: await getAppVersion()
-            }
-        )
+        await appServer.telemetry.sendTelemetry('evaluation_created', {
+            version: await getAppVersion()
+        })
 
         const dataset = await appServer.AppDataSource.getRepository(Dataset).findOneBy({
             id: body.datasetId

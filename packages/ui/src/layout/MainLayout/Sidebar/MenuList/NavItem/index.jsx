@@ -30,7 +30,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
-    
+
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -106,7 +106,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             signOutClicked()
             return
         }
-        
+
         if (navType === 'SETTINGS' && id !== 'loadChatflow') {
             onClick(id)
         } else {

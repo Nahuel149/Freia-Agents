@@ -117,7 +117,7 @@ class Custom_MCP implements INode {
         const tools = await this.getTools(nodeData, options)
 
         const _mcpActions = nodeData.inputs?.mcpActions
-        let mcpActions = []
+        let mcpActions: string[] = []
         if (_mcpActions) {
             try {
                 mcpActions = typeof _mcpActions === 'string' ? JSON.parse(_mcpActions) : _mcpActions

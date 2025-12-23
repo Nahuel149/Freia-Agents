@@ -1,228 +1,164 @@
 {
-  "catalogLink": "https://example.com/catalogo-quintas",
-  "properties": [
-    {
-      "id": "rincon-principal",
-      "name": "Rincon Principal",
-      "capacity": 25,
-      "basePricePerNight": 280,
-      "currency": "USD",
-      "minNights": 2,
-      "amenities": [
-        "pileta",
-        "quincho cerrado",
-        "parrilla",
-        "habitaciones con bano",
-        "estacionamiento"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica amplificada despues de las 22:00"
-      },
-      "notes": [
-        "musica moderada de dia",
-        "ofrecer carpa opcional si llueve",
-        "minimo 2 noches fuera de feriados"
-      ],
-      "map": "https://maps.example.com/rincon-principal"
-    },
-    {
-      "id": "rincon-bosque",
-      "name": "Rincon Bosque",
-      "capacity": 18,
-      "basePricePerNight": 220,
-      "currency": "USD",
-      "minNights": 2,
-      "amenities": [
-        "pileta",
-        "quincho abierto",
-        "parrilla",
-        "fogata",
-        "cochera cubierta"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica despues de las 22:00"
-      },
-      "notes": [
-        "acepta mascotas con aviso",
-        "ideal eventos pequenos"
-      ],
-      "map": "https://maps.example.com/rincon-bosque"
-    },
-    {
-      "id": "rincon-laguna",
-      "name": "Rincon Laguna",
-      "capacity": 21,
-      "basePricePerNight": 245,
-      "currency": "USD",
-      "minNights": 3,
-      "amenities": [
-        "parrilla",
-        "fogata",
-        "cochera cubierta",
-        "quincho abierto",
-        "zona verde Zona Norte",
-        "fogones 1",
-        "pileta"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica despues de las 22:00"
-      },
-      "notes": [
-        "acepta mascotas con aviso",
-        "ideal eventos pequenos"
-      ],
-      "map": "https://maps.example.com/rincon-laguna",
-      "location": "Zona Norte"
-    },
-    {
-      "id": "rincon-arboleda",
-      "name": "Rincon Arboleda",
-      "capacity": 31,
-      "basePricePerNight": 330,
-      "currency": "USD",
-      "minNights": 2,
-      "amenities": [
-        "fogones 2",
-        "parrilla",
-        "estacionamiento",
-        "habitaciones con bano",
-        "zona verde Zona Oeste",
-        "quincho cerrado",
-        "pileta"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica amplificada despues de las 22:00"
-      },
-      "notes": [
-        "musica moderada de dia",
-        "ofrecer carpa opcional si llueve",
-        "minimo 2 noches fuera de feriados"
-      ],
-      "map": "https://maps.example.com/rincon-arboleda",
-      "location": "Zona Oeste"
-    },
-    {
-      "id": "rincon-rio",
-      "name": "Rincon del Rio",
-      "capacity": 27,
-      "basePricePerNight": 295,
-      "currency": "USD",
-      "minNights": 3,
-      "amenities": [
-        "parrilla",
-        "fogata",
-        "cochera cubierta",
-        "fogones 3",
-        "zona verde Zona Sur",
-        "quincho abierto",
-        "pileta"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica despues de las 22:00"
-      },
-      "notes": [
-        "acepta mascotas con aviso",
-        "ideal eventos pequenos"
-      ],
-      "map": "https://maps.example.com/rincon-rio",
-      "location": "Zona Sur"
-    },
-    {
-      "id": "rincon-montana",
-      "name": "Rincon Monta?a",
-      "capacity": 37,
-      "basePricePerNight": 380,
-      "currency": "USD",
-      "minNights": 2,
-      "amenities": [
-        "parrilla",
-        "estacionamiento",
-        "habitaciones con bano",
-        "zona verde Zona Oeste",
-        "quincho cerrado",
-        "fogones 4",
-        "pileta"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica amplificada despues de las 22:00"
-      },
-      "notes": [
-        "musica moderada de dia",
-        "ofrecer carpa opcional si llueve",
-        "minimo 2 noches fuera de feriados"
-      ],
-      "map": "https://maps.example.com/rincon-montana",
-      "location": "Zona Oeste"
-    },
-    {
-      "id": "rincon-estanque",
-      "name": "Rincon Estanque",
-      "capacity": 33,
-      "basePricePerNight": 345,
-      "currency": "USD",
-      "minNights": 3,
-      "amenities": [
-        "parrilla",
-        "fogata",
-        "fogones 5",
-        "cochera cubierta",
-        "quincho abierto",
-        "zona verde Zona Norte",
-        "pileta"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica despues de las 22:00"
-      },
-      "notes": [
-        "acepta mascotas con aviso",
-        "ideal eventos pequenos"
-      ],
-      "map": "https://maps.example.com/rincon-estanque",
-      "location": "Zona Norte"
-    },
-    {
-      "id": "rincon-campo",
-      "name": "Rincon del Campo",
-      "capacity": 43,
-      "basePricePerNight": 430,
-      "currency": "USD",
-      "minNights": 2,
-      "amenities": [
-        "parrilla",
-        "estacionamiento",
-        "habitaciones con bano",
-        "fogones 6",
-        "zona verde Zona Oeste",
-        "quincho cerrado",
-        "pileta"
-      ],
-      "restrictions": {
-        "rainInsurance": false,
-        "airConditioning": false,
-        "musicNight": "sin musica amplificada despues de las 22:00"
-      },
-      "notes": [
-        "musica moderada de dia",
-        "ofrecer carpa opcional si llueve",
-        "minimo 2 noches fuera de feriados"
-      ],
-      "map": "https://maps.example.com/rincon-campo",
-      "location": "Zona Oeste"
-    }
-  ],
-  "pricingNotes": "precios base, ajustar por temporada alta/feriados segun restricciones"
+    "catalogLink": "https://example.com/catalogo-quintas",
+    "properties": [
+        {
+            "id": "rincon-principal",
+            "name": "Rincon Principal",
+            "capacity": 25,
+            "basePricePerNight": 280,
+            "currency": "USD",
+            "minNights": 2,
+            "amenities": ["pileta", "quincho cerrado", "parrilla", "habitaciones con bano", "estacionamiento"],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica amplificada despues de las 22:00"
+            },
+            "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],
+            "map": "https://maps.example.com/rincon-principal"
+        },
+        {
+            "id": "rincon-bosque",
+            "name": "Rincon Bosque",
+            "capacity": 18,
+            "basePricePerNight": 220,
+            "currency": "USD",
+            "minNights": 2,
+            "amenities": ["pileta", "quincho abierto", "parrilla", "fogata", "cochera cubierta"],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica despues de las 22:00"
+            },
+            "notes": ["acepta mascotas con aviso", "ideal eventos pequenos"],
+            "map": "https://maps.example.com/rincon-bosque"
+        },
+        {
+            "id": "rincon-laguna",
+            "name": "Rincon Laguna",
+            "capacity": 21,
+            "basePricePerNight": 245,
+            "currency": "USD",
+            "minNights": 3,
+            "amenities": ["parrilla", "fogata", "cochera cubierta", "quincho abierto", "zona verde Zona Norte", "fogones 1", "pileta"],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica despues de las 22:00"
+            },
+            "notes": ["acepta mascotas con aviso", "ideal eventos pequenos"],
+            "map": "https://maps.example.com/rincon-laguna",
+            "location": "Zona Norte"
+        },
+        {
+            "id": "rincon-arboleda",
+            "name": "Rincon Arboleda",
+            "capacity": 31,
+            "basePricePerNight": 330,
+            "currency": "USD",
+            "minNights": 2,
+            "amenities": [
+                "fogones 2",
+                "parrilla",
+                "estacionamiento",
+                "habitaciones con bano",
+                "zona verde Zona Oeste",
+                "quincho cerrado",
+                "pileta"
+            ],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica amplificada despues de las 22:00"
+            },
+            "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],
+            "map": "https://maps.example.com/rincon-arboleda",
+            "location": "Zona Oeste"
+        },
+        {
+            "id": "rincon-rio",
+            "name": "Rincon del Rio",
+            "capacity": 27,
+            "basePricePerNight": 295,
+            "currency": "USD",
+            "minNights": 3,
+            "amenities": ["parrilla", "fogata", "cochera cubierta", "fogones 3", "zona verde Zona Sur", "quincho abierto", "pileta"],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica despues de las 22:00"
+            },
+            "notes": ["acepta mascotas con aviso", "ideal eventos pequenos"],
+            "map": "https://maps.example.com/rincon-rio",
+            "location": "Zona Sur"
+        },
+        {
+            "id": "rincon-montana",
+            "name": "Rincon Monta?a",
+            "capacity": 37,
+            "basePricePerNight": 380,
+            "currency": "USD",
+            "minNights": 2,
+            "amenities": [
+                "parrilla",
+                "estacionamiento",
+                "habitaciones con bano",
+                "zona verde Zona Oeste",
+                "quincho cerrado",
+                "fogones 4",
+                "pileta"
+            ],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica amplificada despues de las 22:00"
+            },
+            "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],
+            "map": "https://maps.example.com/rincon-montana",
+            "location": "Zona Oeste"
+        },
+        {
+            "id": "rincon-estanque",
+            "name": "Rincon Estanque",
+            "capacity": 33,
+            "basePricePerNight": 345,
+            "currency": "USD",
+            "minNights": 3,
+            "amenities": ["parrilla", "fogata", "fogones 5", "cochera cubierta", "quincho abierto", "zona verde Zona Norte", "pileta"],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica despues de las 22:00"
+            },
+            "notes": ["acepta mascotas con aviso", "ideal eventos pequenos"],
+            "map": "https://maps.example.com/rincon-estanque",
+            "location": "Zona Norte"
+        },
+        {
+            "id": "rincon-campo",
+            "name": "Rincon del Campo",
+            "capacity": 43,
+            "basePricePerNight": 430,
+            "currency": "USD",
+            "minNights": 2,
+            "amenities": [
+                "parrilla",
+                "estacionamiento",
+                "habitaciones con bano",
+                "fogones 6",
+                "zona verde Zona Oeste",
+                "quincho cerrado",
+                "pileta"
+            ],
+            "restrictions": {
+                "rainInsurance": false,
+                "airConditioning": false,
+                "musicNight": "sin musica amplificada despues de las 22:00"
+            },
+            "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],
+            "map": "https://maps.example.com/rincon-campo",
+            "location": "Zona Oeste"
+        }
+    ],
+    "pricingNotes": "precios base, ajustar por temporada alta/feriados segun restricciones"
 }

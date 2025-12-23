@@ -67,7 +67,7 @@ router.post('/webhook', express.raw({ type: '*/*' }), async (req, res, next) => 
         const to = body.to || ''
         const text = body.text || body.message || body.msg || body.body || ''
 
-        logger.info(`[whatsapp:webhook] from=${from} to=${to} text=${(text||'').slice(0,200)}`)
+        logger.info(`[whatsapp:webhook] from=${from} to=${to} text=${(text || '').slice(0, 200)}`)
 
         // Bridge to CodeAgent if configured
         const agentId = process.env.WHATSAPP_CODEAGENT_ID

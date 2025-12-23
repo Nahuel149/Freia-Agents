@@ -156,7 +156,9 @@ const EvalsEvaluation = () => {
                 const deleteResp = await evaluationApi.deleteEvaluations(selected, isDeleteAllVersion)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: `${selected.length} ${selected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')} ${t('evaluations.messages.deleted')}`,
+                        message: `${selected.length} ${selected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')} ${t(
+                            'evaluations.messages.deleted'
+                        )}`,
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -171,9 +173,9 @@ const EvalsEvaluation = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `${t('evaluations.messages.deleteFailed')} ${selected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')}: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: `${t('evaluations.messages.deleteFailed')} ${
+                        selected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')
+                    }: ${typeof error.response.data === 'object' ? error.response.data.message : error.response.data}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -365,7 +367,8 @@ const EvalsEvaluation = () => {
                                 color='error'
                                 startIcon={<IconTrash />}
                             >
-                                {t('evaluations.buttons.delete')} {selected.length} {selected.length === 1 ? t('evaluations.singular') : t('evaluations.plural')}
+                                {t('evaluations.buttons.delete')} {selected.length}{' '}
+                                {selected.length === 1 ? t('evaluations.singular') : t('evaluations.plural')}
                             </StyledPermissionButton>
                         )}
                         {!isTableLoading && rows.length <= 0 ? (
@@ -382,7 +385,11 @@ const EvalsEvaluation = () => {
                         ) : (
                             <>
                                 <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], borderRadius: 2 }}
+                                    sx={{
+                                        border: 1,
+                                        borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                                        borderRadius: 2
+                                    }}
                                     component={Paper}
                                 >
                                     <Table sx={{ minWidth: 650 }}>
@@ -555,7 +562,9 @@ function EvaluationRunRow(props) {
     const deleteChildEvaluations = async () => {
         const confirmPayload = {
             title: t('evaluations.confirmDialog.delete'),
-            description: `${t('evaluations.confirmDialog.deleteDescription')} ${childSelected.length} ${childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')}?`,
+            description: `${t('evaluations.confirmDialog.deleteDescription')} ${childSelected.length} ${
+                childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')
+            }?`,
             confirmButtonName: t('evaluations.confirmDialog.confirmButton'),
             cancelButtonName: t('evaluations.confirmDialog.cancelButton')
         }
@@ -566,7 +575,9 @@ function EvaluationRunRow(props) {
                 const deleteResp = await evaluationApi.deleteEvaluations(childSelected)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: `${childSelected.length} ${childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')} ${t('evaluations.messages.deleted')}`,
+                        message: `${childSelected.length} ${
+                            childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')
+                        } ${t('evaluations.messages.deleted')}`,
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -581,9 +592,9 @@ function EvaluationRunRow(props) {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `${t('evaluations.messages.deleteFailed')} ${childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')}: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: `${t('evaluations.messages.deleteFailed')} ${
+                        childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')
+                    }: ${typeof error.response.data === 'object' ? error.response.data.message : error.response.data}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -747,7 +758,8 @@ function EvaluationRunRow(props) {
                             color='error'
                             startIcon={<IconTrash />}
                         >
-                            {t('evaluations.buttons.delete')} {childSelected.length} {childSelected.length === 1 ? t('evaluations.singular') : t('evaluations.plural')}
+                            {t('evaluations.buttons.delete')} {childSelected.length}{' '}
+                            {childSelected.length === 1 ? t('evaluations.singular') : t('evaluations.plural')}
                         </Button>
                     </StyledTableCell>
                 </TableRow>
@@ -757,7 +769,14 @@ function EvaluationRunRow(props) {
                     <TableRow sx={{ '& td': { border: 0 } }}>
                         <StyledTableCell colSpan={12} sx={{ p: 2 }}>
                             <Collapse in={open} timeout='auto' unmountOnExit>
-                                <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300], overflow: 'hidden' }}>
+                                <Box
+                                    sx={{
+                                        borderRadius: 2,
+                                        border: 1,
+                                        borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                                        overflow: 'hidden'
+                                    }}
+                                >
                                     <Table aria-label='chatflow table'>
                                         <TableHead style={{ height: 10 }}>
                                             <TableRow>
@@ -802,7 +821,9 @@ function EvaluationRunRow(props) {
                                                                         color='info'
                                                                         label={
                                                                             childItem.average_metrics?.totalRuns
-                                                                                ? t('evaluations.metrics.totalRuns') + ': ' + childItem.average_metrics?.totalRuns
+                                                                                ? t('evaluations.metrics.totalRuns') +
+                                                                                  ': ' +
+                                                                                  childItem.average_metrics?.totalRuns
                                                                                 : t('evaluations.metrics.totalRuns') + ': N/A'
                                                                         }
                                                                     />
@@ -820,7 +841,8 @@ function EvaluationRunRow(props) {
                                                                         color='info'
                                                                         label={
                                                                             childItem.average_metrics?.averageLatency
-                                                                                ? t('evaluations.metrics.avgLatency') + ': ' +
+                                                                                ? t('evaluations.metrics.avgLatency') +
+                                                                                  ': ' +
                                                                                   childItem.average_metrics?.averageLatency +
                                                                                   'ms'
                                                                                 : t('evaluations.metrics.avgLatency') + ': N/A'
@@ -838,7 +860,8 @@ function EvaluationRunRow(props) {
                                                                             }}
                                                                             label={
                                                                                 childItem.average_metrics?.passPcnt
-                                                                                    ? t('evaluations.metrics.passRate') + ': ' +
+                                                                                    ? t('evaluations.metrics.passRate') +
+                                                                                      ': ' +
                                                                                       childItem.average_metrics.passPcnt +
                                                                                       '%'
                                                                                     : t('evaluations.metrics.passRate') + ': N/A'

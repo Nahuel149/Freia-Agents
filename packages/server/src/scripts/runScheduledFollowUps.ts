@@ -58,7 +58,9 @@ async function triggerFollowUp(followUp: FollowUp) {
     })()
 
     const payload: Record<string, unknown> = {
-        question: `Ejecutá el seguimiento programado (${followUp.followUpType}) para el cliente ${followUp.phoneNumber}. Intento ${attemptLabel}. Datos: ${JSON.stringify(details)}`,
+        question: `Ejecutá el seguimiento programado (${followUp.followUpType}) para el cliente ${
+            followUp.phoneNumber
+        }. Intento ${attemptLabel}. Datos: ${JSON.stringify(details)}`,
         chatId: sessionKey,
         metadata: {
             source: 'cron_follow_up_runner',
@@ -138,7 +140,7 @@ async function main() {
             return
         }
 
-        logger.info(`[followups] Processing ${dueFollowUps.length} follow-up(s)`)    
+        logger.info(`[followups] Processing ${dueFollowUps.length} follow-up(s)`)
 
         let successCount = 0
         let failureCount = 0
@@ -146,9 +148,12 @@ async function main() {
         for (const followUp of dueFollowUps) {
             const started = Date.now()
             try {
-                const updateResult = await repository.update({ id: followUp.id, status: 'pending' }, { status: 'in_progress', updatedAt: new Date() })
+                const updateResult = await repository.update(
+                    { id: followUp.id, status: 'pending' },
+                    { status: 'in_progress', updatedAt: new Date() }
+                )
                 if (!updateResult.affected) {
-                    logger.info(`[followups] Skipping follow-up ${followUp.id} (already picked by another worker)`) 
+                    logger.info(`[followups] Skipping follow-up ${followUp.id} (already picked by another worker)`)
                     continue
                 }
 

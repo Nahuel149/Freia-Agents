@@ -9,10 +9,7 @@ const getDashboardMetrics = async (req: Request, res: Response) => {
         const metrics = await dashboardService.getDashboardMetrics()
         return res.json(metrics)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getDashboardMetrics - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getDashboardMetrics - ${error}`)
     }
 }
 
@@ -22,10 +19,7 @@ const getCustomerStats = async (req: Request, res: Response) => {
         const stats = await dashboardService.getCustomerStats()
         return res.json(stats)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getCustomerStats - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getCustomerStats - ${error}`)
     }
 }
 
@@ -35,10 +29,7 @@ const getSalesStats = async (req: Request, res: Response) => {
         const stats = await dashboardService.getSalesStats()
         return res.json(stats)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getSalesStats - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getSalesStats - ${error}`)
     }
 }
 
@@ -48,10 +39,7 @@ const getFunnel = async (req: Request, res: Response) => {
         const data = await dashboardService.getFunnel()
         return res.json(data)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getFunnel - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getFunnel - ${error}`)
     }
 }
 
@@ -62,10 +50,7 @@ const getRecentActivities = async (req: Request, res: Response) => {
         const data = await dashboardService.getRecentActivities(limit)
         return res.json(data)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getRecentActivities - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getRecentActivities - ${error}`)
     }
 }
 
@@ -77,10 +62,7 @@ const getFollowUps = async (req: Request, res: Response) => {
         const data = await dashboardService.getRecentFollowUps(limit, status)
         return res.json(data)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getFollowUps - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getFollowUps - ${error}`)
     }
 }
 
@@ -91,10 +73,7 @@ const getTopAgents = async (req: Request, res: Response) => {
         const data = await dashboardService.getTopAgents(limit)
         return res.json(data)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getTopAgents - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getTopAgents - ${error}`)
     }
 }
 
@@ -106,10 +85,7 @@ const getToolAlerts = async (req: Request, res: Response) => {
         const alerts = await dashboardService.getToolAlerts(status, limit)
         return res.json(alerts)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getToolAlerts - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getToolAlerts - ${error}`)
     }
 }
 
@@ -131,10 +107,7 @@ const resolveToolAlert = async (req: Request, res: Response) => {
         if (error instanceof Error && error.message.includes('not found')) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, error.message)
         }
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.resolveToolAlert - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.resolveToolAlert - ${error}`)
     }
 }
 
@@ -146,10 +119,7 @@ const getPriceApprovalRequests = async (req: Request, res: Response) => {
         const requests = await dashboardService.getPriceApprovalRequests(status, limit)
         return res.json(requests)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: dashboardController.getPriceApprovalRequests - ${error}`
-        )
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: dashboardController.getPriceApprovalRequests - ${error}`)
     }
 }
 
@@ -164,8 +134,7 @@ const updatePriceApprovalRequest = async (req: Request, res: Response) => {
         const payload = {
             status: typeof req.body?.status === 'string' ? req.body.status : undefined,
             reviewer: typeof req.body?.reviewer === 'string' ? req.body.reviewer : undefined,
-            approvedDiscount:
-                req.body?.approvedDiscount !== undefined ? Number(req.body.approvedDiscount) : undefined,
+            approvedDiscount: req.body?.approvedDiscount !== undefined ? Number(req.body.approvedDiscount) : undefined,
             decisionNotes: typeof req.body?.decisionNotes === 'string' ? req.body.decisionNotes : undefined
         }
 

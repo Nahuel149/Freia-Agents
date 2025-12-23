@@ -221,7 +221,7 @@ const AgentFlowNode = ({ data }) => {
                             }}
                             disabled={data.locked}
                             sx={{
-                                color: data.locked ? 'gray' : (customization.isDarkMode ? 'white' : 'inherit'),
+                                color: data.locked ? 'gray' : customization.isDarkMode ? 'white' : 'inherit',
                                 opacity: data.locked ? 0.5 : 1,
                                 '&:hover': {
                                     color: data.locked ? 'gray' : theme.palette.primary.main
@@ -239,7 +239,7 @@ const AgentFlowNode = ({ data }) => {
                         }}
                         disabled={data.locked}
                         sx={{
-                            color: data.locked ? 'gray' : (customization.isDarkMode ? 'white' : 'inherit'),
+                            color: data.locked ? 'gray' : customization.isDarkMode ? 'white' : 'inherit',
                             opacity: data.locked ? 0.5 : 1,
                             '&:hover': {
                                 color: data.locked ? 'gray' : theme.palette.error.main

@@ -38,7 +38,7 @@ export const useRealTimeData = (options = {}) => {
      * Handle agent activity updates
      */
     const handleAgentActivity = useCallback((data) => {
-        setRealtimeData(prev => ({
+        setRealtimeData((prev) => ({
             ...prev,
             agentActivities: [data, ...prev.agentActivities.slice(0, 49)] // Keep last 50 activities
         }))
@@ -49,7 +49,7 @@ export const useRealTimeData = (options = {}) => {
      * Handle tool execution updates
      */
     const handleToolExecution = useCallback((data) => {
-        setRealtimeData(prev => ({
+        setRealtimeData((prev) => ({
             ...prev,
             toolExecutions: [data, ...prev.toolExecutions.slice(0, 99)] // Keep last 100 executions
         }))
@@ -60,8 +60,8 @@ export const useRealTimeData = (options = {}) => {
      * Handle conversation updates
      */
     const handleConversationUpdate = useCallback((data) => {
-        setRealtimeData(prev => {
-            const existingIndex = prev.conversations.findIndex(conv => conv.id === data.id)
+        setRealtimeData((prev) => {
+            const existingIndex = prev.conversations.findIndex((conv) => conv.id === data.id)
             let updatedConversations
 
             if (existingIndex >= 0) {
@@ -85,7 +85,7 @@ export const useRealTimeData = (options = {}) => {
      * Handle metrics updates
      */
     const handleMetricsUpdate = useCallback((data) => {
-        setRealtimeData(prev => ({
+        setRealtimeData((prev) => ({
             ...prev,
             metrics: { ...prev.metrics, ...data }
         }))
@@ -96,7 +96,7 @@ export const useRealTimeData = (options = {}) => {
      * Handle error reports
      */
     const handleErrorReport = useCallback((data) => {
-        setRealtimeData(prev => ({
+        setRealtimeData((prev) => ({
             ...prev,
             errors: [data, ...prev.errors.slice(0, 29)] // Keep last 30 errors
         }))
@@ -140,8 +140,15 @@ export const useRealTimeData = (options = {}) => {
             websocketService.subscribeToErrors(handleErrorReport)
             subscriptionsRef.current.add('errorReport')
         }
-    }, [subscriptions, handleConnectionChange, handleAgentActivity, handleToolExecution, 
-        handleConversationUpdate, handleMetricsUpdate, handleErrorReport])
+    }, [
+        subscriptions,
+        handleConnectionChange,
+        handleAgentActivity,
+        handleToolExecution,
+        handleConversationUpdate,
+        handleMetricsUpdate,
+        handleErrorReport
+    ])
 
     /**
      * Connect to WebSocket
@@ -167,7 +174,7 @@ export const useRealTimeData = (options = {}) => {
     const refreshData = useCallback(() => {
         if (websocketService.getConnectionStatus()) {
             // Request fresh data from server
-            websocketService.send('refresh_data', { 
+            websocketService.send('refresh_data', {
                 subscriptions: Array.from(subscriptionsRef.current),
                 timestamp: Date.now()
             })
@@ -178,7 +185,7 @@ export const useRealTimeData = (options = {}) => {
      * Clear specific data type
      */
     const clearData = useCallback((dataType) => {
-        setRealtimeData(prev => ({
+        setRealtimeData((prev) => ({
             ...prev,
             [dataType]: dataType === 'metrics' ? {} : []
         }))
@@ -187,45 +194,46 @@ export const useRealTimeData = (options = {}) => {
     /**
      * Get filtered data based on criteria
      */
-    const getFilteredData = useCallback((dataType, filter = {}) => {
-        const data = realtimeData[dataType]
-        
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-            return Array.isArray(data) ? [] : {}
-        }
+    const getFilteredData = useCallback(
+        (dataType, filter = {}) => {
+            const data = realtimeData[dataType]
 
-        if (!Array.isArray(data)) {
-            return data
-        }
+            if (!data || (Array.isArray(data) && data.length === 0)) {
+                return Array.isArray(data) ? [] : {}
+            }
 
-        let filteredData = [...data]
+            if (!Array.isArray(data)) {
+                return data
+            }
 
-        // Apply time filter
-        if (filter.timeRange) {
-            const now = new Date()
-            const timeLimit = new Date(now.getTime() - filter.timeRange * 60 * 1000) // timeRange in minutes
-            filteredData = filteredData.filter(item => 
-                new Date(item.timestamp || item.createdAt || item.time) >= timeLimit
-            )
-        }
+            let filteredData = [...data]
 
-        // Apply status filter
-        if (filter.status) {
-            filteredData = filteredData.filter(item => item.status === filter.status)
-        }
+            // Apply time filter
+            if (filter.timeRange) {
+                const now = new Date()
+                const timeLimit = new Date(now.getTime() - filter.timeRange * 60 * 1000) // timeRange in minutes
+                filteredData = filteredData.filter((item) => new Date(item.timestamp || item.createdAt || item.time) >= timeLimit)
+            }
 
-        // Apply type filter
-        if (filter.type) {
-            filteredData = filteredData.filter(item => item.type === filter.type)
-        }
+            // Apply status filter
+            if (filter.status) {
+                filteredData = filteredData.filter((item) => item.status === filter.status)
+            }
 
-        // Apply limit
-        if (filter.limit) {
-            filteredData = filteredData.slice(0, filter.limit)
-        }
+            // Apply type filter
+            if (filter.type) {
+                filteredData = filteredData.filter((item) => item.type === filter.type)
+            }
 
-        return filteredData
-    }, [realtimeData])
+            // Apply limit
+            if (filter.limit) {
+                filteredData = filteredData.slice(0, filter.limit)
+            }
+
+            return filteredData
+        },
+        [realtimeData]
+    )
 
     // Initialize WebSocket connection
     useEffect(() => {
@@ -245,7 +253,7 @@ export const useRealTimeData = (options = {}) => {
     useEffect(() => {
         return () => {
             // Clean up subscriptions
-            subscriptionsRef.current.forEach(subscription => {
+            subscriptionsRef.current.forEach((subscription) => {
                 switch (subscription) {
                     case 'agentActivity':
                         websocketService.off('agentActivity', handleAgentActivity)
@@ -265,8 +273,7 @@ export const useRealTimeData = (options = {}) => {
                 }
             })
         }
-    }, [handleAgentActivity, handleToolExecution, handleConversationUpdate, 
-        handleMetricsUpdate, handleErrorReport])
+    }, [handleAgentActivity, handleToolExecution, handleConversationUpdate, handleMetricsUpdate, handleErrorReport])
 
     return {
         // Connection status

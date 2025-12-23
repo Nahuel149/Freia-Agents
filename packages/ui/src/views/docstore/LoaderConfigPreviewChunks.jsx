@@ -65,7 +65,7 @@ const LoaderConfigPreviewChunks = () => {
     const theme = useTheme()
     const { error } = useError()
     // OSS mode: Workspace assignment checks removed
-    const { } = useAuth()
+    useAuth()
 
     const getNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
@@ -230,29 +230,28 @@ const LoaderConfigPreviewChunks = () => {
                     })
                     // don't wait for the process to complete, redirect to document store
                     // but surface any immediate errors to help diagnose stuck "STALE" states
-                    documentStoreApi
-                        .processLoader(config, saveResp.data?.id)
-                        .catch((error) => {
-                            try {
-                                const msg = typeof error?.response?.data === 'object'
-                                    ? (error?.response?.data?.message || 'Failed to start processing')
-                                    : (error?.response?.data || 'Failed to start processing')
-                                enqueueSnackbar({
-                                    message: msg,
-                                    options: {
-                                        key: new Date().getTime() + Math.random(),
-                                        variant: 'error',
-                                        action: (key) => (
-                                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                                <IconX />
-                                            </Button>
-                                        )
-                                    }
-                                })
-                            } catch (_) {
-                                // noop
-                            }
-                        })
+                    documentStoreApi.processLoader(config, saveResp.data?.id).catch((error) => {
+                        try {
+                            const msg =
+                                typeof error?.response?.data === 'object'
+                                    ? error?.response?.data?.message || 'Failed to start processing'
+                                    : error?.response?.data || 'Failed to start processing'
+                            enqueueSnackbar({
+                                message: msg,
+                                options: {
+                                    key: new Date().getTime() + Math.random(),
+                                    variant: 'error',
+                                    action: (key) => (
+                                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                            <IconX />
+                                        </Button>
+                                    )
+                                }
+                            })
+                        } catch (_) {
+                            // noop
+                        }
+                    })
                     navigate('/document-stores/' + storeId)
                 }
             } catch (error) {

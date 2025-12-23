@@ -7,7 +7,6 @@ import { ApiKey } from '../database/entities/ApiKey'
 import { Workspace } from '../oss/database/entities/workspace.entity'
 import { v4 as uuidv4 } from 'uuid'
 import { ChatFlow } from '../database/entities/ChatFlow'
-import { addChatflowsCount } from './addChatflowsCount'
 import { Platform } from '../Interface'
 
 /**

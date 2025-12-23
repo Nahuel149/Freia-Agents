@@ -103,8 +103,8 @@ const EvalDatasets = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-           cancelButtonName: t('common.cancel'),
-           confirmButtonName: t('common.add'),
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.add'),
             data: {}
         }
         setDatasetDialogProps(dialogProp)
@@ -114,8 +114,8 @@ const EvalDatasets = () => {
     const edit = (dataset) => {
         const dialogProp = {
             type: 'EDIT',
-           cancelButtonName: t('common.cancel'),
-           confirmButtonName: t('common.save'),
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.save'),
             data: dataset
         }
         setDatasetDialogProps(dialogProp)
@@ -124,10 +124,10 @@ const EvalDatasets = () => {
 
     const deleteDataset = async (dataset) => {
         const confirmPayload = {
-           title: t('common.delete'),
-           description: `${t('common.delete')} dataset ${dataset.name}?`,
-           confirmButtonName: t('common.delete'),
-           cancelButtonName: t('common.cancel')
+            title: t('common.delete'),
+            description: `${t('common.delete')} dataset ${dataset.name}?`,
+            confirmButtonName: t('common.delete'),
+            cancelButtonName: t('common.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -136,7 +136,7 @@ const EvalDatasets = () => {
                 const deleteResp = await datasetsApi.deleteDataset(dataset.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                       message: t('datasets.deleted', { defaultValue: 'Dataset deleted' }),
+                        message: t('datasets.deleted', { defaultValue: 'Dataset deleted' }),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -151,8 +151,8 @@ const EvalDatasets = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                   message: `${t('datasets.deleteFailed', { defaultValue: 'Failed to delete dataset' })}: ${
-                         typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    message: `${t('datasets.deleteFailed', { defaultValue: 'Failed to delete dataset' })}: ${
+                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                     }`,
                     options: {
                         key: new Date().getTime() + Math.random(),
@@ -207,8 +207,8 @@ const EvalDatasets = () => {
                             isEditButton={false}
                             onSearchChange={onSearchChange}
                             search={true}
-                           title={t('datasets.title')}
-                           description=''
+                            title={t('datasets.title')}
+                            description=''
                         >
                             <StyledPermissionButton
                                 permissionId={'datasets:create'}
@@ -217,7 +217,7 @@ const EvalDatasets = () => {
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
-                               {t('datasets.addNew')}
+                                {t('datasets.addNew')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && datasets.length <= 0 ? (
@@ -229,7 +229,7 @@ const EvalDatasets = () => {
                                         alt='empty_datasetSVG'
                                     />
                                 </Box>
-                               <div>{t('datasets.empty')}</div>
+                                <div>{t('datasets.empty')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -247,10 +247,10 @@ const EvalDatasets = () => {
                                             }}
                                         >
                                             <TableRow>
-                                               <TableCell>{t('common.name')}</TableCell>
-                                               <TableCell>{t('common.description')}</TableCell>
-                                               <TableCell>{t('common.rows')}</TableCell>
-                                               <TableCell>{t('common.lastUpdated')}</TableCell>
+                                                <TableCell>{t('common.name')}</TableCell>
+                                                <TableCell>{t('common.description')}</TableCell>
+                                                <TableCell>{t('common.rows')}</TableCell>
+                                                <TableCell>{t('common.lastUpdated')}</TableCell>
                                                 <Available permission={'datasets:update,datasets:create'}>
                                                     <TableCell> </TableCell>
                                                 </Available>
@@ -260,50 +260,58 @@ const EvalDatasets = () => {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
+                                        {isLoading ? (
+                                            <>
+                                                <StyledTableRow>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <Available permission={'datasets:update,datasets:create'}>
+                                                        <TableCell>
                                                             <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
+                                                        </TableCell>
+                                                    </Available>
+                                                    <Available permission={'datasets:delete'}>
+                                                        <TableCell>
                                                             <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
+                                                        </TableCell>
+                                                    </Available>
+                                                </StyledTableRow>
+                                                <StyledTableRow>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <Available permission={'datasets:update,datasets:create'}>
+                                                        <TableCell>
                                                             <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
+                                                        </TableCell>
+                                                    </Available>
+                                                    <Available permission={'datasets:delete'}>
+                                                        <TableCell>
                                                             <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'datasets:update,datasets:create'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                        <Available permission={'datasets:delete'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'datasets:update,datasets:create'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                        <Available permission={'datasets:delete'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                </>
-                                            ) : (
+                                                        </TableCell>
+                                                    </Available>
+                                                </StyledTableRow>
+                                            </>
+                                        ) : (
                                                 <>
                                                     {datasets.filter(filterDatasets).map((ds, index) => (
                                                         <StyledTableRow
@@ -326,7 +334,11 @@ const EvalDatasets = () => {
                                                             </TableCell>
                                                             <Available permission={'datasets:update,datasets:create'}>
                                                                 <TableCell>
-                                                                    <IconButton title={t('datasets.edit')} color='primary' onClick={() => edit(ds)}>
+                                                                    <IconButton
+                                                                        title={t('datasets.edit')}
+                                                                        color='primary'
+                                                                        onClick={() => edit(ds)}
+                                                                    >
                                                                         <IconEdit />
                                                                     </IconButton>
                                                                 </TableCell>

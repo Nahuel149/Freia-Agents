@@ -13,9 +13,11 @@ const mobbexWebhookSchema = z.object({
             currency: z.string(),
             description: z.string().optional()
         }),
-        checkout: z.object({
-            uid: z.string()
-        }).optional()
+        checkout: z
+            .object({
+                uid: z.string()
+            })
+            .optional()
     })
 })
 

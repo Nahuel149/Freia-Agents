@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
 
 // material-ui
 import { Card, CardContent, Stack } from '@mui/material'

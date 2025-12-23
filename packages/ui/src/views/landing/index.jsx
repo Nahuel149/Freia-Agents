@@ -4,8 +4,6 @@ import { Box, Button, Card, CardContent, Container, Grid, IconButton, Stack, Typ
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded'
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
-import SecurityRoundedIcon from '@mui/icons-material/SecurityRounded'
-import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded'
 import TouchAppRoundedIcon from '@mui/icons-material/TouchAppRounded'
 import DeviceHubIcon from '@mui/icons-material/DeviceHub'
 import StorageIcon from '@mui/icons-material/Storage'
@@ -304,7 +302,8 @@ const LandingPage = () => {
                                 Freia reúne chatflows, agentes, datasets y evaluaciones en una sola interfaz.
                             </Typography>
                             <Typography variant='h6' sx={{ mt: 2, color: alpha('#EAF0FF', 0.8), maxWidth: 640 }}>
-                                Diseña y orquesta chatflows visuales, agentes con múltiples herramientas, datasets y evaluaciones, todo en una experiencia unificada.
+                                Diseña y orquesta chatflows visuales, agentes con múltiples herramientas, datasets y evaluaciones, todo en
+                                una experiencia unificada.
                             </Typography>
                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 4 }}>
                                 <Button
@@ -384,7 +383,11 @@ const LandingPage = () => {
                                         borderTop: `1px solid ${alpha('#fff', 0.08)}`
                                     }}
                                 >
-                                    <Button variant='text' sx={{ color: colors.orange, fontWeight: 700 }} onClick={() => handleCTA('login')}>
+                                    <Button
+                                        variant='text'
+                                        sx={{ color: colors.orange, fontWeight: 700 }}
+                                        onClick={() => handleCTA('login')}
+                                    >
                                         Acceder
                                     </Button>
                                 </CardContent>
@@ -403,7 +406,8 @@ const LandingPage = () => {
                                 Características poderosas
                             </Typography>
                             <Typography sx={{ color: alpha('#EAF0FF', 0.78) }}>
-                                Descubre capacidades diseñadas para transformar tu flujo de trabajo: chatflows visuales, agentes con herramientas, datasets, evaluaciones y despliegues portables.
+                                Descubre capacidades diseñadas para transformar tu flujo de trabajo: chatflows visuales, agentes con
+                                herramientas, datasets, evaluaciones y despliegues portables.
                             </Typography>
                             <Box sx={{ mt: 3 }} />
                         </Grid>
@@ -464,7 +468,8 @@ const LandingPage = () => {
                                 Tu panel en acción
                             </Typography>
                             <Typography sx={{ color: isDark ? alpha('#EAF0FF', 0.78) : alpha('#0B1021', 0.78), mb: 2 }}>
-                                Vista previa del flujo en Freia: chatflows, agentes y datasets en una sola interfaz para que configures y despliegues rápido.
+                                Vista previa del flujo en Freia: chatflows, agentes y datasets en una sola interfaz para que configures y
+                                despliegues rápido.
                             </Typography>
                             <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
                                 <Button
@@ -494,7 +499,13 @@ const LandingPage = () => {
                                 }}
                                 elevation={0}
                             >
-                                <Box component='img' src='/assets/Demo.png' alt='Demo Freia' loading='lazy' sx={{ width: '100%', display: 'block' }} />
+                                <Box
+                                    component='img'
+                                    src='/assets/Demo.png'
+                                    alt='Demo Freia'
+                                    loading='lazy'
+                                    sx={{ width: '100%', display: 'block' }}
+                                />
                             </Card>
                         </Grid>
                     </Grid>
@@ -504,21 +515,16 @@ const LandingPage = () => {
             {/* Cómo funciona */}
             <Box sx={{ py: { xs: 6, md: 8 }, background: sectionBg('#0B1021', '#F0F4FF') }}>
                 <Container maxWidth='lg'>
-                    <Typography
-                        variant='h4'
-                        fontWeight={800}
-                        textAlign='center'
-                        sx={{ mb: 4, fontFamily: '"Space Grotesk",sans-serif' }}
-                    >
+                    <Typography variant='h4' fontWeight={800} textAlign='center' sx={{ mb: 4, fontFamily: '"Space Grotesk",sans-serif' }}>
                         Cómo funciona
                     </Typography>
                     <Grid container spacing={3}>
                         {steps.map((step, idx) => (
-                        <Grid item xs={12} md={4} key={step.title}>
-                            <Card
-                                sx={{
-                                    height: '100%',
-                                    bgcolor: alpha('#10182F', 0.9),
+                            <Grid item xs={12} md={4} key={step.title}>
+                                <Card
+                                    sx={{
+                                        height: '100%',
+                                        bgcolor: alpha('#10182F', 0.9),
                                         border: `1px solid ${alpha('#fff', 0.08)}`,
                                         borderRadius: 3,
                                         p: 2
@@ -568,31 +574,29 @@ const LandingPage = () => {
                         </Stack>
                     </Stack>
                     <Grid container spacing={3} alignItems='center'>
-                            <Grid item xs={12} md={6}>
-                                <Card
-                                    sx={{
-                                        bgcolor: alpha('#10182F', 0.9),
-                                        border: `1px solid ${alpha('#fff', 0.08)}`,
-                                        borderRadius: 3,
-                                        overflow: 'hidden'
-                                    }}
-                                >
-                                    <Box
-                                        component='img'
-                                        src={useCases[useCaseIndex].image}
-                                        alt={useCases[useCaseIndex].title}
-                                        loading='lazy'
-                                        sx={{ width: '100%', display: 'block' }}
-                                    />
-                                </Card>
-                            </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Card
+                                sx={{
+                                    bgcolor: alpha('#10182F', 0.9),
+                                    border: `1px solid ${alpha('#fff', 0.08)}`,
+                                    borderRadius: 3,
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <Box
+                                    component='img'
+                                    src={useCases[useCaseIndex].image}
+                                    alt={useCases[useCaseIndex].title}
+                                    loading='lazy'
+                                    sx={{ width: '100%', display: 'block' }}
+                                />
+                            </Card>
+                        </Grid>
                         <Grid item xs={12} md={6}>
                             <Typography variant='h5' fontWeight={800} gutterBottom>
                                 {useCases[useCaseIndex].title}
                             </Typography>
-                            <Typography sx={{ color: alpha('#EAF0FF', 0.72), mb: 2 }}>
-                                {useCases[useCaseIndex].desc}
-                            </Typography>
+                            <Typography sx={{ color: alpha('#EAF0FF', 0.72), mb: 2 }}>{useCases[useCaseIndex].desc}</Typography>
                             <Stack direction='row' spacing={1} sx={{ mb: 3, flexWrap: 'wrap' }}>
                                 <Typography variant='body2' sx={{ color: alpha('#EAF0FF', 0.75), fontWeight: 700 }}>
                                     CTA via /api/templates — slug autorizado
@@ -621,17 +625,11 @@ const LandingPage = () => {
             {/* Pricing */}
             <Box sx={{ py: { xs: 6, md: 8 }, background: sectionBg('#0E1529', '#F8FAFF') }}>
                 <Container maxWidth='lg'>
-                    <Typography
-                        variant='h4'
-                        fontWeight={800}
-                        textAlign='center'
-                        sx={{ mb: 3, fontFamily: '"Space Grotesk",sans-serif' }}
-                    >
+                    <Typography variant='h4' fontWeight={800} textAlign='center' sx={{ mb: 3, fontFamily: '"Space Grotesk",sans-serif' }}>
                         Pricing simple y directo
                     </Typography>
                     <Typography textAlign='center' sx={{ color: alpha('#EAF0FF', 0.7), mb: 4 }}>
-                        Suscripción base, agentes adicionales y pagos custom vía quote. Checkout protegido (login) y
-                        soporte incluido.
+                        Suscripción base, agentes adicionales y pagos custom vía quote. Checkout protegido (login) y soporte incluido.
                     </Typography>
                     <Grid container spacing={3}>
                         {plans.map((plan) => (
@@ -758,7 +756,6 @@ const LandingPage = () => {
                     </Card>
                 </Container>
             </Box>
-
         </Box>
     )
 }

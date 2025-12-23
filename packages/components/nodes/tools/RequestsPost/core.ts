@@ -54,16 +54,16 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
                     console.log(`Processing array property: ${key}`, config)
                     // Handle array items schema
                     let arrayType: z.ZodArray<any>
-                    
+
                     if (config.items) {
                         if (config.items.type === 'object' && config.items.properties) {
                             // Handle array of objects
                             const itemsObject: Record<string, z.ZodTypeAny> = {}
                             const itemsRequired = config.items.required || []
-                            
+
                             Object.entries(config.items.properties).forEach(([itemKey, itemConfig]: [string, any]) => {
                                 let itemZodType: z.ZodTypeAny = z.string()
-                                
+
                                 if (itemConfig.type === 'number') {
                                     itemZodType = z.number()
                                 } else if (itemConfig.type === 'integer') {
@@ -75,18 +75,18 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
                                 } else if (itemConfig.type === 'array') {
                                     itemZodType = z.array(z.any())
                                 }
-                                
+
                                 if (itemConfig.description) {
                                     itemZodType = itemZodType.describe(itemConfig.description)
                                 }
-                                
+
                                 if (!itemsRequired.includes(itemKey)) {
                                     itemZodType = itemZodType.optional()
                                 }
-                                
+
                                 itemsObject[itemKey] = itemZodType
                             })
-                            
+
                             arrayType = z.array(z.object(itemsObject))
                         } else if (config.items.type === 'string') {
                             arrayType = z.array(z.string())
@@ -102,12 +102,12 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
                     } else {
                         arrayType = z.array(z.any())
                     }
-                    
+
                     // Handle minItems constraint
                     if (config.minItems && config.minItems > 0) {
                         arrayType = arrayType.min(config.minItems)
                     }
-                    
+
                     zodType = arrayType
                 }
 
@@ -183,10 +183,10 @@ const createRequestsPostSchema = (bodySchema?: string, queryParamsSchema?: strin
         body: bodyZod,
         queryParams: queryZod
     })
-    
+
     console.log('Final Zod schema created:', finalSchema)
     console.log('Body schema:', bodyZod)
-    
+
     return finalSchema
 }
 

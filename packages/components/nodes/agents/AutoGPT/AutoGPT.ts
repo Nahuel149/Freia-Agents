@@ -146,7 +146,10 @@ class AutoGPT_Agents implements INode {
                     executor.fullMessageHistory.push(new AIMessage(assistantReply))
 
                     const action = await executor.outputParser.parse(assistantReply)
-                    const tools: Record<string, any> = executor.tools.reduce((acc: Record<string, any>, tool: any) => ({ ...acc, [tool.name]: tool }), {})
+                    const tools: Record<string, any> = executor.tools.reduce(
+                        (acc: Record<string, any>, tool: any) => ({ ...acc, [tool.name]: tool }),
+                        {}
+                    )
                     if (action.name === FINISH_NAME) {
                         return action.args.response
                     }

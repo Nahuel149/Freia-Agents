@@ -1,682 +1,762 @@
 [
-  {
-    "product_id": "PIR-C7-2055516",
-    "category": "Neumático",
-    "brand": "Pirelli",
-    "name": "Cinturato P7 205/55 R16",
-    "price_ars": 185000.50,
-    "stock": 45,
-    "description": "Neumático de alto rendimiento para autos sedán y deportivos. Excelente agarre en seco y mojado, con bajo ruido de rodadura. Ideal para rutas y ciudad.",
-    "specifications": {
-      "Ancho": 205, "Perfil": 55, "Rodado": 16, "Indice Carga": 91, "Indice Velocidad": "V"
+    {
+        "product_id": "PIR-C7-2055516",
+        "category": "Neumático",
+        "brand": "Pirelli",
+        "name": "Cinturato P7 205/55 R16",
+        "price_ars": 185000.5,
+        "stock": 45,
+        "description": "Neumático de alto rendimiento para autos sedán y deportivos. Excelente agarre en seco y mojado, con bajo ruido de rodadura. Ideal para rutas y ciudad.",
+        "specifications": {
+            "Ancho": 205,
+            "Perfil": 55,
+            "Rodado": 16,
+            "Indice Carga": 91,
+            "Indice Velocidad": "V"
+        }
+    },
+    {
+        "product_id": "MIC-P4-1956015",
+        "category": "Neumático",
+        "brand": "Michelin",
+        "name": "Primacy 4 195/60 R15",
+        "price_ars": 199500.0,
+        "stock": 30,
+        "description": "Neumático premium enfocado en la seguridad y durabilidad. Ofrece un frenado superior en superficies mojadas, incluso con el desgaste.",
+        "specifications": {
+            "Ancho": 195,
+            "Perfil": 60,
+            "Rodado": 15,
+            "Indice Carga": 88,
+            "Indice Velocidad": "H"
+        }
+    },
+    {
+        "product_id": "GOO-ES-1856514",
+        "category": "Neumático",
+        "brand": "Goodyear",
+        "name": "Eagle Sport 185/65 R14",
+        "price_ars": 152300.75,
+        "stock": 60,
+        "description": "Diseño deportivo con buena respuesta de dirección y durabilidad. Optimo para vehículos compactos en el mercado argentino.",
+        "specifications": {
+            "Ancho": 185,
+            "Perfil": 65,
+            "Rodado": 14,
+            "Indice Carga": 86,
+            "Indice Velocidad": "T"
+        }
+    },
+    {
+        "product_id": "BOS-AER-22",
+        "category": "Accesorio",
+        "brand": "Bosch",
+        "name": "Juego Escobillas Aerotwin 22''",
+        "price_ars": 45500.0,
+        "stock": 110,
+        "description": "Juego de escobillas limpiaparabrisas Bosch Aerotwin. Tecnología sin partes metálicas para una limpieza uniforme y silenciosa. Larga vida útil.",
+        "specifications": {
+            "Tamaño": "22 pulgadas",
+            "Conector": "Multi-Clip"
+        }
+    },
+    {
+        "product_id": "MOU-M30-1275",
+        "category": "Repuesto",
+        "brand": "Moura",
+        "name": "Batería Moura M30GD 12x75",
+        "price_ars": 255000.0,
+        "stock": 18,
+        "description": "Batería de libre mantenimiento para una amplia gama de vehículos Mercosur (VW Gol, Fiat Palio, Chevrolet Corsa). Calidad original.",
+        "specifications": {
+            "Voltaje": "12V",
+            "Amperaje": "65Ah",
+            "CCA": "500A"
+        }
+    },
+    {
+        "product_id": "YPF-ELA-F50-4L",
+        "category": "Repuesto",
+        "brand": "YPF",
+        "name": "Aceite Elaion F50 D2 5W-30 4L",
+        "price_ars": 89900.0,
+        "stock": 80,
+        "description": "Aceite sintético para motores diésel modernos con tecnología DPF. Cumple normas ACEA C2/C3. Protege el motor y optimiza el consumo.",
+        "specifications": {
+            "Viscosidad": "5W-30",
+            "Tipo": "Sintético",
+            "Contenido": "4 litros"
+        }
+    },
+    {
+        "product_id": "FRE-CER-VW",
+        "category": "Repuesto",
+        "brand": "Frenmax",
+        "name": "Pastillas de Freno Cerámicas VW Vento",
+        "price_ars": 68000.0,
+        "stock": 40,
+        "description": "Juego de pastillas de freno delanteras de compuesto cerámico. Reducen el polvo y el ruido, mejorando la performance de frenado. Para VW Vento/Golf.",
+        "specifications": {
+            "Posición": "Delanteras",
+            "Material": "Cerámica"
+        }
+    },
+    {
+        "product_id": "SERV-ALB",
+        "category": "Servicio",
+        "brand": "N/A",
+        "name": "Alineación y Balanceo",
+        "price_ars": 48000.0,
+        "stock": 999,
+        "description": "Servicio completo de alineación 3D y balanceo computarizado para las 4 ruedas. Incluye revisión de tren delantero.",
+        "specifications": {
+            "Vehículo": "Auto/Camioneta Liviana"
+        }
+    },
+    {
+        "product_id": "FAT-PV-1757013",
+        "category": "Neumático",
+        "brand": "Fate",
+        "name": "Prestiva CT 175/70 R13",
+        "price_ars": 135000.0,
+        "stock": 85,
+        "description": "Neumático de fabricación nacional, ideal para autos compactos como Fiat Uno o VW Gol. Buen rendimiento kilométrico y confort de marcha.",
+        "specifications": {
+            "Ancho": 175,
+            "Perfil": 70,
+            "Rodado": 13,
+            "Indice Carga": 82,
+            "Indice Velocidad": "T"
+        }
+    },
+    {
+        "product_id": "BRI-TU-2254517",
+        "category": "Neumático",
+        "brand": "Bridgestone",
+        "name": "Turanza ER300 225/45 R17",
+        "price_ars": 245000.0,
+        "stock": 25,
+        "description": "Neumático de alta gama para vehículos medianos y grandes. Ofrece un viaje silencioso y confortable con excelente maniobrabilidad.",
+        "specifications": {
+            "Ancho": 225,
+            "Perfil": 45,
+            "Rodado": 17,
+            "Indice Carga": 91,
+            "Indice Velocidad": "W"
+        }
+    },
+    {
+        "product_id": "FIR-F900-2656517",
+        "category": "Neumático",
+        "brand": "Firestone",
+        "name": "Destination A/T 265/65 R17",
+        "price_ars": 298000.0,
+        "stock": 35,
+        "description": "Neumático todo terreno (A/T) para camionetas como Toyota Hilux o Ford Ranger. Robusto, duradero y con buen agarre en asfalto y ripio.",
+        "specifications": {
+            "Ancho": 265,
+            "Perfil": 65,
+            "Rodado": 17,
+            "Indice Carga": 112,
+            "Indice Velocidad": "S"
+        }
+    },
+    {
+        "product_id": "CAS-MAG-10W40-4L",
+        "category": "Repuesto",
+        "brand": "Castrol",
+        "name": "Aceite Magnatec 10W-40 4L",
+        "price_ars": 82500.0,
+        "stock": 95,
+        "description": "Aceite semi-sintético con moléculas inteligentes que se adhieren al motor para una capa extra de protección desde el arranque.",
+        "specifications": {
+            "Viscosidad": "10W-40",
+            "Tipo": "Semi-sintético",
+            "Contenido": "4 litros"
+        }
+    },
+    {
+        "product_id": "MAN-HU718-5X",
+        "category": "Repuesto",
+        "brand": "Mann-Filter",
+        "name": "Filtro de Aceite HU718/5X",
+        "price_ars": 21000.0,
+        "stock": 150,
+        "description": "Filtro de aceite de alta calidad para vehículos Volkswagen y Audi con motores 1.9 y 2.0 TDI. Asegura una filtración óptima.",
+        "specifications": {
+            "Tipo": "Elemento filtrante",
+            "Compatibilidad": "VW/Audi TDI"
+        }
+    },
+    {
+        "product_id": "NGK-BKR6E-4",
+        "category": "Repuesto",
+        "brand": "NGK",
+        "name": "Juego de 4 Bujías BKR6E",
+        "price_ars": 39800.0,
+        "stock": 70,
+        "description": "Juego de 4 bujías de encendido NGK. Estándar de cobre, alta fiabilidad y rendimiento. Compatible con múltiples vehículos nafteros.",
+        "specifications": {
+            "Material": "Cobre",
+            "Cantidad": 4
+        }
+    },
+    {
+        "product_id": "COR-AM-VW-DEL",
+        "category": "Repuesto",
+        "brand": "Corven",
+        "name": "Kit 2 Amortiguadores Delanteros VW Gol",
+        "price_ars": 189000.0,
+        "stock": 22,
+        "description": "Juego de amortiguadores delanteros Corven Plus para Volkswagen Gol, Gol Trend y Voyage. Mejora la estabilidad y el confort.",
+        "specifications": {
+            "Posición": "Delanteros",
+            "Línea": "Plus",
+            "Cantidad": 2
+        }
+    },
+    {
+        "product_id": "WAG-DOT4-1L",
+        "category": "Repuesto",
+        "brand": "Wagner",
+        "name": "Líquido de Frenos DOT 4 1L",
+        "price_ars": 18500.0,
+        "stock": 200,
+        "description": "Líquido de frenos de alto punto de ebullición, cumple con la especificación DOT 4. Esencial para la seguridad del sistema de frenado.",
+        "specifications": {
+            "Tipo": "DOT 4",
+            "Contenido": "1 litro"
+        }
+    },
+    {
+        "product_id": "ACC-KITSEG-01",
+        "category": "Accesorio",
+        "brand": "Genérico",
+        "name": "Kit de Seguridad Reglamentario Auto",
+        "price_ars": 55000.0,
+        "stock": 80,
+        "description": "Kit de seguridad vehicular obligatorio. Incluye matafuegos de 1kg con oblea, balizas, chaleco reflectivo, botiquín y cuarta de remolque.",
+        "specifications": {
+            "Componentes": "Matafuegos, balizas, chaleco, botiquín, cuarta"
+        }
+    },
+    {
+        "product_id": "ACC-MAN-DIG",
+        "category": "Accesorio",
+        "brand": "Bremen",
+        "name": "Manómetro Medidor de Presión Digital",
+        "price_ars": 29000.0,
+        "stock": 60,
+        "description": "Medidor de presión digital para neumáticos. Pantalla LCD iluminada, fácil de usar y preciso. Ayuda a mantener la presión correcta para ahorrar combustible.",
+        "specifications": {
+            "Tipo": "Digital",
+            "Rango": "0-150 PSI"
+        }
+    },
+    {
+        "product_id": "SERV-CAM-ACEITE",
+        "category": "Servicio",
+        "brand": "N/A",
+        "name": "Cambio de Aceite y Filtro",
+        "price_ars": 35000.0,
+        "stock": 999,
+        "description": "Servicio de cambio de aceite y filtro. El precio corresponde a la mano de obra. No incluye el costo de los productos (aceite y filtro).",
+        "specifications": {
+            "Tipo": "Mano de obra",
+            "Incluye": "Vaciado de carter, cambio de filtro, llenado"
+        }
+    },
+    {
+        "product_id": "SERV-FRENOS",
+        "category": "Servicio",
+        "brand": "N/A",
+        "name": "Revisión y Cambio de Pastillas de Freno",
+        "price_ars": 42000.0,
+        "stock": 999,
+        "description": "Servicio de diagnóstico del sistema de frenos y cambio de pastillas en un eje (delantero o trasero). No incluye el costo de los repuestos.",
+        "specifications": {
+            "Tipo": "Mano de obra",
+            "Eje": "Delantero o Trasero"
+        }
+    },
+    {
+        "product_id": "PIR-SL-907017",
+        "category": "Neumático",
+        "brand": "Pirelli",
+        "name": "Super City 90/70 R17",
+        "price_ars": 89000.0,
+        "stock": 50,
+        "description": "Neumático para motocicleta urbana de 110-150cc. Excelente durabilidad y rendimiento en asfalto seco y mojado. Diseño moderno.",
+        "specifications": {
+            "Vehículo": "Moto",
+            "Ancho": 90,
+            "Perfil": 70,
+            "Rodado": 17,
+            "Uso": "Urbano"
+        }
+    },
+    {
+        "product_id": "WIL-BAT-GEL",
+        "category": "Repuesto",
+        "brand": "Willard",
+        "name": "Batería Gel 12N7A-3A para Moto",
+        "price_ars": 65000.0,
+        "stock": 40,
+        "description": "Batería de tecnología gel, libre de mantenimiento, para motocicletas. Alta capacidad de arranque y resistencia a las vibraciones.",
+        "specifications": {
+            "Voltaje": "12V",
+            "Amperaje": "7Ah",
+            "Tipo": "Gel"
+        }
+    },
+    {
+        "product_id": "3M-CERA-PASTA",
+        "category": "Accesorio",
+        "brand": "3M",
+        "name": "Cera en Pasta Sintética 3M",
+        "price_ars": 41000.0,
+        "stock": 75,
+        "description": "Cera sintética en pasta de alta duración. Proporciona un brillo profundo y una capa de protección contra los rayos UV y la lluvia.",
+        "specifications": {
+            "Tipo": "Sintética",
+            "Formato": "Pasta",
+            "Contenido": "200g"
+        }
+    },
+    {
+        "product_id": "BOS-DIS-VW-GOL",
+        "category": "Repuesto",
+        "brand": "Bosch",
+        "name": "Juego Discos de Freno Delanteros VW Gol Trend",
+        "price_ars": 155000.0,
+        "stock": 33,
+        "description": "Kit de dos discos de freno sólidos para el eje delantero de VW Gol Trend / Voyage. Calidad de equipo original para una frenada segura.",
+        "specifications": {
+            "Posición": "Delanteros",
+            "Tipo": "Sólido",
+            "Cantidad": 2
+        }
+    },
+    {
+        "product_id": "GOO-WR-2056016",
+        "category": "Neumático",
+        "brand": "Goodyear",
+        "name": "Wrangler Armortrac 205/60 R16",
+        "price_ars": 215000.0,
+        "stock": 28,
+        "description": "Neumático de uso mixto para SUVs y camionetas livianas como Ford Ecosport o Renault Duster. Robusto para caminos de tierra.",
+        "specifications": {
+            "Ancho": 205,
+            "Perfil": 60,
+            "Rodado": 16,
+            "Uso": "Mixto (A/T)"
+        }
+    },
+    {
+        "product_id": "FRA-A-PEU208",
+        "category": "Repuesto",
+        "brand": "Fram",
+        "name": "Filtro de Aire Peugeot 208 1.6",
+        "price_ars": 19500.0,
+        "stock": 120,
+        "description": "Filtro de aire de panel para Peugeot 208 y Citroen C3 con motor 1.6 VTi. Protege el motor de impurezas y optimiza la combustión.",
+        "specifications": {
+            "Tipo": "Panel",
+            "Compatibilidad": "Peugeot 208 / Citroen C3"
+        }
+    },
+    {
+        "product_id": "LIQ-MOLY-5W40-5L",
+        "category": "Repuesto",
+        "brand": "Liqui Moly",
+        "name": "Aceite Sintético Leichtlauf 5W-40 5L",
+        "price_ars": 115000.0,
+        "stock": 40,
+        "description": "Aceite 100% sintético de tecnología alemana. Alta performance para motores modernos nafteros y diésel, con antifriccionante MoS2.",
+        "specifications": {
+            "Viscosidad": "5W-40",
+            "Tipo": "Sintético",
+            "Contenido": "5 litros"
+        }
+    },
+    {
+        "product_id": "ACC-ALF-VAP",
+        "category": "Accesorio",
+        "brand": "Vapren",
+        "name": "Juego Alfombras Goma Vapren (3 piezas)",
+        "price_ars": 69000.0,
+        "stock": 55,
+        "description": "Juego de alfombras de goma de alta resistencia, específicas para el modelo de tu auto. Incluye delanteras y trasera enteriza. No incluye baúl.",
+        "specifications": {
+            "Material": "Goma",
+            "Piezas": 3,
+            "Tipo": "A medida (consultar modelo)"
+        }
+    },
+    {
+        "product_id": "SERV-ROTACION",
+        "category": "Servicio",
+        "brand": "N/A",
+        "name": "Rotación de Neumáticos",
+        "price_ars": 15000.0,
+        "stock": 999,
+        "description": "Servicio de rotación de las 4 cubiertas para promover un desgaste parejo y extender su vida útil. Se recomienda cada 10.000 km.",
+        "specifications": {
+            "Vehículo": "Auto/Camioneta Liviana"
+        }
+    },
+    {
+        "product_id": "GAT-COR-GOL",
+        "category": "Repuesto",
+        "brand": "Gates",
+        "name": "Kit Distribución Gates VW Gol Power 1.6",
+        "price_ars": 195000.0,
+        "stock": 15,
+        "description": "Kit completo de distribución marca Gates. Incluye correa de distribución y tensor. Pieza fundamental del mantenimiento del motor.",
+        "specifications": {
+            "Componentes": "Correa y Tensor",
+            "Compatibilidad": "VW Gol Power / Gol Trend (8v)"
+        }
+    },
+    {
+        "product_id": "MIC-LTX-2457016",
+        "category": "Neumático",
+        "brand": "Michelin",
+        "name": "LTX Force 245/70 R16",
+        "price_ars": 310000.0,
+        "stock": 40,
+        "description": "Neumático robusto para camionetas, diseñado para uso mixto. Gran durabilidad y seguridad tanto en asfalto como en caminos difíciles.",
+        "specifications": {
+            "Ancho": 245,
+            "Perfil": 70,
+            "Rodado": 16,
+            "Indice Carga": 111,
+            "Indice Velocidad": "T"
+        }
+    },
+    {
+        "product_id": "SAC-AM-HILUX-TRA",
+        "category": "Repuesto",
+        "brand": "Sachs",
+        "name": "Kit 2 Amortiguadores Traseros Toyota Hilux",
+        "price_ars": 240000.0,
+        "stock": 19,
+        "description": "Juego de amortiguadores traseros Sachs, calidad alemana, para Toyota Hilux (2005-2015). Máxima performance y control.",
+        "specifications": {
+            "Posición": "Traseros",
+            "Compatibilidad": "Toyota Hilux 2005-2015",
+            "Cantidad": 2
+        }
+    },
+    {
+        "product_id": "HER-TORQ",
+        "category": "Accesorio",
+        "brand": "Bremen",
+        "name": "Torquímetro de Safe 1/2 pulgada",
+        "price_ars": 95000.0,
+        "stock": 12,
+        "description": "Herramienta de precisión para aplicar el torque exacto a bulones y tuercas, especialmente en ruedas y partes del motor. Rango 28-210 Nm.",
+        "specifications": {
+            "Tipo": "Torquímetro",
+            "Encastre": "1/2",
+            "Rango": "28-210 Nm"
+        }
+    },
+    {
+        "product_id": "VAL-PREM-15W40-4L",
+        "category": "Repuesto",
+        "brand": "Valvoline",
+        "name": "Aceite Premium Protection 15W-40 4L",
+        "price_ars": 65000.0,
+        "stock": 110,
+        "description": "Aceite mineral de alta calidad para motores nafteros y diésel sin DPF. Ofrece protección contra el desgaste y mantiene limpio el motor.",
+        "specifications": {
+            "Viscosidad": "15W-40",
+            "Tipo": "Mineral",
+            "Contenido": "4 litros"
+        }
+    },
+    {
+        "product_id": "SERV-AC",
+        "category": "Servicio",
+        "brand": "N/A",
+        "name": "Diagnóstico y Carga de Aire Acondicionado",
+        "price_ars": 75000.0,
+        "stock": 999,
+        "description": "Servicio de revisión de fugas, vacío del sistema y carga completa de gas refrigerante R134a para el sistema de aire acondicionado.",
+        "specifications": {
+            "Gas": "R134a",
+            "Incluye": "Diagnóstico, Vacío, Carga"
+        }
+    },
+    {
+        "product_id": "TYC-OPT-CORSA",
+        "category": "Repuesto",
+        "brand": "TYC",
+        "name": "Óptica Delantera Derecha Chevrolet Corsa",
+        "price_ars": 110000.0,
+        "stock": 25,
+        "description": "Óptica delantera del lado del acompañante para Chevrolet Corsa Classic (2000-2010). Calidad similar a la original, lista para instalar.",
+        "specifications": {
+            "Lado": "Derecho (Acompañante)",
+            "Compatibilidad": "Corsa Classic 2000-2010"
+        }
+    },
+    {
+        "product_id": "FAT-AR360-1955516",
+        "category": "Neumático",
+        "brand": "Fate",
+        "name": "Eximia AR-360 195/55 R16",
+        "price_ars": 165000.0,
+        "stock": 48,
+        "description": "Neumático de rango intermedio con un diseño que favorece la evacuación de agua, mejorando la seguridad en superficies mojadas. Para autos medianos.",
+        "specifications": {
+            "Ancho": 195,
+            "Perfil": 55,
+            "Rodado": 16,
+            "Indice Carga": 87,
+            "Indice Velocidad": "V"
+        }
+    },
+    {
+        "product_id": "WD40-FLEX-400",
+        "category": "Accesorio",
+        "brand": "WD-40",
+        "name": "Aerosol Multiuso WD-40 Flexible 400ml",
+        "price_ars": 22000.0,
+        "stock": 300,
+        "description": "El clásico lubricante multiuso ahora con una cánula flexible de 18cm para llegar a los lugares más difíciles. Lubrica, desplaza la humedad, y afloja piezas.",
+        "specifications": {
+            "Tipo": "Aerosol Multiuso",
+            "Contenido": "400ml",
+            "Extra": "Cánula Flexible"
+        }
+    },
+    {
+        "product_id": "HEL-BAT-1290",
+        "category": "Repuesto",
+        "brand": "Heliar",
+        "name": "Batería Heliar Original 12x90",
+        "price_ars": 295000.0,
+        "stock": 14,
+        "description": "Batería de alta gama para vehículos con alta demanda eléctrica, como camionetas diésel (Amarok, S10). Tecnología PowerFrame para mayor vida útil.",
+        "specifications": {
+            "Voltaje": "12V",
+            "Amperaje": "80Ah",
+            "CCA": "700A"
+        }
+    },
+    {
+        "product_id": "SERV-TREN-DEL",
+        "category": "Servicio",
+        "brand": "N/A",
+        "name": "Diagnóstico de Tren Delantero y Suspensión",
+        "price_ars": 25000.0,
+        "stock": 999,
+        "description": "Revisión completa de los componentes del tren delantero y la suspensión: amortiguadores, bujes, parrillas, extremos de dirección y rótulas.",
+        "specifications": {
+            "Tipo": "Diagnóstico",
+            "Incluye": "Informe de estado de componentes"
+        }
+    },
+    {
+        "product_id": "HAN-K435-1856015",
+        "category": "Neumático",
+        "brand": "Hankook",
+        "name": "Kinergy Eco2 K435 185/60 R15",
+        "price_ars": 178500.0,
+        "stock": 75,
+        "description": "Neumático ecológico diseñado para un bajo consumo de combustible y un andar silencioso. Ideal para autos compactos y sedanes.",
+        "specifications": { "Ancho": 185, "Perfil": 60, "Rodado": 15, "Indice Carga": 84, "Indice Velocidad": "H" }
+    },
+    {
+        "product_id": "DUN-AT5-2656018",
+        "category": "Neumático",
+        "brand": "Dunlop",
+        "name": "Grandtrek AT5 265/60 R18",
+        "price_ars": 345000.0,
+        "stock": 24,
+        "description": "Neumático todo terreno para camionetas y SUVs. Excelente balance entre rendimiento en asfalto y capacidad off-road.",
+        "specifications": { "Ancho": 265, "Perfil": 60, "Rodado": 18, "Indice Carga": 110, "Indice Velocidad": "T" }
+    },
+    {
+        "product_id": "PIR-P1-1756514",
+        "category": "Neumático",
+        "brand": "Pirelli",
+        "name": "Cinturato P1 175/65 R14",
+        "price_ars": 149900.0,
+        "stock": 110,
+        "description": "Neumático muy popular para autos urbanos como Fiat Palio o Chevrolet Celta. Buena relación precio-calidad y confort.",
+        "specifications": { "Ancho": 175, "Perfil": 65, "Rodado": 14, "Indice Carga": 82, "Indice Velocidad": "T" }
+    },
+    {
+        "product_id": "BRI-POT-2254018",
+        "category": "Neumático",
+        "brand": "Bridgestone",
+        "name": "Potenza S007A 225/40 R18",
+        "price_ars": 395000.0,
+        "stock": 15,
+        "description": "Neumático de ultra-alto rendimiento para vehículos deportivos que buscan la máxima performance y agarre en curvas.",
+        "specifications": { "Ancho": 225, "Perfil": 40, "Rodado": 18, "Indice Carga": 92, "Indice Velocidad": "Y" }
+    },
+    {
+        "product_id": "GOO-EFF-1955516",
+        "category": "Neumático",
+        "brand": "Goodyear",
+        "name": "EfficientGrip Performance 195/55 R16",
+        "price_ars": 192000.0,
+        "stock": 65,
+        "description": "Neumático con foco en la eficiencia de combustible y el frenado en mojado. Ideal para Peugeot 208 o VW Polo.",
+        "specifications": { "Ancho": 195, "Perfil": 55, "Rodado": 16, "Indice Carga": 87, "Indice Velocidad": "V" }
+    },
+    {
+        "product_id": "FAT-AR440-2056515",
+        "category": "Neumático",
+        "brand": "Fate",
+        "name": "Range Runner AT/R AR440 205/65 R15",
+        "price_ars": 185000.0,
+        "stock": 50,
+        "description": "Neumático de uso mixto de industria nacional para SUVs compactas como Renault Duster. Robusto y confiable.",
+        "specifications": { "Ancho": 205, "Perfil": 65, "Rodado": 15, "Indice Carga": 94, "Indice Velocidad": "T" }
+    },
+    {
+        "product_id": "MIC-PS5-2354517",
+        "category": "Neumático",
+        "brand": "Michelin",
+        "name": "Pilot Sport 5 235/45 R17",
+        "price_ars": 380000.0,
+        "stock": 20,
+        "description": "Neumático deportivo que combina durabilidad y precisión. Excelente respuesta de dirección para una conducción dinámica.",
+        "specifications": { "Ancho": 235, "Perfil": 45, "Rodado": 17, "Indice Carga": 97, "Indice Velocidad": "Y" }
+    },
+    {
+        "product_id": "FIR-FSR-1857013",
+        "category": "Neumático",
+        "brand": "Firestone",
+        "name": "F-Series FSR 185/70 R13",
+        "price_ars": 138000.0,
+        "stock": 90,
+        "description": "Neumático clásico y económico para vehículos como Fiat Duna o VW Senda. Diseño confiable y durable.",
+        "specifications": { "Ancho": 185, "Perfil": 70, "Rodado": 13, "Indice Carga": 86, "Indice Velocidad": "T" }
+    },
+    {
+        "product_id": "PIR-SAT-2657016",
+        "category": "Neumático",
+        "brand": "Pirelli",
+        "name": "Scorpion ATR 265/70 R16",
+        "price_ars": 315000.0,
+        "stock": 38,
+        "description": "Neumático todo terreno versátil para camionetas. Buen comportamiento en todo tipo de superficies, desde asfalto hasta barro ligero.",
+        "specifications": { "Ancho": 265, "Perfil": 70, "Rodado": 16, "Indice Carga": 112, "Indice Velocidad": "T" }
+    },
+    {
+        "product_id": "DUN-DZ102-2055016",
+        "category": "Neumático",
+        "brand": "Dunlop",
+        "name": "Direzza DZ102 205/50 R16",
+        "price_ars": 205000.0,
+        "stock": 30,
+        "description": "Neumático con diseño deportivo y agresivo. Ofrece gran agarre en seco y una buena respuesta al volante.",
+        "specifications": { "Ancho": 205, "Perfil": 50, "Rodado": 16, "Indice Carga": 87, "Indice Velocidad": "V" }
+    },
+    {
+        "product_id": "HAN-RA33-2256517",
+        "category": "Neumático",
+        "brand": "Hankook",
+        "name": "Dynapro HP2 RA33 225/65 R17",
+        "price_ars": 285000.0,
+        "stock": 45,
+        "description": "Neumático de carretera (H/T) para SUVs como Toyota RAV4 o Honda CR-V. Enfocado en el confort, bajo ruido y agarre en mojado.",
+        "specifications": { "Ancho": 225, "Perfil": 65, "Rodado": 17, "Indice Carga": 102, "Indice Velocidad": "H" }
+    },
+    {
+        "product_id": "FAT-SENTIVA-1856515",
+        "category": "Neumático",
+        "brand": "Fate",
+        "name": "Sentiva AR-360 185/65 R15",
+        "price_ars": 162000.0,
+        "stock": 88,
+        "description": "Neumático de industria nacional con buen equilibrio entre durabilidad y confort, para vehículos como Chevrolet Onix o Fiat Cronos.",
+        "specifications": { "Ancho": 185, "Perfil": 65, "Rodado": 15, "Indice Carga": 88, "Indice Velocidad": "H" }
+    },
+    {
+        "product_id": "BRI-D697-2357515",
+        "category": "Neumático",
+        "brand": "Bridgestone",
+        "name": "Dueler A/T 697 235/75 R15",
+        "price_ars": 299000.0,
+        "stock": 28,
+        "description": "Neumático todo terreno de alta resistencia, diseñado para soportar las condiciones más exigentes en camionetas y 4x4.",
+        "specifications": { "Ancho": 235, "Perfil": 75, "Rodado": 15, "Indice Carga": 104, "Indice Velocidad": "S" }
+    },
+    {
+        "product_id": "GOO-ASSUR-2156016",
+        "category": "Neumático",
+        "brand": "Goodyear",
+        "name": "Assurance MaxLife 215/60 R16",
+        "price_ars": 225000.0,
+        "stock": 55,
+        "description": "Neumático diseñado para maximizar la vida útil de la banda de rodamiento sin sacrificar la seguridad. Para sedanes medianos.",
+        "specifications": { "Ancho": 215, "Perfil": 60, "Rodado": 16, "Indice Carga": 95, "Indice Velocidad": "H" }
+    },
+    {
+        "product_id": "PIR-PZERO-2454518",
+        "category": "Neumático",
+        "brand": "Pirelli",
+        "name": "P Zero 245/45 R18",
+        "price_ars": 420000.0,
+        "stock": 10,
+        "description": "El icónico neumático P Zero, desarrollado junto a los fabricantes de autos más prestigiosos. Máxima performance y seguridad.",
+        "specifications": { "Ancho": 245, "Perfil": 45, "Rodado": 18, "Indice Carga": 100, "Indice Velocidad": "Y" }
+    },
+    {
+        "product_id": "MIC-XLT-2557016",
+        "category": "Neumático",
+        "brand": "Michelin",
+        "name": "XLT A/S 255/70 R16",
+        "price_ars": 330000.0,
+        "stock": 33,
+        "description": "Neumático para camionetas Ford Ranger o similares, enfocado en durabilidad y uso en carretera, con capacidades para todo clima (All Season).",
+        "specifications": { "Ancho": 255, "Perfil": 70, "Rodado": 16, "Indice Carga": 111, "Indice Velocidad": "T" }
+    },
+    {
+        "product_id": "FIR-F900-1757014",
+        "category": "Neumático",
+        "brand": "Firestone",
+        "name": "F-Series 900 175/70 R14",
+        "price_ars": 155000.0,
+        "stock": 120,
+        "description": "Un neumático robusto y confiable para el día a día en la ciudad y ruta, para vehículos como VW Gol Trend o Fiat Siena.",
+        "specifications": { "Ancho": 175, "Perfil": 70, "Rodado": 14, "Indice Carga": 88, "Indice Velocidad": "T" }
+    },
+    {
+        "product_id": "DUN-SP-2054517",
+        "category": "Neumático",
+        "brand": "Dunlop",
+        "name": "SP Sport Maxx 050+ 205/45 R17",
+        "price_ars": 260000.0,
+        "stock": 22,
+        "description": "Neumático de verano de alto rendimiento, ofrece una excelente maniobrabilidad y agarre tanto en piso seco como mojado.",
+        "specifications": { "Ancho": 205, "Perfil": 45, "Rodado": 17, "Indice Carga": 88, "Indice Velocidad": "W" }
+    },
+    {
+        "product_id": "HAN-VENTUS-2255517",
+        "category": "Neumático",
+        "brand": "Hankook",
+        "name": "Ventus V12 evo2 225/55 R17",
+        "price_ars": 295000.0,
+        "stock": 35,
+        "description": "Neumático deportivo con un diseño de banda de rodadura atractivo, que proporciona un manejo estable y seguro a altas velocidades.",
+        "specifications": { "Ancho": 225, "Perfil": 55, "Rodado": 17, "Indice Carga": 101, "Indice Velocidad": "W" }
+    },
+    {
+        "product_id": "BRI-ECP-2155517",
+        "category": "Neumático",
+        "brand": "Bridgestone",
+        "name": "Ecopia EP150 215/55 R17",
+        "price_ars": 275000.0,
+        "stock": 40,
+        "description": "Neumático diseñado para reducir la resistencia a la rodadura, lo que contribuye a un menor consumo de combustible y emisiones de CO2.",
+        "specifications": { "Ancho": 215, "Perfil": 55, "Rodado": 17, "Indice Carga": 94, "Indice Velocidad": "V" }
     }
-  },
-  {
-    "product_id": "MIC-P4-1956015",
-    "category": "Neumático",
-    "brand": "Michelin",
-    "name": "Primacy 4 195/60 R15",
-    "price_ars": 199500.00,
-    "stock": 30,
-    "description": "Neumático premium enfocado en la seguridad y durabilidad. Ofrece un frenado superior en superficies mojadas, incluso con el desgaste.",
-    "specifications": {
-      "Ancho": 195, "Perfil": 60, "Rodado": 15, "Indice Carga": 88, "Indice Velocidad": "H"
-    }
-  },
-  {
-    "product_id": "GOO-ES-1856514",
-    "category": "Neumático",
-    "brand": "Goodyear",
-    "name": "Eagle Sport 185/65 R14",
-    "price_ars": 152300.75,
-    "stock": 60,
-    "description": "Diseño deportivo con buena respuesta de dirección y durabilidad. Optimo para vehículos compactos en el mercado argentino.",
-    "specifications": {
-      "Ancho": 185, "Perfil": 65, "Rodado": 14, "Indice Carga": 86, "Indice Velocidad": "T"
-    }
-  },
-  {
-    "product_id": "BOS-AER-22",
-    "category": "Accesorio",
-    "brand": "Bosch",
-    "name": "Juego Escobillas Aerotwin 22''",
-    "price_ars": 45500.00,
-    "stock": 110,
-    "description": "Juego de escobillas limpiaparabrisas Bosch Aerotwin. Tecnología sin partes metálicas para una limpieza uniforme y silenciosa. Larga vida útil.",
-    "specifications": {
-      "Tamaño": "22 pulgadas", "Conector": "Multi-Clip"
-    }
-  },
-  {
-    "product_id": "MOU-M30-1275",
-    "category": "Repuesto",
-    "brand": "Moura",
-    "name": "Batería Moura M30GD 12x75",
-    "price_ars": 255000.00,
-    "stock": 18,
-    "description": "Batería de libre mantenimiento para una amplia gama de vehículos Mercosur (VW Gol, Fiat Palio, Chevrolet Corsa). Calidad original.",
-    "specifications": {
-      "Voltaje": "12V", "Amperaje": "65Ah", "CCA": "500A"
-    }
-  },
-  {
-    "product_id": "YPF-ELA-F50-4L",
-    "category": "Repuesto",
-    "brand": "YPF",
-    "name": "Aceite Elaion F50 D2 5W-30 4L",
-    "price_ars": 89900.00,
-    "stock": 80,
-    "description": "Aceite sintético para motores diésel modernos con tecnología DPF. Cumple normas ACEA C2/C3. Protege el motor y optimiza el consumo.",
-    "specifications": {
-      "Viscosidad": "5W-30", "Tipo": "Sintético", "Contenido": "4 litros"
-    }
-  },
-  {
-    "product_id": "FRE-CER-VW",
-    "category": "Repuesto",
-    "brand": "Frenmax",
-    "name": "Pastillas de Freno Cerámicas VW Vento",
-    "price_ars": 68000.00,
-    "stock": 40,
-    "description": "Juego de pastillas de freno delanteras de compuesto cerámico. Reducen el polvo y el ruido, mejorando la performance de frenado. Para VW Vento/Golf.",
-    "specifications": {
-      "Posición": "Delanteras", "Material": "Cerámica"
-    }
-  },
-  {
-    "product_id": "SERV-ALB",
-    "category": "Servicio",
-    "brand": "N/A",
-    "name": "Alineación y Balanceo",
-    "price_ars": 48000.00,
-    "stock": 999,
-    "description": "Servicio completo de alineación 3D y balanceo computarizado para las 4 ruedas. Incluye revisión de tren delantero.",
-    "specifications": {
-      "Vehículo": "Auto/Camioneta Liviana"
-    }
-  },
-  {
-    "product_id": "FAT-PV-1757013",
-    "category": "Neumático",
-    "brand": "Fate",
-    "name": "Prestiva CT 175/70 R13",
-    "price_ars": 135000.00,
-    "stock": 85,
-    "description": "Neumático de fabricación nacional, ideal para autos compactos como Fiat Uno o VW Gol. Buen rendimiento kilométrico y confort de marcha.",
-    "specifications": {
-      "Ancho": 175, "Perfil": 70, "Rodado": 13, "Indice Carga": 82, "Indice Velocidad": "T"
-    }
-  },
-  {
-    "product_id": "BRI-TU-2254517",
-    "category": "Neumático",
-    "brand": "Bridgestone",
-    "name": "Turanza ER300 225/45 R17",
-    "price_ars": 245000.00,
-    "stock": 25,
-    "description": "Neumático de alta gama para vehículos medianos y grandes. Ofrece un viaje silencioso y confortable con excelente maniobrabilidad.",
-    "specifications": {
-      "Ancho": 225, "Perfil": 45, "Rodado": 17, "Indice Carga": 91, "Indice Velocidad": "W"
-    }
-  },
-  {
-    "product_id": "FIR-F900-2656517",
-    "category": "Neumático",
-    "brand": "Firestone",
-    "name": "Destination A/T 265/65 R17",
-    "price_ars": 298000.00,
-    "stock": 35,
-    "description": "Neumático todo terreno (A/T) para camionetas como Toyota Hilux o Ford Ranger. Robusto, duradero y con buen agarre en asfalto y ripio.",
-    "specifications": {
-      "Ancho": 265, "Perfil": 65, "Rodado": 17, "Indice Carga": 112, "Indice Velocidad": "S"
-    }
-  },
-  {
-    "product_id": "CAS-MAG-10W40-4L",
-    "category": "Repuesto",
-    "brand": "Castrol",
-    "name": "Aceite Magnatec 10W-40 4L",
-    "price_ars": 82500.00,
-    "stock": 95,
-    "description": "Aceite semi-sintético con moléculas inteligentes que se adhieren al motor para una capa extra de protección desde el arranque.",
-    "specifications": {
-      "Viscosidad": "10W-40", "Tipo": "Semi-sintético", "Contenido": "4 litros"
-    }
-  },
-  {
-    "product_id": "MAN-HU718-5X",
-    "category": "Repuesto",
-    "brand": "Mann-Filter",
-    "name": "Filtro de Aceite HU718/5X",
-    "price_ars": 21000.00,
-    "stock": 150,
-    "description": "Filtro de aceite de alta calidad para vehículos Volkswagen y Audi con motores 1.9 y 2.0 TDI. Asegura una filtración óptima.",
-    "specifications": {
-      "Tipo": "Elemento filtrante", "Compatibilidad": "VW/Audi TDI"
-    }
-  },
-  {
-    "product_id": "NGK-BKR6E-4",
-    "category": "Repuesto",
-    "brand": "NGK",
-    "name": "Juego de 4 Bujías BKR6E",
-    "price_ars": 39800.00,
-    "stock": 70,
-    "description": "Juego de 4 bujías de encendido NGK. Estándar de cobre, alta fiabilidad y rendimiento. Compatible con múltiples vehículos nafteros.",
-    "specifications": {
-      "Material": "Cobre", "Cantidad": 4
-    }
-  },
-  {
-    "product_id": "COR-AM-VW-DEL",
-    "category": "Repuesto",
-    "brand": "Corven",
-    "name": "Kit 2 Amortiguadores Delanteros VW Gol",
-    "price_ars": 189000.00,
-    "stock": 22,
-    "description": "Juego de amortiguadores delanteros Corven Plus para Volkswagen Gol, Gol Trend y Voyage. Mejora la estabilidad y el confort.",
-    "specifications": {
-      "Posición": "Delanteros", "Línea": "Plus", "Cantidad": 2
-    }
-  },
-  {
-    "product_id": "WAG-DOT4-1L",
-    "category": "Repuesto",
-    "brand": "Wagner",
-    "name": "Líquido de Frenos DOT 4 1L",
-    "price_ars": 18500.00,
-    "stock": 200,
-    "description": "Líquido de frenos de alto punto de ebullición, cumple con la especificación DOT 4. Esencial para la seguridad del sistema de frenado.",
-    "specifications": {
-      "Tipo": "DOT 4", "Contenido": "1 litro"
-    }
-  },
-  {
-    "product_id": "ACC-KITSEG-01",
-    "category": "Accesorio",
-    "brand": "Genérico",
-    "name": "Kit de Seguridad Reglamentario Auto",
-    "price_ars": 55000.00,
-    "stock": 80,
-    "description": "Kit de seguridad vehicular obligatorio. Incluye matafuegos de 1kg con oblea, balizas, chaleco reflectivo, botiquín y cuarta de remolque.",
-    "specifications": {
-      "Componentes": "Matafuegos, balizas, chaleco, botiquín, cuarta"
-    }
-  },
-  {
-    "product_id": "ACC-MAN-DIG",
-    "category": "Accesorio",
-    "brand": "Bremen",
-    "name": "Manómetro Medidor de Presión Digital",
-    "price_ars": 29000.00,
-    "stock": 60,
-    "description": "Medidor de presión digital para neumáticos. Pantalla LCD iluminada, fácil de usar y preciso. Ayuda a mantener la presión correcta para ahorrar combustible.",
-    "specifications": {
-      "Tipo": "Digital", "Rango": "0-150 PSI"
-    }
-  },
-  {
-    "product_id": "SERV-CAM-ACEITE",
-    "category": "Servicio",
-    "brand": "N/A",
-    "name": "Cambio de Aceite y Filtro",
-    "price_ars": 35000.00,
-    "stock": 999,
-    "description": "Servicio de cambio de aceite y filtro. El precio corresponde a la mano de obra. No incluye el costo de los productos (aceite y filtro).",
-    "specifications": {
-      "Tipo": "Mano de obra", "Incluye": "Vaciado de carter, cambio de filtro, llenado"
-    }
-  },
-  {
-    "product_id": "SERV-FRENOS",
-    "category": "Servicio",
-    "brand": "N/A",
-    "name": "Revisión y Cambio de Pastillas de Freno",
-    "price_ars": 42000.00,
-    "stock": 999,
-    "description": "Servicio de diagnóstico del sistema de frenos y cambio de pastillas en un eje (delantero o trasero). No incluye el costo de los repuestos.",
-    "specifications": {
-      "Tipo": "Mano de obra", "Eje": "Delantero o Trasero"
-    }
-  },
-  {
-    "product_id": "PIR-SL-907017",
-    "category": "Neumático",
-    "brand": "Pirelli",
-    "name": "Super City 90/70 R17",
-    "price_ars": 89000.00,
-    "stock": 50,
-    "description": "Neumático para motocicleta urbana de 110-150cc. Excelente durabilidad y rendimiento en asfalto seco y mojado. Diseño moderno.",
-    "specifications": {
-      "Vehículo": "Moto", "Ancho": 90, "Perfil": 70, "Rodado": 17, "Uso": "Urbano"
-    }
-  },
-  {
-    "product_id": "WIL-BAT-GEL",
-    "category": "Repuesto",
-    "brand": "Willard",
-    "name": "Batería Gel 12N7A-3A para Moto",
-    "price_ars": 65000.00,
-    "stock": 40,
-    "description": "Batería de tecnología gel, libre de mantenimiento, para motocicletas. Alta capacidad de arranque y resistencia a las vibraciones.",
-    "specifications": {
-      "Voltaje": "12V", "Amperaje": "7Ah", "Tipo": "Gel"
-    }
-  },
-  {
-    "product_id": "3M-CERA-PASTA",
-    "category": "Accesorio",
-    "brand": "3M",
-    "name": "Cera en Pasta Sintética 3M",
-    "price_ars": 41000.00,
-    "stock": 75,
-    "description": "Cera sintética en pasta de alta duración. Proporciona un brillo profundo y una capa de protección contra los rayos UV y la lluvia.",
-    "specifications": {
-      "Tipo": "Sintética", "Formato": "Pasta", "Contenido": "200g"
-    }
-  },
-  {
-    "product_id": "BOS-DIS-VW-GOL",
-    "category": "Repuesto",
-    "brand": "Bosch",
-    "name": "Juego Discos de Freno Delanteros VW Gol Trend",
-    "price_ars": 155000.00,
-    "stock": 33,
-    "description": "Kit de dos discos de freno sólidos para el eje delantero de VW Gol Trend / Voyage. Calidad de equipo original para una frenada segura.",
-    "specifications": {
-      "Posición": "Delanteros", "Tipo": "Sólido", "Cantidad": 2
-    }
-  },
-  {
-    "product_id": "GOO-WR-2056016",
-    "category": "Neumático",
-    "brand": "Goodyear",
-    "name": "Wrangler Armortrac 205/60 R16",
-    "price_ars": 215000.00,
-    "stock": 28,
-    "description": "Neumático de uso mixto para SUVs y camionetas livianas como Ford Ecosport o Renault Duster. Robusto para caminos de tierra.",
-    "specifications": {
-      "Ancho": 205, "Perfil": 60, "Rodado": 16, "Uso": "Mixto (A/T)"
-    }
-  },
-  {
-    "product_id": "FRA-A-PEU208",
-    "category": "Repuesto",
-    "brand": "Fram",
-    "name": "Filtro de Aire Peugeot 208 1.6",
-    "price_ars": 19500.00,
-    "stock": 120,
-    "description": "Filtro de aire de panel para Peugeot 208 y Citroen C3 con motor 1.6 VTi. Protege el motor de impurezas y optimiza la combustión.",
-    "specifications": {
-      "Tipo": "Panel", "Compatibilidad": "Peugeot 208 / Citroen C3"
-    }
-  },
-  {
-    "product_id": "LIQ-MOLY-5W40-5L",
-    "category": "Repuesto",
-    "brand": "Liqui Moly",
-    "name": "Aceite Sintético Leichtlauf 5W-40 5L",
-    "price_ars": 115000.00,
-    "stock": 40,
-    "description": "Aceite 100% sintético de tecnología alemana. Alta performance para motores modernos nafteros y diésel, con antifriccionante MoS2.",
-    "specifications": {
-      "Viscosidad": "5W-40", "Tipo": "Sintético", "Contenido": "5 litros"
-    }
-  },
-  {
-    "product_id": "ACC-ALF-VAP",
-    "category": "Accesorio",
-    "brand": "Vapren",
-    "name": "Juego Alfombras Goma Vapren (3 piezas)",
-    "price_ars": 69000.00,
-    "stock": 55,
-    "description": "Juego de alfombras de goma de alta resistencia, específicas para el modelo de tu auto. Incluye delanteras y trasera enteriza. No incluye baúl.",
-    "specifications": {
-      "Material": "Goma", "Piezas": 3, "Tipo": "A medida (consultar modelo)"
-    }
-  },
-  {
-    "product_id": "SERV-ROTACION",
-    "category": "Servicio",
-    "brand": "N/A",
-    "name": "Rotación de Neumáticos",
-    "price_ars": 15000.00,
-    "stock": 999,
-    "description": "Servicio de rotación de las 4 cubiertas para promover un desgaste parejo y extender su vida útil. Se recomienda cada 10.000 km.",
-    "specifications": {
-      "Vehículo": "Auto/Camioneta Liviana"
-    }
-  },
-  {
-    "product_id": "GAT-COR-GOL",
-    "category": "Repuesto",
-    "brand": "Gates",
-    "name": "Kit Distribución Gates VW Gol Power 1.6",
-    "price_ars": 195000.00,
-    "stock": 15,
-    "description": "Kit completo de distribución marca Gates. Incluye correa de distribución y tensor. Pieza fundamental del mantenimiento del motor.",
-    "specifications": {
-      "Componentes": "Correa y Tensor", "Compatibilidad": "VW Gol Power / Gol Trend (8v)"
-    }
-  },
-  {
-    "product_id": "MIC-LTX-2457016",
-    "category": "Neumático",
-    "brand": "Michelin",
-    "name": "LTX Force 245/70 R16",
-    "price_ars": 310000.00,
-    "stock": 40,
-    "description": "Neumático robusto para camionetas, diseñado para uso mixto. Gran durabilidad y seguridad tanto en asfalto como en caminos difíciles.",
-    "specifications": {
-      "Ancho": 245, "Perfil": 70, "Rodado": 16, "Indice Carga": 111, "Indice Velocidad": "T"
-    }
-  },
-  {
-    "product_id": "SAC-AM-HILUX-TRA",
-    "category": "Repuesto",
-    "brand": "Sachs",
-    "name": "Kit 2 Amortiguadores Traseros Toyota Hilux",
-    "price_ars": 240000.00,
-    "stock": 19,
-    "description": "Juego de amortiguadores traseros Sachs, calidad alemana, para Toyota Hilux (2005-2015). Máxima performance y control.",
-    "specifications": {
-      "Posición": "Traseros", "Compatibilidad": "Toyota Hilux 2005-2015", "Cantidad": 2
-    }
-  },
-  {
-    "product_id": "HER-TORQ",
-    "category": "Accesorio",
-    "brand": "Bremen",
-    "name": "Torquímetro de Safe 1/2 pulgada",
-    "price_ars": 95000.00,
-    "stock": 12,
-    "description": "Herramienta de precisión para aplicar el torque exacto a bulones y tuercas, especialmente en ruedas y partes del motor. Rango 28-210 Nm.",
-    "specifications": {
-      "Tipo": "Torquímetro", "Encastre": "1/2", "Rango": "28-210 Nm"
-    }
-  },
-  {
-    "product_id": "VAL-PREM-15W40-4L",
-    "category": "Repuesto",
-    "brand": "Valvoline",
-    "name": "Aceite Premium Protection 15W-40 4L",
-    "price_ars": 65000.00,
-    "stock": 110,
-    "description": "Aceite mineral de alta calidad para motores nafteros y diésel sin DPF. Ofrece protección contra el desgaste y mantiene limpio el motor.",
-    "specifications": {
-      "Viscosidad": "15W-40", "Tipo": "Mineral", "Contenido": "4 litros"
-    }
-  },
-  {
-    "product_id": "SERV-AC",
-    "category": "Servicio",
-    "brand": "N/A",
-    "name": "Diagnóstico y Carga de Aire Acondicionado",
-    "price_ars": 75000.00,
-    "stock": 999,
-    "description": "Servicio de revisión de fugas, vacío del sistema y carga completa de gas refrigerante R134a para el sistema de aire acondicionado.",
-    "specifications": {
-      "Gas": "R134a", "Incluye": "Diagnóstico, Vacío, Carga"
-    }
-  },
-  {
-    "product_id": "TYC-OPT-CORSA",
-    "category": "Repuesto",
-    "brand": "TYC",
-    "name": "Óptica Delantera Derecha Chevrolet Corsa",
-    "price_ars": 110000.00,
-    "stock": 25,
-    "description": "Óptica delantera del lado del acompañante para Chevrolet Corsa Classic (2000-2010). Calidad similar a la original, lista para instalar.",
-    "specifications": {
-      "Lado": "Derecho (Acompañante)", "Compatibilidad": "Corsa Classic 2000-2010"
-    }
-  },
-  {
-    "product_id": "FAT-AR360-1955516",
-    "category": "Neumático",
-    "brand": "Fate",
-    "name": "Eximia AR-360 195/55 R16",
-    "price_ars": 165000.00,
-    "stock": 48,
-    "description": "Neumático de rango intermedio con un diseño que favorece la evacuación de agua, mejorando la seguridad en superficies mojadas. Para autos medianos.",
-    "specifications": {
-      "Ancho": 195, "Perfil": 55, "Rodado": 16, "Indice Carga": 87, "Indice Velocidad": "V"
-    }
-  },
-  {
-    "product_id": "WD40-FLEX-400",
-    "category": "Accesorio",
-    "brand": "WD-40",
-    "name": "Aerosol Multiuso WD-40 Flexible 400ml",
-    "price_ars": 22000.00,
-    "stock": 300,
-    "description": "El clásico lubricante multiuso ahora con una cánula flexible de 18cm para llegar a los lugares más difíciles. Lubrica, desplaza la humedad, y afloja piezas.",
-    "specifications": {
-      "Tipo": "Aerosol Multiuso", "Contenido": "400ml", "Extra": "Cánula Flexible"
-    }
-  },
-  {
-    "product_id": "HEL-BAT-1290",
-    "category": "Repuesto",
-    "brand": "Heliar",
-    "name": "Batería Heliar Original 12x90",
-    "price_ars": 295000.00,
-    "stock": 14,
-    "description": "Batería de alta gama para vehículos con alta demanda eléctrica, como camionetas diésel (Amarok, S10). Tecnología PowerFrame para mayor vida útil.",
-    "specifications": {
-      "Voltaje": "12V", "Amperaje": "80Ah", "CCA": "700A"
-    }
-  },
-  {
-    "product_id": "SERV-TREN-DEL",
-    "category": "Servicio",
-    "brand": "N/A",
-    "name": "Diagnóstico de Tren Delantero y Suspensión",
-    "price_ars": 25000.00,
-    "stock": 999,
-    "description": "Revisión completa de los componentes del tren delantero y la suspensión: amortiguadores, bujes, parrillas, extremos de dirección y rótulas.",
-    "specifications": {
-      "Tipo": "Diagnóstico", "Incluye": "Informe de estado de componentes"
-    }
-  },
-  {
-    "product_id": "HAN-K435-1856015",
-    "category": "Neumático",
-    "brand": "Hankook",
-    "name": "Kinergy Eco2 K435 185/60 R15",
-    "price_ars": 178500.00,
-    "stock": 75,
-    "description": "Neumático ecológico diseñado para un bajo consumo de combustible y un andar silencioso. Ideal para autos compactos y sedanes.",
-    "specifications": { "Ancho": 185, "Perfil": 60, "Rodado": 15, "Indice Carga": 84, "Indice Velocidad": "H" }
-  },
-  {
-    "product_id": "DUN-AT5-2656018",
-    "category": "Neumático",
-    "brand": "Dunlop",
-    "name": "Grandtrek AT5 265/60 R18",
-    "price_ars": 345000.00,
-    "stock": 24,
-    "description": "Neumático todo terreno para camionetas y SUVs. Excelente balance entre rendimiento en asfalto y capacidad off-road.",
-    "specifications": { "Ancho": 265, "Perfil": 60, "Rodado": 18, "Indice Carga": 110, "Indice Velocidad": "T" }
-  },
-  {
-    "product_id": "PIR-P1-1756514",
-    "category": "Neumático",
-    "brand": "Pirelli",
-    "name": "Cinturato P1 175/65 R14",
-    "price_ars": 149900.00,
-    "stock": 110,
-    "description": "Neumático muy popular para autos urbanos como Fiat Palio o Chevrolet Celta. Buena relación precio-calidad y confort.",
-    "specifications": { "Ancho": 175, "Perfil": 65, "Rodado": 14, "Indice Carga": 82, "Indice Velocidad": "T" }
-  },
-  {
-    "product_id": "BRI-POT-2254018",
-    "category": "Neumático",
-    "brand": "Bridgestone",
-    "name": "Potenza S007A 225/40 R18",
-    "price_ars": 395000.00,
-    "stock": 15,
-    "description": "Neumático de ultra-alto rendimiento para vehículos deportivos que buscan la máxima performance y agarre en curvas.",
-    "specifications": { "Ancho": 225, "Perfil": 40, "Rodado": 18, "Indice Carga": 92, "Indice Velocidad": "Y" }
-  },
-  {
-    "product_id": "GOO-EFF-1955516",
-    "category": "Neumático",
-    "brand": "Goodyear",
-    "name": "EfficientGrip Performance 195/55 R16",
-    "price_ars": 192000.00,
-    "stock": 65,
-    "description": "Neumático con foco en la eficiencia de combustible y el frenado en mojado. Ideal para Peugeot 208 o VW Polo.",
-    "specifications": { "Ancho": 195, "Perfil": 55, "Rodado": 16, "Indice Carga": 87, "Indice Velocidad": "V" }
-  },
-  {
-    "product_id": "FAT-AR440-2056515",
-    "category": "Neumático",
-    "brand": "Fate",
-    "name": "Range Runner AT/R AR440 205/65 R15",
-    "price_ars": 185000.00,
-    "stock": 50,
-    "description": "Neumático de uso mixto de industria nacional para SUVs compactas como Renault Duster. Robusto y confiable.",
-    "specifications": { "Ancho": 205, "Perfil": 65, "Rodado": 15, "Indice Carga": 94, "Indice Velocidad": "T" }
-  },
-  {
-    "product_id": "MIC-PS5-2354517",
-    "category": "Neumático",
-    "brand": "Michelin",
-    "name": "Pilot Sport 5 235/45 R17",
-    "price_ars": 380000.00,
-    "stock": 20,
-    "description": "Neumático deportivo que combina durabilidad y precisión. Excelente respuesta de dirección para una conducción dinámica.",
-    "specifications": { "Ancho": 235, "Perfil": 45, "Rodado": 17, "Indice Carga": 97, "Indice Velocidad": "Y" }
-  },
-  {
-    "product_id": "FIR-FSR-1857013",
-    "category": "Neumático",
-    "brand": "Firestone",
-    "name": "F-Series FSR 185/70 R13",
-    "price_ars": 138000.00,
-    "stock": 90,
-    "description": "Neumático clásico y económico para vehículos como Fiat Duna o VW Senda. Diseño confiable y durable.",
-    "specifications": { "Ancho": 185, "Perfil": 70, "Rodado": 13, "Indice Carga": 86, "Indice Velocidad": "T" }
-  },
-  {
-    "product_id": "PIR-SAT-2657016",
-    "category": "Neumático",
-    "brand": "Pirelli",
-    "name": "Scorpion ATR 265/70 R16",
-    "price_ars": 315000.00,
-    "stock": 38,
-    "description": "Neumático todo terreno versátil para camionetas. Buen comportamiento en todo tipo de superficies, desde asfalto hasta barro ligero.",
-    "specifications": { "Ancho": 265, "Perfil": 70, "Rodado": 16, "Indice Carga": 112, "Indice Velocidad": "T" }
-  },
-  {
-    "product_id": "DUN-DZ102-2055016",
-    "category": "Neumático",
-    "brand": "Dunlop",
-    "name": "Direzza DZ102 205/50 R16",
-    "price_ars": 205000.00,
-    "stock": 30,
-    "description": "Neumático con diseño deportivo y agresivo. Ofrece gran agarre en seco y una buena respuesta al volante.",
-    "specifications": { "Ancho": 205, "Perfil": 50, "Rodado": 16, "Indice Carga": 87, "Indice Velocidad": "V" }
-  },
-  {
-    "product_id": "HAN-RA33-2256517",
-    "category": "Neumático",
-    "brand": "Hankook",
-    "name": "Dynapro HP2 RA33 225/65 R17",
-    "price_ars": 285000.00,
-    "stock": 45,
-    "description": "Neumático de carretera (H/T) para SUVs como Toyota RAV4 o Honda CR-V. Enfocado en el confort, bajo ruido y agarre en mojado.",
-    "specifications": { "Ancho": 225, "Perfil": 65, "Rodado": 17, "Indice Carga": 102, "Indice Velocidad": "H" }
-  },
-  {
-    "product_id": "FAT-SENTIVA-1856515",
-    "category": "Neumático",
-    "brand": "Fate",
-    "name": "Sentiva AR-360 185/65 R15",
-    "price_ars": 162000.00,
-    "stock": 88,
-    "description": "Neumático de industria nacional con buen equilibrio entre durabilidad y confort, para vehículos como Chevrolet Onix o Fiat Cronos.",
-    "specifications": { "Ancho": 185, "Perfil": 65, "Rodado": 15, "Indice Carga": 88, "Indice Velocidad": "H" }
-  },
-  {
-    "product_id": "BRI-D697-2357515",
-    "category": "Neumático",
-    "brand": "Bridgestone",
-    "name": "Dueler A/T 697 235/75 R15",
-    "price_ars": 299000.00,
-    "stock": 28,
-    "description": "Neumático todo terreno de alta resistencia, diseñado para soportar las condiciones más exigentes en camionetas y 4x4.",
-    "specifications": { "Ancho": 235, "Perfil": 75, "Rodado": 15, "Indice Carga": 104, "Indice Velocidad": "S" }
-  },
-  {
-    "product_id": "GOO-ASSUR-2156016",
-    "category": "Neumático",
-    "brand": "Goodyear",
-    "name": "Assurance MaxLife 215/60 R16",
-    "price_ars": 225000.00,
-    "stock": 55,
-    "description": "Neumático diseñado para maximizar la vida útil de la banda de rodamiento sin sacrificar la seguridad. Para sedanes medianos.",
-    "specifications": { "Ancho": 215, "Perfil": 60, "Rodado": 16, "Indice Carga": 95, "Indice Velocidad": "H" }
-  },
-  {
-    "product_id": "PIR-PZERO-2454518",
-    "category": "Neumático",
-    "brand": "Pirelli",
-    "name": "P Zero 245/45 R18",
-    "price_ars": 420000.00,
-    "stock": 10,
-    "description": "El icónico neumático P Zero, desarrollado junto a los fabricantes de autos más prestigiosos. Máxima performance y seguridad.",
-    "specifications": { "Ancho": 245, "Perfil": 45, "Rodado": 18, "Indice Carga": 100, "Indice Velocidad": "Y" }
-  },
-  {
-    "product_id": "MIC-XLT-2557016",
-    "category": "Neumático",
-    "brand": "Michelin",
-    "name": "XLT A/S 255/70 R16",
-    "price_ars": 330000.00,
-    "stock": 33,
-    "description": "Neumático para camionetas Ford Ranger o similares, enfocado en durabilidad y uso en carretera, con capacidades para todo clima (All Season).",
-    "specifications": { "Ancho": 255, "Perfil": 70, "Rodado": 16, "Indice Carga": 111, "Indice Velocidad": "T" }
-  },
-  {
-    "product_id": "FIR-F900-1757014",
-    "category": "Neumático",
-    "brand": "Firestone",
-    "name": "F-Series 900 175/70 R14",
-    "price_ars": 155000.00,
-    "stock": 120,
-    "description": "Un neumático robusto y confiable para el día a día en la ciudad y ruta, para vehículos como VW Gol Trend o Fiat Siena.",
-    "specifications": { "Ancho": 175, "Perfil": 70, "Rodado": 14, "Indice Carga": 88, "Indice Velocidad": "T" }
-  },
-  {
-    "product_id": "DUN-SP-2054517",
-    "category": "Neumático",
-    "brand": "Dunlop",
-    "name": "SP Sport Maxx 050+ 205/45 R17",
-    "price_ars": 260000.00,
-    "stock": 22,
-    "description": "Neumático de verano de alto rendimiento, ofrece una excelente maniobrabilidad y agarre tanto en piso seco como mojado.",
-    "specifications": { "Ancho": 205, "Perfil": 45, "Rodado": 17, "Indice Carga": 88, "Indice Velocidad": "W" }
-  },
-  {
-    "product_id": "HAN-VENTUS-2255517",
-    "category": "Neumático",
-    "brand": "Hankook",
-    "name": "Ventus V12 evo2 225/55 R17",
-    "price_ars": 295000.00,
-    "stock": 35,
-    "description": "Neumático deportivo con un diseño de banda de rodadura atractivo, que proporciona un manejo estable y seguro a altas velocidades.",
-    "specifications": { "Ancho": 225, "Perfil": 55, "Rodado": 17, "Indice Carga": 101, "Indice Velocidad": "W" }
-  },
-  {
-    "product_id": "BRI-ECP-2155517",
-    "category": "Neumático",
-    "brand": "Bridgestone",
-    "name": "Ecopia EP150 215/55 R17",
-    "price_ars": 275000.00,
-    "stock": 40,
-    "description": "Neumático diseñado para reducir la resistencia a la rodadura, lo que contribuye a un menor consumo de combustible y emisiones de CO2.",
-    "specifications": { "Ancho": 215, "Perfil": 55, "Rodado": 17, "Indice Carga": 94, "Indice Velocidad": "V" }
-  }
 ]

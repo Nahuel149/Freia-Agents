@@ -32,9 +32,7 @@ router.post('/', async (req, res, next) => {
 
         let userId: string | null = null
         if (data.userEmail) {
-            const userRows = await app.AppDataSource.query(`SELECT id FROM "user" WHERE lower(email)=lower($1) LIMIT 1`, [
-                data.userEmail
-            ])
+            const userRows = await app.AppDataSource.query(`SELECT id FROM "user" WHERE lower(email)=lower($1) LIMIT 1`, [data.userEmail])
             userId = userRows?.[0]?.id || null
         }
 

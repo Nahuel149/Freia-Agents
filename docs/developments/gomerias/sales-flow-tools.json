@@ -1,224 +1,224 @@
 {
-  "sales_flow_tools": [
-    {
-      "id": "httpRequestPost_create_quote",
-      "name": "Create Product Quote",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/quote",
-      "description": "Crea una cotización para un producto específico. Usar cuando el cliente solicite precio de un neumático o producto.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "productId": "ID del producto a cotizar",
-        "quantity": "Cantidad solicitada",
-        "clientId": "ID del cliente",
-        "clientType": "Tipo de cliente: 'final_consumer' o 'tire_shop'",
-        "vehicleModel": "Modelo de vehículo (si aplica)",
-        "tireNumber": "Número de neumático (si aplica)",
-        "specialRequirements": "Requerimientos especiales"
-      }
-    },
-    {
-      "id": "httpRequestGet_product_alternatives",
-      "name": "Get Product Alternatives",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/alternatives",
-      "description": "Obtiene productos alternativos cuando el cliente rechaza el precio inicial. Usar para ofrecer opciones más económicas.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "queryParams": {
-        "originalProductId": "ID del producto original",
-        "maxPrice": "Precio máximo que acepta el cliente",
-        "category": "Categoría del producto",
-        "vehicleModel": "Modelo de vehículo (para compatibilidad)",
-        "sortBy": "Ordenar por: 'price', 'quality', 'availability'"
-      }
-    },
-    {
-      "id": "httpRequestPost_apply_discount",
-      "name": "Apply Discount",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/discount",
-      "description": "Aplica descuentos automáticos por cantidad o promociones. Usar cuando el cliente compre múltiples unidades.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "quoteId": "ID de la cotización",
-        "discountType": "Tipo: 'quantity', 'loyalty', 'seasonal', 'clearance'",
-        "quantity": "Cantidad para descuento por volumen",
-        "clientId": "ID del cliente para descuentos de lealtad"
-      }
-    },
-    {
-      "id": "httpRequestPost_request_price_approval",
-      "name": "Request Price Approval",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/price-approval",
-      "description": "Solicita aprobación de descuento especial al administrador. Usar cuando el cliente no acepta el precio con descuentos automáticos.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "quoteId": "ID de la cotización",
-        "clientId": "ID del cliente",
-        "requestedDiscount": "Porcentaje de descuento solicitado",
-        "reason": "Razón para el descuento especial",
-        "clientPhone": "Teléfono para contacto de respuesta",
-        "estimatedResponseTime": "Tiempo estimado de respuesta en horas",
-        "priority": "Prioridad: 'high', 'medium', 'low'"
-      }
-    },
-    {
-      "id": "httpRequestGet_delivery_options",
-      "name": "Get Delivery Options",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/delivery",
-      "description": "Obtiene opciones de entrega y tiempos estimados. Usar cuando el cliente acepte la cotización.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "queryParams": {
-        "clientId": "ID del cliente",
-        "productId": "ID del producto",
-        "quantity": "Cantidad a entregar",
-        "address": "Dirección de entrega",
-        "urgency": "Urgencia: 'standard', 'express', 'same_day'"
-      }
-    },
-    {
-      "id": "httpRequestPost_request_delivery_improvement",
-      "name": "Request Delivery Time Improvement",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/delivery-improvement",
-      "description": "Solicita mejora en tiempos de entrega cuando el cliente no acepta los tiempos estándar.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "quoteId": "ID de la cotización",
-        "clientId": "ID del cliente",
-        "currentDeliveryTime": "Tiempo actual de entrega en días",
-        "requestedDeliveryTime": "Tiempo solicitado por el cliente",
-        "reason": "Razón para la mejora de tiempo",
-        "clientPhone": "Teléfono para contacto de respuesta",
-        "priority": "Prioridad de la solicitud"
-      }
-    },
-    {
-      "id": "httpRequestPost_create_sale",
-      "name": "Create Sale Record",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/create",
-      "description": "Crea el registro de venta cuando el cliente confirma la compra. Usar al finalizar el proceso de venta.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "quoteId": "ID de la cotización aprobada",
-        "clientId": "ID del cliente",
-        "products": "Array de productos vendidos",
-        "totalAmount": "Monto total de la venta",
-        "paymentMethod": "Método de pago elegido",
-        "deliveryMethod": "Método de entrega elegido",
-        "deliveryAddress": "Dirección de entrega",
-        "needsInvoiceA": "Si necesita factura A (boolean)",
-        "taxId": "CUIT/CUIL para factura A",
-        "estimatedDelivery": "Fecha estimada de entrega",
-        "notes": "Notas adicionales de la venta"
-      }
-    },
-    {
-      "id": "httpRequestGet_payment_methods",
-      "name": "Get Payment Methods",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/payment-methods",
-      "description": "Obtiene métodos de pago disponibles y sus condiciones. Usar durante el proceso de finalización de venta.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "queryParams": {
-        "amount": "Monto total de la venta",
-        "clientType": "Tipo de cliente para condiciones especiales"
-      }
-    },
-    {
-      "id": "httpRequestPost_generate_order_number",
-      "name": "Generate Order Number",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/order-number",
-      "description": "Genera número de pedido único para la venta. Usar después de confirmar la venta.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "saleId": "ID de la venta creada",
-        "clientId": "ID del cliente",
-        "saleDate": "Fecha de la venta"
-      }
-    },
-    {
-      "id": "httpRequestGet_sale_summary",
-      "name": "Get Sale Summary",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/sales/{saleId}/summary",
-      "description": "Obtiene resumen completo de la venta para mostrar al cliente. Usar para confirmación final.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "pathParams": {
-        "saleId": "ID de la venta"
-      }
+    "sales_flow_tools": [
+        {
+            "id": "httpRequestPost_create_quote",
+            "name": "Create Product Quote",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/quote",
+            "description": "Crea una cotización para un producto específico. Usar cuando el cliente solicite precio de un neumático o producto.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "productId": "ID del producto a cotizar",
+                "quantity": "Cantidad solicitada",
+                "clientId": "ID del cliente",
+                "clientType": "Tipo de cliente: 'final_consumer' o 'tire_shop'",
+                "vehicleModel": "Modelo de vehículo (si aplica)",
+                "tireNumber": "Número de neumático (si aplica)",
+                "specialRequirements": "Requerimientos especiales"
+            }
+        },
+        {
+            "id": "httpRequestGet_product_alternatives",
+            "name": "Get Product Alternatives",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/alternatives",
+            "description": "Obtiene productos alternativos cuando el cliente rechaza el precio inicial. Usar para ofrecer opciones más económicas.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "queryParams": {
+                "originalProductId": "ID del producto original",
+                "maxPrice": "Precio máximo que acepta el cliente",
+                "category": "Categoría del producto",
+                "vehicleModel": "Modelo de vehículo (para compatibilidad)",
+                "sortBy": "Ordenar por: 'price', 'quality', 'availability'"
+            }
+        },
+        {
+            "id": "httpRequestPost_apply_discount",
+            "name": "Apply Discount",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/discount",
+            "description": "Aplica descuentos automáticos por cantidad o promociones. Usar cuando el cliente compre múltiples unidades.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "quoteId": "ID de la cotización",
+                "discountType": "Tipo: 'quantity', 'loyalty', 'seasonal', 'clearance'",
+                "quantity": "Cantidad para descuento por volumen",
+                "clientId": "ID del cliente para descuentos de lealtad"
+            }
+        },
+        {
+            "id": "httpRequestPost_request_price_approval",
+            "name": "Request Price Approval",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/price-approval",
+            "description": "Solicita aprobación de descuento especial al administrador. Usar cuando el cliente no acepta el precio con descuentos automáticos.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "quoteId": "ID de la cotización",
+                "clientId": "ID del cliente",
+                "requestedDiscount": "Porcentaje de descuento solicitado",
+                "reason": "Razón para el descuento especial",
+                "clientPhone": "Teléfono para contacto de respuesta",
+                "estimatedResponseTime": "Tiempo estimado de respuesta en horas",
+                "priority": "Prioridad: 'high', 'medium', 'low'"
+            }
+        },
+        {
+            "id": "httpRequestGet_delivery_options",
+            "name": "Get Delivery Options",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/delivery",
+            "description": "Obtiene opciones de entrega y tiempos estimados. Usar cuando el cliente acepte la cotización.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "queryParams": {
+                "clientId": "ID del cliente",
+                "productId": "ID del producto",
+                "quantity": "Cantidad a entregar",
+                "address": "Dirección de entrega",
+                "urgency": "Urgencia: 'standard', 'express', 'same_day'"
+            }
+        },
+        {
+            "id": "httpRequestPost_request_delivery_improvement",
+            "name": "Request Delivery Time Improvement",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/delivery-improvement",
+            "description": "Solicita mejora en tiempos de entrega cuando el cliente no acepta los tiempos estándar.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "quoteId": "ID de la cotización",
+                "clientId": "ID del cliente",
+                "currentDeliveryTime": "Tiempo actual de entrega en días",
+                "requestedDeliveryTime": "Tiempo solicitado por el cliente",
+                "reason": "Razón para la mejora de tiempo",
+                "clientPhone": "Teléfono para contacto de respuesta",
+                "priority": "Prioridad de la solicitud"
+            }
+        },
+        {
+            "id": "httpRequestPost_create_sale",
+            "name": "Create Sale Record",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/create",
+            "description": "Crea el registro de venta cuando el cliente confirma la compra. Usar al finalizar el proceso de venta.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "quoteId": "ID de la cotización aprobada",
+                "clientId": "ID del cliente",
+                "products": "Array de productos vendidos",
+                "totalAmount": "Monto total de la venta",
+                "paymentMethod": "Método de pago elegido",
+                "deliveryMethod": "Método de entrega elegido",
+                "deliveryAddress": "Dirección de entrega",
+                "needsInvoiceA": "Si necesita factura A (boolean)",
+                "taxId": "CUIT/CUIL para factura A",
+                "estimatedDelivery": "Fecha estimada de entrega",
+                "notes": "Notas adicionales de la venta"
+            }
+        },
+        {
+            "id": "httpRequestGet_payment_methods",
+            "name": "Get Payment Methods",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/payment-methods",
+            "description": "Obtiene métodos de pago disponibles y sus condiciones. Usar durante el proceso de finalización de venta.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "queryParams": {
+                "amount": "Monto total de la venta",
+                "clientType": "Tipo de cliente para condiciones especiales"
+            }
+        },
+        {
+            "id": "httpRequestPost_generate_order_number",
+            "name": "Generate Order Number",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/order-number",
+            "description": "Genera número de pedido único para la venta. Usar después de confirmar la venta.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "saleId": "ID de la venta creada",
+                "clientId": "ID del cliente",
+                "saleDate": "Fecha de la venta"
+            }
+        },
+        {
+            "id": "httpRequestGet_sale_summary",
+            "name": "Get Sale Summary",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/sales/{saleId}/summary",
+            "description": "Obtiene resumen completo de la venta para mostrar al cliente. Usar para confirmación final.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "pathParams": {
+                "saleId": "ID de la venta"
+            }
+        }
+    ],
+    "integration_notes": {
+        "database_tables": [
+            "sales - Tabla principal de ventas",
+            "sale_record - Registro detallado de ventas",
+            "product_inventory - Para verificar stock y precios",
+            "client_account - Información del cliente",
+            "price_approval_requests - Solicitudes de descuentos especiales",
+            "delivery_improvement_requests - Solicitudes de mejora de tiempos"
+        ],
+        "existing_functions": [
+            "sales-agent.js - Lógica de recomendaciones y pricing",
+            "sales-tracker.js - Tracking de ventas y productos top"
+        ],
+        "workflow_steps": [
+            "1. Cotización inicial con checkStock()",
+            "2. Ofrecer alternativas si rechaza precio",
+            "3. Aplicar descuentos automáticos",
+            "4. Solicitar aprobación de descuentos especiales si es necesario",
+            "5. Mostrar opciones de entrega",
+            "6. Solicitar mejora de tiempos si es necesario",
+            "7. Confirmar método de pago",
+            "8. Crear registro de venta",
+            "9. Generar número de pedido",
+            "10. Mostrar resumen final"
+        ],
+        "api_endpoints_needed": [
+            "POST /api/v1/sales/quote - Crear cotización",
+            "GET /api/v1/sales/alternatives - Productos alternativos",
+            "POST /api/v1/sales/discount - Aplicar descuentos",
+            "POST /api/v1/sales/price-approval - Solicitar aprobación de precio",
+            "GET /api/v1/sales/delivery - Opciones de entrega",
+            "POST /api/v1/sales/delivery-improvement - Mejorar tiempos",
+            "POST /api/v1/sales/create - Crear venta",
+            "GET /api/v1/sales/payment-methods - Métodos de pago",
+            "POST /api/v1/sales/order-number - Generar número de pedido",
+            "GET /api/v1/sales/{id}/summary - Resumen de venta"
+        ]
     }
-  ],
-  "integration_notes": {
-    "database_tables": [
-      "sales - Tabla principal de ventas",
-      "sale_record - Registro detallado de ventas",
-      "product_inventory - Para verificar stock y precios",
-      "client_account - Información del cliente",
-      "price_approval_requests - Solicitudes de descuentos especiales",
-      "delivery_improvement_requests - Solicitudes de mejora de tiempos"
-    ],
-    "existing_functions": [
-      "sales-agent.js - Lógica de recomendaciones y pricing",
-      "sales-tracker.js - Tracking de ventas y productos top"
-    ],
-    "workflow_steps": [
-      "1. Cotización inicial con checkStock()",
-      "2. Ofrecer alternativas si rechaza precio",
-      "3. Aplicar descuentos automáticos",
-      "4. Solicitar aprobación de descuentos especiales si es necesario",
-      "5. Mostrar opciones de entrega",
-      "6. Solicitar mejora de tiempos si es necesario",
-      "7. Confirmar método de pago",
-      "8. Crear registro de venta",
-      "9. Generar número de pedido",
-      "10. Mostrar resumen final"
-    ],
-    "api_endpoints_needed": [
-      "POST /api/v1/sales/quote - Crear cotización",
-      "GET /api/v1/sales/alternatives - Productos alternativos",
-      "POST /api/v1/sales/discount - Aplicar descuentos",
-      "POST /api/v1/sales/price-approval - Solicitar aprobación de precio",
-      "GET /api/v1/sales/delivery - Opciones de entrega",
-      "POST /api/v1/sales/delivery-improvement - Mejorar tiempos",
-      "POST /api/v1/sales/create - Crear venta",
-      "GET /api/v1/sales/payment-methods - Métodos de pago",
-      "POST /api/v1/sales/order-number - Generar número de pedido",
-      "GET /api/v1/sales/{id}/summary - Resumen de venta"
-    ]
-  }
 }

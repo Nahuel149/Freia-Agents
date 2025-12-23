@@ -1,180 +1,177 @@
 {
-  "customer_management_tools": [
-    {
-      "id": "httpRequestGet_customer_info",
-      "name": "Get Customer Information",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}",
-      "description": "Obtiene información completa de un cliente existente. Usar cuando se necesite consultar datos del cliente.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "pathParams": {
-        "clientId": "ID único del cliente"
-      }
-    },
-    {
-      "id": "httpRequestPost_create_customer",
-      "name": "Create New Customer",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/customers",
-      "description": "Crea un nuevo registro de cliente. Usar cuando un cliente nuevo interactúe por primera vez.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "name": "Nombre completo del cliente",
-        "company": "Empresa (opcional, para clientes B2B)",
-        "email": "Email del cliente",
-        "phone": "Teléfono del cliente",
-        "address": "Dirección del cliente",
-        "customerType": "Tipo de cliente: 'final_consumer' o 'tire_shop'",
-        "taxId": "CUIT/CUIL (para facturación A)",
-        "notes": "Notas adicionales sobre el cliente"
-      }
-    },
-    {
-      "id": "httpRequestPut_update_customer",
-      "name": "Update Customer Information",
-      "type": "HttpRequestPut",
-      "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}",
-      "description": "Actualiza información de un cliente existente. Usar cuando el cliente proporcione nuevos datos.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "pathParams": {
-        "clientId": "ID único del cliente"
-      },
-      "body": {
-        "name": "Nombre completo del cliente",
-        "company": "Empresa (opcional)",
-        "email": "Email del cliente",
-        "phone": "Teléfono del cliente",
-        "address": "Dirección del cliente",
-        "taxId": "CUIT/CUIL",
-        "notes": "Notas adicionales"
-      }
-    },
-    {
-      "id": "httpRequestGet_customer_history",
-      "name": "Get Customer Purchase History",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}/history",
-      "description": "Obtiene el historial de compras de un cliente. Usar para personalizar recomendaciones y ofertas.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "pathParams": {
-        "clientId": "ID único del cliente"
-      },
-      "queryParams": {
-        "limit": "Número máximo de registros (default: 10)",
-        "dateFrom": "Fecha desde (YYYY-MM-DD)",
-        "dateTo": "Fecha hasta (YYYY-MM-DD)"
-      }
-    },
-    {
-      "id": "httpRequestPost_create_lead",
-      "name": "Create Sales Lead",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/leads",
-      "description": "Crea un lead de venta cuando un cliente muestre interés pero no concrete la compra.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "body": {
-        "name": "Nombre del cliente",
-        "email": "Email del cliente",
-        "phone": "Teléfono del cliente",
-        "chatflowId": "ID del chatflow actual",
-        "chatId": "ID de la conversación",
-        "productInterest": "Producto de interés",
-        "reason": "Razón por la que no se concretó (precio, tiempo, stock)",
-        "followUpDate": "Fecha para seguimiento",
-        "priority": "Prioridad del lead (high, medium, low)"
-      }
-    },
-    {
-      "id": "httpRequestGet_search_customers",
-      "name": "Search Customers",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/customers/search",
-      "description": "Busca clientes por nombre, teléfono, email o empresa. Usar para identificar clientes existentes.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "queryParams": {
-        "query": "Término de búsqueda (nombre, teléfono, email)",
-        "type": "Tipo de cliente: 'final_consumer' o 'tire_shop'",
-        "limit": "Número máximo de resultados (default: 10)"
-      }
-    },
-    {
-      "id": "httpRequestPost_customer_preferences",
-      "name": "Save Customer Preferences",
-      "type": "HttpRequestPost",
-      "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}/preferences",
-      "description": "Guarda las preferencias del cliente (marcas, categorías, rango de precios). Usar para personalización.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "pathParams": {
-        "clientId": "ID único del cliente"
-      },
-      "body": {
-        "preferredBrands": "Array de marcas preferidas",
-        "preferredCategories": "Array de categorías de interés",
-        "priceRange": "Rango de precio preferido (low, medium, high)",
-        "paymentMethods": "Métodos de pago preferidos",
-        "deliveryPreference": "Preferencia de entrega (pickup, delivery)",
-        "communicationPreference": "Preferencia de comunicación (phone, email, whatsapp)"
-      }
-    },
-    {
-      "id": "httpRequestGet_customer_analytics",
-      "name": "Get Customer Analytics",
-      "type": "HttpRequestGet",
-      "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}/analytics",
-      "description": "Obtiene análisis del comportamiento del cliente. Usar para estrategias de venta personalizadas.",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${FREIA_API_KEY}"
-      },
-      "pathParams": {
-        "clientId": "ID único del cliente"
-      }
+    "customer_management_tools": [
+        {
+            "id": "httpRequestGet_customer_info",
+            "name": "Get Customer Information",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}",
+            "description": "Obtiene información completa de un cliente existente. Usar cuando se necesite consultar datos del cliente.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "pathParams": {
+                "clientId": "ID único del cliente"
+            }
+        },
+        {
+            "id": "httpRequestPost_create_customer",
+            "name": "Create New Customer",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/customers",
+            "description": "Crea un nuevo registro de cliente. Usar cuando un cliente nuevo interactúe por primera vez.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "name": "Nombre completo del cliente",
+                "company": "Empresa (opcional, para clientes B2B)",
+                "email": "Email del cliente",
+                "phone": "Teléfono del cliente",
+                "address": "Dirección del cliente",
+                "customerType": "Tipo de cliente: 'final_consumer' o 'tire_shop'",
+                "taxId": "CUIT/CUIL (para facturación A)",
+                "notes": "Notas adicionales sobre el cliente"
+            }
+        },
+        {
+            "id": "httpRequestPut_update_customer",
+            "name": "Update Customer Information",
+            "type": "HttpRequestPut",
+            "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}",
+            "description": "Actualiza información de un cliente existente. Usar cuando el cliente proporcione nuevos datos.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "pathParams": {
+                "clientId": "ID único del cliente"
+            },
+            "body": {
+                "name": "Nombre completo del cliente",
+                "company": "Empresa (opcional)",
+                "email": "Email del cliente",
+                "phone": "Teléfono del cliente",
+                "address": "Dirección del cliente",
+                "taxId": "CUIT/CUIL",
+                "notes": "Notas adicionales"
+            }
+        },
+        {
+            "id": "httpRequestGet_customer_history",
+            "name": "Get Customer Purchase History",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}/history",
+            "description": "Obtiene el historial de compras de un cliente. Usar para personalizar recomendaciones y ofertas.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "pathParams": {
+                "clientId": "ID único del cliente"
+            },
+            "queryParams": {
+                "limit": "Número máximo de registros (default: 10)",
+                "dateFrom": "Fecha desde (YYYY-MM-DD)",
+                "dateTo": "Fecha hasta (YYYY-MM-DD)"
+            }
+        },
+        {
+            "id": "httpRequestPost_create_lead",
+            "name": "Create Sales Lead",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/leads",
+            "description": "Crea un lead de venta cuando un cliente muestre interés pero no concrete la compra.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "body": {
+                "name": "Nombre del cliente",
+                "email": "Email del cliente",
+                "phone": "Teléfono del cliente",
+                "chatflowId": "ID del chatflow actual",
+                "chatId": "ID de la conversación",
+                "productInterest": "Producto de interés",
+                "reason": "Razón por la que no se concretó (precio, tiempo, stock)",
+                "followUpDate": "Fecha para seguimiento",
+                "priority": "Prioridad del lead (high, medium, low)"
+            }
+        },
+        {
+            "id": "httpRequestGet_search_customers",
+            "name": "Search Customers",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/customers/search",
+            "description": "Busca clientes por nombre, teléfono, email o empresa. Usar para identificar clientes existentes.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "queryParams": {
+                "query": "Término de búsqueda (nombre, teléfono, email)",
+                "type": "Tipo de cliente: 'final_consumer' o 'tire_shop'",
+                "limit": "Número máximo de resultados (default: 10)"
+            }
+        },
+        {
+            "id": "httpRequestPost_customer_preferences",
+            "name": "Save Customer Preferences",
+            "type": "HttpRequestPost",
+            "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}/preferences",
+            "description": "Guarda las preferencias del cliente (marcas, categorías, rango de precios). Usar para personalización.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "pathParams": {
+                "clientId": "ID único del cliente"
+            },
+            "body": {
+                "preferredBrands": "Array de marcas preferidas",
+                "preferredCategories": "Array de categorías de interés",
+                "priceRange": "Rango de precio preferido (low, medium, high)",
+                "paymentMethods": "Métodos de pago preferidos",
+                "deliveryPreference": "Preferencia de entrega (pickup, delivery)",
+                "communicationPreference": "Preferencia de comunicación (phone, email, whatsapp)"
+            }
+        },
+        {
+            "id": "httpRequestGet_customer_analytics",
+            "name": "Get Customer Analytics",
+            "type": "HttpRequestGet",
+            "url": "${FREIA_API_BASE_URL}/api/v1/customers/{clientId}/analytics",
+            "description": "Obtiene análisis del comportamiento del cliente. Usar para estrategias de venta personalizadas.",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${FREIA_API_KEY}"
+            },
+            "pathParams": {
+                "clientId": "ID único del cliente"
+            }
+        }
+    ],
+    "integration_notes": {
+        "database_tables": [
+            "client_account - Tabla principal de clientes",
+            "leads - Tabla de leads de ventas",
+            "sale_record - Historial de compras",
+            "agent_event - Interacciones del cliente con el agente"
+        ],
+        "existing_entities": ["ClientAccount.ts - Entity para información de clientes", "leads API - API existente para gestión de leads"],
+        "api_endpoints_needed": [
+            "GET /api/v1/customers/{id} - Obtener cliente",
+            "POST /api/v1/customers - Crear cliente",
+            "PUT /api/v1/customers/{id} - Actualizar cliente",
+            "GET /api/v1/customers/{id}/history - Historial de compras",
+            "GET /api/v1/customers/search - Buscar clientes",
+            "POST /api/v1/customers/{id}/preferences - Guardar preferencias",
+            "GET /api/v1/customers/{id}/analytics - Análisis del cliente"
+        ],
+        "customer_types": {
+            "final_consumer": "Consumidor final que compra para uso personal",
+            "tire_shop": "Gomería que compra para reventa"
+        }
     }
-  ],
-  "integration_notes": {
-    "database_tables": [
-      "client_account - Tabla principal de clientes",
-      "leads - Tabla de leads de ventas",
-      "sale_record - Historial de compras",
-      "agent_event - Interacciones del cliente con el agente"
-    ],
-    "existing_entities": [
-      "ClientAccount.ts - Entity para información de clientes",
-      "leads API - API existente para gestión de leads"
-    ],
-    "api_endpoints_needed": [
-      "GET /api/v1/customers/{id} - Obtener cliente",
-      "POST /api/v1/customers - Crear cliente",
-      "PUT /api/v1/customers/{id} - Actualizar cliente",
-      "GET /api/v1/customers/{id}/history - Historial de compras",
-      "GET /api/v1/customers/search - Buscar clientes",
-      "POST /api/v1/customers/{id}/preferences - Guardar preferencias",
-      "GET /api/v1/customers/{id}/analytics - Análisis del cliente"
-    ],
-    "customer_types": {
-      "final_consumer": "Consumidor final que compra para uso personal",
-      "tire_shop": "Gomería que compra para reventa"
-    }
-  }
 }

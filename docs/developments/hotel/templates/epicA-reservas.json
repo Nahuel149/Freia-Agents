@@ -1,247 +1,247 @@
 {
-  "name": "DEMO Hoteles - Epic A (Reservas)",
-  "description": "Flujo base de reservas nuevas con reglas, disponibilidad y confirmación.",
-  "nodes": [
-    {
-      "id": "start",
-      "type": "Start",
-      "label": "Start",
-      "data": {
-        "inputType": "chat",
-        "ephemeralMemory": false,
-        "flowState": {
-          "hotel": "Gran Sol",
-          "sede": "",
-          "checkIn": "",
-          "checkOut": "",
-          "noches": 0,
-          "huespedes": 0,
-          "habitacionTipo": "",
-          "tarifaTipo": "",
-          "reglasAplicadas": "",
-          "disponibilidad": "",
-          "alternativas": "",
-          "precio": "",
-          "moneda": "USD",
-          "feriadoFlag": false,
-          "minNoches": 0,
-          "cupo": 0,
-          "metodoPago": "",
-          "email": "",
-          "nombre": "",
-          "preferencias": "",
-          "reserva": "",
-          "reservaId": ""
-        }
-      },
-      "position": [0, 0]
-    },
-    {
-      "id": "memory",
-      "type": "MongoDBAtlasChatMemory",
-      "label": "Memory MongoDB",
-      "data": {
-        "credential": "{{MONGO_CREDENTIAL_ID}}",
-        "databaseName": "freia_demo",
-        "collectionName": "chat_memory_hoteles",
-        "sessionId": "{{ $flow.chatId }}",
-        "memoryKey": "history"
-      },
-      "position": [0, 140]
-    },
-    {
-      "id": "llm_normalize",
-      "type": "LLM",
-      "label": "LLM Normalizar",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          {
-            "role": "system",
-            "content": "Eres un asistente de reservas de hotel. Extrae datos y devuelve SOLO JSON. Campos: sede, checkIn (YYYY-MM-DD), checkOut (YYYY-MM-DD), noches, huespedes, habitacionTipo, email, nombre, preferencias, needsClarification (bool), missingFields (array). Valida que checkOut > checkIn. Calcula noches si ambas fechas presentes. No inventes datos; marca missingFields si faltan."
-          },
-          { "role": "user", "content": "{{ $flow.input }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "sede": { "type": "string" },
-            "checkIn": { "type": "string" },
-            "checkOut": { "type": "string" },
-            "noches": { "type": "number" },
-            "huespedes": { "type": "number" },
-            "habitacionTipo": { "type": "string" },
-            "email": { "type": "string" },
-            "nombre": { "type": "string" },
-            "preferencias": { "type": "string" },
-            "needsClarification": { "type": "boolean" },
-            "missingFields": { "type": "array", "items": { "type": "string" } }
-          }
+    "name": "DEMO Hoteles - Epic A (Reservas)",
+    "description": "Flujo base de reservas nuevas con reglas, disponibilidad y confirmación.",
+    "nodes": [
+        {
+            "id": "start",
+            "type": "Start",
+            "label": "Start",
+            "data": {
+                "inputType": "chat",
+                "ephemeralMemory": false,
+                "flowState": {
+                    "hotel": "Gran Sol",
+                    "sede": "",
+                    "checkIn": "",
+                    "checkOut": "",
+                    "noches": 0,
+                    "huespedes": 0,
+                    "habitacionTipo": "",
+                    "tarifaTipo": "",
+                    "reglasAplicadas": "",
+                    "disponibilidad": "",
+                    "alternativas": "",
+                    "precio": "",
+                    "moneda": "USD",
+                    "feriadoFlag": false,
+                    "minNoches": 0,
+                    "cupo": 0,
+                    "metodoPago": "",
+                    "email": "",
+                    "nombre": "",
+                    "preferencias": "",
+                    "reserva": "",
+                    "reservaId": ""
+                }
+            },
+            "position": [0, 0]
         },
-        "updateFlowState": {
-          "sede": "{{ json.sede }}",
-          "checkIn": "{{ json.checkIn }}",
-          "checkOut": "{{ json.checkOut }}",
-          "noches": "{{ json.noches }}",
-          "huespedes": "{{ json.huespedes }}",
-          "habitacionTipo": "{{ json.habitacionTipo }}",
-          "email": "{{ json.email }}",
-          "nombre": "{{ json.nombre }}",
-          "preferencias": "{{ json.preferencias }}",
-          "needsClarification": "{{ json.needsClarification }}",
-          "missingFields": "{{ json.missingFields }}"
-        }
-      },
-      "position": [260, 0]
-    },
-    {
-      "id": "cond_missing",
-      "type": "Condition",
-      "label": "¿Faltan datos?",
-      "data": {
-        "conditions": [
-          {
-            "type": "Boolean",
-            "value1": "{{ $flow.state.needsClarification }}",
-            "operation": "equal",
-            "value2": true
-          }
-        ]
-      },
-      "position": [520, 0]
-    },
-    {
-      "id": "reply_missing",
-      "type": "DirectReply",
-      "label": "Pedir datos",
-      "data": {
-        "message": "Faltan datos: {{ $flow.state.missingFields }}. Indícame sede, fechas (check-in/out), huéspedes y tipo de habitación."
-      },
-      "position": [760, -80]
-    },
-    {
-      "id": "custom_noches",
-      "type": "CustomFunction",
-      "label": "Calcular noches",
-      "data": {
-        "inputVariables": [
-          { "name": "checkIn", "value": "{{ $flow.state.checkIn }}" },
-          { "name": "checkOut", "value": "{{ $flow.state.checkOut }}" }
-        ],
-        "code": "const s=new Date($checkIn);const e=new Date($checkOut);const d=Math.max(0,Math.round((e-s)/(1000*60*60*24)));return JSON.stringify({noches:d});",
-        "updateFlowState": { "noches": "{{ functionOutput.noches }}" }
-      },
-      "position": [760, 80]
-    },
-    {
-      "id": "retriever_reglas",
-      "type": "Retriever",
-      "label": "Reglas",
-      "data": {
-        "documentStoreId": "{{DOCSTORE_REGLAS_ID}}",
-        "query": "{{ $flow.state.checkIn }} reglas minimas noches cancelacion cambios early late {{ $flow.state.sede }}",
-        "outputFormat": "text"
-      },
-      "position": [1020, -40]
-    },
-    {
-      "id": "retriever_disp",
-      "type": "Retriever",
-      "label": "Disponibilidad",
-      "data": {
-        "documentStoreId": "{{DOCSTORE_DISP_ID}}",
-        "query": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos",
-        "outputFormat": "text"
-      },
-      "position": [1020, 120]
-    },
-    {
-      "id": "llm_tarifa",
-      "type": "LLM",
-      "label": "Tarifa",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          {
-            "role": "system",
-            "content": "Usa la tarifa base y reglas. Entrada: tarifaBase={{precioBase}}, noches={{ $flow.state.noches }}, tarifaTipo={{ $flow.state.tarifaTipo }}, minNoches={{ $flow.state.minNoches }}, penalidad={{ $flow.state.penalidad }}. Devuelve JSON: { \"precioNoche\": number, \"precioTotal\": number, \"moneda\": \"USD\", \"tarifaTipo\": string, \"politica\": string, \"notas\": string }."
-          },
-          { "role": "user", "content": "{{ retriever_reglas.output }} {{ retriever_disp.output }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "precioNoche": { "type": "number" },
-            "precioTotal": { "type": "number" },
-            "moneda": { "type": "string" },
-            "tarifaTipo": { "type": "string" },
-            "politica": { "type": "string" },
-            "notas": { "type": "string" }
-          }
+        {
+            "id": "memory",
+            "type": "MongoDBAtlasChatMemory",
+            "label": "Memory MongoDB",
+            "data": {
+                "credential": "{{MONGO_CREDENTIAL_ID}}",
+                "databaseName": "freia_demo",
+                "collectionName": "chat_memory_hoteles",
+                "sessionId": "{{ $flow.chatId }}",
+                "memoryKey": "history"
+            },
+            "position": [0, 140]
         },
-        "updateFlowState": {
-          "precio": "{{ json }}",
-          "moneda": "{{ json.moneda }}",
-          "tarifaTipo": "{{ json.tarifaTipo }}"
+        {
+            "id": "llm_normalize",
+            "type": "LLM",
+            "label": "LLM Normalizar",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Eres un asistente de reservas de hotel. Extrae datos y devuelve SOLO JSON. Campos: sede, checkIn (YYYY-MM-DD), checkOut (YYYY-MM-DD), noches, huespedes, habitacionTipo, email, nombre, preferencias, needsClarification (bool), missingFields (array). Valida que checkOut > checkIn. Calcula noches si ambas fechas presentes. No inventes datos; marca missingFields si faltan."
+                    },
+                    { "role": "user", "content": "{{ $flow.input }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "sede": { "type": "string" },
+                        "checkIn": { "type": "string" },
+                        "checkOut": { "type": "string" },
+                        "noches": { "type": "number" },
+                        "huespedes": { "type": "number" },
+                        "habitacionTipo": { "type": "string" },
+                        "email": { "type": "string" },
+                        "nombre": { "type": "string" },
+                        "preferencias": { "type": "string" },
+                        "needsClarification": { "type": "boolean" },
+                        "missingFields": { "type": "array", "items": { "type": "string" } }
+                    }
+                },
+                "updateFlowState": {
+                    "sede": "{{ json.sede }}",
+                    "checkIn": "{{ json.checkIn }}",
+                    "checkOut": "{{ json.checkOut }}",
+                    "noches": "{{ json.noches }}",
+                    "huespedes": "{{ json.huespedes }}",
+                    "habitacionTipo": "{{ json.habitacionTipo }}",
+                    "email": "{{ json.email }}",
+                    "nombre": "{{ json.nombre }}",
+                    "preferencias": "{{ json.preferencias }}",
+                    "needsClarification": "{{ json.needsClarification }}",
+                    "missingFields": "{{ json.missingFields }}"
+                }
+            },
+            "position": [260, 0]
+        },
+        {
+            "id": "cond_missing",
+            "type": "Condition",
+            "label": "¿Faltan datos?",
+            "data": {
+                "conditions": [
+                    {
+                        "type": "Boolean",
+                        "value1": "{{ $flow.state.needsClarification }}",
+                        "operation": "equal",
+                        "value2": true
+                    }
+                ]
+            },
+            "position": [520, 0]
+        },
+        {
+            "id": "reply_missing",
+            "type": "DirectReply",
+            "label": "Pedir datos",
+            "data": {
+                "message": "Faltan datos: {{ $flow.state.missingFields }}. Indícame sede, fechas (check-in/out), huéspedes y tipo de habitación."
+            },
+            "position": [760, -80]
+        },
+        {
+            "id": "custom_noches",
+            "type": "CustomFunction",
+            "label": "Calcular noches",
+            "data": {
+                "inputVariables": [
+                    { "name": "checkIn", "value": "{{ $flow.state.checkIn }}" },
+                    { "name": "checkOut", "value": "{{ $flow.state.checkOut }}" }
+                ],
+                "code": "const s=new Date($checkIn);const e=new Date($checkOut);const d=Math.max(0,Math.round((e-s)/(1000*60*60*24)));return JSON.stringify({noches:d});",
+                "updateFlowState": { "noches": "{{ functionOutput.noches }}" }
+            },
+            "position": [760, 80]
+        },
+        {
+            "id": "retriever_reglas",
+            "type": "Retriever",
+            "label": "Reglas",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_REGLAS_ID}}",
+                "query": "{{ $flow.state.checkIn }} reglas minimas noches cancelacion cambios early late {{ $flow.state.sede }}",
+                "outputFormat": "text"
+            },
+            "position": [1020, -40]
+        },
+        {
+            "id": "retriever_disp",
+            "type": "Retriever",
+            "label": "Disponibilidad",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_DISP_ID}}",
+                "query": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos",
+                "outputFormat": "text"
+            },
+            "position": [1020, 120]
+        },
+        {
+            "id": "llm_tarifa",
+            "type": "LLM",
+            "label": "Tarifa",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Usa la tarifa base y reglas. Entrada: tarifaBase={{precioBase}}, noches={{ $flow.state.noches }}, tarifaTipo={{ $flow.state.tarifaTipo }}, minNoches={{ $flow.state.minNoches }}, penalidad={{ $flow.state.penalidad }}. Devuelve JSON: { \"precioNoche\": number, \"precioTotal\": number, \"moneda\": \"USD\", \"tarifaTipo\": string, \"politica\": string, \"notas\": string }."
+                    },
+                    { "role": "user", "content": "{{ retriever_reglas.output }} {{ retriever_disp.output }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "precioNoche": { "type": "number" },
+                        "precioTotal": { "type": "number" },
+                        "moneda": { "type": "string" },
+                        "tarifaTipo": { "type": "string" },
+                        "politica": { "type": "string" },
+                        "notas": { "type": "string" }
+                    }
+                },
+                "updateFlowState": {
+                    "precio": "{{ json }}",
+                    "moneda": "{{ json.moneda }}",
+                    "tarifaTipo": "{{ json.tarifaTipo }}"
+                }
+            },
+            "position": [1280, 40]
+        },
+        {
+            "id": "human_confirm",
+            "type": "HumanInput",
+            "label": "Confirmar",
+            "data": {
+                "descriptionType": "Fixed",
+                "description": "Resumen:\nSede: {{ $flow.state.sede }}\nFechas: {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} ({{ $flow.state.noches }} noches)\nHab: {{ $flow.state.habitacionTipo }}\nTotal: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}\nPolítica: {{ $flow.state.precio.politica }}\n¿Confirmas la reserva?",
+                "feedback": true
+            },
+            "position": [1520, 40]
+        },
+        {
+            "id": "custom_reserva",
+            "type": "CustomFunction",
+            "label": "Generar reserva",
+            "data": {
+                "inputVariables": [],
+                "code": "const id=`GRS-${Date.now()}`;return JSON.stringify({id});",
+                "updateFlowState": {
+                    "reserva": "{{ functionOutput }}",
+                    "reservaId": "{{ functionOutput.id }}"
+                }
+            },
+            "position": [1760, 40]
+        },
+        {
+            "id": "reply_final",
+            "type": "DirectReply",
+            "label": "Reply Final",
+            "data": {
+                "message": "Reserva confirmada: {{ $flow.state.reservaId }} | {{ $flow.state.sede }} | {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} | {{ $flow.state.habitacionTipo }} | Total: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}.\n¿Añadimos traslado o spa?"
+            },
+            "position": [2000, 40]
         }
-      },
-      "position": [1280, 40]
-    },
-    {
-      "id": "human_confirm",
-      "type": "HumanInput",
-      "label": "Confirmar",
-      "data": {
-        "descriptionType": "Fixed",
-        "description": "Resumen:\nSede: {{ $flow.state.sede }}\nFechas: {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} ({{ $flow.state.noches }} noches)\nHab: {{ $flow.state.habitacionTipo }}\nTotal: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}\nPolítica: {{ $flow.state.precio.politica }}\n¿Confirmas la reserva?",
-        "feedback": true
-      },
-      "position": [1520, 40]
-    },
-    {
-      "id": "custom_reserva",
-      "type": "CustomFunction",
-      "label": "Generar reserva",
-      "data": {
-        "inputVariables": [],
-        "code": "const id=`GRS-${Date.now()}`;return JSON.stringify({id});",
-        "updateFlowState": {
-          "reserva": "{{ functionOutput }}",
-          "reservaId": "{{ functionOutput.id }}"
-        }
-      },
-      "position": [1760, 40]
-    },
-    {
-      "id": "reply_final",
-      "type": "DirectReply",
-      "label": "Reply Final",
-      "data": {
-        "message": "Reserva confirmada: {{ $flow.state.reservaId }} | {{ $flow.state.sede }} | {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} | {{ $flow.state.habitacionTipo }} | Total: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}.\n¿Añadimos traslado o spa?"
-      },
-      "position": [2000, 40]
+    ],
+    "edges": [
+        { "source": "start", "sourceHandle": "output", "target": "llm_normalize", "targetHandle": "input" },
+        { "source": "memory", "sourceHandle": "output", "target": "llm_normalize", "targetHandle": "memory" },
+        { "source": "llm_normalize", "sourceHandle": "output", "target": "cond_missing", "targetHandle": "input" },
+        { "source": "cond_missing", "sourceHandle": "true", "target": "reply_missing", "targetHandle": "input" },
+        { "source": "cond_missing", "sourceHandle": "false", "target": "custom_noches", "targetHandle": "input" },
+        { "source": "custom_noches", "sourceHandle": "output", "target": "retriever_reglas", "targetHandle": "input" },
+        { "source": "custom_noches", "sourceHandle": "output", "target": "retriever_disp", "targetHandle": "input" },
+        { "source": "retriever_reglas", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
+        { "source": "retriever_disp", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
+        { "source": "llm_tarifa", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
+        { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_reserva", "targetHandle": "input" },
+        { "source": "custom_reserva", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
+    ],
+    "placeholders": {
+        "LLM_CREDENTIAL_ID": "reemplaza_por_tu_credencial_llm",
+        "MONGO_CREDENTIAL_ID": "reemplaza_por_credencial_mongo",
+        "DOCSTORE_REGLAS_ID": "docstore_reglas_id",
+        "DOCSTORE_DISP_ID": "docstore_disponibilidad_id"
     }
-  ],
-  "edges": [
-    { "source": "start", "sourceHandle": "output", "target": "llm_normalize", "targetHandle": "input" },
-    { "source": "memory", "sourceHandle": "output", "target": "llm_normalize", "targetHandle": "memory" },
-    { "source": "llm_normalize", "sourceHandle": "output", "target": "cond_missing", "targetHandle": "input" },
-    { "source": "cond_missing", "sourceHandle": "true", "target": "reply_missing", "targetHandle": "input" },
-    { "source": "cond_missing", "sourceHandle": "false", "target": "custom_noches", "targetHandle": "input" },
-    { "source": "custom_noches", "sourceHandle": "output", "target": "retriever_reglas", "targetHandle": "input" },
-    { "source": "custom_noches", "sourceHandle": "output", "target": "retriever_disp", "targetHandle": "input" },
-    { "source": "retriever_reglas", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
-    { "source": "retriever_disp", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
-    { "source": "llm_tarifa", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
-    { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_reserva", "targetHandle": "input" },
-    { "source": "custom_reserva", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
-  ],
-  "placeholders": {
-    "LLM_CREDENTIAL_ID": "reemplaza_por_tu_credencial_llm",
-    "MONGO_CREDENTIAL_ID": "reemplaza_por_credencial_mongo",
-    "DOCSTORE_REGLAS_ID": "docstore_reglas_id",
-    "DOCSTORE_DISP_ID": "docstore_disponibilidad_id"
-  }
 }

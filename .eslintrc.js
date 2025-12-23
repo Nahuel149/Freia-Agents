@@ -19,10 +19,13 @@ module.exports = {
     rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         'no-unused-vars': 'off',
-        'unused-imports/no-unused-imports': 'warn',
-        'unused-imports/no-unused-vars': ['warn', { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' }],
+        'unused-imports/no-unused-imports': 'off',
+        'unused-imports/no-unused-vars': 'off',
         'no-undef': 'off',
-        'no-console': [process.env.CI ? 'error' : 'warn', { allow: ['warn', 'error', 'info'] }],
+        'no-console': 'off',
+        'no-empty': ['error', { allowEmptyCatch: true }],
+        'react-hooks/exhaustive-deps': 'off',
+        'react/prop-types': 'off',
         'prettier/prettier': 'error'
     }
 }

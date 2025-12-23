@@ -80,8 +80,7 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
         if (agentflowId) queryBuilder.andWhere('execution.agentflowId = :agentflowId', { agentflowId })
         if (sessionId) queryBuilder.andWhere('execution.sessionId = :sessionId', { sessionId })
         if (state) queryBuilder.andWhere('execution.state = :state', { state })
-        if (workspaceId && workspaceId !== 'oss-mode')
-            queryBuilder.andWhere('execution.workspaceId = :workspaceId', { workspaceId })
+        if (workspaceId && workspaceId !== 'oss-mode') queryBuilder.andWhere('execution.workspaceId = :workspaceId', { workspaceId })
 
         // Date range conditions
         if (startDate && endDate) {

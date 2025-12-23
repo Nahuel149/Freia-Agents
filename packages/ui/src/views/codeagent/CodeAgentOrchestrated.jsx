@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 
 // material-ui
@@ -14,7 +14,6 @@ import {
     Stack,
     Divider,
     Paper,
-    Fab,
     IconButton,
     Tooltip,
     Chip,
@@ -39,7 +38,6 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import CodeAgentDialog from './CodeAgentDialog'
 
@@ -65,13 +63,8 @@ import {
     IconBrain,
     IconHistory,
     IconChartBar,
-    IconSettings,
-    IconBulb,
     IconClock,
     IconCheck,
-    IconX,
-    IconRefresh,
-    IconSend,
     IconRobot
 } from '@tabler/icons-react'
 
@@ -97,7 +90,7 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
     const [analytics, setAnalytics] = useState(null)
     const [systemMetrics, setSystemMetrics] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
-    
+
     // Orchestration state
     const [orchestrationPrompt, setOrchestrationPrompt] = useState('')
     const [selectedLanguage, setSelectedLanguage] = useState('javascript')
@@ -123,12 +116,7 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
     const loadInitialData = async () => {
         try {
             setIsLoading(true)
-            await Promise.all([
-                getAllCodeAgents(),
-                loadUserSessions(),
-                loadSystemMetrics(),
-                loadUserAnalytics()
-            ])
+            await Promise.all([getAllCodeAgents(), loadUserSessions(), loadSystemMetrics(), loadUserAnalytics()])
         } catch (error) {
             console.error('Error loading initial data:', error)
         } finally {
@@ -198,7 +186,7 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
 
         // Simulate progress updates
         const progressInterval = setInterval(() => {
-            setGenerationProgress(prev => {
+            setGenerationProgress((prev) => {
                 if (prev >= 90) {
                     clearInterval(progressInterval)
                     return 90
@@ -208,11 +196,11 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
         }, 500)
 
         try {
-            let response;
-            
+            let response
+
             // Use document-enhanced processing if documents are selected
-             if (selectedDocuments) {
-                 response = await codeAgentApi.processWithDocuments({
+            if (selectedDocuments) {
+                response = await codeAgentApi.processWithDocuments({
                     prompt: orchestrationPrompt,
                     language: selectedLanguage,
                     framework: selectedFramework || undefined,
@@ -258,11 +246,10 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
             // Reset form
             setOrchestrationPrompt('')
             setSelectedFramework('')
-            
+
             // Reload data
             loadUserSessions()
             loadUserAnalytics()
-
         } catch (error) {
             clearInterval(progressInterval)
             console.error('Error generating code:', error)
@@ -342,22 +329,22 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
         <Card sx={{ mb: 3 }}>
             <CardContent>
                 <Stack spacing={3}>
-                    <Box display="flex" alignItems="center" gap={2}>
+                    <Box display='flex' alignItems='center' gap={2}>
                         <IconBrain size={24} color={theme.palette.primary.main} />
-                        <Typography variant="h5">AI-Powered Code Generation</Typography>
+                        <Typography variant='h5'>AI-Powered Code Generation</Typography>
                     </Box>
-                    
+
                     <TextField
                         fullWidth
                         multiline
                         rows={4}
-                        label="Describe what you want to build"
-                        placeholder="e.g., Create a REST API for user management with authentication, validation, and database integration"
+                        label='Describe what you want to build'
+                        placeholder='e.g., Create a REST API for user management with authentication, validation, and database integration'
                         value={orchestrationPrompt}
                         onChange={(e) => setOrchestrationPrompt(e.target.value)}
                         disabled={isGenerating}
                     />
-                    
+
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={4}>
                             <FormControl fullWidth>
@@ -367,15 +354,15 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                                     onChange={(e) => setSelectedLanguage(e.target.value)}
                                     disabled={isGenerating}
                                 >
-                                    <MenuItem value="javascript">JavaScript</MenuItem>
-                                    <MenuItem value="python">Python</MenuItem>
-                                    <MenuItem value="typescript">TypeScript</MenuItem>
-                                    <MenuItem value="java">Java</MenuItem>
-                                    <MenuItem value="go">Go</MenuItem>
+                                    <MenuItem value='javascript'>JavaScript</MenuItem>
+                                    <MenuItem value='python'>Python</MenuItem>
+                                    <MenuItem value='typescript'>TypeScript</MenuItem>
+                                    <MenuItem value='java'>Java</MenuItem>
+                                    <MenuItem value='go'>Go</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
-                        
+
                         <Grid item xs={12} sm={4}>
                             <FormControl fullWidth>
                                 <InputLabel>Framework (Optional)</InputLabel>
@@ -384,17 +371,17 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                                     onChange={(e) => setSelectedFramework(e.target.value)}
                                     disabled={isGenerating}
                                 >
-                                    <MenuItem value="">None</MenuItem>
-                                    <MenuItem value="react">React</MenuItem>
-                                    <MenuItem value="express">Express.js</MenuItem>
-                                    <MenuItem value="fastapi">FastAPI</MenuItem>
-                                    <MenuItem value="django">Django</MenuItem>
-                                    <MenuItem value="spring">Spring Boot</MenuItem>
-                                    <MenuItem value="gin">Gin</MenuItem>
+                                    <MenuItem value=''>None</MenuItem>
+                                    <MenuItem value='react'>React</MenuItem>
+                                    <MenuItem value='express'>Express.js</MenuItem>
+                                    <MenuItem value='fastapi'>FastAPI</MenuItem>
+                                    <MenuItem value='django'>Django</MenuItem>
+                                    <MenuItem value='spring'>Spring Boot</MenuItem>
+                                    <MenuItem value='gin'>Gin</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
-                        
+
                         <Grid item xs={12} sm={4}>
                             <FormControl fullWidth>
                                 <InputLabel>Complexity</InputLabel>
@@ -403,26 +390,26 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                                     onChange={(e) => setSelectedComplexity(e.target.value)}
                                     disabled={isGenerating}
                                 >
-                                    <MenuItem value="simple">Simple</MenuItem>
-                                    <MenuItem value="medium">Medium</MenuItem>
-                                    <MenuItem value="complex">Complex</MenuItem>
+                                    <MenuItem value='simple'>Simple</MenuItem>
+                                    <MenuItem value='medium'>Medium</MenuItem>
+                                    <MenuItem value='complex'>Complex</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
                     </Grid>
-                    
+
                     {isGenerating && (
                         <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
                                 Generating code... {generationProgress}%
                             </Typography>
-                            <LinearProgress variant="determinate" value={generationProgress} />
+                            <LinearProgress variant='determinate' value={generationProgress} />
                         </Box>
                     )}
-                    
+
                     <Button
-                        variant="contained"
-                        size="large"
+                        variant='contained'
+                        size='large'
                         startIcon={<IconRocket />}
                         onClick={handleGenerateCode}
                         disabled={isGenerating || !orchestrationPrompt.trim()}
@@ -441,13 +428,13 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
             <Grid item xs={12} sm={6} md={3}>
                 <Card>
                     <CardContent>
-                        <Stack direction="row" alignItems="center" spacing={2}>
+                        <Stack direction='row' alignItems='center' spacing={2}>
                             <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
                                 <IconCode />
                             </Avatar>
                             <Box>
-                                <Typography variant="h4">{analytics?.totalSessions || 0}</Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant='h4'>{analytics?.totalSessions || 0}</Typography>
+                                <Typography variant='body2' color='text.secondary'>
                                     Total Sessions
                                 </Typography>
                             </Box>
@@ -455,17 +442,17 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                     </CardContent>
                 </Card>
             </Grid>
-            
+
             <Grid item xs={12} sm={6} md={3}>
                 <Card>
                     <CardContent>
-                        <Stack direction="row" alignItems="center" spacing={2}>
+                        <Stack direction='row' alignItems='center' spacing={2}>
                             <Avatar sx={{ bgcolor: theme.palette.success.main }}>
                                 <IconCheck />
                             </Avatar>
                             <Box>
-                                <Typography variant="h4">{analytics?.successfulTasks || 0}</Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant='h4'>{analytics?.successfulTasks || 0}</Typography>
+                                <Typography variant='body2' color='text.secondary'>
                                     Successful Tasks
                                 </Typography>
                             </Box>
@@ -473,17 +460,17 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                     </CardContent>
                 </Card>
             </Grid>
-            
+
             <Grid item xs={12} sm={6} md={3}>
                 <Card>
                     <CardContent>
-                        <Stack direction="row" alignItems="center" spacing={2}>
+                        <Stack direction='row' alignItems='center' spacing={2}>
                             <Avatar sx={{ bgcolor: theme.palette.warning.main }}>
                                 <IconClock />
                             </Avatar>
                             <Box>
-                                <Typography variant="h4">{analytics?.pendingFollowUps || 0}</Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant='h4'>{analytics?.pendingFollowUps || 0}</Typography>
+                                <Typography variant='body2' color='text.secondary'>
                                     Pending Follow-ups
                                 </Typography>
                             </Box>
@@ -491,17 +478,17 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                     </CardContent>
                 </Card>
             </Grid>
-            
+
             <Grid item xs={12} sm={6} md={3}>
                 <Card>
                     <CardContent>
-                        <Stack direction="row" alignItems="center" spacing={2}>
+                        <Stack direction='row' alignItems='center' spacing={2}>
                             <Avatar sx={{ bgcolor: theme.palette.info.main }}>
                                 <IconChartBar />
                             </Avatar>
                             <Box>
-                                <Typography variant="h4">{analytics?.averageScore || 0}%</Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant='h4'>{analytics?.averageScore || 0}%</Typography>
+                                <Typography variant='body2' color='text.secondary'>
                                     Avg Quality Score
                                 </Typography>
                             </Box>
@@ -516,19 +503,17 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
     const renderRecentSessions = () => (
         <Card>
             <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>Recent Sessions</Typography>
+                <Typography variant='h6' sx={{ mb: 2 }}>
+                    Recent Sessions
+                </Typography>
                 {sessions.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant='body2' color='text.secondary'>
                         No sessions yet. Generate your first code to get started!
                     </Typography>
                 ) : (
                     <List>
                         {sessions.slice(0, 5).map((session) => (
-                            <ListItem
-                                key={session.id}
-                                button
-                                onClick={() => handleSessionClick(session)}
-                            >
+                            <ListItem key={session.id} button onClick={() => handleSessionClick(session)}>
                                 <ListItemIcon>
                                     <IconRobot size={20} />
                                 </ListItemIcon>
@@ -539,7 +524,7 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                                 <ListItemSecondaryAction>
                                     <Chip
                                         label={session.status}
-                                        size="small"
+                                        size='small'
                                         color={session.status === 'completed' ? 'success' : 'default'}
                                     />
                                 </ListItemSecondaryAction>
@@ -570,12 +555,7 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                         <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
                             Create traditional CodeAgents for custom code execution
                         </Typography>
-                        <Button
-                            variant='contained'
-                            color='primary'
-                            onClick={handleCreateNew}
-                            startIcon={<IconPlus />}
-                        >
+                        <Button variant='contained' color='primary' onClick={handleCreateNew} startIcon={<IconPlus />}>
                             Create CodeAgent
                         </Button>
                     </Paper>
@@ -595,21 +575,16 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                         >
                             <CardContent sx={{ flexGrow: 1 }}>
                                 <Stack spacing={2}>
-                                    <Box display="flex" alignItems="center" justifyContent="space-between">
-                                        <Typography variant="h6" noWrap>
+                                    <Box display='flex' alignItems='center' justifyContent='space-between'>
+                                        <Typography variant='h6' noWrap>
                                             {codeAgent.name}
                                         </Typography>
-                                        <Chip
-                                            label={codeAgent.language}
-                                            size="small"
-                                            color="primary"
-                                            variant="outlined"
-                                        />
+                                        <Chip label={codeAgent.language} size='small' color='primary' variant='outlined' />
                                     </Box>
-                                    
+
                                     <Typography
-                                        variant="body2"
-                                        color="text.secondary"
+                                        variant='body2'
+                                        color='text.secondary'
                                         sx={{
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
@@ -620,42 +595,31 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                                     >
                                         {codeAgent.description || 'No description provided'}
                                     </Typography>
-                                    
-                                    <Typography variant="caption" color="text.secondary">
+
+                                    <Typography variant='caption' color='text.secondary'>
                                         Updated: {new Date(codeAgent.updatedDate).toLocaleDateString()}
                                     </Typography>
                                 </Stack>
                             </CardContent>
-                            
+
                             <Divider />
-                            
+
                             <Box p={2}>
-                                <Stack direction="row" spacing={1} justifyContent="flex-end">
-                                    <Tooltip title="Execute">
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleExecute(codeAgent)}
-                                            color="primary"
-                                        >
+                                <Stack direction='row' spacing={1} justifyContent='flex-end'>
+                                    <Tooltip title='Execute'>
+                                        <IconButton size='small' onClick={() => handleExecute(codeAgent)} color='primary'>
                                             <IconPlayerPlay size={18} />
                                         </IconButton>
                                     </Tooltip>
-                                    
-                                    <Tooltip title="Edit">
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleEdit(codeAgent)}
-                                        >
+
+                                    <Tooltip title='Edit'>
+                                        <IconButton size='small' onClick={() => handleEdit(codeAgent)}>
                                             <IconEdit size={18} />
                                         </IconButton>
                                     </Tooltip>
-                                    
-                                    <Tooltip title="Delete">
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleDelete(codeAgent)}
-                                            color="error"
-                                        >
+
+                                    <Tooltip title='Delete'>
+                                        <IconButton size='small' onClick={() => handleDelete(codeAgent)} color='error'>
                                             <IconTrash size={18} />
                                         </IconButton>
                                     </Tooltip>
@@ -682,43 +646,31 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                         onSearchChange={() => {}}
                         search={false}
                     >
-                        <Stack direction="row" spacing={2}>
-                            <Button
-                                variant='outlined'
-                                color='primary'
-                                onClick={handleCreateNew}
-                                startIcon={<IconPlus />}
-                            >
+                        <Stack direction='row' spacing={2}>
+                            <Button variant='outlined' color='primary' onClick={handleCreateNew} startIcon={<IconPlus />}>
                                 Traditional CodeAgent
                             </Button>
-                            <Button
-                                variant='contained'
-                                color='primary'
-                                onClick={() => setActiveTab(0)}
-                                startIcon={<IconBrain />}
-                            >
+                            <Button variant='contained' color='primary' onClick={() => setActiveTab(0)} startIcon={<IconBrain />}>
                                 AI Generation
                             </Button>
                         </Stack>
                     </ViewHeader>
-                    
+
                     {/* System Health Alert */}
                     {systemMetrics && systemMetrics.status !== 'healthy' && (
-                        <Alert severity="warning">
-                            System is experiencing issues. Some features may be limited.
-                        </Alert>
+                        <Alert severity='warning'>System is experiencing issues. Some features may be limited.</Alert>
                     )}
-                    
+
                     {/* Tabs */}
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <Tabs value={activeTab} onChange={handleTabChange}>
-                            <Tab label="AI Generation" icon={<IconBrain />} />
-                            <Tab label="Traditional CodeAgents" icon={<IconCode />} />
-                            <Tab label="Sessions" icon={<IconHistory />} />
-                            <Tab label="Analytics" icon={<IconChartBar />} />
+                            <Tab label='AI Generation' icon={<IconBrain />} />
+                            <Tab label='Traditional CodeAgents' icon={<IconCode />} />
+                            <Tab label='Sessions' icon={<IconHistory />} />
+                            <Tab label='Analytics' icon={<IconChartBar />} />
                         </Tabs>
                     </Box>
-                    
+
                     {/* Tab Content */}
                     {activeTab === 0 && (
                         <Box>
@@ -727,37 +679,43 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                             {renderRecentSessions()}
                         </Box>
                     )}
-                    
+
                     {activeTab === 1 && renderTraditionalCodeAgents()}
-                    
+
                     {activeTab === 2 && (
                         <Card>
                             <CardContent>
-                                <Typography variant="h6" sx={{ mb: 2 }}>All Sessions</Typography>
+                                <Typography variant='h6' sx={{ mb: 2 }}>
+                                    All Sessions
+                                </Typography>
                                 {sessions.length === 0 ? (
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant='body2' color='text.secondary'>
                                         No sessions found. Start generating code to create your first session!
                                     </Typography>
                                 ) : (
                                     <List>
                                         {sessions.map((session) => (
-                                            <ListItem
-                                                key={session.id}
-                                                button
-                                                onClick={() => handleSessionClick(session)}
-                                            >
+                                            <ListItem key={session.id} button onClick={() => handleSessionClick(session)}>
                                                 <ListItemIcon>
                                                     <IconRobot size={20} />
                                                 </ListItemIcon>
                                                 <ListItemText
                                                     primary={session.context?.description || `Session ${session.id}`}
-                                                    secondary={`${session.language} • ${new Date(session.created_at).toLocaleDateString()} • ${session.status}`}
+                                                    secondary={`${session.language} • ${new Date(
+                                                        session.created_at
+                                                    ).toLocaleDateString()} • ${session.status}`}
                                                 />
                                                 <ListItemSecondaryAction>
                                                     <Chip
                                                         label={session.status}
-                                                        size="small"
-                                                        color={session.status === 'completed' ? 'success' : session.status === 'active' ? 'primary' : 'default'}
+                                                        size='small'
+                                                        color={
+                                                            session.status === 'completed'
+                                                                ? 'success'
+                                                                : session.status === 'active'
+                                                                ? 'primary'
+                                                                : 'default'
+                                                        }
                                                     />
                                                 </ListItemSecondaryAction>
                                             </ListItem>
@@ -767,7 +725,7 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                             </CardContent>
                         </Card>
                     )}
-                    
+
                     {activeTab === 3 && (
                         <Box>
                             {renderAnalyticsCards()}
@@ -775,30 +733,34 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                                 <Grid item xs={12} md={6}>
                                     <Card>
                                         <CardContent>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Language Distribution</Typography>
+                                            <Typography variant='h6' sx={{ mb: 2 }}>
+                                                Language Distribution
+                                            </Typography>
                                             {analytics?.languageStats ? (
                                                 <Stack spacing={1}>
                                                     {Object.entries(analytics.languageStats).map(([language, count]) => (
-                                                        <Box key={language} display="flex" justifyContent="space-between">
-                                                            <Typography variant="body2">{language}</Typography>
-                                                            <Chip label={count} size="small" />
+                                                        <Box key={language} display='flex' justifyContent='space-between'>
+                                                            <Typography variant='body2'>{language}</Typography>
+                                                            <Chip label={count} size='small' />
                                                         </Box>
                                                     ))}
                                                 </Stack>
                                             ) : (
-                                                <Typography variant="body2" color="text.secondary">
+                                                <Typography variant='body2' color='text.secondary'>
                                                     No data available
                                                 </Typography>
                                             )}
                                         </CardContent>
                                     </Card>
                                 </Grid>
-                                
+
                                 <Grid item xs={12} md={6}>
                                     <Card>
                                         <CardContent>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Recent Activity</Typography>
-                                            <Typography variant="body2" color="text.secondary">
+                                            <Typography variant='h6' sx={{ mb: 2 }}>
+                                                Recent Activity
+                                            </Typography>
+                                            <Typography variant='body2' color='text.secondary'>
                                                 Activity tracking coming soon...
                                             </Typography>
                                         </CardContent>
@@ -809,13 +771,8 @@ const CodeAgentOrchestrated = ({ selectedDocuments }) => {
                     )}
                 </Stack>
             </MainCard>
-            
-            <CodeAgentDialog
-                show={showDialog}
-                dialogProps={dialogProps}
-                onCancel={() => setShowDialog(false)}
-                onConfirm={onConfirm}
-            />
+
+            <CodeAgentDialog show={showDialog} dialogProps={dialogProps} onCancel={() => setShowDialog(false)} onConfirm={onConfirm} />
         </>
     )
 }

@@ -18,7 +18,7 @@ export class AccountService {
      */
     public async registerAccount(body: RegisterBody) {
         const { name, email: rawEmail, password } = body
-        
+
         // Validate required fields
         if (!name || typeof name !== 'string') {
             throw new Error('Name is required and must be a string')
@@ -29,7 +29,7 @@ export class AccountService {
         if (!password || typeof password !== 'string') {
             throw new Error('Password is required and must be a string')
         }
-        
+
         const email = rawEmail.trim().toLowerCase()
         // Store password as-is or hashed based on preference (OSS mode flexibility)
         const credential = getHash(password)
@@ -43,10 +43,7 @@ export class AccountService {
         try {
             /* ---------------------------------- User ---------------------------------- */
             const userRepo = queryRunner.manager.getRepository(require('../database/entities/user.entity').User)
-            const existingUser = await userRepo
-                .createQueryBuilder('user')
-                .where('LOWER(user.email) = :email', { email })
-                .getOne()
+            const existingUser = await userRepo.createQueryBuilder('user').where('LOWER(user.email) = :email', { email }).getOne()
             if (existingUser) {
                 throw new Error('Email already registered')
             }

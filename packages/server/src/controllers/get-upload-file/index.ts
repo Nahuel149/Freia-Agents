@@ -6,8 +6,6 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import { Workspace } from '../../oss/database/entities/workspace.entity'
-import { isOssMode } from '../../utils/ossMode'
 
 const streamUploadedFile = async (req: Request, res: Response, next: NextFunction) => {
     try {

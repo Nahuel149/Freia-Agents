@@ -10,7 +10,7 @@ if (!process.env.OSS_MODE) {
  * OSS mode disables any enterprise-only functionality such as licensing, workspaces and organizations.
  * The value is derived from the `OSS_MODE` environment variable. When set to the string "true" (case-insensitive),
  * the application is considered OSS. Any other value – or absence of the variable – means enterprise features may be
- * enabled.  
+ * enabled.
  *
  * NOTE: We intentionally default to `true` when the variable is absent so that local development keeps enterprise
  * code paths disabled unless explicitly re-enabled by setting `OSS_MODE=false`.

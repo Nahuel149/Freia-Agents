@@ -60,7 +60,7 @@ const VectorStoreQuery = () => {
     const dispatch = useDispatch()
     const inputRef = useRef(null)
     // OSS mode: Workspace assignment checks removed
-    const { } = useAuth()
+    useAuth()
 
     useNotifier()
 

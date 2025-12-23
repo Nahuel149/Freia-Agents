@@ -124,9 +124,7 @@ const MainLayout = () => {
                     background: 'transparent',
                     backdropFilter: 'blur(24px) saturate(160%)',
                     borderBottom: `1px solid ${isDarkMode ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.35)'}`,
-                    boxShadow: isDarkMode
-                        ? '0 18px 45px rgba(8, 12, 30, 0.45)'
-                        : '0 16px 40px rgba(79, 70, 229, 0.12)',
+                    boxShadow: isDarkMode ? '0 18px 45px rgba(8, 12, 30, 0.45)' : '0 16px 40px rgba(79, 70, 229, 0.12)',
                     transition: leftDrawerOpened ? theme.transitions.create(['width', 'background']) : 'none'
                 }}
             >

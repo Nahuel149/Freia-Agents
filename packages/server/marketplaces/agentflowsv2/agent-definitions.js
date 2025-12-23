@@ -3,9 +3,9 @@
 
 class AgentDefinitions {
     constructor() {
-        this.agentTypes = this.initializeAgentTypes();
-        this.workflows = this.initializeWorkflows();
-        this.integrationPoints = this.initializeIntegrationPoints();
+        this.agentTypes = this.initializeAgentTypes()
+        this.workflows = this.initializeWorkflows()
+        this.integrationPoints = this.initializeIntegrationPoints()
     }
 
     // Definir tipos de agentes disponibles
@@ -16,12 +16,7 @@ class AgentDefinitions {
                 id: 'agentAgentflow_0', // Del JSON original
                 name: 'Agente Principal de Ventas',
                 role: 'primary_sales',
-                capabilities: [
-                    'product_consultation',
-                    'initial_contact',
-                    'general_inquiry',
-                    'customer_qualification'
-                ],
+                capabilities: ['product_consultation', 'initial_contact', 'general_inquiry', 'customer_qualification'],
                 priority: 'high',
                 timeout: 30000,
                 maxRetries: 2,
@@ -40,12 +35,7 @@ class AgentDefinitions {
                 id: 'agentAgentflow_1', // Del JSON original
                 name: 'Agente de Cierre',
                 role: 'sale_closing',
-                capabilities: [
-                    'order_confirmation',
-                    'payment_processing',
-                    'delivery_coordination',
-                    'contract_finalization'
-                ],
+                capabilities: ['order_confirmation', 'payment_processing', 'delivery_coordination', 'contract_finalization'],
                 priority: 'critical',
                 timeout: 45000,
                 maxRetries: 3,
@@ -54,11 +44,7 @@ class AgentDefinitions {
                     trackSales: true,
                     scheduleFollowUp: true
                 },
-                triggers: [
-                    'purchase_intent',
-                    'price_agreement',
-                    'ready_to_buy'
-                ]
+                triggers: ['purchase_intent', 'price_agreement', 'ready_to_buy']
             },
 
             // AGENTES ESPECIALIZADOS
@@ -66,12 +52,7 @@ class AgentDefinitions {
                 id: 'product_specialist_v1',
                 name: 'Especialista en Productos',
                 role: 'product_consultation',
-                capabilities: [
-                    'product_details',
-                    'technical_specs',
-                    'compatibility_check',
-                    'recommendations'
-                ],
+                capabilities: ['product_details', 'technical_specs', 'compatibility_check', 'recommendations'],
                 priority: 'high',
                 timeout: 25000,
                 context: {
@@ -89,12 +70,7 @@ class AgentDefinitions {
                 id: 'pricing_specialist_v1',
                 name: 'Especialista en Precios',
                 role: 'price_calculation',
-                capabilities: [
-                    'price_quotes',
-                    'bulk_discounts',
-                    'payment_terms',
-                    'cost_analysis'
-                ],
+                capabilities: ['price_quotes', 'bulk_discounts', 'payment_terms', 'cost_analysis'],
                 priority: 'medium',
                 timeout: 20000,
                 context: {
@@ -113,12 +89,7 @@ class AgentDefinitions {
                 id: 'negotiation_specialist_v1',
                 name: 'Agente de Negociación',
                 role: 'price_negotiation',
-                capabilities: [
-                    'price_negotiation',
-                    'terms_adjustment',
-                    'value_proposition',
-                    'objection_handling'
-                ],
+                capabilities: ['price_negotiation', 'terms_adjustment', 'value_proposition', 'objection_handling'],
                 priority: 'high',
                 timeout: 35000,
                 context: {
@@ -126,24 +97,14 @@ class AgentDefinitions {
                     customerHistory: true,
                     competitorAnalysis: true
                 },
-                strategies: [
-                    'volume_discount',
-                    'payment_terms',
-                    'added_value',
-                    'loyalty_program'
-                ]
+                strategies: ['volume_discount', 'payment_terms', 'added_value', 'loyalty_program']
             },
 
             support_agent: {
                 id: 'support_specialist_v1',
                 name: 'Agente de Soporte',
                 role: 'customer_support',
-                capabilities: [
-                    'issue_resolution',
-                    'technical_support',
-                    'order_tracking',
-                    'warranty_claims'
-                ],
+                capabilities: ['issue_resolution', 'technical_support', 'order_tracking', 'warranty_claims'],
                 priority: 'medium',
                 timeout: 30000,
                 context: {
@@ -162,12 +123,7 @@ class AgentDefinitions {
                 id: 'followup_internal_v1',
                 name: 'Programador de Seguimientos',
                 role: 'schedule_followup',
-                capabilities: [
-                    'schedule_calls',
-                    'set_reminders',
-                    'track_opportunities',
-                    'nurture_leads'
-                ],
+                capabilities: ['schedule_calls', 'set_reminders', 'track_opportunities', 'nurture_leads'],
                 priority: 'low',
                 timeout: 15000,
                 context: {
@@ -187,12 +143,7 @@ class AgentDefinitions {
                 id: 'qa_agent_v1',
                 name: 'Agente de Calidad',
                 role: 'quality_control',
-                capabilities: [
-                    'interaction_review',
-                    'satisfaction_survey',
-                    'process_improvement',
-                    'compliance_check'
-                ],
+                capabilities: ['interaction_review', 'satisfaction_survey', 'process_improvement', 'compliance_check'],
                 priority: 'low',
                 timeout: 10000,
                 context: {
@@ -208,12 +159,7 @@ class AgentDefinitions {
                 id: 'analytics_internal_v1',
                 name: 'Agente de Análisis',
                 role: 'data_analysis',
-                capabilities: [
-                    'interaction_analysis',
-                    'performance_metrics',
-                    'trend_identification',
-                    'reporting'
-                ],
+                capabilities: ['interaction_analysis', 'performance_metrics', 'trend_identification', 'reporting'],
                 priority: 'low',
                 timeout: 20000,
                 context: {
@@ -224,7 +170,7 @@ class AgentDefinitions {
                 executeAfter: true,
                 batchProcessing: true // Puede procesar múltiples interacciones
             }
-        };
+        }
     }
 
     // Definir flujos de trabajo predefinidos
@@ -256,10 +202,7 @@ class AgentDefinitions {
                         conditions: ['purchase_intent', 'ready_to_close']
                     }
                 ],
-                postProcessing: [
-                    'followup_scheduler',
-                    'quality_assurance'
-                ]
+                postProcessing: ['followup_scheduler', 'quality_assurance']
             },
 
             // FLUJO DE NEGOCIACIÓN
@@ -311,10 +254,7 @@ class AgentDefinitions {
                         conditions: ['upsell_opportunity', 'new_purchase_interest']
                     }
                 ],
-                postProcessing: [
-                    'quality_assurance',
-                    'analytics_agent'
-                ],
+                postProcessing: ['quality_assurance', 'analytics_agent'],
                 priority: 'high' // Soporte tiene prioridad
             },
 
@@ -383,7 +323,7 @@ class AgentDefinitions {
                     contractGeneration: true
                 }
             }
-        };
+        }
     }
 
     // Definir puntos de integración con sistemas externos
@@ -391,160 +331,125 @@ class AgentDefinitions {
         return {
             b2b_system: {
                 name: 'Sistema B2B Integrado',
-                triggers: [
-                    'customer_interaction',
-                    'sale_completed',
-                    'followup_scheduled'
-                ],
-                actions: [
-                    'update_customer_data',
-                    'record_sale',
-                    'schedule_followup',
-                    'update_inventory'
-                ]
+                triggers: ['customer_interaction', 'sale_completed', 'followup_scheduled'],
+                actions: ['update_customer_data', 'record_sale', 'schedule_followup', 'update_inventory']
             },
-            
+
             crm_system: {
                 name: 'Sistema CRM',
-                triggers: [
-                    'new_lead',
-                    'opportunity_created',
-                    'deal_closed'
-                ],
-                actions: [
-                    'create_lead',
-                    'update_opportunity',
-                    'log_interaction'
-                ]
+                triggers: ['new_lead', 'opportunity_created', 'deal_closed'],
+                actions: ['create_lead', 'update_opportunity', 'log_interaction']
             },
-            
+
             inventory_system: {
                 name: 'Sistema de Inventario',
-                triggers: [
-                    'product_inquiry',
-                    'stock_check',
-                    'reservation_needed'
-                ],
-                actions: [
-                    'check_availability',
-                    'reserve_stock',
-                    'update_quantities'
-                ]
+                triggers: ['product_inquiry', 'stock_check', 'reservation_needed'],
+                actions: ['check_availability', 'reserve_stock', 'update_quantities']
             },
-            
+
             notification_system: {
                 name: 'Sistema de Notificaciones',
-                triggers: [
-                    'high_priority_lead',
-                    'escalation_needed',
-                    'sale_completed'
-                ],
-                actions: [
-                    'send_alert',
-                    'notify_manager',
-                    'update_dashboard'
-                ]
+                triggers: ['high_priority_lead', 'escalation_needed', 'sale_completed'],
+                actions: ['send_alert', 'notify_manager', 'update_dashboard']
             }
-        };
+        }
     }
 
     // Obtener configuración de agente por tipo
     getAgentConfig(agentType) {
-        const config = this.agentTypes[agentType];
+        const config = this.agentTypes[agentType]
         if (!config) {
-            throw new Error(`Tipo de agente '${agentType}' no encontrado`);
+            throw new Error(`Tipo de agente '${agentType}' no encontrado`)
         }
-        return { ...config }; // Retornar copia para evitar modificaciones
+        return { ...config } // Retornar copia para evitar modificaciones
     }
 
     // Obtener flujo de trabajo por nombre
     getWorkflow(workflowName) {
-        const workflow = this.workflows[workflowName];
+        const workflow = this.workflows[workflowName]
         if (!workflow) {
-            throw new Error(`Flujo de trabajo '${workflowName}' no encontrado`);
+            throw new Error(`Flujo de trabajo '${workflowName}' no encontrado`)
         }
-        return { ...workflow };
+        return { ...workflow }
     }
 
     // Determinar flujo de trabajo según contexto
     determineWorkflow(messageContext) {
-        const { message, customerType, interactionType, urgency } = messageContext;
-        const lowerMessage = message.toLowerCase();
+        const { message, customerType, interactionType, urgency } = messageContext
+        const lowerMessage = message.toLowerCase()
 
         // Reglas para determinar el flujo apropiado
         if (interactionType === 'support' || lowerMessage.includes('problema') || lowerMessage.includes('ayuda')) {
-            return 'support_flow';
+            return 'support_flow'
         }
 
         if (customerType === 'enterprise' || lowerMessage.includes('empresa') || lowerMessage.includes('corporativo')) {
-            return 'enterprise_sales_flow';
+            return 'enterprise_sales_flow'
         }
 
         if (lowerMessage.includes('precio') && lowerMessage.includes('negociar')) {
-            return 'negotiation_flow';
+            return 'negotiation_flow'
         }
 
         if (this.hasMultipleQueries(message)) {
-            return 'parallel_inquiry_flow';
+            return 'parallel_inquiry_flow'
         }
 
         // Flujo estándar por defecto
-        return 'standard_sales_flow';
+        return 'standard_sales_flow'
     }
 
     // Verificar si el mensaje tiene múltiples consultas
     hasMultipleQueries(message) {
-        const queryIndicators = ['precio', 'producto', 'stock', 'entrega', 'pago', 'garantía'];
-        const foundIndicators = queryIndicators.filter(indicator => 
-            message.toLowerCase().includes(indicator)
-        );
-        return foundIndicators.length >= 2;
+        const queryIndicators = ['precio', 'producto', 'stock', 'entrega', 'pago', 'garantía']
+        const foundIndicators = queryIndicators.filter((indicator) => message.toLowerCase().includes(indicator))
+        return foundIndicators.length >= 2
     }
 
     // Obtener agentes recomendados para un contexto específico
     getRecommendedAgents(context) {
-        const { intent, customerType, urgency, previousInteractions } = context;
-        const recommendations = [];
+        const { intent, customerType, urgency, previousInteractions } = context
+        const recommendations = []
 
         // Lógica de recomendación basada en contexto
         switch (intent) {
             case 'product_inquiry':
-                recommendations.push('main_sales_agent', 'product_specialist');
-                break;
+                recommendations.push('main_sales_agent', 'product_specialist')
+                break
             case 'price_negotiation':
-                recommendations.push('pricing_agent', 'negotiation_agent');
-                break;
+                recommendations.push('pricing_agent', 'negotiation_agent')
+                break
             case 'purchase_intent':
-                recommendations.push('closing_agent', 'followup_scheduler');
-                break;
+                recommendations.push('closing_agent', 'followup_scheduler')
+                break
             case 'support_request':
-                recommendations.push('support_agent');
-                break;
+                recommendations.push('support_agent')
+                break
             default:
-                recommendations.push('main_sales_agent');
+                recommendations.push('main_sales_agent')
         }
 
         // Ajustar según tipo de cliente
         if (customerType === 'enterprise') {
-            recommendations.push('negotiation_agent');
+            recommendations.push('negotiation_agent')
         }
 
         // Agregar agentes de calidad y análisis
-        recommendations.push('quality_assurance', 'analytics_agent');
+        recommendations.push('quality_assurance', 'analytics_agent')
 
-        return recommendations.map(type => this.getAgentConfig(type));
+        return recommendations.map((type) => this.getAgentConfig(type))
     }
 
     // Validar configuración de agente
     validateAgentConfig(config) {
-        const required = ['id', 'name', 'role', 'capabilities', 'priority'];
-        const missing = required.filter(field => !config[field]);
-        
+        const required = ['id', 'name', 'role', 'capabilities', 'priority']
+        const missing = required.filter((field) => !config[field])
+
         if (missing.length > 0) {
-            throw new Error(`Configuración de agente inválida. Campos faltantes: ${missing.join(', ')}`);
+            throw new Error(`Configuración de agente inválida. Campos faltantes: ${missing.join(', ')}`)
         }
-        
-        return true;
+
+        return true
     }
 
     // Obtener estadísticas de agentes
@@ -554,28 +459,28 @@ class AgentDefinitions {
             totalWorkflows: Object.keys(this.workflows).length,
             agentsByRole: {},
             agentsByPriority: {}
-        };
+        }
 
         // Agrupar por rol y prioridad
-        Object.values(this.agentTypes).forEach(agent => {
+        Object.values(this.agentTypes).forEach((agent) => {
             // Por rol
             if (!stats.agentsByRole[agent.role]) {
-                stats.agentsByRole[agent.role] = 0;
+                stats.agentsByRole[agent.role] = 0
             }
-            stats.agentsByRole[agent.role]++;
+            stats.agentsByRole[agent.role]++
 
             // Por prioridad
             if (!stats.agentsByPriority[agent.priority]) {
-                stats.agentsByPriority[agent.priority] = 0;
+                stats.agentsByPriority[agent.priority] = 0
             }
-            stats.agentsByPriority[agent.priority]++;
-        });
+            stats.agentsByPriority[agent.priority]++
+        })
 
-        return stats;
+        return stats
     }
 }
 
-module.exports = AgentDefinitions;
+module.exports = AgentDefinitions
 
 // Ejemplo de uso:
 /*

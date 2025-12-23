@@ -50,7 +50,7 @@ const VectorStoreConfigure = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     // OSS mode: Workspace assignment checks removed
-    const { } = useAuth()
+    useAuth()
     useNotifier()
     const { error, setError } = useError()
     const customization = useSelector((state) => state.customization)
@@ -506,36 +506,33 @@ const VectorStoreConfigure = () => {
                                         </Button>
                                     )}
                                     {Object.keys(selectedEmbeddingsProvider).length > 0 &&
-                                        Object.keys(selectedVectorStoreProvider).length > 0 && (
-                                            (() => {
-                                                const upsertDisabled = (documentStore?.totalChunks || 0) <= 0
-                                                const tip = upsertDisabled
-                                                    ? 'No chunks found. Save & Process a loader first.'
-                                                    : ''
-                                                return (
-                                                    <Tooltip title={tip} disableHoverListener={!upsertDisabled}>
-                                                        <span>
-                                                            <Button
-                                                                disabled={upsertDisabled}
-                                                                variant='contained'
-                                                                sx={{
-                                                                    borderRadius: 2,
-                                                                    height: '100%',
-                                                                    backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
-                                                                    '&:hover': {
-                                                                        backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
-                                                                    }
-                                                                }}
-                                                                startIcon={<IconRowInsertTop />}
-                                                                onClick={() => tryAndInsertIntoStore()}
-                                                            >
-                                                                Upsert
-                                                            </Button>
-                                                        </span>
-                                                    </Tooltip>
-                                                )
-                                            })()
-                                        )}
+                                        Object.keys(selectedVectorStoreProvider).length > 0 &&
+                                        (() => {
+                                            const upsertDisabled = (documentStore?.totalChunks || 0) <= 0
+                                            const tip = upsertDisabled ? 'No chunks found. Save & Process a loader first.' : ''
+                                            return (
+                                                <Tooltip title={tip} disableHoverListener={!upsertDisabled}>
+                                                    <span>
+                                                        <Button
+                                                            disabled={upsertDisabled}
+                                                            variant='contained'
+                                                            sx={{
+                                                                borderRadius: 2,
+                                                                height: '100%',
+                                                                backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
+                                                                '&:hover': {
+                                                                    backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
+                                                                }
+                                                            }}
+                                                            startIcon={<IconRowInsertTop />}
+                                                            onClick={() => tryAndInsertIntoStore()}
+                                                        >
+                                                            Upsert
+                                                        </Button>
+                                                    </span>
+                                                </Tooltip>
+                                            )
+                                        })()}
                                     <IconButton onClick={showUpsertHistoryDrawer} size='small' color='inherit' title='Upsert History'>
                                         <IconClock />
                                     </IconButton>

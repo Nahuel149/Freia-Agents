@@ -68,9 +68,7 @@ const getAllTools = async (page: number = -1, limit: number = -1) => {
 const getToolById = async (toolId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const queryBuilder = appServer.AppDataSource.getRepository(Tool)
-            .createQueryBuilder('tool')
-            .where('tool.id = :toolId', { toolId })
+        const queryBuilder = appServer.AppDataSource.getRepository(Tool).createQueryBuilder('tool').where('tool.id = :toolId', { toolId })
 
         const dbResponse = await queryBuilder.getOne()
         if (!dbResponse) {

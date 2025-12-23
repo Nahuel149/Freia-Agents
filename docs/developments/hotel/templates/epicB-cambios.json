@@ -1,159 +1,192 @@
 {
-  "name": "DEMO Hoteles - Epic B (Cambios)",
-  "description": "Cambios de reserva con validación de penalidades y recalculo.",
-  "nodes": [
-    {
-      "id": "start",
-      "type": "Start",
-      "label": "Start",
-      "data": { "inputType": "chat", "ephemeralMemory": false, "flowState": { "reservaId": "", "reserva": "", "cambioTipo": "", "checkIn": "", "checkOut": "", "noches": 0, "huespedes": 0, "habitacionTipo": "", "tarifaTipo": "", "penalidad": "", "penalidadTipo": "", "precio": "", "moneda": "USD", "sede": "" } },
-      "position": [0, 0]
-    },
-    {
-      "id": "memory",
-      "type": "MongoDBAtlasChatMemory",
-      "label": "Memory",
-      "data": { "credential": "{{MONGO_CREDENTIAL_ID}}", "databaseName": "freia_demo", "collectionName": "chat_memory_hoteles", "sessionId": "{{ $flow.chatId }}", "memoryKey": "history" },
-      "position": [0, 140]
-    },
-    {
-      "id": "llm_identificar",
-      "type": "LLM",
-      "label": "LLM Identificar cambio",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          { "role": "system", "content": "Detecta cambio: fechas | habitacion | huespedes | early_checkin. Devuelve JSON { reservaId, cambioTipo, nuevasFechas:{checkIn,checkOut}, nuevoHabitacionTipo, nuevoHuespedes, earlyCheckin, needsClarification, missingFields }." },
-          { "role": "user", "content": "{{ $flow.input }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "reservaId": { "type": "string" },
-            "cambioTipo": { "type": "string" },
-            "nuevasFechas": {
-              "type": "object",
-              "properties": { "checkIn": { "type": "string" }, "checkOut": { "type": "string" } }
+    "name": "DEMO Hoteles - Epic B (Cambios)",
+    "description": "Cambios de reserva con validación de penalidades y recalculo.",
+    "nodes": [
+        {
+            "id": "start",
+            "type": "Start",
+            "label": "Start",
+            "data": {
+                "inputType": "chat",
+                "ephemeralMemory": false,
+                "flowState": {
+                    "reservaId": "",
+                    "reserva": "",
+                    "cambioTipo": "",
+                    "checkIn": "",
+                    "checkOut": "",
+                    "noches": 0,
+                    "huespedes": 0,
+                    "habitacionTipo": "",
+                    "tarifaTipo": "",
+                    "penalidad": "",
+                    "penalidadTipo": "",
+                    "precio": "",
+                    "moneda": "USD",
+                    "sede": ""
+                }
             },
-            "nuevoHabitacionTipo": { "type": "string" },
-            "nuevoHuespedes": { "type": "number" },
-            "earlyCheckin": { "type": "boolean" },
-            "needsClarification": { "type": "boolean" },
-            "missingFields": { "type": "array", "items": { "type": "string" } }
-          }
+            "position": [0, 0]
         },
-        "updateFlowState": {
-          "reservaId": "{{ json.reservaId }}",
-          "cambioTipo": "{{ json.cambioTipo }}",
-          "checkIn": "{{ json.nuevasFechas.checkIn }}",
-          "checkOut": "{{ json.nuevasFechas.checkOut }}",
-          "habitacionTipo": "{{ json.nuevoHabitacionTipo }}",
-          "huespedes": "{{ json.nuevoHuespedes }}"
+        {
+            "id": "memory",
+            "type": "MongoDBAtlasChatMemory",
+            "label": "Memory",
+            "data": {
+                "credential": "{{MONGO_CREDENTIAL_ID}}",
+                "databaseName": "freia_demo",
+                "collectionName": "chat_memory_hoteles",
+                "sessionId": "{{ $flow.chatId }}",
+                "memoryKey": "history"
+            },
+            "position": [0, 140]
+        },
+        {
+            "id": "llm_identificar",
+            "type": "LLM",
+            "label": "LLM Identificar cambio",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Detecta cambio: fechas | habitacion | huespedes | early_checkin. Devuelve JSON { reservaId, cambioTipo, nuevasFechas:{checkIn,checkOut}, nuevoHabitacionTipo, nuevoHuespedes, earlyCheckin, needsClarification, missingFields }."
+                    },
+                    { "role": "user", "content": "{{ $flow.input }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "reservaId": { "type": "string" },
+                        "cambioTipo": { "type": "string" },
+                        "nuevasFechas": {
+                            "type": "object",
+                            "properties": { "checkIn": { "type": "string" }, "checkOut": { "type": "string" } }
+                        },
+                        "nuevoHabitacionTipo": { "type": "string" },
+                        "nuevoHuespedes": { "type": "number" },
+                        "earlyCheckin": { "type": "boolean" },
+                        "needsClarification": { "type": "boolean" },
+                        "missingFields": { "type": "array", "items": { "type": "string" } }
+                    }
+                },
+                "updateFlowState": {
+                    "reservaId": "{{ json.reservaId }}",
+                    "cambioTipo": "{{ json.cambioTipo }}",
+                    "checkIn": "{{ json.nuevasFechas.checkIn }}",
+                    "checkOut": "{{ json.nuevasFechas.checkOut }}",
+                    "habitacionTipo": "{{ json.nuevoHabitacionTipo }}",
+                    "huespedes": "{{ json.nuevoHuespedes }}"
+                }
+            },
+            "position": [240, 0]
+        },
+        {
+            "id": "retriever_reserva",
+            "type": "Retriever",
+            "label": "Reserva actual",
+            "data": { "documentStoreId": "{{DOCSTORE_RESERVAS_ID}}", "query": "{{ $flow.state.reservaId }}", "outputFormat": "text" },
+            "position": [480, 0]
+        },
+        {
+            "id": "custom_penalidad",
+            "type": "CustomFunction",
+            "label": "Calcular penalidad",
+            "data": {
+                "inputVariables": [{ "name": "tarifaTipo", "value": "{{ $flow.state.tarifaTipo }}" }],
+                "code": "return JSON.stringify({penalidad:0, penalidadTipo:'ninguna'});",
+                "updateFlowState": { "penalidad": "{{ functionOutput.penalidad }}", "penalidadTipo": "{{ functionOutput.penalidadTipo }}" }
+            },
+            "position": [720, -20]
+        },
+        {
+            "id": "retriever_disp",
+            "type": "Retriever",
+            "label": "Disponibilidad nueva",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_DISP_ID}}",
+                "query": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos",
+                "outputFormat": "text"
+            },
+            "position": [720, 120]
+        },
+        {
+            "id": "llm_tarifa",
+            "type": "LLM",
+            "label": "Recalcular tarifa",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Recalcula tarifa con noches={{ $flow.state.noches }}, tarifaTipo={{ $flow.state.tarifaTipo }}, penalidad={{ $flow.state.penalidad }}. Devuelve JSON { precioNoche, precioTotal, moneda, tarifaTipo, politica, notas }."
+                    },
+                    { "role": "user", "content": "{{ retriever_disp.output }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "precioNoche": { "type": "number" },
+                        "precioTotal": { "type": "number" },
+                        "moneda": { "type": "string" },
+                        "tarifaTipo": { "type": "string" },
+                        "politica": { "type": "string" },
+                        "notas": { "type": "string" }
+                    }
+                },
+                "updateFlowState": { "precio": "{{ json }}", "moneda": "{{ json.moneda }}", "tarifaTipo": "{{ json.tarifaTipo }}" }
+            },
+            "position": [960, 40]
+        },
+        {
+            "id": "human_confirm",
+            "type": "HumanInput",
+            "label": "Confirmar cambio",
+            "data": {
+                "descriptionType": "Fixed",
+                "description": "Cambio: {{ $flow.state.cambioTipo }}\nFechas: {{ $flow.state.checkIn }} -> {{ $flow.state.checkOut }}\nHab: {{ $flow.state.habitacionTipo }}\nTotal nuevo: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}\nPenalidad: {{ $flow.state.penalidad }}\n¿Confirmas?",
+                "feedback": true
+            },
+            "position": [1200, 40]
+        },
+        {
+            "id": "custom_update",
+            "type": "CustomFunction",
+            "label": "Aplicar cambio",
+            "data": {
+                "inputVariables": [],
+                "code": "return JSON.stringify({status:'ok'});",
+                "updateFlowState": { "reserva": "{{ functionOutput }}" }
+            },
+            "position": [1440, 40]
+        },
+        {
+            "id": "reply_final",
+            "type": "DirectReply",
+            "label": "Reply final",
+            "data": {
+                "message": "Cambio aplicado para {{ $flow.state.reservaId }}. Total: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}. Penalidad: {{ $flow.state.penalidad }}."
+            },
+            "position": [1680, 40]
         }
-      },
-      "position": [240, 0]
-    },
-    {
-      "id": "retriever_reserva",
-      "type": "Retriever",
-      "label": "Reserva actual",
-      "data": { "documentStoreId": "{{DOCSTORE_RESERVAS_ID}}", "query": "{{ $flow.state.reservaId }}", "outputFormat": "text" },
-      "position": [480, 0]
-    },
-    {
-      "id": "custom_penalidad",
-      "type": "CustomFunction",
-      "label": "Calcular penalidad",
-      "data": {
-        "inputVariables": [
-          { "name": "tarifaTipo", "value": "{{ $flow.state.tarifaTipo }}" }
-        ],
-        "code": "return JSON.stringify({penalidad:0, penalidadTipo:'ninguna'});",
-        "updateFlowState": { "penalidad": "{{ functionOutput.penalidad }}", "penalidadTipo": "{{ functionOutput.penalidadTipo }}" }
-      },
-      "position": [720, -20]
-    },
-    {
-      "id": "retriever_disp",
-      "type": "Retriever",
-      "label": "Disponibilidad nueva",
-      "data": { "documentStoreId": "{{DOCSTORE_DISP_ID}}", "query": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos", "outputFormat": "text" },
-      "position": [720, 120]
-    },
-    {
-      "id": "llm_tarifa",
-      "type": "LLM",
-      "label": "Recalcular tarifa",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          { "role": "system", "content": "Recalcula tarifa con noches={{ $flow.state.noches }}, tarifaTipo={{ $flow.state.tarifaTipo }}, penalidad={{ $flow.state.penalidad }}. Devuelve JSON { precioNoche, precioTotal, moneda, tarifaTipo, politica, notas }." },
-          { "role": "user", "content": "{{ retriever_disp.output }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "precioNoche": { "type": "number" },
-            "precioTotal": { "type": "number" },
-            "moneda": { "type": "string" },
-            "tarifaTipo": { "type": "string" },
-            "politica": { "type": "string" },
-            "notas": { "type": "string" }
-          }
-        },
-        "updateFlowState": { "precio": "{{ json }}", "moneda": "{{ json.moneda }}", "tarifaTipo": "{{ json.tarifaTipo }}" }
-      },
-      "position": [960, 40]
-    },
-    {
-      "id": "human_confirm",
-      "type": "HumanInput",
-      "label": "Confirmar cambio",
-      "data": {
-        "descriptionType": "Fixed",
-        "description": "Cambio: {{ $flow.state.cambioTipo }}\nFechas: {{ $flow.state.checkIn }} -> {{ $flow.state.checkOut }}\nHab: {{ $flow.state.habitacionTipo }}\nTotal nuevo: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}\nPenalidad: {{ $flow.state.penalidad }}\n¿Confirmas?",
-        "feedback": true
-      },
-      "position": [1200, 40]
-    },
-    {
-      "id": "custom_update",
-      "type": "CustomFunction",
-      "label": "Aplicar cambio",
-      "data": {
-        "inputVariables": [],
-        "code": "return JSON.stringify({status:'ok'});",
-        "updateFlowState": { "reserva": "{{ functionOutput }}" }
-      },
-      "position": [1440, 40]
-    },
-    {
-      "id": "reply_final",
-      "type": "DirectReply",
-      "label": "Reply final",
-      "data": {
-        "message": "Cambio aplicado para {{ $flow.state.reservaId }}. Total: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}. Penalidad: {{ $flow.state.penalidad }}."
-      },
-      "position": [1680, 40]
+    ],
+    "edges": [
+        { "source": "start", "sourceHandle": "output", "target": "llm_identificar", "targetHandle": "input" },
+        { "source": "memory", "sourceHandle": "output", "target": "llm_identificar", "targetHandle": "memory" },
+        { "source": "llm_identificar", "sourceHandle": "output", "target": "retriever_reserva", "targetHandle": "input" },
+        { "source": "retriever_reserva", "sourceHandle": "output", "target": "custom_penalidad", "targetHandle": "input" },
+        { "source": "custom_penalidad", "sourceHandle": "output", "target": "retriever_disp", "targetHandle": "input" },
+        { "source": "retriever_disp", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
+        { "source": "llm_tarifa", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
+        { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_update", "targetHandle": "input" },
+        { "source": "custom_update", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
+    ],
+    "placeholders": {
+        "LLM_CREDENTIAL_ID": "tu_llm_cred",
+        "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+        "DOCSTORE_RESERVAS_ID": "docstore_reservas_id",
+        "DOCSTORE_DISP_ID": "docstore_disponibilidad_id"
     }
-  ],
-  "edges": [
-    { "source": "start", "sourceHandle": "output", "target": "llm_identificar", "targetHandle": "input" },
-    { "source": "memory", "sourceHandle": "output", "target": "llm_identificar", "targetHandle": "memory" },
-    { "source": "llm_identificar", "sourceHandle": "output", "target": "retriever_reserva", "targetHandle": "input" },
-    { "source": "retriever_reserva", "sourceHandle": "output", "target": "custom_penalidad", "targetHandle": "input" },
-    { "source": "custom_penalidad", "sourceHandle": "output", "target": "retriever_disp", "targetHandle": "input" },
-    { "source": "retriever_disp", "sourceHandle": "output", "target": "llm_tarifa", "targetHandle": "input" },
-    { "source": "llm_tarifa", "sourceHandle": "output", "target": "human_confirm", "targetHandle": "input" },
-    { "source": "human_confirm", "sourceHandle": "proceed", "target": "custom_update", "targetHandle": "input" },
-    { "source": "custom_update", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
-  ],
-  "placeholders": {
-    "LLM_CREDENTIAL_ID": "tu_llm_cred",
-    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
-    "DOCSTORE_RESERVAS_ID": "docstore_reservas_id",
-    "DOCSTORE_DISP_ID": "docstore_disponibilidad_id"
-  }
 }

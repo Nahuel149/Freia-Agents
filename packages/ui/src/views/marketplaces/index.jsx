@@ -376,7 +376,7 @@ const Marketplace = () => {
                     if (flows[i].flowData) {
                         const flowDataStr = flows[i].flowData
                         const flowData = JSON.parse(flowDataStr)
-                        usecases.push(...flows[i].usecases)
+                        usecases.push(...(Array.isArray(flows[i].usecases) ? flows[i].usecases : []))
                         const nodes = flowData.nodes || []
                         images[flows[i].id] = []
                         icons[flows[i].id] = []
@@ -429,7 +429,7 @@ const Marketplace = () => {
                     if (flows[i].flowData) {
                         const flowDataStr = flows[i].flowData
                         const flowData = JSON.parse(flowDataStr)
-                        usecases.push(...flows[i].usecases)
+                        usecases.push(...(Array.isArray(flows[i].usecases) ? flows[i].usecases : []))
                         if (flows[i].framework) {
                             flows[i].framework = [flows[i].framework] || []
                         }
@@ -629,7 +629,11 @@ const Marketplace = () => {
                         {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
                             <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
                                 <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
-                                    <PermissionTab permissionId='templates:marketplace' value={0} label={t('marketplaces.tabs.communityTemplates')} />
+                                    <PermissionTab
+                                        permissionId='templates:marketplace'
+                                        value={0}
+                                        label={t('marketplaces.tabs.communityTemplates')}
+                                    />
                                     <PermissionTab permissionId='templates:custom' value={1} label={t('marketplaces.tabs.myTemplates')} />
                                 </Tabs>
                                 <Autocomplete

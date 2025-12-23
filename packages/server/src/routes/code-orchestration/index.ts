@@ -1,7 +1,10 @@
 import express from 'express'
 
 // Import the JavaScript orchestration routes
-const { router: orchestrationRouter, initializeOrchestrationRoutes } = require('../../../marketplaces/codeagentv2/code-orchestration-routes')
+const {
+    router: orchestrationRouter,
+    initializeOrchestrationRoutes
+} = require('../../../marketplaces/codeagentv2/code-orchestration-routes')
 
 const router = express.Router()
 

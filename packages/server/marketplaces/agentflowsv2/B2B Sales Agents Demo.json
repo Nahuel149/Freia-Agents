@@ -1,692 +1,1025 @@
 {
-  "description": "Demo de agentes B2B para venta de cubiertas con negociación de precio, captura de datos del cliente, selección de pago y entrega, tono natural argentino y reintentos configurables.",
-  "usecases": ["B2B", "Sales", "Demo", "Negotiation"],
-  "nodes": [
-    {
-      "id": "startAgentflow_0",
-      "type": "agentFlow",
-      "position": { "x": -320, "y": 40 },
-      "data": {
-        "id": "startAgentflow_0",
-        "label": "Start",
-        "version": 2,
-        "name": "startAgentflow",
-        "type": "Start",
-        "color": "#7EE787",
-        "hideInput": true,
-        "baseClasses": ["Start"],
-        "category": "Agent Flows",
-        "description": "Punto de inicio del flujo",
-        "inputParams": [
-          {
-            "label": "Input Type",
-            "name": "startInputType",
-            "type": "options",
-            "options": [
-              { "label": "Chat Input", "name": "chatInput", "description": "Iniciar conversación por chat" },
-              { "label": "Form Input", "name": "formInput", "description": "Iniciar con formulario de datos" }
-            ],
-            "default": "chatInput",
-            "id": "startAgentflow_0-input-startInputType-options",
-            "display": true
-          },
-          {
-            "label": "Form Title",
-            "name": "formTitle",
-            "type": "string",
-            "placeholder": "Carga de datos del cliente",
-            "show": { "startInputType": "formInput" },
-            "id": "startAgentflow_0-input-formTitle-string",
-            "display": false
-          },
-          {
-            "label": "Form Description",
-            "name": "formDescription",
-            "type": "string",
-            "placeholder": "Completá los campos para comenzar",
-            "show": { "startInputType": "formInput" },
-            "id": "startAgentflow_0-input-formDescription-string",
-            "display": false
-          },
-          {
-            "label": "Form Input Types",
-            "name": "formInputTypes",
-            "description": "Definí los campos del formulario",
-            "type": "array",
-            "show": { "startInputType": "formInput" },
-            "array": [
-              {
-                "label": "Type",
-                "name": "type",
-                "type": "options",
-                "options": [
-                  { "label": "String", "name": "string" },
-                  { "label": "Number", "name": "number" },
-                  { "label": "Boolean", "name": "boolean" },
-                  { "label": "Options", "name": "options" }
+    "description": "Demo de agentes B2B para venta de cubiertas con negociación de precio, captura de datos del cliente, selección de pago y entrega, tono natural argentino y reintentos configurables.",
+    "usecases": ["B2B", "Sales", "Demo", "Negotiation"],
+    "nodes": [
+        {
+            "id": "startAgentflow_0",
+            "type": "agentFlow",
+            "position": { "x": -320, "y": 40 },
+            "data": {
+                "id": "startAgentflow_0",
+                "label": "Start",
+                "version": 2,
+                "name": "startAgentflow",
+                "type": "Start",
+                "color": "#7EE787",
+                "hideInput": true,
+                "baseClasses": ["Start"],
+                "category": "Agent Flows",
+                "description": "Punto de inicio del flujo",
+                "inputParams": [
+                    {
+                        "label": "Input Type",
+                        "name": "startInputType",
+                        "type": "options",
+                        "options": [
+                            { "label": "Chat Input", "name": "chatInput", "description": "Iniciar conversación por chat" },
+                            { "label": "Form Input", "name": "formInput", "description": "Iniciar con formulario de datos" }
+                        ],
+                        "default": "chatInput",
+                        "id": "startAgentflow_0-input-startInputType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Form Title",
+                        "name": "formTitle",
+                        "type": "string",
+                        "placeholder": "Carga de datos del cliente",
+                        "show": { "startInputType": "formInput" },
+                        "id": "startAgentflow_0-input-formTitle-string",
+                        "display": false
+                    },
+                    {
+                        "label": "Form Description",
+                        "name": "formDescription",
+                        "type": "string",
+                        "placeholder": "Completá los campos para comenzar",
+                        "show": { "startInputType": "formInput" },
+                        "id": "startAgentflow_0-input-formDescription-string",
+                        "display": false
+                    },
+                    {
+                        "label": "Form Input Types",
+                        "name": "formInputTypes",
+                        "description": "Definí los campos del formulario",
+                        "type": "array",
+                        "show": { "startInputType": "formInput" },
+                        "array": [
+                            {
+                                "label": "Type",
+                                "name": "type",
+                                "type": "options",
+                                "options": [
+                                    { "label": "String", "name": "string" },
+                                    { "label": "Number", "name": "number" },
+                                    { "label": "Boolean", "name": "boolean" },
+                                    { "label": "Options", "name": "options" }
+                                ],
+                                "default": "string"
+                            },
+                            { "label": "Label", "name": "label", "type": "string", "placeholder": "Etiqueta del campo" },
+                            {
+                                "label": "Variable Name",
+                                "name": "name",
+                                "type": "string",
+                                "placeholder": "Nombre variable (camelCase)",
+                                "description": "Por ej: firstName, lastName"
+                            },
+                            {
+                                "label": "Add Options",
+                                "name": "addOptions",
+                                "type": "array",
+                                "show": { "formInputTypes[$index].type": "options" },
+                                "array": [{ "label": "Option", "name": "option", "type": "string" }]
+                            }
+                        ],
+                        "id": "startAgentflow_0-input-formInputTypes-array",
+                        "display": false
+                    },
+                    {
+                        "label": "Ephemeral Memory",
+                        "name": "startEphemeralMemory",
+                        "type": "boolean",
+                        "description": "No usar historial previo por ejecución",
+                        "optional": true,
+                        "id": "startAgentflow_0-input-startEphemeralMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Flow State",
+                        "name": "startState",
+                        "description": "Estado de ejecución del flujo",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            { "label": "Key", "name": "key", "type": "string", "placeholder": "Foo" },
+                            { "label": "Value", "name": "value", "type": "string", "placeholder": "Bar" }
+                        ],
+                        "id": "startAgentflow_0-input-startState-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Persist State",
+                        "name": "startPersistState",
+                        "type": "boolean",
+                        "description": "Persistir estado en la sesión",
+                        "optional": true,
+                        "id": "startAgentflow_0-input-startPersistState-boolean",
+                        "display": true
+                    }
                 ],
-                "default": "string"
-              },
-              { "label": "Label", "name": "label", "type": "string", "placeholder": "Etiqueta del campo" },
-              { "label": "Variable Name", "name": "name", "type": "string", "placeholder": "Nombre variable (camelCase)", "description": "Por ej: firstName, lastName" },
-              {
-                "label": "Add Options",
-                "name": "addOptions",
-                "type": "array",
-                "show": { "formInputTypes[$index].type": "options" },
-                "array": [ { "label": "Option", "name": "option", "type": "string" } ]
-              }
-            ],
-            "id": "startAgentflow_0-input-formInputTypes-array",
-            "display": false
-          },
-          {
-            "label": "Ephemeral Memory",
-            "name": "startEphemeralMemory",
-            "type": "boolean",
-            "description": "No usar historial previo por ejecución",
-            "optional": true,
-            "id": "startAgentflow_0-input-startEphemeralMemory-boolean",
-            "display": true
-          },
-          {
-            "label": "Flow State",
-            "name": "startState",
-            "description": "Estado de ejecución del flujo",
-            "type": "array",
-            "optional": true,
-            "array": [
-              { "label": "Key", "name": "key", "type": "string", "placeholder": "Foo" },
-              { "label": "Value", "name": "value", "type": "string", "placeholder": "Bar" }
-            ],
-            "id": "startAgentflow_0-input-startState-array",
-            "display": true
-          },
-          {
-            "label": "Persist State",
-            "name": "startPersistState",
-            "type": "boolean",
-            "description": "Persistir estado en la sesión",
-            "optional": true,
-            "id": "startAgentflow_0-input-startPersistState-boolean",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "startInputType": "chatInput",
-          "formTitle": "",
-          "formDescription": "",
-          "formInputTypes": [
-            { "type": "string", "label": "Nombre", "name": "firstName" },
-            { "type": "string", "label": "Apellido", "name": "lastName" },
-            { "type": "string", "label": "Dirección", "name": "address" },
-            { "type": "string", "label": "Compras previas (opcional)", "name": "previousPurchases" },
-            {
-              "type": "options",
-              "label": "Medio de pago",
-              "name": "paymentMethod",
-              "addOptions": [ { "option": "Transferencia" }, { "option": "Tarjeta" }, { "option": "Efectivo" } ]
+                "inputAnchors": [],
+                "inputs": {
+                    "startInputType": "chatInput",
+                    "formTitle": "",
+                    "formDescription": "",
+                    "formInputTypes": [
+                        { "type": "string", "label": "Nombre", "name": "firstName" },
+                        { "type": "string", "label": "Apellido", "name": "lastName" },
+                        { "type": "string", "label": "Dirección", "name": "address" },
+                        { "type": "string", "label": "Compras previas (opcional)", "name": "previousPurchases" },
+                        {
+                            "type": "options",
+                            "label": "Medio de pago",
+                            "name": "paymentMethod",
+                            "addOptions": [{ "option": "Transferencia" }, { "option": "Tarjeta" }, { "option": "Efectivo" }]
+                        },
+                        {
+                            "type": "options",
+                            "label": "Entrega",
+                            "name": "deliveryMethod",
+                            "addOptions": [{ "option": "Retiro en local" }, { "option": "Envío a domicilio" }]
+                        }
+                    ],
+                    "startEphemeralMemory": "",
+                    "startState": [
+                        {
+                            "key": "inventory",
+                            "value": "[{\n  \"sku\": \"PIRELLI-P7-205-55R16\", \"brand\": \"Pirelli\", \"model\": \"Cinturato P7\", \"wheelSize\": \"205/55R16\", \"stock\": 24, \"price\": 120000\n},{\n  \"sku\": \"MICHELIN-PS4-225-45R17\", \"brand\": \"Michelin\", \"model\": \"Pilot Sport 4\", \"wheelSize\": \"225/45R17\", \"stock\": 12, \"price\": 210000\n},{\n  \"sku\": \"BRIDGESTONE-T005-195-65R15\", \"brand\": \"Bridgestone\", \"model\": \"Turanza T005\", \"wheelSize\": \"195/65R15\", \"stock\": 30, \"price\": 98000\n}]"
+                        },
+                        {
+                            "key": "salesManual",
+                            "value": "Saludá con cercanía rioplatense, validá la necesidad, confirmá medidas (modelo y rodado), sugerí alternativas si no hay stock, destacá beneficios (garantía, financiación, montaje). Política de descuentos: 1er contraoferta: 5%, 2da: 8%, 3ra: 10% u oferta por volumen (10+ unidades: 12%). Siempre buscá cerrar: pago + entrega."
+                        },
+                        { "key": "negotiationMaxAttempts", "value": "3" },
+                        { "key": "currency", "value": "ARS" },
+                        { "key": "storeAddress", "value": "Av. Siempre Viva 742, CABA" },
+                        { "key": "senderPhoneNumber", "value": "+542257645497" },
+                        { "key": "receiverPhoneNumber", "value": "+818045774815" },
+                        { "key": "WASENDER_API_KEY", "value": "" },
+                        { "key": "followUpDelayHours", "value": "24" },
+                        { "key": "followUpMaxAttempts", "value": "3" },
+                        { "key": "followUpIntervalHours", "value": "48" },
+                        { "key": "businessHoursStart", "value": "09:00" },
+                        { "key": "businessHoursEnd", "value": "18:00" },
+                        { "key": "followUpDaysOfWeek", "value": "1,2,3,4,5" },
+                        { "key": "dbConnectionString", "value": "postgresql://user:password@localhost:5432/b2b_sales" },
+                        { "key": "dbTableCustomers", "value": "customers" },
+                        { "key": "dbTableSales", "value": "sales" },
+                        { "key": "dbTableFollowUps", "value": "follow_ups" }
+                    ],
+                    "startPersistState": true
+                },
+                "outputAnchors": [{ "id": "startAgentflow_0-output-startAgentflow", "label": "Start", "name": "startAgentflow" }],
+                "outputs": {},
+                "selected": false
             },
-            {
-              "type": "options",
-              "label": "Entrega",
-              "name": "deliveryMethod",
-              "addOptions": [ { "option": "Retiro en local" }, { "option": "Envío a domicilio" } ]
-            }
-          ],
-          "startEphemeralMemory": "",
-          "startState": [
-            {
-              "key": "inventory",
-              "value": "[{\n  \"sku\": \"PIRELLI-P7-205-55R16\", \"brand\": \"Pirelli\", \"model\": \"Cinturato P7\", \"wheelSize\": \"205/55R16\", \"stock\": 24, \"price\": 120000\n},{\n  \"sku\": \"MICHELIN-PS4-225-45R17\", \"brand\": \"Michelin\", \"model\": \"Pilot Sport 4\", \"wheelSize\": \"225/45R17\", \"stock\": 12, \"price\": 210000\n},{\n  \"sku\": \"BRIDGESTONE-T005-195-65R15\", \"brand\": \"Bridgestone\", \"model\": \"Turanza T005\", \"wheelSize\": \"195/65R15\", \"stock\": 30, \"price\": 98000\n}]"
+            "width": 103,
+            "height": 66,
+            "positionAbsolute": { "x": -320, "y": 40 },
+            "selected": false,
+            "dragging": false
+        },
+
+        {
+            "id": "agentAgentflow_0",
+            "type": "agentFlow",
+            "position": { "x": -120, "y": 30 },
+            "data": {
+                "id": "agentAgentflow_0",
+                "label": "Agente de Ventas B2B",
+                "version": 2,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Agente comercial que entiende autos/ruedas, consulta inventario, negocia y reúne datos.",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_0-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 6
+                            }
+                        ],
+                        "id": "agentAgentflow_0-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Memoria de la conversación",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_0-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            { "label": "User Message", "name": "userMessage" },
+                            { "label": "Assistant Message", "name": "assistantMessage" }
+                        ],
+                        "default": "assistantMessage",
+                        "id": "agentAgentflow_0-input-agentReturnResponseAs-options",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatOpenAI",
+                    "agentMessages": [
+                        {
+                            "role": "system",
+                            "content": "Sos un agente de ventas B2B argentino (tono rioplatense, cercano y profesional). Conocés autos, llantas, cubiertas y repuestos. PROCESO: 1) Saludá con buena onda. 2) Consultá si es cliente existente por teléfono en BD (tabla customers). Si existe, usá datos guardados (nombre, dirección habitual, método de pago). 3) Pedí medida/modelo si falta. 4) Revisá inventario en $flow.state.inventory (JSON). Si no hay stock, proponé alternativas. 5) Explicá beneficios y garantías. 6) Si dice que es caro, negociá según $flow.state.salesManual: 1er intento 5%, 2do 8%, 3ro 10% o descuento por cantidad (12% si compra 10+). 7) Para cerrar: confirmá datos del cliente, preguntá '¿envío al lugar habitual o nueva dirección?', '¿método de pago habitual o otro?'. 8) Guardá datos nuevos/actualizados en BD. 9) Si no cierra, programá follow-up según $flow.state.followUpDelayHours. Siempre claro, breve y útil."
+                        }
+                    ],
+                    "agentEnableMemory": true,
+                    "agentReturnResponseAs": "assistantMessage",
+                    "agentModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4o-mini",
+                        "temperature": 0.3,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "imageResolution": "low",
+                        "reasoningEffort": "",
+                        "agentModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [{ "id": "agentAgentflow_0-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" }],
+                "outputs": {},
+                "selected": false
             },
-            {
-              "key": "salesManual",
-              "value": "Saludá con cercanía rioplatense, validá la necesidad, confirmá medidas (modelo y rodado), sugerí alternativas si no hay stock, destacá beneficios (garantía, financiación, montaje). Política de descuentos: 1er contraoferta: 5%, 2da: 8%, 3ra: 10% u oferta por volumen (10+ unidades: 12%). Siempre buscá cerrar: pago + entrega."
+            "width": 280,
+            "height": 80,
+            "positionAbsolute": { "x": -120, "y": 30 },
+            "selected": false,
+            "dragging": false
+        },
+
+        {
+            "id": "conditionAgentAgentflow_0",
+            "type": "agentFlow",
+            "position": { "x": 220, "y": 20 },
+            "data": {
+                "id": "conditionAgentAgentflow_0",
+                "label": "Price Acceptance?",
+                "version": 2,
+                "name": "conditionAgentAgentflow",
+                "type": "ConditionAgent",
+                "color": "#ff8fab",
+                "baseClasses": ["ConditionAgent"],
+                "category": "Agent Flows",
+                "description": "Divide el flujo según aceptación de precio / necesidad de info / sin stock",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "conditionAgentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Instructions",
+                        "name": "conditionAgentInstructions",
+                        "type": "string",
+                        "description": "Instrucciones para decidir escenario",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "placeholder": "Detectar si el cliente acepta precio, pide descuento, necesita info o no hay stock",
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentInstructions-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Input",
+                        "name": "conditionAgentInput",
+                        "type": "string",
+                        "description": "Entrada a evaluar",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span></p>",
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentInput-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Scenarios",
+                        "name": "conditionAgentScenarios",
+                        "description": "Definir escenarios para ramificar",
+                        "type": "array",
+                        "array": [{ "label": "Scenario", "name": "scenario", "type": "string" }],
+                        "default": [
+                            { "scenario": "Precio aceptado / listo para cerrar" },
+                            { "scenario": "Precio caro / pide descuento" },
+                            { "scenario": "Necesita más información técnica o no hay stock" }
+                        ],
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentScenarios-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "conditionAgentModel": "chatOpenAI",
+                    "conditionAgentInstructions": "Determiná uno de los escenarios a partir del último intercambio: 0) Precio aceptado / listo para cerrar; 1) Precio caro / pide descuento; 2) Necesita más información técnica o no hay stock. Usá contexto de $flow.state.inventory si hace falta.",
+                    "conditionAgentInput": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span></p>",
+                    "conditionAgentScenarios": [
+                        { "scenario": "Precio aceptado / listo para cerrar" },
+                        { "scenario": "Precio caro / pide descuento" },
+                        { "scenario": "Necesita más información técnica o no hay stock" }
+                    ],
+                    "conditionAgentModelConfig": {
+                        "credential": "",
+                        "modelName": "gpt-4o-mini",
+                        "temperature": 0.7,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "imageResolution": "low",
+                        "reasoningEffort": "",
+                        "conditionAgentModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [
+                    { "id": "conditionAgentAgentflow_0-output-0", "label": "Condition Agent", "name": "conditionAgentAgentflow" },
+                    { "id": "conditionAgentAgentflow_0-output-1", "label": "Condition Agent", "name": "conditionAgentAgentflow" },
+                    { "id": "conditionAgentAgentflow_0-output-2", "label": "Condition Agent", "name": "conditionAgentAgentflow" }
+                ],
+                "outputs": {},
+                "selected": false
             },
-            { "key": "negotiationMaxAttempts", "value": "3" },
-            { "key": "currency", "value": "ARS" },
-            { "key": "storeAddress", "value": "Av. Siempre Viva 742, CABA" },
-            { "key": "senderPhoneNumber", "value": "+542257645497" },
-            { "key": "receiverPhoneNumber", "value": "+818045774815" },
-            { "key": "WASENDER_API_KEY", "value": "" },
-            { "key": "followUpDelayHours", "value": "24" },
-            { "key": "followUpMaxAttempts", "value": "3" },
-            { "key": "followUpIntervalHours", "value": "48" },
-            { "key": "businessHoursStart", "value": "09:00" },
-            { "key": "businessHoursEnd", "value": "18:00" },
-            { "key": "followUpDaysOfWeek", "value": "1,2,3,4,5" },
-            { "key": "dbConnectionString", "value": "postgresql://user:password@localhost:5432/b2b_sales" },
-            { "key": "dbTableCustomers", "value": "customers" },
-            { "key": "dbTableSales", "value": "sales" },
-            { "key": "dbTableFollowUps", "value": "follow_ups" }
-          ],
-          "startPersistState": true
+            "width": 280,
+            "height": 80,
+            "positionAbsolute": { "x": 220, "y": 20 },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          { "id": "startAgentflow_0-output-startAgentflow", "label": "Start", "name": "startAgentflow" }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 103,
-      "height": 66,
-      "positionAbsolute": { "x": -320, "y": 40 },
-      "selected": false,
-      "dragging": false
-    },
 
-    {
-      "id": "agentAgentflow_0",
-      "type": "agentFlow",
-      "position": { "x": -120, "y": 30 },
-      "data": {
-        "id": "agentAgentflow_0",
-        "label": "Agente de Ventas B2B",
-        "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
-        "category": "Agent Flows",
-        "description": "Agente comercial que entiende autos/ruedas, consulta inventario, negocia y reúne datos.",
-        "inputParams": [
-          {
-            "label": "Model",
-            "name": "agentModel",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "loadConfig": true,
-            "id": "agentAgentflow_0-input-agentModel-asyncOptions",
-            "display": true
-          },
-          {
-            "label": "Messages",
-            "name": "agentMessages",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              {
-                "label": "Role",
-                "name": "role",
-                "type": "options",
-                "options": [
-                  { "label": "System", "name": "system" },
-                  { "label": "Assistant", "name": "assistant" },
-                  { "label": "Developer", "name": "developer" },
-                  { "label": "User", "name": "user" }
-                ]
-              },
-              { "label": "Content", "name": "content", "type": "string", "acceptVariable": true, "generateInstruction": true, "rows": 6 }
-            ],
-            "id": "agentAgentflow_0-input-agentMessages-array",
-            "display": true
-          },
-          {
-            "label": "Enable Memory",
-            "name": "agentEnableMemory",
-            "type": "boolean",
-            "description": "Memoria de la conversación",
-            "default": true,
-            "optional": true,
-            "id": "agentAgentflow_0-input-agentEnableMemory-boolean",
-            "display": true
-          },
-          {
-            "label": "Return Response As",
-            "name": "agentReturnResponseAs",
-            "type": "options",
-            "options": [
-              { "label": "User Message", "name": "userMessage" },
-              { "label": "Assistant Message", "name": "assistantMessage" }
-            ],
-            "default": "assistantMessage",
-            "id": "agentAgentflow_0-input-agentReturnResponseAs-options",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "agentModel": "chatOpenAI",
-          "agentMessages": [
-            {
-              "role": "system",
-              "content": "Sos un agente de ventas B2B argentino (tono rioplatense, cercano y profesional). Conocés autos, llantas, cubiertas y repuestos. PROCESO: 1) Saludá con buena onda. 2) Consultá si es cliente existente por teléfono en BD (tabla customers). Si existe, usá datos guardados (nombre, dirección habitual, método de pago). 3) Pedí medida/modelo si falta. 4) Revisá inventario en $flow.state.inventory (JSON). Si no hay stock, proponé alternativas. 5) Explicá beneficios y garantías. 6) Si dice que es caro, negociá según $flow.state.salesManual: 1er intento 5%, 2do 8%, 3ro 10% o descuento por cantidad (12% si compra 10+). 7) Para cerrar: confirmá datos del cliente, preguntá '¿envío al lugar habitual o nueva dirección?', '¿método de pago habitual o otro?'. 8) Guardá datos nuevos/actualizados en BD. 9) Si no cierra, programá follow-up según $flow.state.followUpDelayHours. Siempre claro, breve y útil."
-            }
-          ],
-          "agentEnableMemory": true,
-          "agentReturnResponseAs": "assistantMessage",
-          "agentModelConfig": {
-            "cache": "",
-            "modelName": "gpt-4o-mini",
-            "temperature": 0.3,
-            "streaming": true,
-            "maxTokens": "",
-            "topP": "",
-            "frequencyPenalty": "",
-            "presencePenalty": "",
-            "timeout": "",
-            "strictToolCalling": "",
-            "stopSequence": "",
-            "basepath": "",
-            "proxyUrl": "",
-            "baseOptions": "",
-            "allowImageUploads": "",
-            "imageResolution": "low",
-            "reasoningEffort": "",
-            "agentModel": "chatOpenAI"
-          }
-        },
-        "outputAnchors": [ { "id": "agentAgentflow_0-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" } ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 280,
-      "height": 80,
-      "positionAbsolute": { "x": -120, "y": 30 },
-      "selected": false,
-      "dragging": false
-    },
-
-    {
-      "id": "conditionAgentAgentflow_0",
-      "type": "agentFlow",
-      "position": { "x": 220, "y": 20 },
-      "data": {
-        "id": "conditionAgentAgentflow_0",
-        "label": "Price Acceptance?",
-        "version": 2,
-        "name": "conditionAgentAgentflow",
-        "type": "ConditionAgent",
-        "color": "#ff8fab",
-        "baseClasses": ["ConditionAgent"],
-        "category": "Agent Flows",
-        "description": "Divide el flujo según aceptación de precio / necesidad de info / sin stock",
-        "inputParams": [
-          {
-            "label": "Model",
-            "name": "conditionAgentModel",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "loadConfig": true,
-            "id": "conditionAgentAgentflow_0-input-conditionAgentModel-asyncOptions",
-            "display": true
-          },
-          {
-            "label": "Instructions",
-            "name": "conditionAgentInstructions",
-            "type": "string",
-            "description": "Instrucciones para decidir escenario",
-            "rows": 4,
-            "acceptVariable": true,
-            "placeholder": "Detectar si el cliente acepta precio, pide descuento, necesita info o no hay stock",
-            "id": "conditionAgentAgentflow_0-input-conditionAgentInstructions-string",
-            "display": true
-          },
-          {
-            "label": "Input",
-            "name": "conditionAgentInput",
-            "type": "string",
-            "description": "Entrada a evaluar",
-            "rows": 4,
-            "acceptVariable": true,
-            "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span></p>",
-            "id": "conditionAgentAgentflow_0-input-conditionAgentInput-string",
-            "display": true
-          },
-          {
-            "label": "Scenarios",
-            "name": "conditionAgentScenarios",
-            "description": "Definir escenarios para ramificar",
-            "type": "array",
-            "array": [ { "label": "Scenario", "name": "scenario", "type": "string" } ],
-            "default": [
-               { "scenario": "Precio aceptado / listo para cerrar" },
-               { "scenario": "Precio caro / pide descuento" },
-               { "scenario": "Necesita más información técnica o no hay stock" }
-             ],
-            "id": "conditionAgentAgentflow_0-input-conditionAgentScenarios-array",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "conditionAgentModel": "chatOpenAI",
-          "conditionAgentInstructions": "Determiná uno de los escenarios a partir del último intercambio: 0) Precio aceptado / listo para cerrar; 1) Precio caro / pide descuento; 2) Necesita más información técnica o no hay stock. Usá contexto de $flow.state.inventory si hace falta.",
-          "conditionAgentInput": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span></p>",
-          "conditionAgentScenarios": [
-            { "scenario": "Precio aceptado / listo para cerrar" },
-            { "scenario": "Precio caro / pide descuento" },
-            { "scenario": "Necesita más información técnica o no hay stock" }
-          ],
-          "conditionAgentModelConfig": {
-            "credential": "",
-            "modelName": "gpt-4o-mini",
-            "temperature": 0.7,
-            "streaming": true,
-            "maxTokens": "",
-            "topP": "",
-            "frequencyPenalty": "",
-            "presencePenalty": "",
-            "timeout": "",
-            "strictToolCalling": "",
-            "stopSequence": "",
-            "basepath": "",
-            "proxyUrl": "",
-            "baseOptions": "",
-            "allowImageUploads": "",
-            "imageResolution": "low",
-            "reasoningEffort": "",
-            "conditionAgentModel": "chatOpenAI"
-          }
-        },
-        "outputAnchors": [
-          { "id": "conditionAgentAgentflow_0-output-0", "label": "Condition Agent", "name": "conditionAgentAgentflow" },
-          { "id": "conditionAgentAgentflow_0-output-1", "label": "Condition Agent", "name": "conditionAgentAgentflow" },
-          { "id": "conditionAgentAgentflow_0-output-2", "label": "Condition Agent", "name": "conditionAgentAgentflow" }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 280,
-      "height": 80,
-      "positionAbsolute": { "x": 220, "y": 20 },
-      "selected": false,
-      "dragging": false
-    },
-
-    {
-      "id": "agentAgentflow_1",
-      "type": "agentFlow",
-      "position": { "x": 520, "y": -60 },
-      "data": {
-        "id": "agentAgentflow_1",
-        "label": "Cierre / Pago y Entrega",
-        "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
-        "category": "Agent Flows",
-        "description": "Cierra venta, confirma pago y entrega, actualiza estado",
-        "inputParams": [
-          { "label": "Model", "name": "agentModel", "type": "asyncOptions", "loadMethod": "listModels", "loadConfig": true, "id": "agentAgentflow_1-input-agentModel-asyncOptions", "display": true },
-          { "label": "Messages", "name": "agentMessages", "type": "array", "optional": true, "acceptVariable": true, "array": [ { "label": "Role", "name": "role", "type": "options", "options": [ { "label": "System", "name": "system" }, { "label": "Assistant", "name": "assistant" }, { "label": "Developer", "name": "developer" }, { "label": "User", "name": "user" } ] }, { "label": "Content", "name": "content", "type": "string", "acceptVariable": true, "generateInstruction": true, "rows": 6 } ], "id": "agentAgentflow_1-input-agentMessages-array", "display": true },
-          { "label": "Enable Memory", "name": "agentEnableMemory", "type": "boolean", "description": "Memoria de la conversación", "default": true, "optional": true, "id": "agentAgentflow_1-input-agentEnableMemory-boolean", "display": true },
-          { "label": "Return Response As", "name": "agentReturnResponseAs", "type": "options", "options": [ { "label": "User Message", "name": "userMessage" }, { "label": "Assistant Message", "name": "assistantMessage" } ], "default": "assistantMessage", "id": "agentAgentflow_1-input-agentReturnResponseAs-options", "display": true },
-          { "label": "Update Flow State", "name": "agentUpdateState", "type": "array", "optional": true, "array": [ { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true }, { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true } ], "id": "agentAgentflow_1-input-agentUpdateState-array", "display": true }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "agentModel": "chatOpenAI",
-          "agentMessages": [ { "role": "system", "content": "Estás cerrando la venta. 1) Confirmá datos del cliente si faltan (nombre, apellido, dirección). 2) Para la entrega preguntá: '¿Hacemos el envío al lugar habitual (dirección registrada) o preferís otra dirección?' 3) Para el pago consultá: '¿Usamos el método de pago habitual o preferís otro?' 4) Preguntá si quiere guardar esta dirección para futuras compras. 5) Si no se cierra hoy, confirmá que haremos seguimiento mañana. Siempre cordial y en tono argentino." } ],
-          "agentEnableMemory": true,
-          "agentReturnResponseAs": "assistantMessage",
-          "agentUpdateState": [ { "key": "lastScenario", "value": "accepted" } ],
-          "agentModelConfig": { "cache": "", "modelName": "gpt-4o-mini", "temperature": 0.3, "streaming": true, "maxTokens": "", "topP": "", "frequencyPenalty": "", "presencePenalty": "", "timeout": "", "strictToolCalling": "", "stopSequence": "", "basepath": "", "proxyUrl": "", "baseOptions": "", "allowImageUploads": "", "imageResolution": "low", "reasoningEffort": "", "agentModel": "chatOpenAI" }
-        },
-        "outputAnchors": [ { "id": "agentAgentflow_1-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" } ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 280,
-      "height": 80,
-      "positionAbsolute": { "x": 520, "y": -60 },
-      "selected": false,
-      "dragging": false
-    },
-
-    {
-      "id": "agentAgentflow_2",
-      "type": "agentFlow",
-      "position": { "x": 520, "y": 60 },
-      "data": {
-        "id": "agentAgentflow_2",
-        "label": "Negociación de Precio",
-        "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
-        "category": "Agent Flows",
-        "description": "Aplica política de descuentos escalonada",
-        "inputParams": [
-          { "label": "Model", "name": "agentModel", "type": "asyncOptions", "loadMethod": "listModels", "loadConfig": true, "id": "agentAgentflow_2-input-agentModel-asyncOptions", "display": true },
-          { "label": "Messages", "name": "agentMessages", "type": "array", "optional": true, "acceptVariable": true, "array": [ { "label": "Role", "name": "role", "type": "options", "options": [ { "label": "System", "name": "system" }, { "label": "Assistant", "name": "assistant" }, { "label": "Developer", "name": "developer" }, { "label": "User", "name": "user" } ] }, { "label": "Content", "name": "content", "type": "string", "acceptVariable": true, "generateInstruction": true, "rows": 6 } ], "id": "agentAgentflow_2-input-agentMessages-array", "display": true },
-          { "label": "Enable Memory", "name": "agentEnableMemory", "type": "boolean", "description": "Memoria de la conversación", "default": true, "optional": true, "id": "agentAgentflow_2-input-agentEnableMemory-boolean", "display": true },
-          { "label": "Return Response As", "name": "agentReturnResponseAs", "type": "options", "options": [ { "label": "User Message", "name": "userMessage" }, { "label": "Assistant Message", "name": "assistantMessage" } ], "default": "assistantMessage", "id": "agentAgentflow_2-input-agentReturnResponseAs-options", "display": true },
-          { "label": "Update Flow State", "name": "agentUpdateState", "type": "array", "optional": true, "array": [ { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true }, { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true } ], "id": "agentAgentflow_2-input-agentUpdateState-array", "display": true }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "agentModel": "chatOpenAI",
-          "agentMessages": [ { "role": "system", "content": "Negociá según $flow.state.salesManual. Considerá cantidad, histórico, y ofrecé alternativas si el precio sigue siendo un problema. Máximo de intentos: $flow.state.negotiationMaxAttempts." } ],
-          "agentEnableMemory": true,
-          "agentReturnResponseAs": "assistantMessage",
-          "agentUpdateState": [ { "key": "lastScenario", "value": "negotiation" } ],
-          "agentModelConfig": { "cache": "", "modelName": "gpt-4o-mini", "temperature": 0.4, "streaming": true, "maxTokens": "", "topP": "", "frequencyPenalty": "", "presencePenalty": "", "timeout": "", "strictToolCalling": "", "stopSequence": "", "basepath": "", "proxyUrl": "", "baseOptions": "", "allowImageUploads": "", "imageResolution": "low", "reasoningEffort": "", "agentModel": "chatOpenAI" }
-        },
-        "outputAnchors": [ { "id": "agentAgentflow_2-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" } ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 280,
-      "height": 80,
-      "positionAbsolute": { "x": 520, "y": 60 },
-      "selected": false,
-      "dragging": false
-    },
-
-    {
-      "id": "agentAgentflow_3",
-      "type": "agentFlow",
-      "position": { "x": 520, "y": 180 },
-      "data": {
-        "id": "agentAgentflow_3",
-        "label": "Info Técnica / Alternativas",
-        "version": 2,
-        "name": "agentAgentflow",
-        "type": "Agent",
-        "color": "#4DD0E1",
-        "baseClasses": ["Agent"],
-        "category": "Agent Flows",
-        "description": "Amplía info técnica y sugiere alternativas si falta stock",
-        "inputParams": [
-          { "label": "Model", "name": "agentModel", "type": "asyncOptions", "loadMethod": "listModels", "loadConfig": true, "id": "agentAgentflow_3-input-agentModel-asyncOptions", "display": true },
-          { "label": "Messages", "name": "agentMessages", "type": "array", "optional": true, "acceptVariable": true, "array": [ { "label": "Role", "name": "role", "type": "options", "options": [ { "label": "System", "name": "system" }, { "label": "Assistant", "name": "assistant" }, { "label": "Developer", "name": "developer" }, { "label": "User", "name": "user" } ] }, { "label": "Content", "name": "content", "type": "string", "acceptVariable": true, "generateInstruction": true, "rows": 6 } ], "id": "agentAgentflow_3-input-agentMessages-array", "display": true },
-          { "label": "Enable Memory", "name": "agentEnableMemory", "type": "boolean", "description": "Memoria de la conversación", "default": true, "optional": true, "id": "agentAgentflow_3-input-agentEnableMemory-boolean", "display": true },
-          { "label": "Return Response As", "name": "agentReturnResponseAs", "type": "options", "options": [ { "label": "User Message", "name": "userMessage" }, { "label": "Assistant Message", "name": "assistantMessage" } ], "default": "assistantMessage", "id": "agentAgentflow_3-input-agentReturnResponseAs-options", "display": true },
-          { "label": "Update Flow State", "name": "agentUpdateState", "type": "array", "optional": true, "array": [ { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true }, { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true } ], "id": "agentAgentflow_3-input-agentUpdateState-array", "display": true }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "agentModel": "chatOpenAI",
-          "agentMessages": [ { "role": "system", "content": "Si el cliente necesita más info técnica, explicá con claridad y compará modelos. Si no hay stock, sugerí alternativas compatibles y tiempos de reposición." } ],
-          "agentEnableMemory": true,
-          "agentReturnResponseAs": "assistantMessage",
-          "agentUpdateState": [ { "key": "lastScenario", "value": "info_or_alternatives" } ],
-          "agentModelConfig": { "cache": "", "modelName": "gpt-4o-mini", "temperature": 0.4, "streaming": true, "maxTokens": "", "topP": "", "frequencyPenalty": "", "presencePenalty": "", "timeout": "", "strictToolCalling": "", "stopSequence": "", "basepath": "", "proxyUrl": "", "baseOptions": "", "allowImageUploads": "", "imageResolution": "low", "reasoningEffort": "", "agentModel": "chatOpenAI" }
-        },
-        "outputAnchors": [ { "id": "agentAgentflow_3-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" } ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 280,
-      "height": 80,
-      "positionAbsolute": { "x": 520, "y": 180 },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "toolAgentflow_0",
-      "type": "agentFlow",
-      "position": { "x": 840, "y": 60 },
-      "data": {
-        "id": "toolAgentflow_0",
-        "label": "Send WhatsApp (Wasender)",
-        "version": 2,
-        "name": "toolAgentflow",
-        "type": "Tool",
-        "color": "#d4a373",
-        "baseClasses": ["Tool"],
-        "category": "Agent Flows",
-        "description": "Send WhatsApp message via Wasender API",
-        "inputParams": [
-          {
-            "label": "Tool",
-            "name": "toolAgentflowSelectedTool",
-            "type": "asyncOptions",
-            "loadMethod": "listTools",
-            "loadConfig": true,
-            "id": "toolAgentflow_0-input-toolAgentflowSelectedTool-asyncOptions",
-            "display": true
-          },
-          {
-            "label": "Tool Input Arguments",
-            "name": "toolInputArgs",
-            "type": "array",
-            "acceptVariable": true,
-            "refresh": true,
-            "array": [
-              {
-                "label": "Input Argument Name",
-                "name": "inputArgName",
-                "type": "asyncOptions",
-                "loadMethod": "listToolInputArgs",
-                "refresh": true
-              },
-              {
-                "label": "Input Argument Value",
-                "name": "inputArgValue",
-                "type": "string",
-                "acceptVariable": true
-              }
-            ],
-            "show": { "toolAgentflowSelectedTool": ".+" },
-            "id": "toolAgentflow_0-input-toolInputArgs-array",
-            "display": true
-          },
-          {
-            "label": "Update Flow State",
-            "name": "toolUpdateState",
-            "description": "Update runtime state during the execution of the workflow",
-            "type": "array",
-            "optional": true,
-            "acceptVariable": true,
-            "array": [
-              { "label": "Key", "name": "key", "type": "asyncOptions", "loadMethod": "listRuntimeStateKeys", "freeSolo": true },
-              { "label": "Value", "name": "value", "type": "string", "acceptVariable": true, "acceptNodeOutputAsVariable": true }
-            ],
-            "id": "toolAgentflow_0-input-toolUpdateState-array",
-            "display": true
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "toolAgentflowSelectedTool": "wasenderSendMessage",
-          "toolInputArgs": [
-            {
-              "inputArgName": "phone_number_id",
-              "inputArgValue": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.senderPhoneNumber\" data-label=\"$flow.state.senderPhoneNumber\">{{ $flow.state.senderPhoneNumber }}</span></p>"
+        {
+            "id": "agentAgentflow_1",
+            "type": "agentFlow",
+            "position": { "x": 520, "y": -60 },
+            "data": {
+                "id": "agentAgentflow_1",
+                "label": "Cierre / Pago y Entrega",
+                "version": 2,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Cierra venta, confirma pago y entrega, actualiza estado",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_1-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 6
+                            }
+                        ],
+                        "id": "agentAgentflow_1-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Memoria de la conversación",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_1-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            { "label": "User Message", "name": "userMessage" },
+                            { "label": "Assistant Message", "name": "assistantMessage" }
+                        ],
+                        "default": "assistantMessage",
+                        "id": "agentAgentflow_1-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "agentUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "agentAgentflow_1-input-agentUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatOpenAI",
+                    "agentMessages": [
+                        {
+                            "role": "system",
+                            "content": "Estás cerrando la venta. 1) Confirmá datos del cliente si faltan (nombre, apellido, dirección). 2) Para la entrega preguntá: '¿Hacemos el envío al lugar habitual (dirección registrada) o preferís otra dirección?' 3) Para el pago consultá: '¿Usamos el método de pago habitual o preferís otro?' 4) Preguntá si quiere guardar esta dirección para futuras compras. 5) Si no se cierra hoy, confirmá que haremos seguimiento mañana. Siempre cordial y en tono argentino."
+                        }
+                    ],
+                    "agentEnableMemory": true,
+                    "agentReturnResponseAs": "assistantMessage",
+                    "agentUpdateState": [{ "key": "lastScenario", "value": "accepted" }],
+                    "agentModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4o-mini",
+                        "temperature": 0.3,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "imageResolution": "low",
+                        "reasoningEffort": "",
+                        "agentModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [{ "id": "agentAgentflow_1-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" }],
+                "outputs": {},
+                "selected": false
             },
-            {
-              "inputArgName": "to_number",
-              "inputArgValue": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.receiverPhoneNumber\" data-label=\"$flow.state.receiverPhoneNumber\">{{ $flow.state.receiverPhoneNumber }}</span></p>"
-            },
-            {
-              "inputArgName": "message",
-              "inputArgValue": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.lastAgentOutput\" data-label=\"$flow.state.lastAgentOutput\">{{ $flow.state.lastAgentOutput }}</span></p>"
-            }
-          ],
-          "toolUpdateState": ""
+            "width": 280,
+            "height": 80,
+            "positionAbsolute": { "x": 520, "y": -60 },
+            "selected": false,
+            "dragging": false
         },
-        "outputAnchors": [
-          { "id": "toolAgentflow_0-output-toolAgentflow", "label": "Tool", "name": "toolAgentflow" }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 200,
-      "height": 72,
-      "positionAbsolute": { "x": 840, "y": 60 },
-      "selected": false,
-      "dragging": false
-    }
-  ],
-  "edges": [
-    {
-      "source": "startAgentflow_0",
-      "sourceHandle": "startAgentflow_0-output-startAgentflow",
-      "target": "agentAgentflow_0",
-      "targetHandle": "agentAgentflow_0",
-      "data": { "sourceColor": "#7EE787", "targetColor": "#4DD0E1", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "startAgentflow_0-startAgentflow_0-output-startAgentflow-agentAgentflow_0-agentAgentflow_0"
-    },
-    {
-      "source": "agentAgentflow_0",
-      "sourceHandle": "agentAgentflow_0-output-agentAgentflow",
-      "target": "conditionAgentAgentflow_0",
-      "targetHandle": "conditionAgentAgentflow_0",
-      "data": { "sourceColor": "#4DD0E1", "targetColor": "#ff8fab", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "agentAgentflow_0-agentAgentflow_0-output-agentAgentflow-conditionAgentAgentflow_0-conditionAgentAgentflow_0"
-    },
-    {
-      "source": "conditionAgentAgentflow_0",
-      "sourceHandle": "conditionAgentAgentflow_0-output-0",
-      "target": "agentAgentflow_1",
-      "targetHandle": "agentAgentflow_1",
-      "data": { "sourceColor": "#ff8fab", "targetColor": "#4DD0E1", "edgeLabel": "0", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-0-agentAgentflow_1-agentAgentflow_1"
-    },
-    {
-      "source": "conditionAgentAgentflow_0",
-      "sourceHandle": "conditionAgentAgentflow_0-output-1",
-      "target": "agentAgentflow_2",
-      "targetHandle": "agentAgentflow_2",
-      "data": { "sourceColor": "#ff8fab", "targetColor": "#4DD0E1", "edgeLabel": "1", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-1-agentAgentflow_2-agentAgentflow_2"
-    },
-    {
-      "source": "conditionAgentAgentflow_0",
-      "sourceHandle": "conditionAgentAgentflow_0-output-2",
-      "target": "agentAgentflow_3",
-      "targetHandle": "agentAgentflow_3",
-      "data": { "sourceColor": "#ff8fab", "targetColor": "#4DD0E1", "edgeLabel": "2", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-2-agentAgentflow_3-agentAgentflow_3"
-    },
-    {
-      "source": "agentAgentflow_1",
-      "sourceHandle": "agentAgentflow_1-output-agentAgentflow",
-      "target": "toolAgentflow_0",
-      "targetHandle": "toolAgentflow_0",
-      "data": { "sourceColor": "#4DD0E1", "targetColor": "#d4a373", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "agentAgentflow_1-agentAgentflow_1-output-agentAgentflow-toolAgentflow_0-toolAgentflow_0"
-    },
-    {
-      "source": "agentAgentflow_2",
-      "sourceHandle": "agentAgentflow_2-output-agentAgentflow",
-      "target": "toolAgentflow_0",
-      "targetHandle": "toolAgentflow_0",
-      "data": { "sourceColor": "#4DD0E1", "targetColor": "#d4a373", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "agentAgentflow_2-agentAgentflow_2-output-agentAgentflow-toolAgentflow_0-toolAgentflow_0"
-    },
-    {
-      "source": "agentAgentflow_3",
-      "sourceHandle": "agentAgentflow_3-output-agentAgentflow",
-      "target": "toolAgentflow_0",
-      "targetHandle": "toolAgentflow_0",
-      "data": { "sourceColor": "#4DD0E1", "targetColor": "#d4a373", "isHumanInput": false },
-      "type": "agentFlow",
-      "id": "agentAgentflow_3-agentAgentflow_3-output-agentAgentflow-toolAgentflow_0-toolAgentflow_0"
-    }
-  ]
+
+        {
+            "id": "agentAgentflow_2",
+            "type": "agentFlow",
+            "position": { "x": 520, "y": 60 },
+            "data": {
+                "id": "agentAgentflow_2",
+                "label": "Negociación de Precio",
+                "version": 2,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Aplica política de descuentos escalonada",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_2-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 6
+                            }
+                        ],
+                        "id": "agentAgentflow_2-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Memoria de la conversación",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_2-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            { "label": "User Message", "name": "userMessage" },
+                            { "label": "Assistant Message", "name": "assistantMessage" }
+                        ],
+                        "default": "assistantMessage",
+                        "id": "agentAgentflow_2-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "agentUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "agentAgentflow_2-input-agentUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatOpenAI",
+                    "agentMessages": [
+                        {
+                            "role": "system",
+                            "content": "Negociá según $flow.state.salesManual. Considerá cantidad, histórico, y ofrecé alternativas si el precio sigue siendo un problema. Máximo de intentos: $flow.state.negotiationMaxAttempts."
+                        }
+                    ],
+                    "agentEnableMemory": true,
+                    "agentReturnResponseAs": "assistantMessage",
+                    "agentUpdateState": [{ "key": "lastScenario", "value": "negotiation" }],
+                    "agentModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4o-mini",
+                        "temperature": 0.4,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "imageResolution": "low",
+                        "reasoningEffort": "",
+                        "agentModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [{ "id": "agentAgentflow_2-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" }],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 280,
+            "height": 80,
+            "positionAbsolute": { "x": 520, "y": 60 },
+            "selected": false,
+            "dragging": false
+        },
+
+        {
+            "id": "agentAgentflow_3",
+            "type": "agentFlow",
+            "position": { "x": 520, "y": 180 },
+            "data": {
+                "id": "agentAgentflow_3",
+                "label": "Info Técnica / Alternativas",
+                "version": 2,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Amplía info técnica y sugiere alternativas si falta stock",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_3-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 6
+                            }
+                        ],
+                        "id": "agentAgentflow_3-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Memoria de la conversación",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_3-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            { "label": "User Message", "name": "userMessage" },
+                            { "label": "Assistant Message", "name": "assistantMessage" }
+                        ],
+                        "default": "assistantMessage",
+                        "id": "agentAgentflow_3-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "agentUpdateState",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "agentAgentflow_3-input-agentUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatOpenAI",
+                    "agentMessages": [
+                        {
+                            "role": "system",
+                            "content": "Si el cliente necesita más info técnica, explicá con claridad y compará modelos. Si no hay stock, sugerí alternativas compatibles y tiempos de reposición."
+                        }
+                    ],
+                    "agentEnableMemory": true,
+                    "agentReturnResponseAs": "assistantMessage",
+                    "agentUpdateState": [{ "key": "lastScenario", "value": "info_or_alternatives" }],
+                    "agentModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4o-mini",
+                        "temperature": 0.4,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "imageResolution": "low",
+                        "reasoningEffort": "",
+                        "agentModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [{ "id": "agentAgentflow_3-output-agentAgentflow", "label": "Agent", "name": "agentAgentflow" }],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 280,
+            "height": 80,
+            "positionAbsolute": { "x": 520, "y": 180 },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "toolAgentflow_0",
+            "type": "agentFlow",
+            "position": { "x": 840, "y": 60 },
+            "data": {
+                "id": "toolAgentflow_0",
+                "label": "Send WhatsApp (Wasender)",
+                "version": 2,
+                "name": "toolAgentflow",
+                "type": "Tool",
+                "color": "#d4a373",
+                "baseClasses": ["Tool"],
+                "category": "Agent Flows",
+                "description": "Send WhatsApp message via Wasender API",
+                "inputParams": [
+                    {
+                        "label": "Tool",
+                        "name": "toolAgentflowSelectedTool",
+                        "type": "asyncOptions",
+                        "loadMethod": "listTools",
+                        "loadConfig": true,
+                        "id": "toolAgentflow_0-input-toolAgentflowSelectedTool-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Tool Input Arguments",
+                        "name": "toolInputArgs",
+                        "type": "array",
+                        "acceptVariable": true,
+                        "refresh": true,
+                        "array": [
+                            {
+                                "label": "Input Argument Name",
+                                "name": "inputArgName",
+                                "type": "asyncOptions",
+                                "loadMethod": "listToolInputArgs",
+                                "refresh": true
+                            },
+                            {
+                                "label": "Input Argument Value",
+                                "name": "inputArgValue",
+                                "type": "string",
+                                "acceptVariable": true
+                            }
+                        ],
+                        "show": { "toolAgentflowSelectedTool": ".+" },
+                        "id": "toolAgentflow_0-input-toolInputArgs-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "toolUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "toolAgentflow_0-input-toolUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "toolAgentflowSelectedTool": "wasenderSendMessage",
+                    "toolInputArgs": [
+                        {
+                            "inputArgName": "phone_number_id",
+                            "inputArgValue": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.senderPhoneNumber\" data-label=\"$flow.state.senderPhoneNumber\">{{ $flow.state.senderPhoneNumber }}</span></p>"
+                        },
+                        {
+                            "inputArgName": "to_number",
+                            "inputArgValue": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.receiverPhoneNumber\" data-label=\"$flow.state.receiverPhoneNumber\">{{ $flow.state.receiverPhoneNumber }}</span></p>"
+                        },
+                        {
+                            "inputArgName": "message",
+                            "inputArgValue": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.lastAgentOutput\" data-label=\"$flow.state.lastAgentOutput\">{{ $flow.state.lastAgentOutput }}</span></p>"
+                        }
+                    ],
+                    "toolUpdateState": ""
+                },
+                "outputAnchors": [{ "id": "toolAgentflow_0-output-toolAgentflow", "label": "Tool", "name": "toolAgentflow" }],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 200,
+            "height": 72,
+            "positionAbsolute": { "x": 840, "y": 60 },
+            "selected": false,
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "startAgentflow_0",
+            "sourceHandle": "startAgentflow_0-output-startAgentflow",
+            "target": "agentAgentflow_0",
+            "targetHandle": "agentAgentflow_0",
+            "data": { "sourceColor": "#7EE787", "targetColor": "#4DD0E1", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "startAgentflow_0-startAgentflow_0-output-startAgentflow-agentAgentflow_0-agentAgentflow_0"
+        },
+        {
+            "source": "agentAgentflow_0",
+            "sourceHandle": "agentAgentflow_0-output-agentAgentflow",
+            "target": "conditionAgentAgentflow_0",
+            "targetHandle": "conditionAgentAgentflow_0",
+            "data": { "sourceColor": "#4DD0E1", "targetColor": "#ff8fab", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "agentAgentflow_0-agentAgentflow_0-output-agentAgentflow-conditionAgentAgentflow_0-conditionAgentAgentflow_0"
+        },
+        {
+            "source": "conditionAgentAgentflow_0",
+            "sourceHandle": "conditionAgentAgentflow_0-output-0",
+            "target": "agentAgentflow_1",
+            "targetHandle": "agentAgentflow_1",
+            "data": { "sourceColor": "#ff8fab", "targetColor": "#4DD0E1", "edgeLabel": "0", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-0-agentAgentflow_1-agentAgentflow_1"
+        },
+        {
+            "source": "conditionAgentAgentflow_0",
+            "sourceHandle": "conditionAgentAgentflow_0-output-1",
+            "target": "agentAgentflow_2",
+            "targetHandle": "agentAgentflow_2",
+            "data": { "sourceColor": "#ff8fab", "targetColor": "#4DD0E1", "edgeLabel": "1", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-1-agentAgentflow_2-agentAgentflow_2"
+        },
+        {
+            "source": "conditionAgentAgentflow_0",
+            "sourceHandle": "conditionAgentAgentflow_0-output-2",
+            "target": "agentAgentflow_3",
+            "targetHandle": "agentAgentflow_3",
+            "data": { "sourceColor": "#ff8fab", "targetColor": "#4DD0E1", "edgeLabel": "2", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-2-agentAgentflow_3-agentAgentflow_3"
+        },
+        {
+            "source": "agentAgentflow_1",
+            "sourceHandle": "agentAgentflow_1-output-agentAgentflow",
+            "target": "toolAgentflow_0",
+            "targetHandle": "toolAgentflow_0",
+            "data": { "sourceColor": "#4DD0E1", "targetColor": "#d4a373", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "agentAgentflow_1-agentAgentflow_1-output-agentAgentflow-toolAgentflow_0-toolAgentflow_0"
+        },
+        {
+            "source": "agentAgentflow_2",
+            "sourceHandle": "agentAgentflow_2-output-agentAgentflow",
+            "target": "toolAgentflow_0",
+            "targetHandle": "toolAgentflow_0",
+            "data": { "sourceColor": "#4DD0E1", "targetColor": "#d4a373", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "agentAgentflow_2-agentAgentflow_2-output-agentAgentflow-toolAgentflow_0-toolAgentflow_0"
+        },
+        {
+            "source": "agentAgentflow_3",
+            "sourceHandle": "agentAgentflow_3-output-agentAgentflow",
+            "target": "toolAgentflow_0",
+            "targetHandle": "toolAgentflow_0",
+            "data": { "sourceColor": "#4DD0E1", "targetColor": "#d4a373", "isHumanInput": false },
+            "type": "agentFlow",
+            "id": "agentAgentflow_3-agentAgentflow_3-output-agentAgentflow-toolAgentflow_0-toolAgentflow_0"
+        }
+    ]
 }

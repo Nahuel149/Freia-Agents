@@ -1,5 +1,24 @@
 import { useState } from 'react'
-import { Box, Button, Grid, MenuItem, TextField, Typography, Alert, List, ListItem, ListItemText, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Chip, Stack, Divider } from '@mui/material'
+import {
+    Box,
+    Button,
+    Grid,
+    MenuItem,
+    TextField,
+    Typography,
+    Alert,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Chip,
+    Stack,
+    Divider
+} from '@mui/material'
 import { IconTrash, IconCheck, IconX } from '@tabler/icons-react'
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -104,14 +123,7 @@ const Support = () => {
                         <TextField fullWidth type='email' label='Your Email' value={form.email} onChange={onChange('email')} />
                     </Grid>
                     <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label='Message'
-                            value={form.message}
-                            onChange={onChange('message')}
-                            multiline
-                            rows={6}
-                        />
+                        <TextField fullWidth label='Message' value={form.message} onChange={onChange('message')} multiline rows={6} />
                     </Grid>
                     <Grid item xs={12}>
                         <Button variant='outlined' component='label'>
@@ -120,17 +132,23 @@ const Support = () => {
                         </Button>
                         {files.length > 0 && (
                             <Box sx={{ mt: 1 }}>
-                                <Typography variant='body2' color='text.secondary'>Selected files:</Typography>
+                                <Typography variant='body2' color='text.secondary'>
+                                    Selected files:
+                                </Typography>
                                 <List dense>
                                     {files.map((f, idx) => (
-                                        <ListItem key={idx}
+                                        <ListItem
+                                            key={idx}
                                             secondaryAction={
                                                 <IconButton edge='end' aria-label='delete' onClick={() => removeFile(idx)}>
                                                     <IconTrash size={16} />
                                                 </IconButton>
                                             }
                                         >
-                                            <ListItemText primary={f.name} secondary={`${f.type || 'unknown'} • ${(f.size/1024).toFixed(1)} KB`} />
+                                            <ListItemText
+                                                primary={f.name}
+                                                secondary={`${f.type || 'unknown'} • ${(f.size / 1024).toFixed(1)} KB`}
+                                            />
                                         </ListItem>
                                     ))}
                                 </List>
@@ -171,12 +189,20 @@ const Support = () => {
                                     {tickets.map((t) => {
                                         const att = t.attachments ? JSON.parse(t.attachments) : []
                                         return (
-                                            <tr key={t.id} style={{ borderTop: '1px solid #eee', cursor: 'pointer' }} onClick={() => openDetail(t)}>
+                                            <tr
+                                                key={t.id}
+                                                style={{ borderTop: '1px solid #eee', cursor: 'pointer' }}
+                                                onClick={() => openDetail(t)}
+                                            >
                                                 <td style={{ padding: 8 }}>{dayjs(t.createdDate).format('YYYY-MM-DD HH:mm')}</td>
                                                 <td style={{ padding: 8 }}>{t.category || '-'}</td>
                                                 <td style={{ padding: 8 }}>{t.subject || '-'}</td>
                                                 <td style={{ padding: 8 }}>
-                                                    <Chip size='small' label={t.status} color={t.status === 'CLOSED' ? 'default' : 'success'} />
+                                                    <Chip
+                                                        size='small'
+                                                        label={t.status}
+                                                        color={t.status === 'CLOSED' ? 'default' : 'success'}
+                                                    />
                                                 </td>
                                                 <td style={{ padding: 8 }}>
                                                     {att.length ? (
@@ -233,8 +259,16 @@ const Support = () => {
                                             {JSON.parse(selected.attachments).map((a, idx) => (
                                                 <ListItem key={idx}>
                                                     <ListItemText
-                                                        primary={a.location ? <a href={a.location} target='_blank' rel='noreferrer'>{a.originalname}</a> : a.originalname}
-                                                        secondary={`${a.mimetype || ''} • ${(a.size/1024).toFixed(1)} KB`}
+                                                        primary={
+                                                            a.location ? (
+                                                                <a href={a.location} target='_blank' rel='noreferrer'>
+                                                                    {a.originalname}
+                                                                </a>
+                                                            ) : (
+                                                                a.originalname
+                                                            )
+                                                        }
+                                                        secondary={`${a.mimetype || ''} • ${(a.size / 1024).toFixed(1)} KB`}
                                                     />
                                                 </ListItem>
                                             ))}
@@ -246,11 +280,21 @@ const Support = () => {
                     </DialogContent>
                     <DialogActions>
                         {selected && selected.status !== 'CLOSED' ? (
-                            <Button color='error' startIcon={<IconX size={16} />} onClick={() => setStatus('CLOSED')} disabled={updateTicketApi.loading}>
+                            <Button
+                                color='error'
+                                startIcon={<IconX size={16} />}
+                                onClick={() => setStatus('CLOSED')}
+                                disabled={updateTicketApi.loading}
+                            >
                                 Mark Closed
                             </Button>
                         ) : (
-                            <Button color='success' startIcon={<IconCheck size={16} />} onClick={() => setStatus('OPEN')} disabled={updateTicketApi.loading}>
+                            <Button
+                                color='success'
+                                startIcon={<IconCheck size={16} />}
+                                onClick={() => setStatus('OPEN')}
+                                disabled={updateTicketApi.loading}
+                            >
                                 Reopen
                             </Button>
                         )}

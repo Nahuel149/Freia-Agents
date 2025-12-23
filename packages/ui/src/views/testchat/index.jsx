@@ -11,7 +11,6 @@ import {
     CardContent,
     Chip,
     CircularProgress,
-    Divider,
     Fade,
     FormControl,
     IconButton,
@@ -23,15 +22,12 @@ import {
     Slide,
     Stack,
     TextField,
-    Tooltip,
     Typography,
     alpha
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // API
@@ -45,7 +41,7 @@ import useNotifier from '@/utils/useNotifier'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // icons
-import { IconSend, IconRefresh, IconRobot, IconUser, IconSparkles, IconClearAll } from '@tabler/icons-react'
+import { IconSend, IconRobot, IconUser, IconSparkles, IconClearAll } from '@tabler/icons-react'
 
 // ==============================|| TEST CHAT (CodeAgent) ||============================== //
 
@@ -73,7 +69,7 @@ const TestChat = () => {
     const [codeAgents, setCodeAgents] = useState([])
     const [selectedAgentId, setSelectedAgentId] = useState('')
     const [selectedModel, setSelectedModel] = useState('gpt-4o-mini')
-    const selectedAgent = useMemo(() => codeAgents.find(a => a.id === selectedAgentId) || null, [codeAgents, selectedAgentId])
+    const selectedAgent = useMemo(() => codeAgents.find((a) => a.id === selectedAgentId) || null, [codeAgents, selectedAgentId])
 
     const [messages, setMessages] = useState([])
     const [inputMessage, setInputMessage] = useState('')
@@ -102,12 +98,14 @@ const TestChat = () => {
             if (!selectedAgentId && list.length > 0) {
                 const first = list[0]
                 setSelectedAgentId(first.id)
-                setMessages([{
-                    id: 'welcome',
-                    type: 'system',
-                    content: `Welcome to ${first.name}! Select or start chatting below.`,
-                    timestamp: new Date().toISOString()
-                }])
+                setMessages([
+                    {
+                        id: 'welcome',
+                        type: 'system',
+                        content: `Welcome to ${first.name}! Select or start chatting below.`,
+                        timestamp: new Date().toISOString()
+                    }
+                ])
             }
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -129,13 +127,15 @@ const TestChat = () => {
     const onSelectAgent = (e) => {
         const id = e.target.value
         setSelectedAgentId(id)
-        const agent = codeAgents.find(a => a.id === id)
-        setMessages([{
-            id: 'welcome',
-            type: 'system',
-            content: `Welcome to ${agent?.name || 'CodeAgent'}! You can now interact with your CodeAgent.`,
-            timestamp: new Date().toISOString()
-        }])
+        const agent = codeAgents.find((a) => a.id === id)
+        setMessages([
+            {
+                id: 'welcome',
+                type: 'system',
+                content: `Welcome to ${agent?.name || 'CodeAgent'}! You can now interact with your CodeAgent.`,
+                timestamp: new Date().toISOString()
+            }
+        ])
         setExecutionStatus('idle')
         setInputMessage('')
     }
@@ -154,7 +154,7 @@ const TestChat = () => {
             timestamp: new Date().toISOString()
         }
 
-        setMessages(prev => [...prev, userMessage])
+        setMessages((prev) => [...prev, userMessage])
         setInputMessage('')
         setIsExecuting(true)
         setExecutionStatus('running')
@@ -197,7 +197,7 @@ const TestChat = () => {
                 timestamp: new Date().toISOString()
             }
 
-            setMessages(prev => [...prev, agentMessage])
+            setMessages((prev) => [...prev, agentMessage])
             setExecutionStatus('success')
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -209,7 +209,7 @@ const TestChat = () => {
                 error: error?.response?.data?.error,
                 timestamp: new Date().toISOString()
             }
-            setMessages(prev => [...prev, errorMessage])
+            setMessages((prev) => [...prev, errorMessage])
             setExecutionStatus('error')
         } finally {
             setIsExecuting(false)
@@ -224,12 +224,14 @@ const TestChat = () => {
     }
 
     const clearChat = () => {
-        setMessages([{
-            id: 'welcome',
-            type: 'system',
-            content: `Welcome to ${selectedAgent?.name || 'CodeAgent'}! You can now interact with your CodeAgent.`,
-            timestamp: new Date().toISOString()
-        }])
+        setMessages([
+            {
+                id: 'welcome',
+                type: 'system',
+                content: `Welcome to ${selectedAgent?.name || 'CodeAgent'}! You can now interact with your CodeAgent.`,
+                timestamp: new Date().toISOString()
+            }
+        ])
         setExecutionStatus('idle')
     }
 
@@ -255,10 +257,10 @@ const TestChat = () => {
                             sx={{
                                 width: 32,
                                 height: 32,
-                                bgcolor: isSystem 
-                                    ? theme.palette.info.main 
-                                    : isError 
-                                    ? theme.palette.error.main 
+                                bgcolor: isSystem
+                                    ? theme.palette.info.main
+                                    : isError
+                                    ? theme.palette.error.main
                                     : theme.palette.secondary.main,
                                 mt: 0.5
                             }}
@@ -266,7 +268,7 @@ const TestChat = () => {
                             {isSystem ? <IconSparkles size={18} /> : isError ? '!' : <IconRobot size={18} />}
                         </Avatar>
                     )}
-                    
+
                     <Box sx={{ maxWidth: '75%', minWidth: '200px' }}>
                         <Paper
                             elevation={isUser ? 8 : 2}
@@ -276,46 +278,56 @@ const TestChat = () => {
                                 background: isUser
                                     ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
                                     : isError
-                                    ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(theme.palette.error.main, 0.05)} 100%)`
+                                    ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(
+                                          theme.palette.error.main,
+                                          0.05
+                                      )} 100%)`
                                     : isSystem
-                                    ? `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`
+                                    ? `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(
+                                          theme.palette.info.main,
+                                          0.05
+                                      )} 100%)`
                                     : theme.palette.background.paper,
                                 color: isUser ? theme.palette.primary.contrastText : 'inherit',
                                 border: isUser ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                boxShadow: isUser 
+                                boxShadow: isUser
                                     ? `0 4px 20px ${alpha(theme.palette.primary.main, 0.3)}`
                                     : `0 2px 12px ${alpha(theme.palette.common.black, 0.08)}`,
                                 position: 'relative',
-                                '&::before': isUser ? {} : {
-                                    content: '""',
-                                    position: 'absolute',
-                                    top: 12,
-                                    left: -6,
-                                    width: 12,
-                                    height: 12,
-                                    background: 'inherit',
-                                    border: 'inherit',
-                                    borderRight: 'none',
-                                    borderBottom: 'none',
-                                    transform: 'rotate(45deg)',
-                                    borderRadius: '2px 0 0 0'
-                                },
-                                '&::after': isUser ? {
-                                    content: '""',
-                                    position: 'absolute',
-                                    top: 12,
-                                    right: -6,
-                                    width: 12,
-                                    height: 12,
-                                    background: 'inherit',
-                                    transform: 'rotate(45deg)',
-                                    borderRadius: '0 2px 0 0'
-                                } : {}
+                                '&::before': isUser
+                                    ? {}
+                                    : {
+                                          content: '""',
+                                          position: 'absolute',
+                                          top: 12,
+                                          left: -6,
+                                          width: 12,
+                                          height: 12,
+                                          background: 'inherit',
+                                          border: 'inherit',
+                                          borderRight: 'none',
+                                          borderBottom: 'none',
+                                          transform: 'rotate(45deg)',
+                                          borderRadius: '2px 0 0 0'
+                                      },
+                                '&::after': isUser
+                                    ? {
+                                          content: '""',
+                                          position: 'absolute',
+                                          top: 12,
+                                          right: -6,
+                                          width: 12,
+                                          height: 12,
+                                          background: 'inherit',
+                                          transform: 'rotate(45deg)',
+                                          borderRadius: '0 2px 0 0'
+                                      }
+                                    : {}
                             }}
                         >
-                            <Typography 
-                                variant='body1' 
-                                sx={{ 
+                            <Typography
+                                variant='body1'
+                                sx={{
                                     whiteSpace: 'pre-wrap',
                                     lineHeight: 1.6,
                                     fontSize: '0.95rem'
@@ -330,14 +342,14 @@ const TestChat = () => {
                                         <Typography variant='caption' color='text.secondary' sx={{ fontWeight: 600 }}>
                                             📊 Data Output
                                         </Typography>
-                                        <Box 
-                                            component='pre' 
-                                            sx={{ 
-                                                mt: 1, 
-                                                p: 1.5, 
-                                                backgroundColor: theme.palette.background.default, 
-                                                borderRadius: 2, 
-                                                fontSize: '0.8rem', 
+                                        <Box
+                                            component='pre'
+                                            sx={{
+                                                mt: 1,
+                                                p: 1.5,
+                                                backgroundColor: theme.palette.background.default,
+                                                borderRadius: 2,
+                                                fontSize: '0.8rem',
                                                 overflow: 'auto',
                                                 border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                                             }}
@@ -354,14 +366,14 @@ const TestChat = () => {
                                         <Typography variant='caption' color='info.main' sx={{ fontWeight: 600 }}>
                                             📝 Execution Logs
                                         </Typography>
-                                        <Box 
-                                            component='pre' 
-                                            sx={{ 
-                                                mt: 1, 
-                                                p: 1.5, 
-                                                backgroundColor: alpha(theme.palette.info.main, 0.02), 
-                                                borderRadius: 2, 
-                                                fontSize: '0.8rem', 
+                                        <Box
+                                            component='pre'
+                                            sx={{
+                                                mt: 1,
+                                                p: 1.5,
+                                                backgroundColor: alpha(theme.palette.info.main, 0.02),
+                                                borderRadius: 2,
+                                                fontSize: '0.8rem',
                                                 overflow: 'auto',
                                                 border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
                                             }}
@@ -378,15 +390,15 @@ const TestChat = () => {
                                         <Typography variant='caption' color='error.main' sx={{ fontWeight: 600 }}>
                                             ⚠️ Error Details
                                         </Typography>
-                                        <Box 
-                                            component='pre' 
-                                            sx={{ 
-                                                mt: 1, 
-                                                p: 1.5, 
-                                                backgroundColor: alpha(theme.palette.error.main, 0.02), 
-                                                borderRadius: 2, 
-                                                fontSize: '0.8rem', 
-                                                overflow: 'auto', 
+                                        <Box
+                                            component='pre'
+                                            sx={{
+                                                mt: 1,
+                                                p: 1.5,
+                                                backgroundColor: alpha(theme.palette.error.main, 0.02),
+                                                borderRadius: 2,
+                                                fontSize: '0.8rem',
+                                                overflow: 'auto',
                                                 color: theme.palette.error.dark,
                                                 border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
                                             }}
@@ -397,11 +409,11 @@ const TestChat = () => {
                                 </Card>
                             )}
 
-                            <Typography 
-                                variant='caption' 
-                                color={isUser ? alpha(theme.palette.primary.contrastText, 0.7) : 'text.secondary'} 
-                                sx={{ 
-                                    mt: 1.5, 
+                            <Typography
+                                variant='caption'
+                                color={isUser ? alpha(theme.palette.primary.contrastText, 0.7) : 'text.secondary'}
+                                sx={{
+                                    mt: 1.5,
                                     display: 'block',
                                     textAlign: isUser ? 'right' : 'left',
                                     fontSize: '0.75rem'
@@ -411,7 +423,7 @@ const TestChat = () => {
                             </Typography>
                         </Paper>
                     </Box>
-                    
+
                     {isUser && (
                         <Avatar
                             sx={{
@@ -432,14 +444,26 @@ const TestChat = () => {
     if (isLoading) return <BackdropLoader open={isLoading} />
 
     return (
-        <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', bgcolor: theme.palette.background.default, maxHeight: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+        <Box
+            sx={{
+                height: 'calc(100vh - 64px)',
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: theme.palette.background.default,
+                maxHeight: 'calc(100vh - 64px)',
+                overflow: 'hidden'
+            }}
+        >
             {/* Modern Header */}
-            <Paper 
-                elevation={0} 
-                sx={{ 
-                    p: 1, 
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 1,
                     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(
+                        theme.palette.secondary.main,
+                        0.02
+                    )} 100%)`,
                     backdropFilter: 'blur(10px)',
                     flexShrink: 0
                 }}
@@ -453,19 +477,19 @@ const TestChat = () => {
                             Interactive testing environment for your CodeAgents
                         </Typography>
                     </Box>
-                    
+
                     <Stack direction='row' spacing={1} alignItems='center'>
                         <Chip
-                            label={`🤖 ${availableModels.find(m => m.id === selectedModel)?.name || 'No Model'}`}
+                            label={`🤖 ${availableModels.find((m) => m.id === selectedModel)?.name || 'No Model'}`}
                             color='secondary'
                             variant='outlined'
                             size='small'
-                            sx={{ 
+                            sx={{
                                 fontWeight: 600,
                                 fontSize: '0.75rem'
                             }}
                         />
-                        
+
                         <Chip
                             icon={executionStatus === 'running' ? <CircularProgress size={16} /> : undefined}
                             label={executionStatus === 'idle' ? 'Ready' : executionStatus}
@@ -479,16 +503,16 @@ const TestChat = () => {
                                     : 'default'
                             }
                             variant={executionStatus === 'idle' ? 'outlined' : 'filled'}
-                            sx={{ 
+                            sx={{
                                 fontWeight: 600,
                                 '& .MuiChip-icon': { ml: 0.5 }
                             }}
                         />
-                        
-                        <IconButton 
-                            onClick={clearChat} 
+
+                        <IconButton
+                            onClick={clearChat}
                             disabled={!selectedAgentId}
-                            sx={{ 
+                            sx={{
                                 bgcolor: alpha(theme.palette.error.main, 0.1),
                                 '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.2) },
                                 '&:disabled': { bgcolor: 'transparent' }
@@ -498,10 +522,12 @@ const TestChat = () => {
                         </IconButton>
                     </Stack>
                 </Stack>
-                
+
                 <Stack direction='row' spacing={1.5} alignItems='center'>
                     <FormControl size='medium' sx={{ minWidth: 300 }}>
-                        <InputLabel id='testchat-agent-select-label' sx={{ fontWeight: 600 }}>Select CodeAgent</InputLabel>
+                        <InputLabel id='testchat-agent-select-label' sx={{ fontWeight: 600 }}>
+                            Select CodeAgent
+                        </InputLabel>
                         <Select
                             labelId='testchat-agent-select-label'
                             value={selectedAgentId}
@@ -534,9 +560,11 @@ const TestChat = () => {
                             ))}
                         </Select>
                     </FormControl>
-                    
+
                     <FormControl size='medium' sx={{ minWidth: 200 }}>
-                        <InputLabel id='testchat-model-select-label' sx={{ fontWeight: 600 }}>AI Model</InputLabel>
+                        <InputLabel id='testchat-model-select-label' sx={{ fontWeight: 600 }}>
+                            AI Model
+                        </InputLabel>
                         <Select
                             labelId='testchat-model-select-label'
                             value={selectedModel}
@@ -569,9 +597,15 @@ const TestChat = () => {
                             ))}
                         </Select>
                     </FormControl>
-                    
+
                     {selectedAgent && selectedAgent.description && (
-                        <Card sx={{ flex: 1, bgcolor: alpha(theme.palette.info.main, 0.05), border: `1px solid ${alpha(theme.palette.info.main, 0.1)}` }}>
+                        <Card
+                            sx={{
+                                flex: 1,
+                                bgcolor: alpha(theme.palette.info.main, 0.05),
+                                border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
+                            }}
+                        >
                             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                                 <Typography variant='body2' color='info.main' sx={{ fontWeight: 500 }}>
                                     💡 {selectedAgent.description}
@@ -583,23 +617,25 @@ const TestChat = () => {
             </Paper>
 
             {/* Chat Messages Area */}
-            <Box 
-                sx={{ 
-                    flexGrow: 1, 
-                    overflow: 'auto', 
+            <Box
+                sx={{
+                    flexGrow: 1,
+                    overflow: 'auto',
                     p: 0.5,
-                    background: `linear-gradient(180deg, ${alpha(theme.palette.background.default, 0.8)} 0%, ${theme.palette.background.default} 100%)`,
+                    background: `linear-gradient(180deg, ${alpha(theme.palette.background.default, 0.8)} 0%, ${
+                        theme.palette.background.default
+                    } 100%)`,
                     position: 'relative',
                     minHeight: 0
                 }}
             >
                 {!selectedAgentId ? (
-                    <Box 
-                        sx={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                             height: '100%',
                             textAlign: 'center'
                         }}
@@ -618,19 +654,22 @@ const TestChat = () => {
                     <>
                         {messages.map(renderMessage)}
                         {isExecuting && (
-                            <Slide direction="up" in={isExecuting} timeout={300}>
+                            <Slide direction='up' in={isExecuting} timeout={300}>
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1, alignItems: 'flex-start', gap: 1 }}>
                                     <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.secondary.main, mt: 0.5 }}>
                                         <IconRobot size={18} />
                                     </Avatar>
-                                    <Paper 
-                                        sx={{ 
-                                            p: 1.5, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
+                                    <Paper
+                                        sx={{
+                                            p: 1.5,
+                                            display: 'flex',
+                                            alignItems: 'center',
                                             gap: 2,
                                             borderRadius: '20px 20px 20px 4px',
-                                            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                                            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(
+                                                theme.palette.secondary.main,
+                                                0.05
+                                            )} 100%)`,
                                             border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
                                             position: 'relative',
                                             '&::before': {
@@ -663,10 +702,10 @@ const TestChat = () => {
             </Box>
 
             {/* Modern Input Area */}
-            <Paper 
-                elevation={8} 
-                sx={{ 
-                    p: 1, 
+            <Paper
+                elevation={8}
+                sx={{
+                    p: 1,
                     borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     background: theme.palette.background.paper,
                     backdropFilter: 'blur(10px)',
@@ -681,7 +720,11 @@ const TestChat = () => {
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder={selectedAgentId ? `💬 Ask your CodeAgent anything... (using ${availableModels.find(m => m.id === selectedModel)?.name})` : '👆 Select a CodeAgent first to start chatting'}
+                        placeholder={
+                            selectedAgentId
+                                ? `💬 Ask your CodeAgent anything... (using ${availableModels.find((m) => m.id === selectedModel)?.name})`
+                                : '👆 Select a CodeAgent first to start chatting'
+                        }
                         disabled={isExecuting || !selectedAgentId}
                         variant='outlined'
                         sx={{
@@ -706,7 +749,7 @@ const TestChat = () => {
                         }}
                         InputProps={{
                             endAdornment: inputMessage.trim() && (
-                                <InputAdornment position="end">
+                                <InputAdornment position='end'>
                                     <Typography variant='caption' color='text.secondary' sx={{ fontSize: '0.7rem' }}>
                                         Press Enter to send
                                     </Typography>
@@ -719,9 +762,9 @@ const TestChat = () => {
                         variant='contained'
                         onClick={handleSendMessage}
                         disabled={!inputMessage.trim() || isExecuting || !selectedAgentId}
-                        sx={{ 
+                        sx={{
                             minWidth: 90,
-                        height: 42,
+                            height: 42,
                             borderRadius: 4,
                             fontWeight: 600,
                             fontSize: '1rem',
@@ -749,4 +792,3 @@ const TestChat = () => {
 }
 
 export default TestChat
-

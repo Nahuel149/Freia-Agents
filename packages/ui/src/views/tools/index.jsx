@@ -70,10 +70,10 @@ const Tools = () => {
     const onUploadFile = (file) => {
         try {
             const dialogProp = {
-               title: t('tools.addNewTool'),
+                title: t('tools.addNewTool'),
                 type: 'IMPORT',
-               cancelButtonName: t('common.cancel'),
-               confirmButtonName: t('common.save'),
+                cancelButtonName: t('common.cancel'),
+                confirmButtonName: t('common.save'),
                 data: JSON.parse(file)
             }
             setDialogProps(dialogProp)
@@ -101,10 +101,10 @@ const Tools = () => {
 
     const addNew = () => {
         const dialogProp = {
-           title: t('tools.addNewTool'),
+            title: t('tools.addNewTool'),
             type: 'ADD',
-           cancelButtonName: t('common.cancel'),
-           confirmButtonName: t('common.add')
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.add')
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -112,10 +112,10 @@ const Tools = () => {
 
     const edit = (selectedTool) => {
         const dialogProp = {
-           title: t('tools.editTool'),
+            title: t('tools.editTool'),
             type: 'EDIT',
-           cancelButtonName: t('common.cancel'),
-           confirmButtonName: t('common.save'),
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.save'),
             data: selectedTool
         }
         setDialogProps(dialogProp)
@@ -163,9 +163,9 @@ const Tools = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                           searchPlaceholder={t('tools.searchPlaceholder')}
-                           title={t('tools.title')}
-                           description={t('tools.description')}
+                            searchPlaceholder={t('tools.searchPlaceholder')}
+                            title={t('tools.title')}
+                            description={t('tools.description')}
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -183,7 +183,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                   title={t('chatflows.cardView')}
+                                    title={t('chatflows.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -195,7 +195,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                   title={t('chatflows.listView')}
+                                    title={t('chatflows.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -208,7 +208,7 @@ const Tools = () => {
                                     startIcon={<IconFileUpload />}
                                     sx={{ borderRadius: 2, height: 40 }}
                                 >
-                                   {t('common.load')}
+                                    {t('common.load')}
                                 </PermissionButton>
                                 <input
                                     style={{ display: 'none' }}
@@ -227,7 +227,7 @@ const Tools = () => {
                                     startIcon={<IconPlus />}
                                     sx={{ borderRadius: 2, height: 40 }}
                                 >
-                                   {t('common.create')}
+                                    {t('common.create')}
                                 </StyledPermissionButton>
                             </ButtonGroup>
                         </ViewHeader>

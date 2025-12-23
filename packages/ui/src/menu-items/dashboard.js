@@ -75,15 +75,6 @@ const dashboard = {
             type: 'group',
             children: [
                 {
-                    id: 'chatflows',
-                    title: 'Chatflows',
-                    type: 'item',
-                    url: '/chatflows',
-                    icon: icons.IconHierarchy,
-                    breadcrumbs: true,
-                    permission: 'chatflows:view'
-                },
-                {
                     id: 'agentflows',
                     title: 'Agentflows',
                     type: 'item',
@@ -93,42 +84,14 @@ const dashboard = {
                     permission: 'chatflows:view'
                 },
                 {
-                    id: 'dashboard',
-                    title: 'Dashboard',
+                    id: 'chatflows',
+                    title: 'Chatflows',
                     type: 'item',
-                    url: '/dashboard',
-                    icon: icons.IconDashboard,
-                    breadcrumbs: true,
-                    permission: 'dashboard:view'
-                },
-                {
-                    id: 'executions',
-                    title: 'Executions',
-                    type: 'item',
-                    url: '/executions',
-                    icon: icons.IconListCheck,
-                    breadcrumbs: true,
-                    permission: 'executions:view'
-                },
-                {
-                    id: 'payments',
-                    title: 'Payments',
-                    type: 'item',
-                    url: '/payments',
-                    icon: icons.IconBuildingStore,
+                    url: '/chatflows',
+                    icon: icons.IconHierarchy,
                     breadcrumbs: true,
                     permission: 'chatflows:view'
                 },
-                {
-                    id: 'templates',
-                    title: 'Templates',
-                    type: 'item',
-                    url: '/templates',
-                    icon: icons.IconBuildingStore,
-                    breadcrumbs: true,
-                    permission: 'templates:marketplace,templates:custom'
-                },
-
                 {
                     id: 'document-stores',
                     title: 'Document Stores',
@@ -145,23 +108,32 @@ const dashboard = {
                     icon: icons.IconCode,
                     children: [
                         {
-                            id: 'codeagent',
-                            title: 'CodeAgent',
+                            id: 'executions-more',
+                            title: 'Executions',
                             type: 'item',
-                            url: '/codeagent',
-                            icon: icons.IconCode,
+                            url: '/executions',
+                            icon: icons.IconListCheck,
                             breadcrumbs: true,
-                            permission: 'codeagents:view'
+                            permission: 'executions:view'
                         },
                         {
-                            id: 'testchat',
-                            title: 'Test Chat',
+                            id: 'dashboard',
+                            title: 'Dashboard',
                             type: 'item',
-                            url: '/testchat',
-                            icon: icons.IconMicroscope,
+                            url: '/dashboard',
+                            icon: icons.IconDashboard,
                             breadcrumbs: true,
-                            permission: 'codeagents:view'
-                        }
+                            permission: 'dashboard:view'
+                        },
+                        {
+                            id: 'templates',
+                            title: 'Templates',
+                            type: 'item',
+                            url: '/templates',
+                            icon: icons.IconBuildingStore,
+                            breadcrumbs: true,
+                            permission: 'templates:marketplace,templates:custom'
+                        },
                     ]
                 }
             ]
@@ -286,6 +258,15 @@ const dashboard = {
                     url: '/support',
                     icon: icons.IconFileText,
                     breadcrumbs: true
+                },
+                {
+                    id: 'payments-others',
+                    title: 'Payments',
+                    type: 'item',
+                    url: '/payments',
+                    icon: icons.IconBuildingStore,
+                    breadcrumbs: true,
+                    permission: 'chatflows:view'
                 },
                 {
                     id: 'logout',

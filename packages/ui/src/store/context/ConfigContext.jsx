@@ -39,9 +39,7 @@ export const ConfigProvider = ({ children }) => {
             })
     }, [])
 
-    return (
-        <ConfigContext.Provider value={{ config, loading, isCloud, isOpenSource }}>{children}</ConfigContext.Provider>
-    )
+    return <ConfigContext.Provider value={{ config, loading, isCloud, isOpenSource }}>{children}</ConfigContext.Provider>
 }
 
 export const useConfig = () => useContext(ConfigContext)

@@ -13,7 +13,11 @@ interface LoginBody {
 }
 
 const getSecret = () => process.env.FLOWISE_SECRETKEY_OVERWRITE || 'mySecretKey'
-const superAdmins = (process.env.SUPER_ADMIN_EMAILS || '').toLowerCase().split(',').map((e) => e.trim()).filter(Boolean)
+const superAdmins = (process.env.SUPER_ADMIN_EMAILS || '')
+    .toLowerCase()
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean)
 
 export class AuthService {
     private buildToken(payload: any) {

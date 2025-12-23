@@ -284,30 +284,31 @@ export const AsyncDropdown = ({
                 renderOption={(props, option) => {
                     const { key, ...optionProps } = props
                     return (
-                    <li key={key} {...optionProps}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            {option.imageSrc && (
-                                <img
-                                    src={option.imageSrc}
-                                    alt={option.description}
-                                    style={{
-                                        width: 30,
-                                        height: 30,
-                                        padding: 1,
-                                        borderRadius: '50%'
-                                    }}
-                                />
-                            )}
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <Typography variant='h5'>{option.label}</Typography>
-                                {option.description && (
-                                    <Typography sx={{ color: customization.isDarkMode ? '#9e9e9e' : '' }}>
-                                        {option.description}
-                                    </Typography>
+                        <li key={key} {...optionProps}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                {option.imageSrc && (
+                                    <img
+                                        src={option.imageSrc}
+                                        alt={option.description}
+                                        style={{
+                                            width: 30,
+                                            height: 30,
+                                            padding: 1,
+                                            borderRadius: '50%'
+                                        }}
+                                    />
                                 )}
-                            </div>
-                        </Box>
-                    </li>)
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant='h5'>{option.label}</Typography>
+                                    {option.description && (
+                                        <Typography sx={{ color: customization.isDarkMode ? '#9e9e9e' : '' }}>
+                                            {option.description}
+                                        </Typography>
+                                    )}
+                                </div>
+                            </Box>
+                        </li>
+                    )
                 }}
             />
         </>

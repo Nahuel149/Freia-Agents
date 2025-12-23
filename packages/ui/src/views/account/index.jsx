@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
@@ -7,15 +7,9 @@ import useNotifier from '@/utils/useNotifier'
 import { validatePassword } from '@/utils/validation'
 
 // material-ui
-import {
-    Box,
-    OutlinedInput,
-    Skeleton,
-    Stack,
-    Typography
-} from '@mui/material'
+import { Box, Button, OutlinedInput, Skeleton, Stack, Typography } from '@mui/material'
 // OSS Mode: Removed unused Material-UI imports for billing dialogs
-import { darken, useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 
 // project imports
 import ErrorBoundary from '@/ErrorBoundary'
@@ -331,8 +325,9 @@ const AccountSettings = () => {
                                             />
                                             <Typography variant='caption'>
                                                 <i>
-                                                La contraseña debe tener al menos 8 caracteres e incluir una minúscula, una mayúscula, un dígito y un carácter especial.
-                                            </i>
+                                                    La contraseña debe tener al menos 8 caracteres e incluir una minúscula, una mayúscula,
+                                                    un dígito y un carácter especial.
+                                                </i>
                                             </Typography>
                                         </Box>
                                         <Box

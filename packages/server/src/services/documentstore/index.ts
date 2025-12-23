@@ -48,7 +48,6 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { databaseEntities, getAppVersion, saveUpsertFlowData } from '../../utils'
 import { DOCUMENT_STORE_BASE_FOLDER, INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
-import { isOssMode } from '../../utils/ossMode'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
 import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/prompt'
@@ -65,12 +64,9 @@ const createDocumentStore = async (newDocumentStore: DocumentStore) => {
 
         const documentStore = appServer.AppDataSource.getRepository(DocumentStore).create(newDocumentStore)
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(documentStore)
-        await appServer.telemetry.sendTelemetry(
-            'document_store_created',
-            {
-                version: await getAppVersion()
-            }
-        )
+        await appServer.telemetry.sendTelemetry('document_store_created', {
+            version: await getAppVersion()
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -113,11 +109,7 @@ const getAllDocumentFileChunksByDocumentStoreIds = async (documentStoreIds: stri
     return await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({ where: { storeId: In(documentStoreIds) } })
 }
 
-const deleteLoaderFromDocumentStore = async (
-    storeId: string,
-    docId: string,
-    usageCacheManager: UsageCacheManager
-) => {
+const deleteLoaderFromDocumentStore = async (storeId: string, docId: string, usageCacheManager: UsageCacheManager) => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -139,7 +131,12 @@ const deleteLoaderFromDocumentStore = async (
                 for (const file of found.files) {
                     if (file.name) {
                         try {
-                            const { totalSize } = await removeSpecificFileFromStorage('oss-mode', DOCUMENT_STORE_BASE_FOLDER, storeId, file.name)
+                            const { totalSize } = await removeSpecificFileFromStorage(
+                                'oss-mode',
+                                DOCUMENT_STORE_BASE_FOLDER,
+                                storeId,
+                                file.name
+                            )
                             await updateStorageUsage('oss-mode', 'oss-mode', totalSize, usageCacheManager)
                         } catch (error) {
                             console.error(error)
@@ -987,23 +984,18 @@ const _saveChunksToStorage = async (
 
         // Fallback: If chunk generation returned no documents earlier, try again using
         // the rehydrated FILE-STORAGE paths we just persisted to ensure consistency
-        try {
-            if (!response?.chunks || response.chunks.length === 0) {
-                const rehydratedData = { ...data, loaderConfig: loader.loaderConfig, rehydrated: false }
-                response = await previewChunks({
-                    appDataSource,
-                    componentNodes,
-                    data: rehydratedData,
-                    isPreviewOnly: false,
-                    orgId,
-                    workspaceId,
-                    subscriptionId,
-                    usageCacheManager
-                })
-            }
-        } catch (e) {
-            // Let outer catch handle detailed error formatting
-            throw e
+        if (!response?.chunks || response.chunks.length === 0) {
+            const rehydratedData = { ...data, loaderConfig: loader.loaderConfig, rehydrated: false }
+            response = await previewChunks({
+                appDataSource,
+                componentNodes,
+                data: rehydratedData,
+                isPreviewOnly: false,
+                orgId,
+                workspaceId,
+                subscriptionId,
+                usageCacheManager
+            })
         }
 
         //step 7: remove all previous chunks
@@ -1443,7 +1435,9 @@ const _insertIntoVectorStoreWorkerThread = async (
         }
 
         // Log helpful context
-        logger.debug(`[vector-upsert] storeId=${data.storeId} docId=${data.docId || 'all'} provider=${data.vectorStoreName} docs=${docs.length}`)
+        logger.debug(
+            `[vector-upsert] storeId=${data.storeId} docId=${data.docId || 'all'} provider=${data.vectorStoreName} docs=${docs.length}`
+        )
         // Log input keys (not values) for troubleshooting
         try {
             const keys = Object.keys(vStoreNodeData.inputs || {})
@@ -1527,7 +1521,10 @@ const _insertIntoVectorStoreWorkerThread = async (
                 return entity
             } catch (_) {}
         }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: documentStoreServices._insertIntoVectorStoreWorkerThread - ${msg}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices._insertIntoVectorStoreWorkerThread - ${msg}`
+        )
     }
 }
 
@@ -1858,7 +1855,7 @@ const upsertDocStore = async (
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
         }
 
-    // OSS-first: do not enforce workspace matching for document store processing
+        // OSS-first: do not enforce workspace matching for document store processing
 
         const loaders = JSON.parse(entity.loaders)
         const loader = loaders.find((ldr: IDocumentStoreLoader) => ldr.id === docId)
@@ -2377,7 +2374,8 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
         const recordManagerName = JSON.parse(entity.recordManagerConfig || '{}').name
         const recordManagerLabel = appServer.nodesPool.componentNodes[recordManagerName].label
         const recordManagerInputs =
-            appServer.nodesPool.componentNodes[recordManagerName].inputs?.filter((input: any) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+            appServer.nodesPool.componentNodes[recordManagerName].inputs?.filter((input: any) => INPUT_PARAMS_TYPE.includes(input.type)) ??
+            []
         nodes.push({
             label: recordManagerLabel,
             nodeId: `${recordManagerName}_0`,
@@ -2478,9 +2476,7 @@ const updateDocumentStoreStatus = async (storeId: string, status: DocumentStoreS
                 }))
                 entity.loaders = JSON.stringify(updatedLoaders)
             } catch (err) {
-                logger.warn(
-                    `[documentstore] Failed to normalize loader statuses for ${storeId}: ${getErrorMessage(err)}`
-                )
+                logger.warn(`[documentstore] Failed to normalize loader statuses for ${storeId}: ${getErrorMessage(err)}`)
             }
         }
 

@@ -20,4 +20,3 @@ export class ProductInventory {
     @UpdateDateColumn({ type: 'timestamp' })
     updatedDate: Date
 }
-

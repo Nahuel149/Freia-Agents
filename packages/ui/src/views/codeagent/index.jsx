@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 
 // material-ui
@@ -14,7 +14,6 @@ import {
     Stack,
     Divider,
     Paper,
-    Fab,
     IconButton,
     Tooltip,
     Tabs,
@@ -26,7 +25,6 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import CodeAgentDialog from './CodeAgentDialog'
 import CodeAgentOrchestrated from './CodeAgentOrchestrated'
@@ -169,24 +167,28 @@ const CodeAgent = () => {
 
     const handleDocumentSelect = (documentData) => {
         setSelectedDocuments(documentData)
-        dispatch(enqueueSnackbarAction({
-            message: `Selected ${documentData.loaders.length} document source(s) from ${documentData.documentStore.name}`,
-            options: {
-                key: new Date().getTime() + Math.random(),
-                variant: 'success'
-            }
-        }))
+        dispatch(
+            enqueueSnackbarAction({
+                message: `Selected ${documentData.loaders.length} document source(s) from ${documentData.documentStore.name}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success'
+                }
+            })
+        )
     }
 
     const handleClearDocuments = () => {
         setSelectedDocuments(null)
-        dispatch(enqueueSnackbarAction({
-            message: 'Document selection cleared',
-            options: {
-                key: new Date().getTime() + Math.random(),
-                variant: 'info'
-            }
-        }))
+        dispatch(
+            enqueueSnackbarAction({
+                message: 'Document selection cleared',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'info'
+                }
+            })
+        )
     }
 
     // If orchestrated view is selected, render the new component
@@ -206,52 +208,42 @@ const CodeAgent = () => {
                         search={true}
                         searchPlaceholder='Search CodeAgents...'
                     >
-                        <Stack direction="row" spacing={2}>
-                            <Button 
-                                variant='outlined' 
-                                color='primary' 
+                        <Stack direction='row' spacing={2}>
+                            <Button
+                                variant='outlined'
+                                color='primary'
                                 onClick={() => setActiveView('orchestrated')}
                                 startIcon={<IconBrain />}
                             >
                                 AI Orchestration
                             </Button>
-                            <Button
-                                variant='contained'
-                                color='primary'
-                                onClick={handleCreateNew}
-                                startIcon={<IconPlus />}
-                            >
+                            <Button variant='contained' color='primary' onClick={handleCreateNew} startIcon={<IconPlus />}>
                                 Create CodeAgent
                             </Button>
                             <Button
-                                variant={selectedDocuments ? "contained" : "outlined"}
+                                variant={selectedDocuments ? 'contained' : 'outlined'}
                                 onClick={() => setDocumentSelectorOpen(true)}
                                 startIcon={<IconDatabase />}
-                                color={selectedDocuments ? "success" : "primary"}
+                                color={selectedDocuments ? 'success' : 'primary'}
                             >
                                 {selectedDocuments ? 'Documents Selected' : 'Select Documents'}
                             </Button>
                             {selectedDocuments && (
-                                <Button
-                                    variant="outlined"
-                                    onClick={handleClearDocuments}
-                                    color="error"
-                                    size="small"
-                                >
+                                <Button variant='outlined' onClick={handleClearDocuments} color='error' size='small'>
                                     Clear Selection
                                 </Button>
                             )}
                         </Stack>
                     </ViewHeader>
-                    
+
                     {/* System Health Alert */}
                     {systemHealth && systemHealth.status !== 'healthy' && (
-                        <Alert 
+                        <Alert
                             severity={systemHealth.status === 'error' ? 'error' : 'warning'}
                             action={
-                                <Button 
-                                    color="inherit" 
-                                    size="small" 
+                                <Button
+                                    color='inherit'
+                                    size='small'
                                     onClick={() => setActiveView('orchestrated')}
                                     startIcon={<IconRocket />}
                                 >
@@ -262,37 +254,29 @@ const CodeAgent = () => {
                             {systemHealth.message || 'System status unknown'}
                         </Alert>
                     )}
-                    
+
                     {selectedDocuments && (
-                        <Alert severity="info" sx={{ mb: 2 }}>
-                            <Typography variant="body2" component="div">
+                        <Alert severity='info' sx={{ mb: 2 }}>
+                            <Typography variant='body2' component='div'>
                                 <strong>Document Context Active:</strong>
                                 <br />
                                 Store: {selectedDocuments.documentStore.name}
                                 <br />
                                 Sources: {selectedDocuments.loaders.length} selected
                                 <br />
-                                Query: "{selectedDocuments.query}"
+                                Query: {selectedDocuments.query}
                             </Typography>
                         </Alert>
                     )}
-                    
+
                     {/* View Toggle Tabs */}
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <Tabs value={activeView} onChange={handleViewChange}>
-                            <Tab 
-                                value="traditional" 
-                                label="Traditional CodeAgents" 
-                                icon={<IconCode />} 
-                            />
-                            <Tab 
-                                value="orchestrated" 
-                                label="AI Orchestration" 
-                                icon={<IconBrain />} 
-                            />
+                            <Tab value='traditional' label='Traditional CodeAgents' icon={<IconCode />} />
+                            <Tab value='orchestrated' label='AI Orchestration' icon={<IconBrain />} />
                         </Tabs>
                     </Box>
-                    
+
                     {isLoading ? (
                         <BackdropLoader open={isLoading} />
                     ) : (
@@ -313,12 +297,7 @@ const CodeAgent = () => {
                                         <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
                                             Create your first CodeAgent to build and execute backend applications with raw code
                                         </Typography>
-                                        <Button
-                                            variant='contained'
-                                            color='primary'
-                                            onClick={handleCreateNew}
-                                            startIcon={<IconPlus />}
-                                        >
+                                        <Button variant='contained' color='primary' onClick={handleCreateNew} startIcon={<IconPlus />}>
                                             Create Your First CodeAgent
                                         </Button>
                                     </Paper>
@@ -344,7 +323,7 @@ const CodeAgent = () => {
                                                             {codeAgent.name}
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Typography
                                                         variant='body2'
                                                         color='text.secondary'
@@ -359,28 +338,38 @@ const CodeAgent = () => {
                                                     </Typography>
                                                     {/* Show CodeAgent ID for easy integration (copy to clipboard) */}
                                                     <Stack direction='row' alignItems='center' spacing={1}>
-                                                        <Typography variant='caption' color='text.secondary' sx={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        <Typography
+                                                            variant='caption'
+                                                            color='text.secondary'
+                                                            sx={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                                                        >
                                                             ID: {codeAgent.id}
                                                         </Typography>
                                                         <Tooltip title='Copy ID'>
-                                                            <IconButton size='small' onClick={() => {
-                                                                try {
-                                                                    navigator.clipboard.writeText(codeAgent.id)
-                                                                    enqueueSnackbar({
-                                                                        message: 'CodeAgent ID copied',
-                                                                        options: { key: new Date().getTime() + Math.random(), variant: 'success' }
-                                                                    })
-                                                                } catch (e) {
-                                                                    console.error(e)
-                                                                }
-                                                            }}>
+                                                            <IconButton
+                                                                size='small'
+                                                                onClick={() => {
+                                                                    try {
+                                                                        navigator.clipboard.writeText(codeAgent.id)
+                                                                        enqueueSnackbar({
+                                                                            message: 'CodeAgent ID copied',
+                                                                            options: {
+                                                                                key: new Date().getTime() + Math.random(),
+                                                                                variant: 'success'
+                                                                            }
+                                                                        })
+                                                                    } catch (e) {
+                                                                        console.error(e)
+                                                                    }
+                                                                }}
+                                                            >
                                                                 <IconCopy size={14} />
                                                             </IconButton>
                                                         </Tooltip>
                                                     </Stack>
-                                                    
+
                                                     <Divider />
-                                                    
+
                                                     <Box display='flex' justifyContent='space-between' alignItems='center'>
                                                         <Typography variant='caption' color='text.secondary'>
                                                             {codeAgent.language || 'JavaScript'}
@@ -425,14 +414,9 @@ const CodeAgent = () => {
                     )}
                 </Stack>
             </MainCard>
-            
-            <CodeAgentDialog
-                show={showDialog}
-                dialogProps={dialogProps}
-                onCancel={() => setShowDialog(false)}
-                onConfirm={onConfirm}
-            />
-            
+
+            <CodeAgentDialog show={showDialog} dialogProps={dialogProps} onCancel={() => setShowDialog(false)} onConfirm={onConfirm} />
+
             <DocumentStoreSelector
                 open={documentSelectorOpen}
                 onClose={() => setDocumentSelectorOpen(false)}

@@ -4,7 +4,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import { store } from '@/store'
 
 // material-ui
-import { Divider, Box, Button, List, ListItemButton, ListItemIcon, Typography } from '@mui/material'
+import { Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -18,7 +18,7 @@ import { logoutSuccess } from '@/store/reducers/authSlice'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconFileText, IconLogout, IconX } from '@tabler/icons-react'
+import { IconX } from '@tabler/icons-react'
 import accountApi from '@/api/account.api'
 
 const CloudMenuList = () => {

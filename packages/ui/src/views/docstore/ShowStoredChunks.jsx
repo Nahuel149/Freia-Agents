@@ -58,7 +58,7 @@ const ShowStoredChunks = () => {
     const { confirm } = useConfirm()
     const { error } = useError()
     // OSS mode: Workspace assignment checks removed
-    const { } = useAuth()
+    useAuth()
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))

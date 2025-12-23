@@ -1,25 +1,19 @@
 // Sistema de registro y seguimiento de ventas B2B
-const B2BSalesDB = require('./database-config');
-const AddressManager = require('./address-manager');
-const FollowUpSystem = require('./followup-system');
+const B2BSalesDB = require('./database-config')
+const AddressManager = require('./address-manager')
+const FollowUpSystem = require('./followup-system')
 
 class SalesTracker {
     constructor(dbConnectionString) {
-        this.db = new B2BSalesDB(dbConnectionString);
-        this.addressManager = new AddressManager(dbConnectionString);
-        this.followUpSystem = new FollowUpSystem(dbConnectionString);
+        this.db = new B2BSalesDB(dbConnectionString)
+        this.addressManager = new AddressManager(dbConnectionString)
+        this.followUpSystem = new FollowUpSystem(dbConnectionString)
     }
 
     // Registrar una venta completada
     async recordSale(saleData, flowState) {
         try {
-            const {
-                customerData,
-                productDetails,
-                negotiationDetails,
-                deliveryInfo,
-                paymentInfo
-            } = saleData;
+            const { customerData, productDetails, negotiationDetails, deliveryInfo, paymentInfo } = saleData
 
             // 1. Crear o actualizar cliente
             const customer = await this.db.upsertCustomer({
@@ -30,16 +24,12 @@ class SalesTracker {
                 businessName: customerData.businessName,
                 businessType: customerData.businessType,
                 taxId: customerData.taxId
-            });
+            })
 
             // 2. Gestionar dirección de entrega
-            let deliveryAddressId = null;
+            let deliveryAddressId = null
             if (deliveryInfo && deliveryInfo.address) {
-                deliveryAddressId = await this.addressManager.addAddress(
-                    customer.id,
-                    deliveryInfo.address,
-                    'delivery'
-                );
+                deliveryAddressId = await this.addressManager.addAddress(customer.id, deliveryInfo.address, 'delivery')
             }
 
             // 3. Crear registro de venta
@@ -51,59 +41,58 @@ class SalesTracker {
                 unitPrice: parseFloat(productDetails.unitPrice) || 0,
                 totalAmount: parseFloat(productDetails.totalAmount) || 0,
                 currency: productDetails.currency || 'ARS',
-                
+
                 // Detalles de negociación
                 originalPrice: parseFloat(negotiationDetails.originalPrice) || 0,
                 finalPrice: parseFloat(negotiationDetails.finalPrice) || 0,
                 discountApplied: parseFloat(negotiationDetails.discountApplied) || 0,
                 discountPercentage: parseFloat(negotiationDetails.discountPercentage) || 0,
                 negotiationAttempts: parseInt(negotiationDetails.attempts) || 1,
-                
+
                 // Información de entrega
                 deliveryMethod: deliveryInfo?.method || 'standard',
                 deliveryAddress: deliveryInfo?.fullAddress || '',
                 deliveryAddressId: deliveryAddressId,
                 estimatedDeliveryDate: deliveryInfo?.estimatedDate ? new Date(deliveryInfo.estimatedDate) : null,
                 deliveryNotes: deliveryInfo?.notes || '',
-                
+
                 // Información de pago
                 paymentMethod: paymentInfo?.method || 'cash',
                 paymentStatus: paymentInfo?.status || 'pending',
                 paymentTerms: paymentInfo?.terms || 'immediate',
                 paymentNotes: paymentInfo?.notes || '',
-                
+
                 // Metadatos
                 salesChannel: 'whatsapp_b2b',
                 salesAgent: flowState.salesAgent || 'AI_Agent',
                 campaignSource: flowState.campaignSource || 'organic',
                 saleDate: new Date(),
                 status: 'confirmed'
-            };
+            }
 
-            const sale = await this.db.createSale(saleRecord);
-            
+            const sale = await this.db.createSale(saleRecord)
+
             // 4. Programar seguimientos post-venta
-            await this.schedulePostSaleFollowUps(sale, customer, flowState);
-            
+            await this.schedulePostSaleFollowUps(sale, customer, flowState)
+
             // 5. Generar resumen de venta
-            const saleSummary = await this.generateSaleSummary(sale, customer);
-            
-            console.log(`✅ Sale recorded successfully: ID ${sale.id}`);
-            
+            const saleSummary = await this.generateSaleSummary(sale, customer)
+
+            console.log(`✅ Sale recorded successfully: ID ${sale.id}`)
+
             return {
                 success: true,
                 saleId: sale.id,
                 customerId: customer.id,
                 summary: saleSummary,
                 sale: sale
-            };
-            
+            }
         } catch (error) {
-            console.error('Error recording sale:', error);
+            console.error('Error recording sale:', error)
             return {
                 success: false,
                 error: error.message
-            };
+            }
         }
     }
 
@@ -131,14 +120,14 @@ class SalesTracker {
                     delayHours: 720, // 1 mes
                     message: `¡Hola ${customer.first_name}! ¿Cómo va todo? Ya pasó un tiempo desde tu compra de ${sale.product_name}. ¿Necesitás algo más o tenés alguna consulta?`
                 }
-            ];
+            ]
 
             for (const followUp of followUps) {
-                const scheduledAt = new Date();
-                scheduledAt.setHours(scheduledAt.getHours() + followUp.delayHours);
-                
-                const adjustedTime = this.followUpSystem.adjustToBusinessHours(scheduledAt, flowState);
-                
+                const scheduledAt = new Date()
+                scheduledAt.setHours(scheduledAt.getHours() + followUp.delayHours)
+
+                const adjustedTime = this.followUpSystem.adjustToBusinessHours(scheduledAt, flowState)
+
                 await this.db.scheduleFollowUp({
                     customerId: customer.id,
                     phoneNumber: customer.phone_number,
@@ -149,13 +138,12 @@ class SalesTracker {
                     maxAttempts: 1, // Solo un intento para seguimientos post-venta
                     messageSent: followUp.message,
                     nextAction: 'send_followup_message'
-                });
+                })
             }
-            
-            console.log(`📅 Scheduled ${followUps.length} post-sale follow-ups for customer ${customer.id}`);
-            
+
+            console.log(`📅 Scheduled ${followUps.length} post-sale follow-ups for customer ${customer.id}`)
         } catch (error) {
-            console.error('Error scheduling post-sale follow-ups:', error);
+            console.error('Error scheduling post-sale follow-ups:', error)
         }
     }
 
@@ -198,9 +186,9 @@ class SalesTracker {
                 status: sale.payment_status,
                 terms: sale.payment_terms
             }
-        };
-        
-        return summary;
+        }
+
+        return summary
     }
 
     // Actualizar estado de venta
@@ -216,19 +204,19 @@ class SalesTracker {
                     END
                 WHERE id = $2 
                 RETURNING *;
-            `;
-            
-            const result = await this.db.pool.query(query, [newStatus, saleId, notes]);
-            
+            `
+
+            const result = await this.db.pool.query(query, [newStatus, saleId, notes])
+
             if (result.rows.length > 0) {
-                console.log(`📝 Sale ${saleId} status updated to: ${newStatus}`);
-                return result.rows[0];
+                console.log(`📝 Sale ${saleId} status updated to: ${newStatus}`)
+                return result.rows[0]
             }
-            
-            return null;
+
+            return null
         } catch (error) {
-            console.error('Error updating sale status:', error);
-            return null;
+            console.error('Error updating sale status:', error)
+            return null
         }
     }
 
@@ -242,13 +230,13 @@ class SalesTracker {
                 WHERE s.customer_id = $1
                 ORDER BY s.sale_date DESC
                 LIMIT $2;
-            `;
-            
-            const result = await this.db.pool.query(query, [customerId, limit]);
-            return result.rows;
+            `
+
+            const result = await this.db.pool.query(query, [customerId, limit])
+            return result.rows
         } catch (error) {
-            console.error('Error getting customer sales:', error);
-            return [];
+            console.error('Error getting customer sales:', error)
+            return []
         }
     }
 
@@ -279,13 +267,13 @@ class SalesTracker {
                     
                 FROM sales 
                 WHERE sale_date >= $1 AND sale_date <= $2;
-            `;
-            
-            const result = await this.db.pool.query(query, [dateFrom, dateTo]);
-            return result.rows[0];
+            `
+
+            const result = await this.db.pool.query(query, [dateFrom, dateTo])
+            return result.rows[0]
         } catch (error) {
-            console.error('Error getting sales stats:', error);
-            return null;
+            console.error('Error getting sales stats:', error)
+            return null
         }
     }
 
@@ -301,37 +289,37 @@ class SalesTracker {
                     SUM(total_amount) as total_revenue,
                     AVG(unit_price) as avg_unit_price
                 FROM sales 
-            `;
-            
-            const params = [];
-            
+            `
+
+            const params = []
+
             if (dateFrom && dateTo) {
-                query += ` WHERE sale_date >= $1 AND sale_date <= $2`;
-                params.push(dateFrom, dateTo);
+                query += ` WHERE sale_date >= $1 AND sale_date <= $2`
+                params.push(dateFrom, dateTo)
             }
-            
+
             query += `
                 GROUP BY product_name, product_category
                 ORDER BY sales_count DESC, total_revenue DESC
                 LIMIT $${params.length + 1};
-            `;
-            
-            params.push(limit);
-            
-            const result = await this.db.pool.query(query, params);
-            return result.rows;
+            `
+
+            params.push(limit)
+
+            const result = await this.db.pool.query(query, params)
+            return result.rows
         } catch (error) {
-            console.error('Error getting top products:', error);
-            return [];
+            console.error('Error getting top products:', error)
+            return []
         }
     }
 
     // Generar reporte de ventas
     async generateSalesReport(dateFrom, dateTo) {
         try {
-            const stats = await this.getSalesStats(dateFrom, dateTo);
-            const topProducts = await this.getTopProducts(5, dateFrom, dateTo);
-            
+            const stats = await this.getSalesStats(dateFrom, dateTo)
+            const topProducts = await this.getTopProducts(5, dateFrom, dateTo)
+
             const report = {
                 period: {
                     from: dateFrom,
@@ -340,17 +328,17 @@ class SalesTracker {
                 summary: stats,
                 topProducts: topProducts,
                 generatedAt: new Date()
-            };
-            
-            return report;
+            }
+
+            return report
         } catch (error) {
-            console.error('Error generating sales report:', error);
-            return null;
+            console.error('Error generating sales report:', error)
+            return null
         }
     }
 }
 
-module.exports = SalesTracker;
+module.exports = SalesTracker
 
 // Ejemplo de uso:
 // const salesTracker = new SalesTracker(process.env.DB_CONNECTION_STRING);

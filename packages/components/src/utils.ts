@@ -1196,20 +1196,20 @@ export const handleDocumentLoaderOutput = (docs: Document[], output: string) => 
     }
 }
 
-export const parseDocumentLoaderMetadata = (metadata: object | string): object => {
+export const parseDocumentLoaderMetadata = (metadata?: ICommonObject | string): ICommonObject => {
     if (!metadata) return {}
 
-    if (typeof metadata !== 'object') {
-        return JSON.parse(metadata)
+    if (typeof metadata === 'string') {
+        return JSON.parse(metadata) as ICommonObject
     }
 
-    return metadata
+    return metadata as ICommonObject
 }
 
 export const handleDocumentLoaderMetadata = (
     docs: Document[],
     _omitMetadataKeys: string,
-    metadata: object | string = {},
+    metadata: ICommonObject | string = {},
     sourceIdKey?: string
 ) => {
     let omitMetadataKeys: string[] = []
@@ -1217,22 +1217,23 @@ export const handleDocumentLoaderMetadata = (
         omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
     }
 
-    metadata = parseDocumentLoaderMetadata(metadata)
+    const parsedMetadata = parseDocumentLoaderMetadata(metadata)
 
-    return docs.map((doc) => ({
-        ...doc,
-        metadata:
+    return docs.map((doc) => {
+        const mergedMetadata =
             _omitMetadataKeys === '*'
-                ? metadata
+                ? parsedMetadata
                 : omit(
                       {
-                          ...metadata,
+                          ...parsedMetadata,
                           ...doc.metadata,
-                          ...(sourceIdKey ? { [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey } : undefined)
+                          ...(sourceIdKey ? { [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey } : {})
                       },
                       omitMetadataKeys
                   )
-    }))
+
+        return { ...doc, metadata: mergedMetadata }
+    })
 }
 
 export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, textSplitter?: TextSplitter) => {

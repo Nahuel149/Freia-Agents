@@ -383,13 +383,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         )}
                     </Box>
                 </Stack>
-                <Stack flexDirection='row' sx={{ 
-                    alignItems: 'center',
-                    gap: 1,
-                    '& > *': {
-                        transition: 'all 0.2s ease'
-                    }
-                }}>
+                <Stack
+                    flexDirection='row'
+                    sx={{
+                        alignItems: 'center',
+                        gap: 1,
+                        '& > *': {
+                            transition: 'all 0.2s ease'
+                        }
+                    }}
+                >
                     {chatflow?.id && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%' }}>
                             <Avatar

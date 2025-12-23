@@ -1,109 +1,126 @@
 {
-  "name": "DEMO Hoteles - Epic F (Backoffice)",
-  "description": "Leads, notificaciones internas y reportes rápidos.",
-  "nodes": [
-    {
-      "id": "start",
-      "type": "Start",
-      "label": "Start",
-      "data": { "inputType": "chat", "ephemeralMemory": false, "flowState": { "accion": "", "lead": "", "tarea": "", "reporteTipo": "" } },
-      "position": [0, 0]
-    },
-    {
-      "id": "memory",
-      "type": "MongoDBAtlasChatMemory",
-      "label": "Memory",
-      "data": { "credential": "{{MONGO_CREDENTIAL_ID}}", "databaseName": "freia_demo", "collectionName": "chat_memory_hoteles", "sessionId": "{{ $flow.chatId }}", "memoryKey": "history" },
-      "position": [0, 140]
-    },
-    {
-      "id": "llm_clasificar",
-      "type": "LLM",
-      "label": "LLM Clasificar backoffice",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          { "role": "system", "content": "Clasifica intención: lead | notificar | reporte. Extrae campos relevantes. Devuelve JSON {accion, nombre, contacto, interes, motivo, area, prioridad, reporteTipo}." },
-          { "role": "user", "content": "{{ $flow.input }}" }
-        ],
-        "jsonSchema": {
-          "type": "object",
-          "properties": {
-            "accion": { "type": "string" },
-            "nombre": { "type": "string" },
-            "contacto": { "type": "string" },
-            "interes": { "type": "string" },
-            "motivo": { "type": "string" },
-            "area": { "type": "string" },
-            "prioridad": { "type": "string" },
-            "reporteTipo": { "type": "string" }
-          }
+    "name": "DEMO Hoteles - Epic F (Backoffice)",
+    "description": "Leads, notificaciones internas y reportes rápidos.",
+    "nodes": [
+        {
+            "id": "start",
+            "type": "Start",
+            "label": "Start",
+            "data": {
+                "inputType": "chat",
+                "ephemeralMemory": false,
+                "flowState": { "accion": "", "lead": "", "tarea": "", "reporteTipo": "" }
+            },
+            "position": [0, 0]
         },
-        "updateFlowState": {
-          "accion": "{{ json.accion }}",
-          "lead": "{{ json }}",
-          "tarea": "{{ json }}",
-          "reporteTipo": "{{ json.reporteTipo }}"
+        {
+            "id": "memory",
+            "type": "MongoDBAtlasChatMemory",
+            "label": "Memory",
+            "data": {
+                "credential": "{{MONGO_CREDENTIAL_ID}}",
+                "databaseName": "freia_demo",
+                "collectionName": "chat_memory_hoteles",
+                "sessionId": "{{ $flow.chatId }}",
+                "memoryKey": "history"
+            },
+            "position": [0, 140]
+        },
+        {
+            "id": "llm_clasificar",
+            "type": "LLM",
+            "label": "LLM Clasificar backoffice",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Clasifica intención: lead | notificar | reporte. Extrae campos relevantes. Devuelve JSON {accion, nombre, contacto, interes, motivo, area, prioridad, reporteTipo}."
+                    },
+                    { "role": "user", "content": "{{ $flow.input }}" }
+                ],
+                "jsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "accion": { "type": "string" },
+                        "nombre": { "type": "string" },
+                        "contacto": { "type": "string" },
+                        "interes": { "type": "string" },
+                        "motivo": { "type": "string" },
+                        "area": { "type": "string" },
+                        "prioridad": { "type": "string" },
+                        "reporteTipo": { "type": "string" }
+                    }
+                },
+                "updateFlowState": {
+                    "accion": "{{ json.accion }}",
+                    "lead": "{{ json }}",
+                    "tarea": "{{ json }}",
+                    "reporteTipo": "{{ json.reporteTipo }}"
+                }
+            },
+            "position": [240, 0]
+        },
+        {
+            "id": "retriever_reporte",
+            "type": "Retriever",
+            "label": "Reporte mock",
+            "data": {
+                "documentStoreId": "{{DOCSTORE_REPORTE_ID}}",
+                "query": "{{ $flow.state.reporteTipo }} ocupacion cancelaciones upsell",
+                "outputFormat": "text"
+            },
+            "position": [480, 0]
+        },
+        {
+            "id": "llm_reporte",
+            "type": "LLM",
+            "label": "LLM Resumen reporte",
+            "data": {
+                "model": "gpt-4.1-mini",
+                "credential": "{{LLM_CREDENTIAL_ID}}",
+                "messages": [
+                    { "role": "system", "content": "Resume en bullets y destaca 1 cifra clave para decisión." },
+                    { "role": "user", "content": "{{ retriever_reporte.output }}" }
+                ]
+            },
+            "position": [720, 0]
+        },
+        {
+            "id": "custom_lead",
+            "type": "CustomFunction",
+            "label": "Registrar lead/tarea",
+            "data": {
+                "inputVariables": [],
+                "code": "return JSON.stringify({status:'registrado'});",
+                "updateFlowState": { "lead": "{{ functionOutput }}", "tarea": "{{ functionOutput }}" }
+            },
+            "position": [480, 140]
+        },
+        {
+            "id": "reply_final",
+            "type": "DirectReply",
+            "label": "Reply",
+            "data": {
+                "message": "Acción: {{ $flow.state.accion }}. Lead/Tarea: {{ $flow.state.lead.status || 'registrado' }}. Reporte: {{ llm_reporte.output || '' }}",
+                "return": "assistant"
+            },
+            "position": [960, 80]
         }
-      },
-      "position": [240, 0]
-    },
-    {
-      "id": "retriever_reporte",
-      "type": "Retriever",
-      "label": "Reporte mock",
-      "data": { "documentStoreId": "{{DOCSTORE_REPORTE_ID}}", "query": "{{ $flow.state.reporteTipo }} ocupacion cancelaciones upsell", "outputFormat": "text" },
-      "position": [480, 0]
-    },
-    {
-      "id": "llm_reporte",
-      "type": "LLM",
-      "label": "LLM Resumen reporte",
-      "data": {
-        "model": "gpt-4.1-mini",
-        "credential": "{{LLM_CREDENTIAL_ID}}",
-        "messages": [
-          { "role": "system", "content": "Resume en bullets y destaca 1 cifra clave para decisión." },
-          { "role": "user", "content": "{{ retriever_reporte.output }}" }
-        ]
-      },
-      "position": [720, 0]
-    },
-    {
-      "id": "custom_lead",
-      "type": "CustomFunction",
-      "label": "Registrar lead/tarea",
-      "data": {
-        "inputVariables": [],
-        "code": "return JSON.stringify({status:'registrado'});",
-        "updateFlowState": { "lead": "{{ functionOutput }}", "tarea": "{{ functionOutput }}" }
-      },
-      "position": [480, 140]
-    },
-    {
-      "id": "reply_final",
-      "type": "DirectReply",
-      "label": "Reply",
-      "data": {
-        "message": "Acción: {{ $flow.state.accion }}. Lead/Tarea: {{ $flow.state.lead.status || 'registrado' }}. Reporte: {{ llm_reporte.output || '' }}",
-        "return": "assistant"
-      },
-      "position": [960, 80]
+    ],
+    "edges": [
+        { "source": "start", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "input" },
+        { "source": "memory", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "memory" },
+        { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_reporte", "targetHandle": "input" },
+        { "source": "llm_clasificar", "sourceHandle": "output", "target": "custom_lead", "targetHandle": "input" },
+        { "source": "retriever_reporte", "sourceHandle": "output", "target": "llm_reporte", "targetHandle": "input" },
+        { "source": "llm_reporte", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" },
+        { "source": "custom_lead", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
+    ],
+    "placeholders": {
+        "LLM_CREDENTIAL_ID": "tu_llm_cred",
+        "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
+        "DOCSTORE_REPORTE_ID": "docstore_reportes_id"
     }
-  ],
-  "edges": [
-    { "source": "start", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "input" },
-    { "source": "memory", "sourceHandle": "output", "target": "llm_clasificar", "targetHandle": "memory" },
-    { "source": "llm_clasificar", "sourceHandle": "output", "target": "retriever_reporte", "targetHandle": "input" },
-    { "source": "llm_clasificar", "sourceHandle": "output", "target": "custom_lead", "targetHandle": "input" },
-    { "source": "retriever_reporte", "sourceHandle": "output", "target": "llm_reporte", "targetHandle": "input" },
-    { "source": "llm_reporte", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" },
-    { "source": "custom_lead", "sourceHandle": "output", "target": "reply_final", "targetHandle": "input" }
-  ],
-  "placeholders": {
-    "LLM_CREDENTIAL_ID": "tu_llm_cred",
-    "MONGO_CREDENTIAL_ID": "tu_mongo_cred",
-    "DOCSTORE_REPORTE_ID": "docstore_reportes_id"
-  }
 }

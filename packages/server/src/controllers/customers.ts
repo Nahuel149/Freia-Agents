@@ -55,7 +55,7 @@ const getAllCustomers = async (req: Request, res: Response, next: NextFunction) 
             LIMIT $1 OFFSET $2
         `
         const countQuery = 'SELECT COUNT(*) as total FROM customers'
-        
+
         const [customers, countResult] = await Promise.all([
             appServer.AppDataSource.query(query, [parseInt(limit as string), offset]),
             appServer.AppDataSource.query(countQuery)
@@ -87,7 +87,7 @@ const getCustomerById = async (req: Request, res: Response, next: NextFunction) 
         const appServer = getRunningExpressApp()
         const query = 'SELECT * FROM customers WHERE id = $1'
         const result = await appServer.AppDataSource.query(query, [parseInt(id)])
-        
+
         if (result.length === 0) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Customer not found')
         }
@@ -110,7 +110,7 @@ const getCustomerByPhone = async (req: Request, res: Response, next: NextFunctio
         const appServer = getRunningExpressApp()
         const query = 'SELECT * FROM customers WHERE phone_number = $1'
         const result = await appServer.AppDataSource.query(query, [phone])
-        
+
         if (result.length === 0) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Customer not found')
         }
@@ -126,7 +126,7 @@ const getCustomerByPhone = async (req: Request, res: Response, next: NextFunctio
 const searchCustomers = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { q, phone } = req.query
-        
+
         let query = 'SELECT * FROM customers WHERE 1=1'
         const params: any[] = []
         let paramIndex = 1
@@ -147,7 +147,7 @@ const searchCustomers = async (req: Request, res: Response, next: NextFunction) 
 
         const appServer = getRunningExpressApp()
         const result = await appServer.AppDataSource.query(query, params)
-        
+
         return res.json(result)
     } catch (error) {
         logger.error('Error searching customers:', error)
@@ -177,12 +177,12 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
 
         // Normalize incoming fields to server schema
         const normalizedPhone = normalizePhoneNumber(phone_number || phone)
-        
+
         // Validate the normalized phone number
         if (!normalizedPhone) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Phone number is required (use phone or phone_number)')
         }
-        
+
         if (!isValidPhoneNumber(normalizedPhone)) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid phone number format')
         }
@@ -198,12 +198,9 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
         const normalizedAddress = default_address || address
 
         const appServer = getRunningExpressApp()
-        
+
         // Check if customer already exists
-        const existingCustomer = await appServer.AppDataSource.query(
-            'SELECT * FROM customers WHERE phone_number = $1',
-            [normalizedPhone]
-        )
+        const existingCustomer = await appServer.AppDataSource.query('SELECT * FROM customers WHERE phone_number = $1', [normalizedPhone])
 
         if (existingCustomer.length > 0) {
             throw new InternalFlowiseError(StatusCodes.CONFLICT, 'Customer with this phone number already exists')
@@ -217,13 +214,17 @@ const createCustomer = async (req: Request, res: Response, next: NextFunction) =
             VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
             RETURNING *
         `
-        
+
         const normalizedPaymentMethod = default_payment_method ?? null
         const result = await appServer.AppDataSource.query(query, [
-            normalizedPhone, normalizedFirstName, normalizedLastName, email, 
-            normalizedAddress, normalizedPaymentMethod
+            normalizedPhone,
+            normalizedFirstName,
+            normalizedLastName,
+            email,
+            normalizedAddress,
+            normalizedPaymentMethod
         ])
-        
+
         return res.status(StatusCodes.CREATED).json(result[0])
     } catch (error) {
         logger.error('Error creating customer:', error)
@@ -240,26 +241,16 @@ const createCustomerAlias = async (req: Request, res: Response, next: NextFuncti
 const updateCustomer = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params
-        const { 
-            first_name, 
-            last_name, 
-            email, 
-            default_address, 
-            default_payment_method,
-            previous_purchases
-        } = req.body
+        const { first_name, last_name, email, default_address, default_payment_method, previous_purchases } = req.body
 
         if (!id) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Customer ID is required')
         }
 
         const appServer = getRunningExpressApp()
-        
+
         // Check if customer exists
-        const existingCustomer = await appServer.AppDataSource.query(
-            'SELECT * FROM customers WHERE id = $1',
-            [parseInt(id)]
-        )
+        const existingCustomer = await appServer.AppDataSource.query('SELECT * FROM customers WHERE id = $1', [parseInt(id)])
 
         if (existingCustomer.length === 0) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Customer not found')
@@ -310,7 +301,7 @@ const updateCustomer = async (req: Request, res: Response, next: NextFunction) =
         params.push(parseInt(id))
 
         const result = await appServer.AppDataSource.query(updateQuery, params)
-        
+
         return res.json(result[0])
     } catch (error) {
         logger.error('Error updating customer:', error)
@@ -356,7 +347,9 @@ const getCustomerHistory = async (req: Request, res: Response, next: NextFunctio
         )
 
         const followUpsPromise = appServer.AppDataSource.query(
-            `SELECT * FROM follow_ups WHERE ${salesFilter.clause.replace(/customer_id/g, 'customer_id').replace(/phone_number/g, 'phone_number')} ORDER BY scheduled_at DESC`,
+            `SELECT * FROM follow_ups WHERE ${salesFilter.clause
+                .replace(/customer_id/g, 'customer_id')
+                .replace(/phone_number/g, 'phone_number')} ORDER BY scheduled_at DESC`,
             salesFilter.params
         )
 
@@ -405,7 +398,9 @@ const getCustomerAnalytics = async (req: Request, res: Response, next: NextFunct
         )
 
         const followUps = await appServer.AppDataSource.query(
-            `SELECT * FROM follow_ups WHERE ${salesFilter.clause.replace(/customer_id/g, 'customer_id').replace(/phone_number/g, 'phone_number')}`,
+            `SELECT * FROM follow_ups WHERE ${salesFilter.clause
+                .replace(/customer_id/g, 'customer_id')
+                .replace(/phone_number/g, 'phone_number')}`,
             salesFilter.params
         )
 
@@ -446,14 +441,7 @@ const updateCustomerPreferences = async (req: Request, res: Response, next: Next
     try {
         const { clientId } = req.params
         const { customer } = await resolveCustomer(clientId)
-        const {
-            preferredBrands,
-            preferredCategories,
-            priceRange,
-            paymentMethods,
-            deliveryPreference,
-            communicationPreference
-        } = req.body
+        const { preferredBrands, preferredCategories, priceRange, paymentMethods, deliveryPreference, communicationPreference } = req.body
 
         const appServer = getRunningExpressApp()
 
@@ -468,7 +456,9 @@ const updateCustomerPreferences = async (req: Request, res: Response, next: Next
 
         existingData.preferences = {
             preferredBrands: Array.isArray(preferredBrands) ? preferredBrands : existingData.preferences?.preferredBrands ?? [],
-            preferredCategories: Array.isArray(preferredCategories) ? preferredCategories : existingData.preferences?.preferredCategories ?? [],
+            preferredCategories: Array.isArray(preferredCategories)
+                ? preferredCategories
+                : existingData.preferences?.preferredCategories ?? [],
             priceRange: priceRange ?? existingData.preferences?.priceRange ?? null,
             paymentMethods: Array.isArray(paymentMethods) ? paymentMethods : existingData.preferences?.paymentMethods ?? [],
             deliveryPreference: deliveryPreference ?? existingData.preferences?.deliveryPreference ?? null,
@@ -476,7 +466,8 @@ const updateCustomerPreferences = async (req: Request, res: Response, next: Next
             updatedAt: new Date().toISOString()
         }
 
-        const preferredPayment = Array.isArray(paymentMethods) && paymentMethods.length > 0 ? paymentMethods[0] : customer.default_payment_method
+        const preferredPayment =
+            Array.isArray(paymentMethods) && paymentMethods.length > 0 ? paymentMethods[0] : customer.default_payment_method
 
         const updated = await appServer.AppDataSource.query(
             `UPDATE customers SET previous_purchases = $1, default_payment_method = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
@@ -497,7 +488,7 @@ const updateCustomerPreferences = async (req: Request, res: Response, next: Next
 const getCustomerStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const appServer = getRunningExpressApp()
-        
+
         const statsQuery = `
             SELECT 
                 COUNT(*) as total_customers,
@@ -507,9 +498,9 @@ const getCustomerStats = async (req: Request, res: Response, next: NextFunction)
                 COUNT(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 END) as new_customers_last_30_days
             FROM customers
         `
-        
+
         const result = await appServer.AppDataSource.query(statsQuery)
-        
+
         return res.json(result[0])
     } catch (error) {
         logger.error('Error getting customer stats:', error)
@@ -528,9 +519,9 @@ const getRecentCustomers = async (req: Request, res: Response, next: NextFunctio
             ORDER BY created_at DESC
             LIMIT $1
         `
-        
+
         const result = await appServer.AppDataSource.query(query, [parseInt(limit as string)])
-        
+
         return res.json(result)
     } catch (error) {
         logger.error('Error getting recent customers:', error)
