@@ -290,6 +290,7 @@ export interface IncomingInput {
     sessionId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
+    form?: Record<string, any>
     leadEmail?: string
     history?: IMessage[]
     action?: IAction
@@ -394,6 +395,8 @@ export interface IFlowConfig {
     sessionId: string
     chatHistory: IMessage[]
     apiMessageId: string
+    input?: string
+    form?: Record<string, any>
     overrideConfig?: ICommonObject
     state?: ICommonObject
     runtimeChatHistoryLength?: number

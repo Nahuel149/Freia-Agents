@@ -210,7 +210,7 @@
             },
             {
               "key": "catalogoLink",
-              "value": ""
+              "value": "https://quintaselrincondemimundo.com.ar/"
             },
             {
               "key": "precioBase",
@@ -342,7 +342,7 @@
             },
             {
               "key": "catalogoResumen",
-              "value": ""
+              "value": "Quintas El Rincon de Mi Mundo en Francisco Alvarez, Moreno (La Providencia 1005). Alquiler temporal familiar. Quintas: 'El Rincon de Mi Mundo' (parque 3500 m2, pileta 12x4, quincho cerrado con cocina equipada y parrilla, quincho abierto, canchas futbol/voley, 2 habitaciones matrimoniales en suite + 1 con 5 camas, capacidad hasta 30 personas). 'El Rincon II' (parque 3500 m2, pileta 8x4, quincho abierto con parrilla, cocina equipada, comedor 10, futon, TV, canchas, 2 suites + 1 con cuchetas, 4 banos). 'La Amorosa' disponible, detalles a confirmar. Servicios: WiFi, DirecTV futbol, gas garrafa, agua caliente, ventiladores, vajilla para 10, mantenimiento piscina/parque, estacionamiento. Mascotas permitidas salvo razas agresivas. Musica moderada hasta 21:00. Email: consultas@quintaselrincondemimundo.com.ar."
             }
           ],
           "startPersistState": false,
@@ -3298,11 +3298,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Responde breve sobre lluvia, aire acondicionado, musica y pagos usando el texto provisto. Incluye link de catalogo si existe y resume reglas clave."
+              "content": "Responde breve y factual usando el texto provisto y el resumen del catalogo. Incluye ubicacion si preguntan (La Providencia 1005, Francisco Alvarez), servicios (WiFi, DirecTV futbol, gas garrafa, agua caliente, ventiladores, mantenimiento piscina/parque, estacionamiento), politica de mascotas (permitidas salvo razas agresivas) y musica moderada hasta 21:00. Si no hay info de pagos, indica que se confirma por email."
             },
             {
               "role": "user",
-              "content": "{{ faq_ret.output }}\nCatalogo: {{ $flow.state.catalogoLink || \"https://example.com/catalogo-quintas\" }}."
+              "content": "{{ faq_ret.output }}\nCatalogo: {{ $flow.state.catalogoLink || 'https://quintaselrincondemimundo.com.ar/' }}.\nResumen: {{ $flow.state.catalogoResumen || '' }}."
             }
           ],
           "llmEnableMemory": true,
@@ -5365,11 +5365,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Redacta la respuesta final al cliente con tono amable y cercano. Incluye disponibilidad/estado, total, hold/expiracion, deposito/plazo, reglas de musica, y menciona catalogo y resumen de quintas si existe. Si hay fechas importantes alquiladas, avisalo. Devuelve solo texto."
+              "content": "Redacta la respuesta final al cliente con tono amable y cercano. Incluye disponibilidad/estado, total, hold/expiracion, deposito/plazo, reglas de musica (moderada hasta 21:00), y menciona catalogo y resumen de quintas si existe. Si hay fechas importantes alquiladas, avisalo. Si piden contacto, incluye email consultas@quintaselrincondemimundo.com.ar. Devuelve solo texto."
             },
             {
               "role": "user",
-              "content": "Estado: {{ $flow.state.estadoCalendario || \"hold\" }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || \"USD\" }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || \"(pendiente)\" }}. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Reglas: musica moderada de dia, sin musica de noche. Catalogo: {{ $flow.state.catalogoLink || \"\" }}. Detalles: {{ $flow.state.catalogoResumen || \"\" }}. Fechas importantes: {{ q_ret_picos.output || \"\" }}."
+              "content": "Estado: {{ $flow.state.estadoCalendario || 'hold' }}. Total: {{ $flow.state.precioTotal }} {{ $flow.state.moneda || 'USD' }}. Hold hasta {{ $flow.state.holdExpires }}. ID: {{ $flow.state.reservaId || '(pendiente)' }}. Deposito {{ $flow.state.depositPct || 0 }}% antes de {{ $flow.state.depositDeadlineHours || 24 }}h. Reglas: musica moderada hasta 21:00. Catalogo: {{ $flow.state.catalogoLink || '' }}. Detalles: {{ $flow.state.catalogoResumen || '' }}. Fechas importantes: {{ q_ret_picos.output || '' }}."
             }
           ],
           "llmEnableMemory": true,
@@ -5675,11 +5675,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Redacta un mensaje corto y amable pidiendo los datos faltantes para cotizar: fecha de check-in, noches/checkout, cantidad de personas y quinta preferida. Si hay fechas importantes alquiladas, avisalo. Devuelve solo texto."
+              "content": "Redacta un mensaje corto y amable pidiendo los datos faltantes para cotizar: fecha de check-in, noches/checkout, cantidad de personas y quinta preferida (El Rincon de Mi Mundo, El Rincon II, La Amorosa). Si hay fechas importantes alquiladas, avisalo. Devuelve solo texto."
             },
             {
               "role": "user",
-              "content": "Faltan: {{ $flow.state.missingFields }}. Fechas importantes: {{ q_ret_picos.output || \"\" }}."
+              "content": "Faltan: {{ $flow.state.missingFields }}. Fechas importantes: {{ q_ret_picos.output || '' }}."
             }
           ],
           "llmEnableMemory": true,
@@ -5985,11 +5985,11 @@
           "llmMessages": [
             {
               "role": "system",
-              "content": "Redacta la confirmacion de visita. Indica que se confirmara el horario disponible y se enviara ubicacion y notas clave. Si necesitan otro horario, pedirlo. Devuelve solo texto."
+              "content": "Redacta la confirmacion de visita. Indica que se confirmara el horario disponible y se enviara ubicacion y notas clave. Ubicacion: La Providencia 1005, Francisco Alvarez. Si necesitan otro horario, pedirlo. Devuelve solo texto."
             },
             {
               "role": "user",
-              "content": "Fecha: {{ $flow.state.fechaSolicitada || \"\" }}. Preferencia: {{ $flow.state.preferenciaVisita || \"\" }}."
+              "content": "Fecha: {{ $flow.state.fechaSolicitada || '' }}. Preferencia: {{ $flow.state.preferenciaVisita || '' }}."
             }
           ],
           "llmEnableMemory": true,

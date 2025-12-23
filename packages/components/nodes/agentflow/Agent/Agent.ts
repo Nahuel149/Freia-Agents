@@ -1627,6 +1627,9 @@ class Agent_Agentflow implements INode {
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
             const toolCall = response.tool_calls[i]
+            if (!toolCall || !toolCall.name) {
+                continue
+            }
 
             const selectedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
             if (selectedTool) {
@@ -1897,6 +1900,9 @@ class Agent_Agentflow implements INode {
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
             const toolCall = response.tool_calls[i]
+            if (!toolCall || !toolCall.name) {
+                continue
+            }
 
             const selectedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
             if (selectedTool) {

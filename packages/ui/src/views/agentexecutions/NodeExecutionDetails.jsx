@@ -51,6 +51,12 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
+    const availableTools = Array.isArray(data?.output?.availableTools)
+        ? data.output.availableTools.filter((tool) => tool && typeof tool === 'object' && tool.name)
+        : []
+    const usedTools = Array.isArray(data?.output?.usedTools)
+        ? data.output.usedTools.filter((tool) => tool && typeof tool === 'object' && tool.tool)
+        : []
 
     // Function to get role-based colors
     const getRoleColors = (role) => {
@@ -364,17 +370,14 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
 
             {dataView === 'rendered' && (
                 <Box>
-                    {data.output && data.output.availableTools && data.output.availableTools.length > 0 && (
+                    {availableTools.length > 0 && (
                         <Box>
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
                                 Tools
                             </Typography>
-                            {data.output.availableTools.map((tool, index) => {
+                            {availableTools.map((tool, index) => {
                                 // Check if this tool is in the usedTools array
-                                const isToolUsed =
-                                    data.output.usedTools &&
-                                    Array.isArray(data.output.usedTools) &&
-                                    data.output.usedTools.some((usedTool) => usedTool.tool === tool.name)
+                                const isToolUsed = usedTools.some((usedTool) => usedTool.tool === tool.name)
 
                                 return (
                                     <Accordion
@@ -413,14 +416,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                         style={{ width: '100%', height: '100%', padding: 3, objectFit: 'contain' }}
                                                         src={(() => {
                                                             // Find matching tool from availableTools
-                                                            if (
-                                                                data.output &&
-                                                                data.output.availableTools &&
-                                                                Array.isArray(data.output.availableTools)
-                                                            ) {
-                                                                const matchingTool = data.output.availableTools.find(
-                                                                    (t) => t.name === tool.name
-                                                                )
+                                                            if (availableTools.length > 0) {
+                                                                const matchingTool = availableTools.find((t) => t.name === tool.name)
                                                                 if (matchingTool && matchingTool.toolNode && matchingTool.toolNode.name) {
                                                                     return `${baseURL}/api/v1/node-icon/${matchingTool.toolNode.name}`
                                                                 }
@@ -438,14 +435,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                 <Typography variant='body1'>
                                                     {(() => {
                                                         // Find matching tool from availableTools if they exist
-                                                        if (
-                                                            data.output &&
-                                                            data.output.availableTools &&
-                                                            Array.isArray(data.output.availableTools)
-                                                        ) {
-                                                            const matchingTool = data.output.availableTools.find(
-                                                                (t) => t.name === tool.name
-                                                            )
+                                                        if (availableTools.length > 0) {
+                                                            const matchingTool = availableTools.find((t) => t.name === tool.name)
                                                             if (matchingTool && matchingTool.toolNode) {
                                                                 return matchingTool.toolNode.label || tool.name
                                                             }
@@ -558,14 +549,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                 style={{ width: '100%', height: '100%', padding: 3, objectFit: 'contain' }}
                                                                 src={(() => {
                                                                     // Find matching tool from availableTools
-                                                                    if (
-                                                                        data.output &&
-                                                                        data.output.availableTools &&
-                                                                        Array.isArray(data.output.availableTools)
-                                                                    ) {
-                                                                        const matchingTool = data.output.availableTools.find(
-                                                                            (t) => t.name === toolCall.name
-                                                                        )
+                                                                    if (availableTools.length > 0) {
+                                                                        const matchingTool = availableTools.find((t) => t.name === toolCall.name)
                                                                         if (
                                                                             matchingTool &&
                                                                             matchingTool.toolNode &&
@@ -587,14 +572,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                         <Typography variant='body1'>
                                                             {(() => {
                                                                 // Find matching tool from availableTools if they exist
-                                                                if (
-                                                                    data.output &&
-                                                                    data.output.availableTools &&
-                                                                    Array.isArray(data.output.availableTools)
-                                                                ) {
-                                                                    const matchingTool = data.output.availableTools.find(
-                                                                        (t) => t.name === toolCall.name
-                                                                    )
+                                                                if (availableTools.length > 0) {
+                                                                    const matchingTool = availableTools.find((t) => t.name === toolCall.name)
                                                                     if (matchingTool && matchingTool.toolNode) {
                                                                         return matchingTool.toolNode.label || toolCall.name
                                                                     }
@@ -637,12 +616,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                 style={{ width: '100%', height: '100%', padding: 3, objectFit: 'contain' }}
                                                 src={(() => {
                                                     // Find matching tool from availableTools
-                                                    if (
-                                                        data.output &&
-                                                        data.output.availableTools &&
-                                                        Array.isArray(data.output.availableTools)
-                                                    ) {
-                                                        const matchingTool = data.output.availableTools.find((t) => t.name === message.name)
+                                                    if (availableTools.length > 0) {
+                                                        const matchingTool = availableTools.find((t) => t.name === message.name)
                                                         if (matchingTool && matchingTool.toolNode && matchingTool.toolNode.name) {
                                                             return `${baseURL}/api/v1/node-icon/${matchingTool.toolNode.name}`
                                                         }
@@ -660,12 +635,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                         <Typography variant='body1'>
                                             {(() => {
                                                 // Find matching tool from availableTools
-                                                if (
-                                                    data.output &&
-                                                    data.output.availableTools &&
-                                                    Array.isArray(data.output.availableTools)
-                                                ) {
-                                                    const matchingTool = data.output.availableTools.find((t) => t.name === message.name)
+                                                if (availableTools.length > 0) {
+                                                    const matchingTool = availableTools.find((t) => t.name === message.name)
                                                     if (matchingTool && matchingTool.toolNode) {
                                                         return matchingTool.toolNode.label || message.name
                                                     }
@@ -950,7 +921,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 backgroundColor: theme.palette.background.default
                             }}
                         >
-                            {data.output?.usedTools && data.output.usedTools.length > 0 && (
+                            {usedTools.length > 0 && (
                                 <div
                                     style={{
                                         display: 'block',
@@ -958,7 +929,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                         width: '100%'
                                     }}
                                 >
-                                    {data.output.usedTools.map((tool, index) => {
+                                    {usedTools.map((tool, index) => {
                                         return tool ? (
                                             <Chip
                                                 size='small'

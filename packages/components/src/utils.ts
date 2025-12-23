@@ -945,7 +945,7 @@ export const getVars = async (
     nodeData: INodeData,
     options: ICommonObject
 ) => {
-    if (!options.workspaceId) {
+    if (!options.workspaceId || options.workspaceId === 'oss-mode') {
         return []
     }
     const variables =

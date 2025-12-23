@@ -483,6 +483,8 @@ export const executeFlow = async ({
         sessionId,
         chatHistory,
         apiMessageId,
+        input: incomingInput.question ?? '',
+        form: incomingInput.form ?? {},
         ...incomingInput.overrideConfig
     }
 

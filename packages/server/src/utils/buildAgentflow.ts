@@ -576,22 +576,46 @@ async function determineNodesToIgnore(
 
     if (isDecisionNode && result.output?.conditions) {
         const outputConditions: ICondition[] = result.output.conditions
+        const allowedHandles = new Set<string>()
 
-        // Find indexes of unfulfilled conditions
-        const unfulfilledIndexes = outputConditions
-            .map((condition: any, index: number) =>
-                condition.isFulfilled === false || !Object.prototype.hasOwnProperty.call(condition, 'isFulfilled') ? index : -1
-            )
-            .filter((index: number) => index !== -1)
+        outputConditions.forEach((condition: any, index: number) => {
+            if (!condition?.isFulfilled) return
 
-        // Find nodes to ignore based on unfulfilled conditions
-        for (const index of unfulfilledIndexes) {
-            const ignoreEdge = edges.find((edge) => edge.source === nodeId && edge.sourceHandle === `${nodeId}-output-${index}`)
+            if (typeof condition.output === 'string') {
+                allowedHandles.add(condition.output)
+            }
+            if (typeof condition.type === 'string') {
+                allowedHandles.add(condition.type)
+            }
+            allowedHandles.add(`${nodeId}-output-${index}`)
+            allowedHandles.add(`${index}`)
+        })
 
-            if (ignoreEdge) {
-                ignoreNodeIds.push(ignoreEdge.target)
+        if (currentNode.data.name === 'conditionAgentflow' && outputConditions.length > 0) {
+            const elseIndex = outputConditions.length - 1
+            const elseCondition = outputConditions[elseIndex] as any
+            const elseFulfilled = !!elseCondition?.isFulfilled
+            if (elseFulfilled) {
+                allowedHandles.add('false')
+            } else if (outputConditions.some((condition: any, index: number) => index !== elseIndex && condition?.isFulfilled)) {
+                allowedHandles.add('true')
             }
         }
+
+        if (allowedHandles.size === 0) {
+            return ignoreNodeIds
+        }
+
+        const edgesFromNode = edges.filter((edge) => edge.source === nodeId)
+        const allowedTargets = new Set(
+            edgesFromNode.filter((edge) => edge.sourceHandle && allowedHandles.has(edge.sourceHandle)).map((edge) => edge.target)
+        )
+
+        const ignoredTargets = new Set(
+            edgesFromNode.filter((edge) => !allowedTargets.has(edge.target)).map((edge) => edge.target)
+        )
+
+        ignoreNodeIds.push(...ignoredTargets)
     }
 
     return ignoreNodeIds
@@ -881,6 +905,8 @@ const executeNode = async ({
             chatId,
             sessionId,
             apiMessageId,
+            input: incomingInput.question ?? '',
+            form: incomingInput.form ?? agentflowRuntime.form ?? {},
             chatHistory,
             runtimeChatHistoryLength: Math.max(0, runtimeChatHistory.length - 1),
             state: updatedState,
