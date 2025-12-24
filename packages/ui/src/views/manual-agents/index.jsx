@@ -325,7 +325,8 @@ const ManualAgents = () => {
     }, [selectedAgentId, zoneFilter, kpiDate])
 
     const handleSend = async (messageOverride) => {
-        const content = (messageOverride || input).trim()
+        const raw = typeof messageOverride === 'string' ? messageOverride : input
+        const content = typeof raw === 'string' ? raw.trim() : ''
         if (!content || !selectedAgentId) return
         const userMessage = { role: 'user', content, timestamp: new Date() }
         setMessages((prev) => [...prev, userMessage])

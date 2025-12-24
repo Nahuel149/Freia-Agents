@@ -66,7 +66,7 @@
         "requirements": ["coordinar con administrador", "limite 1 visita por dia"]
     },
     "catalog": {
-        "link": "https://quintaselrincondemimundo.com.ar/",
+        "link": "https://quintaselrincondemimundo.com.ar/galeria-rincon-dos/",
         "filters": ["fecha", "capacidad"]
     },
     "behaviorNotes": [

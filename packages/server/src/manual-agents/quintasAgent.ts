@@ -212,8 +212,20 @@ const extractNamesFromSummary = (summary: string) => {
 const summaryAlreadyCovered = (summary: string, answer: string) => {
     if (!summary || !answer) return false
     const names = extractNamesFromSummary(summary)
-    if (!names.length) return false
     const lowerAnswer = normalizeText(answer)
+    const genericCovered = [
+        'no hay disponibilidad',
+        'no tenemos disponibilidad',
+        'sin disponibilidad',
+        'todas ocupadas',
+        'todas estan ocupadas',
+        'todas estan reservadas',
+        'ninguna disponible',
+        'fully booked',
+        'no availability'
+    ].some((phrase) => lowerAnswer.includes(normalizeText(phrase)))
+    if (genericCovered) return true
+    if (!names.length) return false
     let matches = 0
     for (const name of names) {
         if (lowerAnswer.includes(normalizeText(name))) {
