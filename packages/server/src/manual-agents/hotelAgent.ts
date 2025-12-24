@@ -1615,7 +1615,9 @@ const getSessionMessages = async (sessionId: string) => {
     const collections = collectionNames
     ensureToolAccess('read', [collections.manualAgentSessions])
     const session = await db
-        .collection<{ messages?: Array<{ role: string; content: string }> }>(collections.manualAgentSessions)
+        .collection<{ messages?: Array<{ role: string; content: string; metadata?: Record<string, unknown> }> }>(
+            collections.manualAgentSessions
+        )
         .findOne({ sessionId, agentId: HOTEL_AGENT_ID }, { projection: { messages: 1 } })
     return session?.messages || []
 }
