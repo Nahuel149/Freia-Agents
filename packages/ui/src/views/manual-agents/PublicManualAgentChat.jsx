@@ -9,32 +9,32 @@ import manualAgentsApi from '@/api/manualAgents'
 const defaultChatbotConfig = {
     title: 'Freia Assistant',
     titleAvatarSrc: '',
-    titleBackgroundColor: '#1f4e3d',
+    titleBackgroundColor: '#14171a',
     titleTextColor: '#f5f1e8',
     welcomeMessage: 'Hola! Contame fechas y cantidad de personas para chequear disponibilidad.',
     errorMessage: 'Hubo un problema, intentemos de nuevo en un minuto.',
-    backgroundColor: '#f7f3ec',
+    backgroundColor: '#0f1113',
     fontSize: 16,
-    poweredByTextColor: '#6f7b74',
+    poweredByTextColor: '#8a949c',
     renderHTML: false,
     showAgentMessages: true,
     botMessage: {
-        backgroundColor: '#e7efe8',
-        textColor: '#1b1d1f',
+        backgroundColor: '#1c2126',
+        textColor: '#e7edf3',
         avatarSrc: '',
         showAvatar: false
     },
     userMessage: {
-        backgroundColor: '#1f4e3d',
-        textColor: '#f5f1e8',
+        backgroundColor: '#1a3a2c',
+        textColor: '#eef3ee',
         avatarSrc: '',
         showAvatar: false
     },
     textInput: {
-        backgroundColor: '#fffaf2',
-        textColor: '#1b1d1f',
+        backgroundColor: '#15191e',
+        textColor: '#e7edf3',
         placeholder: 'Escribi tu consulta...',
-        sendButtonColor: '#1f4e3d'
+        sendButtonColor: '#1a3a2c'
     }
 }
 

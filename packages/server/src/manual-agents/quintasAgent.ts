@@ -1480,6 +1480,9 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     let lastRangeEnd: string | undefined
     let lastPropertyId: string | undefined
     let lastGuests: number | undefined
+    let lastIntent: string | undefined
+    let lastVisitDate: string | undefined
+    let lastVisitPropertyId: string | undefined
 
     if (sessionId) {
         const session = await db
@@ -1491,6 +1494,9 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 lastRangeEnd?: string
                 lastPropertyId?: string
                 lastGuests?: number
+                lastIntent?: string
+                lastVisitDate?: string
+                lastVisitPropertyId?: string
             }>(collections.manualAgentSessions)
             .findOne({ sessionId, agentId: 'quintas' })
         lockedLocale = session?.locale || ''
@@ -1500,6 +1506,9 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         lastRangeEnd = session?.lastRangeEnd
         lastPropertyId = session?.lastPropertyId
         lastGuests = session?.lastGuests
+        lastIntent = session?.lastIntent
+        lastVisitDate = session?.lastVisitDate
+        lastVisitPropertyId = session?.lastVisitPropertyId
     }
 
     if (!lockedLocale) {
@@ -1530,6 +1539,23 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
                 { $set: { lastGuests, updatedAt: new Date() } }
+            )
+        }
+    }
+
+    const lower = normalizeText(input.message || '')
+    const visitIntent =
+        ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer', 'visitar'].some((keyword) =>
+            lower.includes(normalizeText(keyword))
+        ) || lastIntent === 'visit'
+    const rentIntent = ['alquilar', 'alquiler', 'reserv', 'disponibilidad', 'precio', 'tarifa'].some((keyword) => lower.includes(keyword))
+    if (sessionId && (visitIntent || rentIntent)) {
+        const nextIntent = visitIntent && !rentIntent ? 'visit' : rentIntent ? 'rent' : lastIntent
+        if (nextIntent && nextIntent !== lastIntent) {
+            lastIntent = nextIntent
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastIntent, updatedAt: new Date() } }
             )
         }
     }
@@ -1565,11 +1591,14 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     const monthRange = parseMonthRange(input.message || '')
     if (monthRange) {
-        const isVisitIntent = ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer'].some((keyword) =>
-            normalizeText(input.message || '').includes(normalizeText(keyword))
-        )
         const property = detectProperty(input.message || '', catalogProperties)
-        if (isVisitIntent) {
+        if (visitIntent && !rentIntent) {
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastVisitDate: monthRange.start, lastVisitPropertyId: property?.propertyId, updatedAt: new Date() } }
+                )
+            }
             return {
                 answer: responseForLocale(
                     lockedLocale,
@@ -1584,7 +1613,19 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 { $set: { lastRangeStart: monthRange.start, lastRangeEnd: monthRange.end, updatedAt: new Date() } }
             )
         }
-        return buildAvailabilityReply(monthRange.start, monthRange.end, property || undefined, lockedLocale)
+        const reply = await buildAvailabilityReply(monthRange.start, monthRange.end, property || undefined, lockedLocale)
+        if (visitIntent && rentIntent) {
+            return {
+                answer:
+                    reply.answer +
+                    responseForLocale(
+                        lockedLocale,
+                        '\n\nSi queres visitar una quinta, decime dia y horario y lo coordinamos.',
+                        '\n\nIf you want to visit a quinta, tell me the day and time and we will coordinate.'
+                    )
+            }
+        }
+        return reply
     }
 
     const dayRange = parseDayRange(input.message || '')
@@ -1596,11 +1637,14 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         const end = moment
             .tz({ year: lastYear, month: lastMonthIndex, day: dayRange.endDay }, timezone)
             .format('YYYY-MM-DD')
-        const isVisitIntent = ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer'].some((keyword) =>
-            normalizeText(input.message || '').includes(normalizeText(keyword))
-        )
         const property = detectProperty(input.message || '', catalogProperties)
-        if (isVisitIntent) {
+        if (visitIntent && !rentIntent) {
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastVisitDate: start, lastVisitPropertyId: property?.propertyId, updatedAt: new Date() } }
+                )
+            }
             return {
                 answer: responseForLocale(
                     lockedLocale,
@@ -1615,7 +1659,19 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 { $set: { lastRangeStart: start, lastRangeEnd: end, updatedAt: new Date() } }
             )
         }
-        return buildAvailabilityReply(start, end, property || undefined, lockedLocale)
+        const reply = await buildAvailabilityReply(start, end, property || undefined, lockedLocale)
+        if (visitIntent && rentIntent) {
+            return {
+                answer:
+                    reply.answer +
+                    responseForLocale(
+                        lockedLocale,
+                        '\n\nSi queres visitar una quinta, decime dia y horario y lo coordinamos.',
+                        '\n\nIf you want to visit a quinta, tell me the day and time and we will coordinate.'
+                    )
+            }
+        }
+        return reply
     }
 
     if (mentionsDayRangeWithoutMonth(input.message || '')) {
@@ -1638,11 +1694,36 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         }
     }
 
-    const lower = normalizeText(input.message || '')
     const wantsAlternatives = ['otra', 'otras', 'otras opciones', 'opciones', 'disponibles'].some((keyword) => lower.includes(keyword))
     const hasDates = extractDates(input.message || '').length > 0
     if (wantsAlternatives && lastRangeStart && lastRangeEnd && !hasDates && !mentionsMonthWithoutDay(input.message || '')) {
         return buildAvailabilityReply(lastRangeStart, lastRangeEnd, undefined, lockedLocale)
+    }
+
+    if (visitIntent && (lower.includes('que fechas') || lower.includes('cuando') || lower.includes('disponible'))) {
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                'Para coordinar una visita, decime 2 o 3 fechas y horarios que te queden bien y la quinta que queres ver.',
+                'To coordinate a visit, share 2 or 3 date/time options and which quinta you want to visit.'
+            )
+        }
+    }
+
+    if (visitIntent && detectedProperty && lastVisitDate && !hasDates && !hasLeadInfo(input.message || '')) {
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastVisitPropertyId: detectedProperty.propertyId, updatedAt: new Date() } }
+            )
+        }
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                `Perfecto, coordinemos la visita a ${detectedProperty.name || detectedProperty.propertyId} el ${lastVisitDate}. Decime que horario te queda mejor.`,
+                `Great, let’s schedule a visit to ${detectedProperty.name || detectedProperty.propertyId} on ${lastVisitDate}. Tell me what time works best.`
+            )
+        }
     }
 
     if (
@@ -1684,12 +1765,15 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     }
 
     const explicitDates = extractDates(input.message || '')
-    const isVisitIntent = ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer'].some((keyword) =>
-        normalizeText(input.message || '').includes(normalizeText(keyword))
-    )
     const hasReservationIntent = ['reserv', 'deposito', 'anticipo'].some((keyword) => lower.includes(keyword))
-    if (explicitDates.length && isVisitIntent) {
+    if (explicitDates.length && visitIntent && !rentIntent) {
         const start = explicitDates[0].format('YYYY-MM-DD')
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastVisitDate: start, lastVisitPropertyId: detectedProperty?.propertyId, updatedAt: new Date() } }
+            )
+        }
         return {
             answer: responseForLocale(
                 lockedLocale,
