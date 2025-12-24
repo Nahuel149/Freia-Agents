@@ -276,6 +276,62 @@ const findMonthInText = (message: string) => {
     return null
 }
 
+const extractEmail = (message: string) => {
+    const match = String(message || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+    return match ? match[0] : ''
+}
+
+const extractName = (message: string) => {
+    const lower = normalizeText(message || '')
+    const match = lower.match(/(?:mi nombre es|soy|my name is)\s+([a-z\s]+)(?:,|$)/i)
+    if (!match) return ''
+    return match[1].trim().replace(/\s+/g, ' ')
+}
+
+const extractGuests = (message: string) => {
+    const match = String(message || '').match(/(\d{1,2})\s*(personas|huespedes|hu[ée]spedes|adultos|people|guests)/i)
+    if (!match) return undefined
+    const value = Number(match[1])
+    return Number.isFinite(value) ? value : undefined
+}
+
+const extractPaymentMethod = (message: string) => {
+    const normalized = normalizeText(message || '')
+    if (!normalized) return ''
+    if (normalized.includes('tarjeta') || normalized.includes('credito') || normalized.includes('debito')) return 'tarjeta'
+    if (normalized.includes('transfer')) return 'transferencia'
+    if (normalized.includes('efectivo')) return 'efectivo'
+    if (normalized.includes('link')) return 'link'
+    if (normalized.includes('mercadopago') || normalized.includes('mercado pago')) return 'mercadopago'
+    return ''
+}
+
+const detectHotelSelection = (message: string, hotels: HotelInventoryDoc[]) => {
+    const normalized = normalizeText(message || '')
+    return (
+        hotels.find((hotel) => {
+            const hotelId = normalizeText(String(hotel.hotelId || ''))
+            const nombre = normalizeText(String(hotel.nombre || ''))
+            const sede = normalizeText(String(hotel.sede || ''))
+            return (
+                (hotelId && normalized.includes(hotelId)) ||
+                (nombre && normalized.includes(nombre)) ||
+                (sede && normalized.includes(sede))
+            )
+        }) || null
+    )
+}
+
+const detectRoomSelection = (message: string, hotel?: HotelInventoryDoc | null, hotels?: HotelInventoryDoc[]) => {
+    const normalized = normalizeText(message || '')
+    const rooms = hotel?.habitaciones || (hotels || []).flatMap((item) => item.habitaciones || [])
+    const match = rooms.find((room) => {
+        const label = normalizeText(String(room.tipo || ''))
+        return label && normalized.includes(label)
+    })
+    return match?.tipo || ''
+}
+
 const extractDayRange = (message: string) => {
     const text = normalizeText(message)
     const match =
@@ -330,6 +386,29 @@ const buildContextFromMessages = (messages: Array<{ metadata?: Record<string, an
         if (context) return context
     }
     return {}
+}
+
+const getSessionContext = async (sessionId: string) => {
+    if (!sessionId) return {}
+    const db = await getManualAgentsDb()
+    const collections = collectionNames
+    ensureToolAccess('read', [collections.manualAgentSessions])
+    const session = await db
+        .collection<{ context?: Record<string, any> }>(collections.manualAgentSessions)
+        .findOne({ sessionId, agentId: HOTEL_AGENT_ID }, { projection: { context: 1 } })
+    return session?.context || {}
+}
+
+const updateSessionContext = async (sessionId: string, context: Record<string, unknown>) => {
+    if (!sessionId || !Object.keys(context).length) return
+    const db = await getManualAgentsDb()
+    const collections = collectionNames
+    ensureToolAccess('write', [collections.manualAgentSessions])
+    const setPayload = Object.fromEntries(Object.entries(context).map(([key, value]) => [`context.${key}`, value]))
+    await db.collection(collections.manualAgentSessions).updateOne(
+        { sessionId, agentId: HOTEL_AGENT_ID },
+        { $set: { ...setPayload, updatedAt: new Date() } }
+    )
 }
 
 const findMinNightsRule = (rules: HotelRulesDoc, start: moment.Moment, end: moment.Moment) => {
@@ -2500,7 +2579,8 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     const rules = await getHotelRules()
     const hotels = await getHotelInventory()
     const sessionMessages = await getSessionMessages(input.sessionId)
-    const sessionContext = buildContextFromMessages(sessionMessages)
+    const storedContext = await getSessionContext(input.sessionId)
+    let sessionContext = { ...storedContext, ...buildContextFromMessages(sessionMessages) }
     const language = getSessionLanguage(sessionMessages, input.message || '')
     const message = input.message || ''
     const normalized = normalizeText(message)
@@ -2509,8 +2589,44 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     const explicitDates = extractDates(message)
     const inferredMonth = findMonthInText(message)
     const dayRange = extractDayRange(message)
+    const detectedHotel = detectHotelSelection(message, hotels)
+    const detectedRoomType = detectRoomSelection(message, detectedHotel, hotels)
+    const detectedGuests = extractGuests(message)
+    const detectedPaymentMethod = extractPaymentMethod(message)
+    const detectedEmail = extractEmail(message)
+    const detectedName = extractName(message)
+    const contextUpdate: Record<string, unknown> = {}
+
+    if (explicitDates.length >= 2) {
+        contextUpdate.start = explicitDates[0].format('YYYY-MM-DD')
+        contextUpdate.end = explicitDates[1].format('YYYY-MM-DD')
+    }
+    if (detectedHotel?.hotelId) {
+        contextUpdate.hotelId = detectedHotel.hotelId
+        contextUpdate.sede = detectedHotel.sede
+    }
+    if (detectedRoomType) {
+        contextUpdate.roomType = detectedRoomType
+    }
+    if (typeof detectedGuests === 'number') {
+        contextUpdate.guests = detectedGuests
+    }
+    if (detectedPaymentMethod) {
+        contextUpdate.paymentMethod = detectedPaymentMethod
+    }
+    if (detectedName) {
+        contextUpdate.name = detectedName
+    }
+    if (detectedEmail) {
+        contextUpdate.email = detectedEmail
+    }
+    if (Object.keys(contextUpdate).length) {
+        await updateSessionContext(input.sessionId, contextUpdate)
+        sessionContext = { ...sessionContext, ...contextUpdate }
+    }
 
     if (inferredMonth && explicitDates.length === 0 && !dayRange) {
+        await updateSessionContext(input.sessionId, { month: inferredMonth.month, year: inferredMonth.year })
         return {
             answer:
                 language === 'en'
@@ -2538,6 +2654,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         }
         const availability = await checkAvailability({ start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
         if (!availability.ok) {
+            await updateSessionContext(input.sessionId, { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
             return {
                 answer:
                     language === 'en'
@@ -2552,6 +2669,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         const options = (okAvailability.available || [])
             .slice(0, 4)
             .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+        await updateSessionContext(input.sessionId, { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
         return {
             answer:
                 language === 'en'
@@ -2582,10 +2700,95 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         }
     }
 
+    const hasReservationContext =
+        sessionContext?.start &&
+        sessionContext?.end &&
+        (sessionContext?.hotelId || sessionContext?.sede) &&
+        sessionContext?.roomType
+
+    if (detectedRoomType && hasReservationContext && !detectedEmail && !detectedName) {
+        return {
+            answer:
+                language === 'en'
+                    ? `Perfect, I have ${sessionContext.roomType} for ${sessionContext.start} to ${sessionContext.end}. Please share your full name, email, and payment method to confirm.`
+                    : `Perfecto, tomo ${sessionContext.roomType} del ${sessionContext.start} al ${sessionContext.end}. Compartime nombre completo, email y metodo de pago para confirmar.`,
+            metadata: { context: sessionContext }
+        }
+    }
+
+    if (hasReservationContext && (detectedEmail || detectedName || sessionContext?.email || sessionContext?.name)) {
+        const name = detectedName || String(sessionContext?.name || '')
+        const email = detectedEmail || String(sessionContext?.email || '')
+        if (!email) {
+            return {
+                answer: language === 'en' ? 'Thanks! What email should I use for the reservation?' : 'Gracias! Que email uso para la reserva?',
+                metadata: { context: sessionContext }
+            }
+        }
+        if (!name) {
+            return {
+                answer: language === 'en' ? 'Great. What name should I put on the reservation?' : 'Buenisimo. A nombre de quien va la reserva?',
+                metadata: { context: sessionContext }
+            }
+        }
+        if (!detectedPaymentMethod && !sessionContext?.paymentMethod) {
+            return {
+                answer:
+                    language === 'en'
+                        ? 'Which payment method do you prefer? (card, transfer, cash)'
+                        : 'Que metodo de pago preferis? (tarjeta, transferencia, efectivo)',
+                metadata: { context: sessionContext }
+            }
+        }
+
+        const paymentMethod = detectedPaymentMethod || String(sessionContext?.paymentMethod || '')
+        const result = await createReservation({
+            name,
+            email,
+            start: String(sessionContext.start),
+            end: String(sessionContext.end),
+            sede: String(sessionContext.sede || ''),
+            hotelId: String(sessionContext.hotelId || ''),
+            roomType: String(sessionContext.roomType || ''),
+            guests: typeof detectedGuests === 'number' ? detectedGuests : Number(sessionContext.guests || 0) || undefined,
+            paymentMethod
+        })
+
+        if (!result.ok) {
+            return {
+                answer:
+                    language === 'en'
+                        ? 'Those dates just became unavailable. Want me to check other options?'
+                        : 'Esas fechas se acaban de ocupar. Queres que busque otras opciones?',
+                metadata: { context: sessionContext }
+            }
+        }
+
+        return {
+            answer:
+                language === 'en'
+                    ? `Reservation confirmed. Your ID is ${result.reservation?.id}.`
+                    : `Reserva confirmada. Tu ID es ${result.reservation?.id}.`,
+            metadata: {
+                ...(result as { confirmation?: any; reservation?: any; fees?: any; promos?: any }).confirmation
+                    ? {
+                          type: 'reservationCard',
+                          reservation: result.reservation,
+                          confirmation: result.confirmation,
+                          fees: result.fees,
+                          promos: result.promos,
+                          context: sessionContext
+                      }
+                    : { context: sessionContext }
+            }
+        }
+    }
+
     try {
         if (explicitDates.length >= 2 && !bookingIntent) {
             const start = explicitDates[0].format('YYYY-MM-DD')
             const end = explicitDates[1].format('YYYY-MM-DD')
+            await updateSessionContext(input.sessionId, { start, end })
             const availability = await checkAvailability({ start, end })
             if (!availability.ok) {
                 return {
@@ -2618,6 +2821,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             ? { start: explicitDates[0].format('YYYY-MM-DD'), end: explicitDates[1].format('YYYY-MM-DD') }
             : undefined
         if (contextMetadata) {
+            await updateSessionContext(input.sessionId, contextMetadata)
             return { ...response, metadata: { ...(response.metadata || {}), context: contextMetadata } }
         }
         return response
