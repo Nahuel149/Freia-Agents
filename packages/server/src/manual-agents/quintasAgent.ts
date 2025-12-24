@@ -186,6 +186,10 @@ const responseForLocale = (locale: string, esText: string, enText: string) => {
     return locale === 'en-US' ? enText : esText
 }
 
+const isLikelyEnglish = (text: string) => {
+    return detectLocaleFromMessage(text) === 'en-US'
+}
+
 const extractNamesFromSummary = (summary: string) => {
     if (!summary) return [] as string[]
     const names: string[] = []
@@ -338,7 +342,7 @@ const formatAvailabilitySections = (available: Array<Record<string, any>>, unava
     const perNightLabel = locale === 'en-US' ? 'per night' : 'por noche'
     const minNightsLabel = (minNights?: number) =>
         locale === 'en-US' ? (minNights ? `min ${minNights} nights` : 'minimum nights') : `minimo ${minNights} noches`
-    const blockedLabel = locale === 'en-US' ? 'blocked' : 'bloqueada'
+    const blockedLabel = locale === 'en-US' ? 'occupied' : 'ocupada'
     const bookedLabel = locale === 'en-US' ? 'booked' : 'reservada'
     const unavailableDefault = locale === 'en-US' ? 'unavailable' : 'no disponible'
 
@@ -685,6 +689,7 @@ const buildSystemPrompt = (catalogMeta: CatalogMeta, restrictions: RestrictionsD
         '- No contradigas disponibilidad ya informada en la misma conversacion, salvo que check_availability lo indique y lo aclares.',
         '- Cuando respondas disponibilidad, usa secciones "Disponibles" y "No disponibles". Si check_availability trae summary, copialo.',
         '- Cuando uses check_availability, pasa locale segun el idioma del cliente (es-AR o en-US).',
+        '- Evita decir "blocked"; usa "ocupada" o "reservada" segun corresponda.',
         '- Si listas opciones (numeradas o con guiones), separa cada opcion con una linea en blanco para que se lean como parrafos.',
         '- No respondas temas fuera de quintas (ej: deportes, medicina). Si preguntan algo fuera de tema, redirigi amablemente a disponibilidad, precios, reservas, pagos o visitas.',
         blockedDatesText
@@ -704,7 +709,8 @@ const runLlmFlow = async (
     message: string,
     sessionId: string,
     catalogMeta: CatalogMeta,
-    restrictions: RestrictionsDoc
+    restrictions: RestrictionsDoc,
+    locale: string
 ): Promise<ManualAgentResponse> => {
     const apiKey = getManualAgentOpenAIKey()
     if (!apiKey) {
@@ -713,7 +719,6 @@ const runLlmFlow = async (
 
     const openai = new OpenAI({ apiKey })
     const systemPrompt = buildSystemPrompt(catalogMeta, restrictions)
-    const locale = detectLocaleFromMessage(message)
 
     const db = await getManualAgentsDb()
     const collections = collectionNames
@@ -744,6 +749,7 @@ const runLlmFlow = async (
 
     let metadata: Record<string, unknown> | undefined
     let availabilitySummary: string | null = null
+    let availabilityRange: { start?: string; end?: string } | null = null
 
     for (let i = 0; i < 3; i += 1) {
         const completion = await openai.chat.completions.create({
@@ -764,6 +770,23 @@ const runLlmFlow = async (
             let answer =
                 (assistant.content || '').trim() ||
                 responseForLocale(locale, 'No pude procesar tu consulta.', 'I could not process your request.')
+            if (locale === 'es-AR' && isLikelyEnglish(answer)) {
+                if (availabilitySummary) {
+                    const rangeLabel =
+                        availabilityRange?.start && availabilityRange?.end && availabilityRange.start !== availabilityRange.end
+                            ? `${availabilityRange.start} al ${availabilityRange.end}`
+                            : availabilityRange?.start || ''
+                    const intro = rangeLabel ? `Disponibilidad para ${rangeLabel}:\n\n` : ''
+                    answer = `${intro}${availabilitySummary}\n\nSi queres, te paso alternativas o mas detalles.`
+                } else {
+                    answer =
+                        responseForLocale(
+                            locale,
+                            'Perdon, podrias repetir la consulta con la fecha exacta?',
+                            'Sorry, could you repeat the request with the exact dates?'
+                        ) || answer
+                }
+            }
             if (
                 availabilitySummary &&
                 !answer.includes(availabilitySummary) &&
@@ -794,6 +817,10 @@ const runLlmFlow = async (
                 const summary = (toolResult.output as { summary?: string } | undefined)?.summary
                 if (typeof summary === 'string' && summary.trim()) {
                     availabilitySummary = summary.trim()
+                }
+                availabilityRange = {
+                    start: typeof args.start === 'string' ? args.start : undefined,
+                    end: typeof args.end === 'string' ? args.end : args.start
                 }
             }
             messages.push({
@@ -1022,10 +1049,10 @@ export const QUINTAS_TOOL_SPECS: ManualAgentToolDefinition[] = [
     }
 ]
 
-const handleQuintasFallback = async (input: ManualAgentRequest): Promise<ManualAgentResponse> => {
+const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: string): Promise<ManualAgentResponse> => {
     const message = input.message || ''
     const lower = normalizeText(message)
-    const locale = detectLocaleFromMessage(message)
+    const locale = forcedLocale || detectLocaleFromMessage(message)
 
     const [catalogMeta, catalogProperties, restrictions] = await Promise.all([getCatalogMeta(), getCatalogProperties(), getRestrictions()])
 
@@ -1234,8 +1261,8 @@ const handleQuintasFallback = async (input: ManualAgentRequest): Promise<ManualA
     return {
         answer: responseForLocale(
             locale,
-            `Hola! Soy el asistente de ${summary}.${blockedDatesText}\n\n${availabilityOverview}\n\nContame fecha, cantidad de personas y si tenes alguna quinta en mente.`,
-            `Hi! I'm the assistant for ${summary}.${blockedDatesText}\n\n${availabilityOverview}\n\nShare your dates, number of guests, and preferred quinta.`
+            `Hola! Soy el encargado de las ${summary}${blockedDatesText}\n\n${availabilityOverview}\n\nContame fecha, cantidad de personas y si tenes alguna quinta en mente.`,
+            `Hi! I'm the manager for ${summary}.${blockedDatesText}\n\n${availabilityOverview}\n\nShare your dates, number of guests, and preferred quinta.`
         )
     }
 }
@@ -1245,24 +1272,44 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     const catalogMeta = await getCatalogMeta()
     const restrictions = await getRestrictions()
-    const locale = detectLocaleFromMessage(input.message || '')
+    const db = await getManualAgentsDb()
+    const collections = getManualAgentsCollections()
+    const sessionId = input.sessionId || ''
+    let lockedLocale = ''
+
+    if (sessionId) {
+        const session = await db
+            .collection<{ locale?: string }>(collections.manualAgentSessions)
+            .findOne({ sessionId, agentId: 'quintas' })
+        lockedLocale = session?.locale || ''
+    }
+
+    if (!lockedLocale) {
+        lockedLocale = detectLocaleFromMessage(input.message || '')
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { locale: lockedLocale, updatedAt: new Date() } }
+            )
+        }
+    }
 
     if (isGreetingOnly(input.message || '')) {
         const blockedDatesText = restrictions.blockedDatesText ? ` ${restrictions.blockedDatesText}` : ''
-        const availabilityOverview = await buildAvailabilityOverview(30, locale)
+        const availabilityOverview = await buildAvailabilityOverview(30, lockedLocale)
         const summary = catalogMeta.catalogSummary || 'Alquiler de quintas para eventos familiares en Francisco Alvarez.'
         return {
             answer: responseForLocale(
-                locale,
-                `Hola! Soy el asistente de ${summary}.\n\n${availabilityOverview}\n\n${blockedDatesText ? `${blockedDatesText}\n\n` : ''}Contame fecha, cantidad de personas y si tenes alguna quinta en mente.`,
-                `Hi! I'm the assistant for ${summary}.\n\n${availabilityOverview}\n\n${blockedDatesText ? `${blockedDatesText}\n\n` : ''}Share your dates, number of guests, and preferred quinta.`
+                lockedLocale,
+                `Hola! Soy el encargado de las ${summary}\n\n${availabilityOverview}\n\n${blockedDatesText ? `${blockedDatesText}\n\n` : ''}Contame fecha, cantidad de personas y si tenes alguna quinta en mente.`,
+                `Hi! I'm the manager for ${summary}.\n\n${availabilityOverview}\n\n${blockedDatesText ? `${blockedDatesText}\n\n` : ''}Share your dates, number of guests, and preferred quinta.`
             )
         }
     }
 
     try {
-        return await runLlmFlow(input.message || '', input.sessionId, catalogMeta, restrictions)
+        return await runLlmFlow(input.message || '', input.sessionId, catalogMeta, restrictions, lockedLocale)
     } catch (_error) {
-        return handleQuintasFallback(input)
+        return handleQuintasFallback(input, lockedLocale)
     }
 }
