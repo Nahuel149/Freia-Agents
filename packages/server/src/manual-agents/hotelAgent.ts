@@ -284,8 +284,25 @@ const extractEmail = (message: string) => {
 const extractName = (message: string) => {
     const lower = normalizeText(message || '')
     const match = lower.match(/(?:mi nombre es|soy|my name is)\s+([a-z\s]+)(?:,|$)/i)
-    if (!match) return ''
-    return match[1].trim().replace(/\s+/g, ' ')
+    if (match) {
+        return match[1].trim().replace(/\s+/g, ' ')
+    }
+
+    const emailMatch = String(message || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+    if (emailMatch && emailMatch.index !== undefined) {
+        const beforeEmail = String(message || '').slice(0, emailMatch.index)
+        const candidate = normalizeText(beforeEmail).replace(/(mail|email|correo)\s*/g, '').replace(/[:;,-]/g, ' ')
+        const cleaned = candidate.trim().replace(/\s+/g, ' ')
+        if (cleaned.length >= 3) return cleaned
+    }
+
+    if (String(message || '').includes(',')) {
+        const firstPart = String(message || '').split(',')[0]
+        const cleaned = normalizeText(firstPart).trim().replace(/\s+/g, ' ')
+        if (cleaned.length >= 3) return cleaned
+    }
+
+    return ''
 }
 
 const extractGuests = (message: string) => {
@@ -324,6 +341,14 @@ const detectHotelSelection = (message: string, hotels: HotelInventoryDoc[]) => {
 
 const detectRoomSelection = (message: string, hotel?: HotelInventoryDoc | null, hotels?: HotelInventoryDoc[]) => {
     const normalized = normalizeText(message || '')
+    if (normalized.includes('normal') || normalized.includes('standard')) {
+        const normalizedRooms = (hotel?.habitaciones || (hotels || []).flatMap((item) => item.habitaciones || [])).map((room) => ({
+            tipo: room.tipo,
+            normalized: normalizeText(String(room.tipo || ''))
+        }))
+        const fallback = normalizedRooms.find((room) => room.normalized.includes('estandar') || room.normalized.includes('standard'))
+        if (fallback?.tipo) return fallback.tipo
+    }
     const rooms = hotel?.habitaciones || (hotels || []).flatMap((item) => item.habitaciones || [])
     const match = rooms.find((room) => {
         const label = normalizeText(String(room.tipo || ''))
@@ -2696,6 +2721,15 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 const options = (okAvailability.available || [])
                     .slice(0, 4)
                     .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+                if (!options.length) {
+                    return {
+                        answer:
+                            language === 'en'
+                                ? 'No availability for those dates. Want to try other dates?'
+                                : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
+                        metadata: { context: sessionContext }
+                    }
+                }
                 return {
                     answer:
                         language === 'en'
@@ -2712,6 +2746,22 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         sessionContext?.end &&
         (sessionContext?.hotelId || sessionContext?.sede) &&
         sessionContext?.roomType
+
+    if (
+        sessionContext?.start &&
+        sessionContext?.end &&
+        (sessionContext?.hotelId || sessionContext?.sede) &&
+        !sessionContext?.roomType &&
+        ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale'].some((phrase) => normalized === phrase)
+    ) {
+        return {
+            answer:
+                language === 'en'
+                    ? 'Which room type do you prefer for those dates?'
+                    : 'Que tipo de habitacion preferis para esas fechas?',
+            metadata: { context: sessionContext }
+        }
+    }
 
     if (detectedRoomType && hasReservationContext && !detectedEmail && !detectedName) {
         return {
@@ -2812,6 +2862,15 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             const options = (okAvailability.available || [])
                 .slice(0, 4)
                 .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+            if (!options.length) {
+                return {
+                    answer:
+                        language === 'en'
+                            ? 'No availability for those dates. Want to try another location or nearby dates?'
+                            : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
+                    metadata: { context: { start, end } }
+                }
+            }
             return {
                 answer:
                     language === 'en'

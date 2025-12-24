@@ -408,13 +408,25 @@ const extractDates = (message: string): moment.Moment[] => {
 }
 
 const detectProperty = (message: string, properties: CatalogProperty[]) => {
-    const lower = normalizeText(message)
+    const lower = normalizeText(message).replace(/\([^)]*\)/g, ' ')
     return properties.find((property) => {
         if (!property.propertyId) return false
         if (lower.includes(normalizeText(property.propertyId))) return true
-        if (property.name && lower.includes(normalizeText(property.name))) return true
+        if (property.name) {
+            const normalizedName = normalizeText(property.name)
+            const normalizedSimple = normalizedName.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim()
+            if (lower.includes(normalizedName)) return true
+            if (normalizedSimple && lower.includes(normalizedSimple)) return true
+        }
         return false
     })
+}
+
+const extractGuests = (message: string) => {
+    const match = String(message || '').match(/(\d{1,2})\s*(personas|huespedes|hu[ée]spedes|adultos|people|guests)/i)
+    if (!match) return undefined
+    const value = Number(match[1])
+    return Number.isFinite(value) ? value : undefined
 }
 
 const rangesOverlap = (start: moment.Moment, end: moment.Moment, rangeStart: moment.Moment, rangeEnd: moment.Moment) => {
@@ -1467,6 +1479,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     let lastRangeStart: string | undefined
     let lastRangeEnd: string | undefined
     let lastPropertyId: string | undefined
+    let lastGuests: number | undefined
 
     if (sessionId) {
         const session = await db
@@ -1477,6 +1490,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 lastRangeStart?: string
                 lastRangeEnd?: string
                 lastPropertyId?: string
+                lastGuests?: number
             }>(collections.manualAgentSessions)
             .findOne({ sessionId, agentId: 'quintas' })
         lockedLocale = session?.locale || ''
@@ -1485,6 +1499,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         lastRangeStart = session?.lastRangeStart
         lastRangeEnd = session?.lastRangeEnd
         lastPropertyId = session?.lastPropertyId
+        lastGuests = session?.lastGuests
     }
 
     if (!lockedLocale) {
@@ -1504,6 +1519,17 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
                 { $set: { lastPropertyId, updatedAt: new Date() } }
+            )
+        }
+    }
+
+    const detectedGuests = extractGuests(input.message || '')
+    if (typeof detectedGuests === 'number') {
+        lastGuests = detectedGuests
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastGuests, updatedAt: new Date() } }
             )
         }
     }
@@ -1593,6 +1619,44 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     const hasDates = extractDates(input.message || '').length > 0
     if (wantsAlternatives && lastRangeStart && lastRangeEnd && !hasDates && !mentionsMonthWithoutDay(input.message || '')) {
         return buildAvailabilityReply(lastRangeStart, lastRangeEnd, undefined, lockedLocale)
+    }
+
+    if (
+        detectedProperty &&
+        lastRangeStart &&
+        lastRangeEnd &&
+        !hasLeadInfo(input.message || '') &&
+        !hasDates &&
+        !mentionsMonthWithoutDay(input.message || '')
+    ) {
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastPropertyId: detectedProperty.propertyId, updatedAt: new Date() } }
+            )
+        }
+        const availability = await checkAvailability({
+            start: lastRangeStart,
+            end: lastRangeEnd,
+            propertyId: detectedProperty.propertyId,
+            locale: lockedLocale
+        })
+        if (!availability.ok || !(availability as { available?: Array<Record<string, any>> }).available?.length) {
+            return {
+                answer: responseForLocale(
+                    lockedLocale,
+                    'Esas fechas ya no estan disponibles. Te puedo ofrecer alternativas.',
+                    'Those dates are no longer available. I can offer alternatives.'
+                )
+            }
+        }
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                `Perfecto, ${detectedProperty.name || detectedProperty.propertyId} esta disponible para esas fechas. Para continuar, compartime tu nombre completo y un email o telefono de contacto.`,
+                `Great, ${detectedProperty.name || detectedProperty.propertyId} is available for those dates. Please share your full name and an email or phone number to continue.`
+            )
+        }
     }
 
     const explicitDates = extractDates(input.message || '')
@@ -1704,6 +1768,16 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                     }
                 }
             }
+        }
+    }
+
+    if (lower.includes('por quien') && (lower.includes('ocupad') || lower.includes('reserv'))) {
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                'Por privacidad no podemos compartir datos de otras reservas. Si queres, te ofrezco opciones disponibles.',
+                'For privacy reasons we cannot share other guests’ details. I can suggest available options instead.'
+            )
         }
     }
 
