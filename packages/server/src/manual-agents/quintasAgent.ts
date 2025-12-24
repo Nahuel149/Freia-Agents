@@ -407,6 +407,42 @@ const isThanksOnly = (message: string) => {
     return !hasDates && !hasKeywords
 }
 
+const isDeclineOnly = (message: string) => {
+    const lower = normalizeText(message || '').trim()
+    if (!lower) return false
+    const declinePhrases = [
+        'no gracias',
+        'no, gracias',
+        'no por ahora',
+        'no quiero',
+        'no quiero reservar',
+        'no quiero alquilar',
+        'no quiero nada',
+        'no me interesa',
+        'no estoy interesado',
+        'no estoy interesada',
+        'no deseo',
+        'no voy a reservar',
+        'no voy a alquilar',
+        'no, esta bien',
+        'esta bien, no',
+        'esta bien gracias',
+        'todo bien, no',
+        'no, todo bien',
+        'prefiero no',
+        'no necesito',
+        'no busco'
+    ]
+    const hasDecline = declinePhrases.some((phrase) => lower.includes(normalizeText(phrase)))
+    if (!hasDecline) return false
+    const hasDates = extractDates(message).length > 0
+    const hasDateSignals = hasDates || Boolean(parseMonthRange(message)) || Boolean(parseDayRange(message))
+    const hasKeywords = ['dispon', 'precio', 'reserv', 'pago', 'deposito', 'anticipo', 'visita', 'catalogo', 'foto'].some(
+        (keyword) => lower.includes(keyword)
+    )
+    return !hasDateSignals && !hasKeywords
+}
+
 const extractDates = (message: string): moment.Moment[] => {
     const matches: string[] = []
     const isoMatches = message.match(/\d{4}-\d{2}-\d{2}/g) || []
@@ -1665,8 +1701,24 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         return {
             answer: responseForLocale(
                 lockedLocale,
-                '¡De nada! Si necesitas algo mas, estoy para ayudarte.',
+                'De nada! Si necesitas algo mas, estoy para ayudarte.',
                 "You're welcome! If you need anything else, I'm here to help."
+            )
+        }
+    }
+
+    if (isDeclineOnly(input.message || '')) {
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastIntent: 'none', lastVisitPending: false, updatedAt: new Date() } }
+            )
+        }
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                'Perfecto, gracias por tu tiempo. Si mas adelante queres retomar, estoy aca para ayudarte.',
+                "All good, thanks for your time. If you want to resume later, I'm here to help."
             )
         }
     }
