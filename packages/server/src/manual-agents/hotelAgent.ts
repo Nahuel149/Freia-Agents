@@ -335,7 +335,8 @@ const detectRoomSelection = (message: string, hotel?: HotelInventoryDoc | null, 
 const extractDayRange = (message: string) => {
     const text = normalizeText(message)
     const match =
-        text.match(/\bdel?\s*(\d{1,2})\s*(al|hasta|-)\s*(\d{1,2})\b/) ||
+        text.match(/\b(?:del?|el)\s*(\d{1,2})\s*(al|hasta|-)\s*(\d{1,2})\b/) ||
+        text.match(/\b(\d{1,2})\s*(al|hasta|-)\s*(\d{1,2})\b/) ||
         text.match(/\bfrom\s*(\d{1,2})\s*(to|-)\s*(\d{1,2})\b/)
     if (!match) return null
     const startDay = Number(match[1])
@@ -378,6 +379,11 @@ const buildDateRange = (start: moment.Moment, end: moment.Moment) => {
 const formatMoney = (amount?: number, currency?: string) => {
     if (!amount) return 'Consultar'
     return `${amount.toFixed(0)} ${currency || 'USD'}`
+}
+
+const formatMonthName = (month: number, year: number, language: 'es' | 'en') => {
+    const locale = language === 'en' ? 'en' : 'es'
+    return moment({ year, month: month - 1, day: 1 }).locale(locale).format('MMMM')
 }
 
 const buildContextFromMessages = (messages: Array<{ metadata?: Record<string, any> }>) => {
@@ -2626,12 +2632,13 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     }
 
     if (inferredMonth && explicitDates.length === 0 && !dayRange) {
+        const monthName = formatMonthName(inferredMonth.month, inferredMonth.year, language)
         await updateSessionContext(input.sessionId, { month: inferredMonth.month, year: inferredMonth.year })
         return {
             answer:
                 language === 'en'
-                    ? `Got it. For ${moment({ year: inferredMonth.year, month: inferredMonth.month - 1, day: 1 }).format('MMMM')} I need exact dates. For example: from 5 to 10.`
-                    : `Dale. Para ${moment({ year: inferredMonth.year, month: inferredMonth.month - 1, day: 1 }).format('MMMM')} necesito fechas exactas. Por ejemplo: del 5 al 10.`,
+                    ? `Got it. For ${monthName} I need exact dates. For example: from 5 to 10.`
+                    : `Dale. Para ${monthName} necesito fechas exactas. Por ejemplo: del 5 al 10.`,
             metadata: { context: { month: inferredMonth.month, year: inferredMonth.year } }
         }
     }

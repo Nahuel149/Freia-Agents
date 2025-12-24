@@ -514,6 +514,12 @@ const confirmPaymentHandler = async (req: Request, res: Response, next: NextFunc
                         shareTokenId: existingSession.shareTokenId,
                         messages: [
                             {
+                                role: 'user',
+                                content: paymentRef ? `Comprobante enviado: ${paymentRef}` : 'Comprobante enviado.',
+                                timestamp: new Date(),
+                                metadata: { type: 'paymentProof' }
+                            },
+                            {
                                 role: 'assistant',
                                 content: String(followUpMessage),
                                 timestamp: new Date(),
@@ -550,6 +556,12 @@ const confirmPaymentHandler = async (req: Request, res: Response, next: NextFunc
                     shareTokenId: existingSession.shareTokenId,
                     messages: [
                         {
+                            role: 'user',
+                            content: paymentRef ? `Comprobante enviado: ${paymentRef}` : 'Comprobante enviado.',
+                            timestamp: new Date(),
+                            metadata: { type: 'paymentProof' }
+                        },
+                        {
                             role: 'assistant',
                             content: String(followUpMessage),
                             timestamp: new Date(),
@@ -581,6 +593,7 @@ const confirmPaymentPublicHandler = async (req: Request, res: Response, next: Ne
 
         const agentId = tokenDoc.agentId
         const { sessionId, followUpMessage, followUpType } = req.body
+        const paymentRef = req.body?.paymentRef as string | undefined
         if (agentId === 'gran-sol') {
             ensureAgentAccess(agentId, 'write', [collections.hotelReservations])
             const { reservationId, paymentRef, amount, currency } = req.body
@@ -634,6 +647,12 @@ const confirmPaymentPublicHandler = async (req: Request, res: Response, next: Ne
                     agentId,
                     shareTokenId: tokenDoc._id,
                     messages: [
+                        {
+                            role: 'user',
+                            content: paymentRef ? `Comprobante enviado: ${paymentRef}` : 'Comprobante enviado.',
+                            timestamp: new Date(),
+                            metadata: { type: 'paymentProof' }
+                        },
                         {
                             role: 'assistant',
                             content: String(followUpMessage),
