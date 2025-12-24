@@ -121,6 +121,14 @@ export const confirmPayment = async (input: ConfirmPaymentInput) => {
     const calendarCollection = db.collection(collections.quintasCalendar)
     const logCollection = db.collection(collections.manualAgentCalendarLogs)
 
+    const alreadyBooked = await calendarCollection.findOne({
+        propertyId: input.propertyId,
+        events: { $elemMatch: { status: 'booked', start: input.start, end: input.end } }
+    })
+    if (alreadyBooked) {
+        return { ok: true, alreadyBooked: true as const }
+    }
+
     const result = await calendarCollection.updateOne(
         {
             propertyId: input.propertyId,
