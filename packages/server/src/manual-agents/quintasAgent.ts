@@ -386,6 +386,27 @@ const isGreetingOnly = (message: string) => {
     return !hasDates && !hasKeywords
 }
 
+const isThanksOnly = (message: string) => {
+    const lower = normalizeText(message || '').trim()
+    if (!lower) return false
+    const thanks = [
+        'gracias',
+        'muchas gracias',
+        'mil gracias',
+        'gracias!',
+        'thanks',
+        'thank you',
+        'thx'
+    ]
+    const hasThanks = thanks.some((word) => lower === word || lower.startsWith(`${word} `))
+    if (!hasThanks) return false
+    const hasDates = extractDates(message).length > 0
+    const hasKeywords = ['dispon', 'precio', 'reserv', 'pago', 'deposito', 'anticipo', 'visita', 'catalogo'].some(
+        (keyword) => lower.includes(keyword)
+    )
+    return !hasDates && !hasKeywords
+}
+
 const extractDates = (message: string): moment.Moment[] => {
     const matches: string[] = []
     const isoMatches = message.match(/\d{4}-\d{2}-\d{2}/g) || []
@@ -1577,7 +1598,10 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     const monthRange = parseMonthRange(input.message || '')
     const dayRange = parseDayRange(input.message || '')
     const hasDateSignals = hasDates || Boolean(monthRange) || Boolean(dayRange)
-    if (detectedVisitTime) {
+    const hadVisitContext = Boolean(lastVisitPending || lastIntent === 'visit')
+
+    const shouldStoreVisitTime = Boolean(detectedVisitTime && (hadVisitContext || hasVisitKeyword))
+    if (shouldStoreVisitTime) {
         lastVisitTime = detectedVisitTime
         lastVisitPending = true
         if (sessionId) {
@@ -1596,8 +1620,19 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             )
         }
     }
-    const visitContext = Boolean(lastVisitPending || lastIntent === 'visit' || lastVisitDate || lastVisitTime || lastVisitPropertyId)
-    const visitIntent = hasVisitKeyword || hasVisitTime || (visitContext && !rentIntent && hasDateSignals)
+
+    if (rentIntent) {
+        lastVisitPending = false
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastVisitPending: false, updatedAt: new Date() } }
+            )
+        }
+    }
+
+    const visitContext = Boolean(lastVisitPending || lastIntent === 'visit')
+    const visitIntent = hasVisitKeyword || (hasVisitTime && visitContext) || (visitContext && !rentIntent && hasDateSignals)
     const visitOnly = visitIntent && !rentIntent
     if (sessionId && (visitIntent || rentIntent)) {
         const nextIntent = hasVisitKeyword && !rentIntent ? 'visit' : rentIntent ? 'rent' : lastIntent
@@ -1624,6 +1659,16 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             { sessionId, agentId: 'quintas' },
             { $set: { lastMonthIndex, lastYear, updatedAt: new Date() } }
         )
+    }
+
+    if (isThanksOnly(input.message || '')) {
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                '¡De nada! Si necesitas algo mas, estoy para ayudarte.',
+                "You're welcome! If you need anything else, I'm here to help."
+            )
+        }
     }
 
     if (isGreetingOnly(input.message || '')) {
@@ -2092,6 +2137,14 @@ Please share your name and phone number to coordinate the visit.`
     if (hasLeadInfo(input.message || '') && lastRangeStart && lastRangeEnd && lastPropertyId && !visitIntent) {
         const property = catalogProperties.find((item) => item.propertyId === lastPropertyId)
         if (property) {
+            if (sessionId) {
+                lastIntent = 'rent'
+                lastVisitPending = false
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastIntent, lastVisitPending: false, updatedAt: new Date() } }
+                )
+            }
             ensureToolAccess('write', [collectionNames.quintasCalendar])
             const hold = await createHold({
                 propertyId: property.propertyId,

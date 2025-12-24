@@ -2684,22 +2684,27 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 answer: language === 'en' ? 'I need exact dates in YYYY-MM-DD format.' : 'Necesito fechas exactas en formato YYYY-MM-DD.'
             }
         }
+        const startStr = start.format('YYYY-MM-DD')
+        const endStr = end.format('YYYY-MM-DD')
+        const availabilityScope = sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
         const availability = await checkAvailability({
-            start: start.format('YYYY-MM-DD'),
-            end: end.format('YYYY-MM-DD'),
+            start: startStr,
+            end: endStr,
             sede: sessionContext?.sede as string | undefined,
             hotelId: sessionContext?.hotelId as string | undefined,
             roomType: sessionContext?.roomType as string | undefined,
             guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
         })
         if (!availability.ok) {
-            await updateSessionContext(input.sessionId, { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
+            const contextUpdatePayload = { month, year, start: startStr, end: endStr, availabilityOk: false, availabilityScope }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
             return {
                 answer:
                     language === 'en'
                         ? 'No availability for those dates. Want to try another location or nearby dates?'
                         : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
-                metadata: { context: { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') } }
+                metadata: { context: { month, year, start: startStr, end: endStr } }
             }
         }
         const okAvailability = availability as {
@@ -2709,50 +2714,71 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             .slice(0, 4)
             .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
         if (!options.length) {
+            const contextUpdatePayload = { month, year, start: startStr, end: endStr, availabilityOk: false, availabilityScope }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
             return {
                 answer:
                     language === 'en'
                         ? 'No availability for those dates. Want to try another location or nearby dates?'
                         : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
-                metadata: { context: { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') } }
+                metadata: { context: { month, year, start: startStr, end: endStr } }
             }
         }
-        await updateSessionContext(input.sessionId, { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
+        const contextUpdatePayload = { month, year, start: startStr, end: endStr, availabilityOk: true, availabilityScope }
+        await updateSessionContext(input.sessionId, contextUpdatePayload)
+        sessionContext = { ...sessionContext, ...contextUpdatePayload }
         return {
             answer:
                 language === 'en'
                     ? `Availability for those dates:\n${formatBulletList(options)}`
                     : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`,
-            metadata: { context: { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') } }
+            metadata: { context: { month, year, start: startStr, end: endStr } }
         }
     }
 
     if (!explicitDates.length && sessionContext?.start && sessionContext?.end) {
         if (normalized.includes('otra') || normalized.includes('otras') || normalized.includes('alternativa') || normalized.includes('opcion')) {
             const availability = await checkAvailability({ start: sessionContext.start, end: sessionContext.end })
-            if (availability.ok) {
-                const okAvailability = availability as {
-                    available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
-                }
-                const options = (okAvailability.available || [])
-                    .slice(0, 4)
-                    .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
-                if (!options.length) {
-                    return {
-                        answer:
-                            language === 'en'
-                                ? 'No availability for those dates. Want to try other dates?'
-                                : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
-                        metadata: { context: sessionContext }
-                    }
-                }
+            if (!availability.ok) {
+                const contextUpdatePayload = { availabilityOk: false, availabilityScope: 'global' }
+                await updateSessionContext(input.sessionId, contextUpdatePayload)
+                sessionContext = { ...sessionContext, ...contextUpdatePayload }
                 return {
                     answer:
                         language === 'en'
-                            ? `Other options for those dates:\n${formatBulletList(options)}`
-                            : `Otras opciones para esas fechas:\n${formatBulletList(options)}`,
+                            ? 'No availability for those dates. Want to try other dates?'
+                            : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
                     metadata: { context: sessionContext }
                 }
+            }
+            const okAvailability = availability as {
+                available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
+            }
+            const options = (okAvailability.available || [])
+                .slice(0, 4)
+                .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+            if (!options.length) {
+                const contextUpdatePayload = { availabilityOk: false, availabilityScope: 'global' }
+                await updateSessionContext(input.sessionId, contextUpdatePayload)
+                sessionContext = { ...sessionContext, ...contextUpdatePayload }
+                return {
+                    answer:
+                        language === 'en'
+                            ? 'No availability for those dates. Want to try other dates?'
+                            : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
+                    metadata: { context: sessionContext }
+                }
+            }
+            const contextUpdatePayload = { availabilityOk: true, availabilityScope: 'global' }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
+            return {
+                answer:
+                    language === 'en'
+                        ? `Other options for those dates:\n${formatBulletList(options)}`
+                        : `Otras opciones para esas fechas:\n${formatBulletList(options)}`,
+                metadata: { context: sessionContext }
             }
         }
     }
@@ -2766,20 +2792,82 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     if (
         sessionContext?.start &&
         sessionContext?.end &&
-        (sessionContext?.hotelId || sessionContext?.sede) &&
-        !sessionContext?.roomType &&
         ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale'].some((phrase) => normalized === phrase)
     ) {
-        return {
-            answer:
-                language === 'en'
-                    ? 'Which room type do you prefer for those dates?'
-                    : 'Que tipo de habitacion preferis para esas fechas?',
-            metadata: { context: sessionContext }
+        if (sessionContext?.availabilityOk === false) {
+            return {
+                answer:
+                    language === 'en'
+                        ? 'No availability for those dates. Want to try other dates?'
+                        : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
+                metadata: { context: sessionContext }
+            }
+        }
+        if (sessionContext?.availabilityScope === 'global' || (!sessionContext?.hotelId && !sessionContext?.sede)) {
+            const sedes = Array.from(new Set(hotels.map((hotel) => hotel.sede).filter(Boolean)))
+            return {
+                answer:
+                    language === 'en'
+                        ? `Which location do you prefer? Options: ${sedes.join(', ')}.`
+                        : `Que sede preferis? Opciones: ${sedes.join(', ')}.`,
+                metadata: { context: sessionContext }
+            }
+        }
+        if (!sessionContext?.roomType) {
+            return {
+                answer:
+                    language === 'en'
+                        ? 'Which room type do you prefer for those dates?'
+                        : 'Que tipo de habitacion preferis para esas fechas?',
+                metadata: { context: sessionContext }
+            }
         }
     }
 
     if (detectedRoomType && hasReservationContext && !detectedEmail && !detectedName) {
+        if (sessionContext?.availabilityOk === false) {
+            return {
+                answer:
+                    language === 'en'
+                        ? 'No availability for those dates. Want to try other dates?'
+                        : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
+                metadata: { context: sessionContext }
+            }
+        }
+        if (sessionContext?.availabilityOk !== true) {
+            const availability = await checkAvailability({
+                start: String(sessionContext.start),
+                end: String(sessionContext.end),
+                sede: sessionContext?.sede as string | undefined,
+                hotelId: sessionContext?.hotelId as string | undefined,
+                roomType: sessionContext?.roomType as string | undefined,
+                guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+            })
+            const okAvailability = availability as {
+                available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
+            }
+            if (!availability.ok || !(okAvailability.available || []).length) {
+                const contextUpdatePayload = {
+                    availabilityOk: false,
+                    availabilityScope: sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
+                }
+                await updateSessionContext(input.sessionId, contextUpdatePayload)
+                sessionContext = { ...sessionContext, ...contextUpdatePayload }
+                return {
+                    answer:
+                        language === 'en'
+                            ? 'No availability for those dates. Want to try other dates?'
+                            : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
+                    metadata: { context: sessionContext }
+                }
+            }
+            const contextUpdatePayload = {
+                availabilityOk: true,
+                availabilityScope: sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
+            }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
+        }
         return {
             answer:
                 language === 'en'
@@ -2861,7 +2949,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         if (explicitDates.length >= 2 && !bookingIntent) {
             const start = explicitDates[0].format('YYYY-MM-DD')
             const end = explicitDates[1].format('YYYY-MM-DD')
-            await updateSessionContext(input.sessionId, { start, end })
+            const availabilityScope = sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
             const availability = await checkAvailability({
                 start,
                 end,
@@ -2871,6 +2959,9 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
             })
             if (!availability.ok) {
+                const contextUpdatePayload = { start, end, availabilityOk: false, availabilityScope }
+                await updateSessionContext(input.sessionId, contextUpdatePayload)
+                sessionContext = { ...sessionContext, ...contextUpdatePayload }
                 return {
                     answer:
                         language === 'en'
@@ -2886,6 +2977,9 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 .slice(0, 4)
                 .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
             if (!options.length) {
+                const contextUpdatePayload = { start, end, availabilityOk: false, availabilityScope }
+                await updateSessionContext(input.sessionId, contextUpdatePayload)
+                sessionContext = { ...sessionContext, ...contextUpdatePayload }
                 return {
                     answer:
                         language === 'en'
@@ -2894,11 +2988,14 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                     metadata: { context: { start, end } }
                 }
             }
+            const contextUpdatePayload = { start, end, availabilityOk: true, availabilityScope }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
             return {
                 answer:
                     language === 'en'
                         ? `Availability for those dates:\n${formatBulletList(options)}`
-                        : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`,
+                    : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`,
                 metadata: { context: { start, end } }
             }
         }
