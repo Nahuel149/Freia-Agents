@@ -1404,14 +1404,14 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                                 typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
                             } (dentro de ${deadlineHours} horas).\n` +
                             `Pago total ${fullPaymentDays} dias antes de la llegada.${transferText}\n\n` +
-                            'Avisame cuando envies el deposito/anticipo.',
+                            'Cuando hagas el deposito/anticipo, adjuntame el comprobante como imagen para confirmar la reserva.',
                         `Done, I created a deposit-backed reservation for 24 hours under your name.\n\n` +
                             `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
                             `Deposit (${depositPct}%): ${
                                 typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
                             } (within ${deadlineHours} hours).\n` +
                             `Full payment is due ${fullPaymentDays} days before arrival.${transferText}\n\n` +
-                            'Let me know once you send the deposit.'
+                            'Once you send the deposit, please attach the proof as an image so I can confirm the reservation.'
                     ),
                     metadata: {
                         type: 'holdCard',
@@ -1565,7 +1565,19 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     const monthRange = parseMonthRange(input.message || '')
     if (monthRange) {
+        const isVisitIntent = ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer'].some((keyword) =>
+            normalizeText(input.message || '').includes(normalizeText(keyword))
+        )
         const property = detectProperty(input.message || '', catalogProperties)
+        if (isVisitIntent) {
+            return {
+                answer: responseForLocale(
+                    lockedLocale,
+                    `Podemos coordinar una visita el ${monthRange.start}. Decime que horario te queda mejor y cual quinta queres ver.`,
+                    `We can arrange a visit on ${monthRange.start}. Tell me what time works best and which quinta you want to visit.`
+                )
+            }
+        }
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
@@ -1584,7 +1596,19 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         const end = moment
             .tz({ year: lastYear, month: lastMonthIndex, day: dayRange.endDay }, timezone)
             .format('YYYY-MM-DD')
+        const isVisitIntent = ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer'].some((keyword) =>
+            normalizeText(input.message || '').includes(normalizeText(keyword))
+        )
         const property = detectProperty(input.message || '', catalogProperties)
+        if (isVisitIntent) {
+            return {
+                answer: responseForLocale(
+                    lockedLocale,
+                    `Podemos coordinar una visita el ${start}. Decime que horario te queda mejor y cual quinta queres ver.`,
+                    `We can arrange a visit on ${start}. Tell me what time works best and which quinta you want to visit.`
+                )
+            }
+        }
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
@@ -1660,7 +1684,20 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     }
 
     const explicitDates = extractDates(input.message || '')
+    const isVisitIntent = ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer'].some((keyword) =>
+        normalizeText(input.message || '').includes(normalizeText(keyword))
+    )
     const hasReservationIntent = ['reserv', 'deposito', 'anticipo'].some((keyword) => lower.includes(keyword))
+    if (explicitDates.length && isVisitIntent) {
+        const start = explicitDates[0].format('YYYY-MM-DD')
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                `Podemos coordinar una visita el ${start}. Decime que horario te queda mejor y cual quinta queres ver.`,
+                `We can arrange a visit on ${start}. Tell me what time works best and which quinta you want to visit.`
+            )
+        }
+    }
     if (explicitDates.length && !hasReservationIntent) {
         const start = explicitDates[0].format('YYYY-MM-DD')
         const end = explicitDates[1]?.format('YYYY-MM-DD') || start
@@ -1743,14 +1780,14 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                             typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
                         } (dentro de ${deadlineHours} horas).\n` +
                         `Pago total ${fullPaymentDays} dias antes de la llegada.${transferText}\n\n` +
-                        'Avisame cuando envies el deposito/anticipo.',
+                        'Cuando hagas el deposito/anticipo, adjuntame el comprobante como imagen para confirmar la reserva.',
                     `${name ? `Thanks ${name}, ` : ''}I created the reservation under your name.\n\n` +
                         `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
                         `Deposit (${depositPct}%): ${
                             typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
                         } (within ${deadlineHours} hours).\n` +
                         `Full payment is due ${fullPaymentDays} days before arrival.${transferText}\n\n` +
-                        'Let me know once you send the deposit.'
+                        'Once you send the deposit, please attach the proof as an image so I can confirm the reservation.'
                 ),
                 metadata: {
                     type: 'holdCard',
