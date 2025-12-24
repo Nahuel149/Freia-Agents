@@ -87,6 +87,16 @@ const HoldStatusCard = ({ hold, onConfirm, disabled }) => {
                     <Typography variant='body2'>
                         Dates: {hold.start} to {hold.end}
                     </Typography>
+                    {typeof hold.totalAmount === 'number' && (
+                        <Typography variant='body2'>
+                            Total: {hold.totalAmount} {hold.currency || 'USD'}
+                        </Typography>
+                    )}
+                    {typeof hold.depositAmount === 'number' && (
+                        <Typography variant='body2'>
+                            Deposito ({hold.depositPct || 0}%): {hold.depositAmount} {hold.currency || 'USD'}
+                        </Typography>
+                    )}
                     {hold.holdExpires && (
                         <Typography variant='caption' color='text.secondary'>
                             Expires: {new Date(hold.holdExpires).toLocaleString()}

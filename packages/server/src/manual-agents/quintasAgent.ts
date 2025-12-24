@@ -284,6 +284,34 @@ const detectMonthInMessage = (message: string) => {
     return null
 }
 
+const extractEmail = (message: string) => {
+    const match = String(message || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+    return match ? match[0] : ''
+}
+
+const extractPhone = (message: string) => {
+    const match = String(message || '').match(/(\+?\d[\d\s\-().]{6,}\d)/)
+    return match ? match[0].replace(/\s+/g, '') : ''
+}
+
+const extractName = (message: string) => {
+    const lower = normalizeText(message || '')
+    const match = lower.match(/(?:mi nombre es|soy)\s+([a-z\s]+)(?:,|$)/i)
+    if (!match) return ''
+    return match[1].trim().replace(/\s+/g, ' ')
+}
+
+const hasLeadInfo = (message: string) => {
+    return Boolean(extractEmail(message) || extractPhone(message) || extractName(message))
+}
+
+const hasReservationIntent = (message: string) => {
+    const lower = normalizeText(message || '')
+    return ['quiero', 'reserv', 'reserva', 'me interesa', 'me gustaria', 'confirmar', 'avanzar', 'elegi'].some((keyword) =>
+        lower.includes(keyword)
+    )
+}
+
 const extractNamesFromSummary = (summary: string) => {
     if (!summary) return [] as string[]
     const names: string[] = []
@@ -733,18 +761,21 @@ const buildPaymentReply = (restrictions: RestrictionsDoc, locale = 'es-AR') => {
         transfer.alias ? `${locale === 'en-US' ? 'Alias' : 'Alias'}: ${transfer.alias}` : '',
         transfer.concept ? `${locale === 'en-US' ? 'Concept' : 'Concepto'}: ${transfer.concept}` : ''
     ].filter(Boolean)
-    const transferText = transferParts.length
-        ? responseForLocale(
-              locale,
-              `\n\nDatos para la transferencia bancaria:\n${formatBulletList(transferParts.map((part) => `- ${part}`))}`,
-              `\n\nBank transfer details:\n${formatBulletList(transferParts.map((part) => `- ${part}`))}`
-          )
-        : ''
+    const transferText = buildTransferText(transferParts, locale)
 
     return responseForLocale(
         locale,
         `El deposito/anticipo es del ${depositPct}% y debe acreditarse dentro de ${deadlineHours} horas. El pago total es ${fullPaymentDays} dias antes. Medios: ${methods}.${transferText}`,
         `The deposit is ${depositPct}% and must be paid within ${deadlineHours} hours. Full payment is due ${fullPaymentDays} days before check-in. Methods: ${methods}.${transferText}`
+    )
+}
+
+const buildTransferText = (transferParts: string[], locale = 'es-AR') => {
+    if (!transferParts.length) return ''
+    return responseForLocale(
+        locale,
+        `\n\nDatos para la transferencia bancaria:\n${formatBulletList(transferParts.map((part) => `- ${part}`))}`,
+        `\n\nBank transfer details:\n${formatBulletList(transferParts.map((part) => `- ${part}`))}`
     )
 }
 
@@ -793,6 +824,7 @@ const buildSystemPrompt = (catalogMeta: CatalogMeta, restrictions: RestrictionsD
         '- Si piden datos de transferencia, usa restrictions.payment.bankTransfer.',
         '- Usa record_lead cuando el cliente comparte nombre/telefono/email.',
         '- Solo crea una reserva con deposito/anticipo cuando el cliente confirma reserva y ya tenemos sus datos; idealmente en el mismo mensaje donde envias instrucciones de pago.',
+        '- Al confirmar una reserva, informa total, deposito, vencimiento y usa los datos de transferencia si estan disponibles.',
         '- Antes de afirmar disponibilidad, llama check_availability y usa sus resultados.',
         '- No contradigas disponibilidad ya informada en la misma conversacion, salvo que check_availability lo indique y lo aclares.',
         '- Cuando respondas disponibilidad, usa secciones "Disponibles" y "No disponibles". Si check_availability trae summary, copialo.',
@@ -1324,11 +1356,50 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                     }
                 }
 
+                const nights = Math.max(moment(endDate).diff(moment(dateStr), 'days'), 1)
+                const pricePerNight = property.basePricePerNight
+                const currency = property.currency || 'USD'
+                const totalAmount =
+                    typeof pricePerNight === 'number' && Number.isFinite(pricePerNight)
+                        ? Number((pricePerNight * nights).toFixed(2))
+                        : undefined
+                const depositPct = restrictions.payment?.depositPct ?? 0
+                const depositAmount = typeof totalAmount === 'number' ? Number(((totalAmount * depositPct) / 100).toFixed(2)) : undefined
+                const deadlineHours = restrictions.payment?.depositDeadlineHours ?? 0
+                const fullPaymentDays = restrictions.payment?.fullPaymentDaysBefore ?? 0
+                const transfer = restrictions.payment?.bankTransfer || {}
+                const transferParts = [
+                    transfer.accountName ? `${locale === 'en-US' ? 'Account name' : 'Titular'}: ${transfer.accountName}` : '',
+                    transfer.bank ? `${locale === 'en-US' ? 'Bank' : 'Banco'}: ${transfer.bank}` : '',
+                    transfer.cbu ? `CBU: ${transfer.cbu}` : '',
+                    transfer.alias ? `${locale === 'en-US' ? 'Alias' : 'Alias'}: ${transfer.alias}` : '',
+                    transfer.concept ? `${locale === 'en-US' ? 'Concept' : 'Concepto'}: ${transfer.concept}` : ''
+                ].filter(Boolean)
+                const transferText = transferParts.length
+                    ? buildTransferText(transferParts, locale)
+                    : responseForLocale(
+                          locale,
+                          '\n\nPara realizar la transferencia bancaria, un humano te enviara los datos oficiales.',
+                          '\n\nFor bank transfer details, a human will send the official information.'
+                      )
+
                 return {
                     answer: responseForLocale(
                         locale,
-                        'Listo, genero una reserva con deposito/anticipo por 24 horas. Avisame cuando envies el deposito/anticipo.',
-                        'Done, I created a deposit-backed reservation for 24 hours. Let me know once you send the deposit.'
+                        `Listo, genere una reserva con deposito/anticipo por 24 horas a tu nombre.\n\n` +
+                            `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'a confirmar'}.\n` +
+                            `Deposito (${depositPct}%): ${
+                                typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
+                            } (dentro de ${deadlineHours} horas).\n` +
+                            `Pago total ${fullPaymentDays} dias antes de la llegada.${transferText}\n\n` +
+                            'Avisame cuando envies el deposito/anticipo.',
+                        `Done, I created a deposit-backed reservation for 24 hours under your name.\n\n` +
+                            `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
+                            `Deposit (${depositPct}%): ${
+                                typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
+                            } (within ${deadlineHours} hours).\n` +
+                            `Full payment is due ${fullPaymentDays} days before arrival.${transferText}\n\n` +
+                            'Let me know once you send the deposit.'
                     ),
                     metadata: {
                         type: 'holdCard',
@@ -1336,7 +1407,13 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                             propertyId: property.propertyId,
                             start: dateStr,
                             end: endDate,
-                            holdExpires: hold.holdExpires?.toISOString()
+                            holdExpires: hold.holdExpires?.toISOString(),
+                            nights,
+                            pricePerNight,
+                            currency,
+                            totalAmount,
+                            depositPct,
+                            depositAmount
                         }
                     }
                 }
@@ -1380,6 +1457,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     const catalogMeta = await getCatalogMeta()
     const restrictions = await getRestrictions()
+    const catalogProperties = await getCatalogProperties()
     const db = await getManualAgentsDb()
     const collections = getManualAgentsCollections()
     const sessionId = input.sessionId || ''
@@ -1388,18 +1466,25 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     let lastYear: number | undefined
     let lastRangeStart: string | undefined
     let lastRangeEnd: string | undefined
+    let lastPropertyId: string | undefined
 
     if (sessionId) {
         const session = await db
-            .collection<{ locale?: string; lastMonthIndex?: number; lastYear?: number; lastRangeStart?: string; lastRangeEnd?: string }>(
-                collections.manualAgentSessions
-            )
+            .collection<{
+                locale?: string
+                lastMonthIndex?: number
+                lastYear?: number
+                lastRangeStart?: string
+                lastRangeEnd?: string
+                lastPropertyId?: string
+            }>(collections.manualAgentSessions)
             .findOne({ sessionId, agentId: 'quintas' })
         lockedLocale = session?.locale || ''
         lastMonthIndex = session?.lastMonthIndex
         lastYear = session?.lastYear
         lastRangeStart = session?.lastRangeStart
         lastRangeEnd = session?.lastRangeEnd
+        lastPropertyId = session?.lastPropertyId
     }
 
     if (!lockedLocale) {
@@ -1408,6 +1493,17 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
                 { $set: { locale: lockedLocale, updatedAt: new Date() } }
+            )
+        }
+    }
+
+    const detectedProperty = detectProperty(input.message || '', catalogProperties)
+    if (detectedProperty) {
+        lastPropertyId = detectedProperty.propertyId
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastPropertyId, updatedAt: new Date() } }
             )
         }
     }
@@ -1443,7 +1539,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     const monthRange = parseMonthRange(input.message || '')
     if (monthRange) {
-        const property = await detectProperty(input.message || '', await getCatalogProperties())
+        const property = detectProperty(input.message || '', catalogProperties)
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
@@ -1462,7 +1558,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         const end = moment
             .tz({ year: lastYear, month: lastMonthIndex, day: dayRange.endDay }, timezone)
             .format('YYYY-MM-DD')
-        const property = await detectProperty(input.message || '', await getCatalogProperties())
+        const property = detectProperty(input.message || '', catalogProperties)
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
@@ -1504,7 +1600,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     if (explicitDates.length && !hasReservationIntent) {
         const start = explicitDates[0].format('YYYY-MM-DD')
         const end = explicitDates[1]?.format('YYYY-MM-DD') || start
-        const property = await detectProperty(input.message || '', await getCatalogProperties())
+        const property = detectProperty(input.message || '', catalogProperties)
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
@@ -1512,6 +1608,103 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             )
         }
         return buildAvailabilityReply(start, end, property || undefined, lockedLocale)
+    }
+
+    if (hasLeadInfo(input.message || '') && lastRangeStart && lastRangeEnd && lastPropertyId) {
+        const property = catalogProperties.find((item) => item.propertyId === lastPropertyId)
+        if (property) {
+            ensureToolAccess('write', [collectionNames.quintasCalendar])
+            const hold = await createHold({
+                propertyId: property.propertyId,
+                start: lastRangeStart,
+                end: lastRangeEnd,
+                holdHours: restrictions.payment?.holdHours as number | undefined,
+                notes: 'reserva con deposito/anticipo desde chat'
+            })
+
+            if (!hold.ok) {
+                return {
+                    answer: responseForLocale(
+                        lockedLocale,
+                        'Esas fechas ya no estan disponibles. Te puedo ofrecer alternativas.',
+                        'Those dates are no longer available. I can offer alternatives.'
+                    )
+                }
+            }
+
+            const name = extractName(input.message || '')
+            const email = extractEmail(input.message || '')
+            const phone = extractPhone(input.message || '')
+            await upsertLead({
+                name: name || undefined,
+                phone: phone || undefined,
+                propertyId: property.propertyId,
+                dateRequested: lastRangeStart,
+                notes: email ? `email: ${email}` : undefined
+            })
+
+            const nights = Math.max(moment(lastRangeEnd).diff(moment(lastRangeStart), 'days'), 1)
+            const pricePerNight = property.basePricePerNight
+            const currency = property.currency || 'USD'
+            const totalAmount =
+                typeof pricePerNight === 'number' && Number.isFinite(pricePerNight)
+                    ? Number((pricePerNight * nights).toFixed(2))
+                    : undefined
+            const depositPct = restrictions.payment?.depositPct ?? 0
+            const depositAmount = typeof totalAmount === 'number' ? Number(((totalAmount * depositPct) / 100).toFixed(2)) : undefined
+            const deadlineHours = restrictions.payment?.depositDeadlineHours ?? 0
+            const fullPaymentDays = restrictions.payment?.fullPaymentDaysBefore ?? 0
+            const transfer = restrictions.payment?.bankTransfer || {}
+            const transferParts = [
+                transfer.accountName ? `${lockedLocale === 'en-US' ? 'Account name' : 'Titular'}: ${transfer.accountName}` : '',
+                transfer.bank ? `${lockedLocale === 'en-US' ? 'Bank' : 'Banco'}: ${transfer.bank}` : '',
+                transfer.cbu ? `CBU: ${transfer.cbu}` : '',
+                transfer.alias ? `${lockedLocale === 'en-US' ? 'Alias' : 'Alias'}: ${transfer.alias}` : '',
+                transfer.concept ? `${lockedLocale === 'en-US' ? 'Concept' : 'Concepto'}: ${transfer.concept}` : ''
+            ].filter(Boolean)
+            const transferText = transferParts.length
+                ? buildTransferText(transferParts, lockedLocale)
+                : responseForLocale(
+                      lockedLocale,
+                      '\n\nPara realizar la transferencia bancaria, un humano te enviara los datos oficiales.',
+                      '\n\nFor bank transfer details, a human will send the official information.'
+                  )
+
+            return {
+                answer: responseForLocale(
+                    lockedLocale,
+                    `${name ? `Gracias ${name}, ` : ''}listo, genere la reserva a tu nombre.\n\n` +
+                        `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'a confirmar'}.\n` +
+                        `Deposito (${depositPct}%): ${
+                            typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
+                        } (dentro de ${deadlineHours} horas).\n` +
+                        `Pago total ${fullPaymentDays} dias antes de la llegada.${transferText}\n\n` +
+                        'Avisame cuando envies el deposito/anticipo.',
+                    `${name ? `Thanks ${name}, ` : ''}I created the reservation under your name.\n\n` +
+                        `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
+                        `Deposit (${depositPct}%): ${
+                            typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
+                        } (within ${deadlineHours} hours).\n` +
+                        `Full payment is due ${fullPaymentDays} days before arrival.${transferText}\n\n` +
+                        'Let me know once you send the deposit.'
+                ),
+                metadata: {
+                    type: 'holdCard',
+                    hold: {
+                        propertyId: property.propertyId,
+                        start: lastRangeStart,
+                        end: lastRangeEnd,
+                        holdExpires: hold.holdExpires?.toISOString(),
+                        nights,
+                        pricePerNight,
+                        currency,
+                        totalAmount,
+                        depositPct,
+                        depositAmount
+                    }
+                }
+            }
+        }
     }
 
     try {
