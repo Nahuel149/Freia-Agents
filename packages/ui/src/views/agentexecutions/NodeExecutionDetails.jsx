@@ -550,7 +550,9 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                 src={(() => {
                                                                     // Find matching tool from availableTools
                                                                     if (availableTools.length > 0) {
-                                                                        const matchingTool = availableTools.find((t) => t.name === toolCall.name)
+                                                                        const matchingTool = availableTools.find(
+                                                                            (t) => t.name === toolCall.name
+                                                                        )
                                                                         if (
                                                                             matchingTool &&
                                                                             matchingTool.toolNode &&
@@ -573,7 +575,9 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                             {(() => {
                                                                 // Find matching tool from availableTools if they exist
                                                                 if (availableTools.length > 0) {
-                                                                    const matchingTool = availableTools.find((t) => t.name === toolCall.name)
+                                                                    const matchingTool = availableTools.find(
+                                                                        (t) => t.name === toolCall.name
+                                                                    )
                                                                     if (matchingTool && matchingTool.toolNode) {
                                                                         return matchingTool.toolNode.label || toolCall.name
                                                                     }

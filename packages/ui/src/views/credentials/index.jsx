@@ -41,7 +41,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus, IconShare } from '@tabler/icons-react'
+import { IconTrash, IconEdit, IconX, IconPlus, IconShare, IconCopy } from '@tabler/icons-react'
 import CredentialEmptySVG from '@/assets/images/credential_empty.svg'
 import keySVG from '@/assets/images/key.svg'
 
@@ -202,6 +202,37 @@ const Credentials = () => {
         }
     }
 
+    const copyId = async (credential) => {
+        try {
+            await navigator.clipboard.writeText(credential.id)
+            enqueueSnackbar({
+                message: 'Credential ID copied',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } catch (error) {
+            enqueueSnackbar({
+                message: 'Failed to copy Credential ID',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
+
     const onCredentialSelected = (credentialComponent) => {
         setShowCredentialListDialog(false)
         addNew(credentialComponent)
@@ -291,6 +322,7 @@ const Credentials = () => {
                                     >
                                         <TableRow>
                                             <StyledTableCell>Name</StyledTableCell>
+                                            <StyledTableCell>ID</StyledTableCell>
                                             <StyledTableCell>Last Updated</StyledTableCell>
                                             <StyledTableCell>Created</StyledTableCell>
                                             <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
@@ -382,6 +414,19 @@ const Credentials = () => {
                                                                     />
                                                                 </Box>
                                                                 {credential.name}
+                                                            </Box>
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                <span style={{ fontFamily: 'monospace' }}>{credential.id}</span>
+                                                                <PermissionIconButton
+                                                                    permissionId={'credentials:view'}
+                                                                    title='Copy ID'
+                                                                    color='primary'
+                                                                    onClick={() => copyId(credential)}
+                                                                >
+                                                                    <IconCopy size={16} />
+                                                                </PermissionIconButton>
                                                             </Box>
                                                         </StyledTableCell>
                                                         <StyledTableCell>

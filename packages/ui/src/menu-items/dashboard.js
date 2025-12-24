@@ -84,6 +84,15 @@ const dashboard = {
                     permission: 'chatflows:view'
                 },
                 {
+                    id: 'manual-agents',
+                    title: 'Manual Agents',
+                    type: 'item',
+                    url: '/manual-agents',
+                    icon: icons.IconClipboardList,
+                    breadcrumbs: true,
+                    permission: 'chatflows:view'
+                },
+                {
                     id: 'chatflows',
                     title: 'Chatflows',
                     type: 'item',

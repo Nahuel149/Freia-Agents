@@ -611,9 +611,7 @@ async function determineNodesToIgnore(
             edgesFromNode.filter((edge) => edge.sourceHandle && allowedHandles.has(edge.sourceHandle)).map((edge) => edge.target)
         )
 
-        const ignoredTargets = new Set(
-            edgesFromNode.filter((edge) => !allowedTargets.has(edge.target)).map((edge) => edge.target)
-        )
+        const ignoredTargets = new Set(edgesFromNode.filter((edge) => !allowedTargets.has(edge.target)).map((edge) => edge.target))
 
         ignoreNodeIds.push(...ignoredTargets)
     }

@@ -76,6 +76,7 @@ import followupsRouter from './followups'
 import templatesRouter from './templates'
 import paymentsRouter from './payments'
 import webhooksRouter from './webhooks'
+import manualAgentsRouter from './manual-agents'
 
 import { IdentityManager } from '../IdentityManager'
 
@@ -157,6 +158,7 @@ router.use('/followups', followupsRouter)
 router.use('/templates', templatesRouter)
 router.use('/payments', paymentsRouter)
 router.use('/webhooks', webhooksRouter)
+router.use('/manual-agents', manualAgentsRouter)
 
 router.use('/loginmethod', loginmethodRouter)
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)

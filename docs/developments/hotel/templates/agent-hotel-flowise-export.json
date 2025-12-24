@@ -142,7 +142,7 @@
                     "startInputType": "chat",
                     "formTitle": "",
                     "formDescription": "",
-                    "formInputTypes": "",
+                    "formInputTypes": [],
                     "startEphemeralMemory": false,
                     "startState": [
                         {
@@ -373,18 +373,37 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
-                            "content": "Clasifica la intenci\u00c3\u00b3n del usuario en una de: reservas, cambios, cancelaciones, pre, durante, backoffice. Devuelve SOLO JSON {intent, notas}."
+                            "content": "Clasifica la intenciÃ³n del usuario en una de: reservas, cambios, cancelaciones, pre, durante, backoffice. Devuelve SOLO JSON {intent, notas}."
                         },
                         {
                             "role": "user",
                             "content": "{{ $flow.input }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -448,8 +467,8 @@
                     }
                 ],
                 "inputs": {
-                    "conditionAgentModel": "gpt-4.1-mini",
-                    "conditionAgentInstructions": "Elige el escenario m\u00c3\u00a1s adecuado: reservas, cambios, cancelaciones, pre, durante, backoffice.",
+                    "conditionAgentModel": "chatOpenAI",
+                    "conditionAgentInstructions": "Elige el escenario mÃ¡s adecuado: reservas, cambios, cancelaciones, pre, durante, backoffice.",
                     "conditionAgentInput": "{{ $flow.input }}",
                     "conditionAgentScenarios": [
                         {
@@ -470,7 +489,26 @@
                         {
                             "scenario": "backoffice"
                         }
-                    ]
+                    ],
+                    "conditionAgentModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -578,7 +616,7 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -589,7 +627,26 @@
                             "content": "{{ $flow.input }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -749,20 +806,98 @@
                 "id": "a_reply_missing",
                 "label": "A - pedir datos",
                 "version": 1.0,
-                "name": "directReplyAgentflow",
-                "type": "DirectReply",
-                "color": "#4DDBBB",
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
                 "inputParams": [
                     {
-                        "label": "Message",
-                        "name": "directReplyMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true
                     }
                 ],
                 "inputs": {
-                    "directReplyMessage": "Faltan: {{ $flow.state.missingFields }}. Por favor sede, fechas, hu\u00c3\u00a9spedes y tipo de habitaci\u00c3\u00b3n."
+                    "llmEnableMemory": true,
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Redacta una respuesta breve y amable usando el contexto provisto y el estado. Devuelve solo texto."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Faltan: {{ $flow.state.missingFields }}. Por favor sede, fechas, huÃ©spedes y tipo de habitaciÃ³n."
+                        }
+                    ],
+                    "llmModel": "chatOpenAI",
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    },
+                    "llmReturnResponseAs": "assistantMessage",
+                    "llmUpdateState": []
                 },
                 "outputAnchors": [
                     {
@@ -772,7 +907,9 @@
                     }
                 ],
                 "selected": false,
-                "hideInput": false
+                "hideInput": false,
+                "baseClasses": ["LLM"],
+                "description": "Large language models to analyze user-provided inputs and generate responses"
             }
         },
         {
@@ -842,20 +979,29 @@
                 "inputs": {
                     "customFunctionInputVariables": [
                         {
-                            "name": "checkIn",
-                            "value": "{{ $flow.state.checkIn }}"
+                            "variableName": "checkIn",
+                            "variableValue": "{{ $flow.state.checkIn }}"
                         },
                         {
-                            "name": "checkOut",
-                            "value": "{{ $flow.state.checkOut }}"
+                            "variableName": "checkOut",
+                            "variableValue": "{{ $flow.state.checkOut }}"
                         }
                     ],
                     "customFunctionJavascriptFunction": "const s=new Date($checkIn);\nconst e=new Date($checkOut);\nif(isNaN(s)||isNaN(e)||e<=s){return JSON.stringify({noches:0,minNoches:0,feriado:false});}\nconst noches=Math.max(1,Math.round((e-s)/(1000*60*60*24)));\nconst feriadoInicio=new Date('2024-08-09');\nconst feriadoFin=new Date('2024-08-12');\nconst feriado = s<=feriadoFin && e>=feriadoInicio;\nconst minNoches = feriado ? 3 : 1;\nreturn JSON.stringify({noches,minNoches,feriado});",
-                    "customFunctionUpdateState": {
-                        "noches": "{{ functionOutput.noches }}",
-                        "minNoches": "{{ functionOutput.minNoches }}",
-                        "feriadoFlag": "{{ functionOutput.feriado }}"
-                    }
+                    "customFunctionUpdateState": [
+                        {
+                            "key": "noches",
+                            "value": "{{ functionOutput.noches }}"
+                        },
+                        {
+                            "key": "minNoches",
+                            "value": "{{ functionOutput.minNoches }}"
+                        },
+                        {
+                            "key": "feriadoFlag",
+                            "value": "{{ functionOutput.feriado }}"
+                        }
+                    ]
                 },
                 "outputAnchors": [
                     {
@@ -946,7 +1092,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_REGLAS_ID}}"
+                            "documentStore": "d6e539a4-8f5c-4969-b6f6-f810f29ed706:hoteles-reglas"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.checkIn }} reglas minimas noches cancelacion cambios early late {{ $flow.state.sede }}",
@@ -1042,7 +1188,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_INV_ID}}"
+                            "documentStore": "3bfa3c94-f84e-49df-b67e-457c85b32fd8:hoteles-inventario"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.sede }} {{ $flow.state.habitacionTipo }} tarifa base capacidad amenities",
@@ -1138,7 +1284,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_DISP_ID}}"
+                            "documentStore": "1d7c5e13-8915-41b4-85f3-c5c528c687c7:hoteles-disponibilidad"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos",
@@ -1226,122 +1372,43 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
-                            "content": "Usa tarifa base del inventario, reglas comerciales y disponibilidad. Si encuentras tarifa base en el texto de inventario, \u00c3\u00basala; si no, informa 'estimado'. Devuelve JSON { precioNoche, precioTotal, moneda, tarifaTipo, politica, notas }."
+                            "content": "Usa tarifa base del inventario, reglas comerciales y disponibilidad. Si encuentras tarifa base en el texto de inventario, Ãºsala; si no, informa 'estimado'. Devuelve JSON { precioNoche, precioTotal, moneda, tarifaTipo, politica, notas }."
                         },
                         {
                             "role": "user",
                             "content": "{{ a_ret_inv.output }} {{ a_ret_reglas.output }} {{ a_ret_disp.output }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
                         "id": "output",
                         "name": "output",
                         "label": "output"
-                    }
-                ],
-                "selected": false,
-                "hideInput": false
-            }
-        },
-        {
-            "id": "a_human_confirm",
-            "type": "agentFlow",
-            "position": {
-                "x": 1960,
-                "y": -160
-            },
-            "data": {
-                "id": "a_human_confirm",
-                "label": "A - Confirmar",
-                "version": 1.0,
-                "name": "humanInputAgentflow",
-                "type": "HumanInput",
-                "color": "#6E6EFD",
-                "inputParams": [
-                    {
-                        "label": "Description Type",
-                        "name": "humanInputDescriptionType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "Fixed",
-                                "name": "fixed"
-                            },
-                            {
-                                "label": "Dynamic",
-                                "name": "dynamic"
-                            }
-                        ]
-                    },
-                    {
-                        "label": "Description",
-                        "name": "humanInputDescription",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "fixed"
-                        }
-                    },
-                    {
-                        "label": "Model",
-                        "name": "humanInputModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "humanInputModelPrompt",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Enable Feedback",
-                        "name": "humanInputEnableFeedback",
-                        "type": "boolean",
-                        "default": true
-                    }
-                ],
-                "inputs": {
-                    "humanInputDescriptionType": "fixed",
-                    "humanInputDescription": "",
-                    "humanInputEnableFeedback": true
-                },
-                "outputAnchors": [
-                    {
-                        "id": "0",
-                        "name": "0",
-                        "label": "0"
-                    },
-                    {
-                        "id": "1",
-                        "name": "1",
-                        "label": "1"
-                    },
-                    {
-                        "id": "proceed",
-                        "name": "proceed",
-                        "label": "proceed"
-                    },
-                    {
-                        "id": "reject",
-                        "name": "reject",
-                        "label": "reject"
                     }
                 ],
                 "selected": false,
@@ -1415,10 +1482,16 @@
                 "inputs": {
                     "customFunctionInputVariables": [],
                     "customFunctionJavascriptFunction": "const id=`GRS-${Date.now()}`;return JSON.stringify({id,status:'ok'});",
-                    "customFunctionUpdateState": {
-                        "reservaId": "{{ functionOutput.id }}",
-                        "reserva": "{{ functionOutput }}"
-                    }
+                    "customFunctionUpdateState": [
+                        {
+                            "key": "reservaId",
+                            "value": "{{ functionOutput.id }}"
+                        },
+                        {
+                            "key": "reserva",
+                            "value": "{{ functionOutput }}"
+                        }
+                    ]
                 },
                 "outputAnchors": [
                     {
@@ -1442,20 +1515,98 @@
                 "id": "a_reply_final",
                 "label": "A - Reply",
                 "version": 1.0,
-                "name": "directReplyAgentflow",
-                "type": "DirectReply",
-                "color": "#4DDBBB",
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
                 "inputParams": [
                     {
-                        "label": "Message",
-                        "name": "directReplyMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true
                     }
                 ],
                 "inputs": {
-                    "directReplyMessage": "Reserva confirmada: {{ $flow.state.reservaId }} | {{ $flow.state.sede }} | {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} | {{ $flow.state.habitacionTipo }} | Total {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}. \u00c2\u00bfA\u00c3\u00b1adimos traslado o spa?"
+                    "llmEnableMemory": true,
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Redacta una respuesta breve y amable usando el contexto provisto y el estado. Devuelve solo texto."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Reserva confirmada: {{ $flow.state.reservaId }} | {{ $flow.state.sede }} | {{ $flow.state.checkIn }} a {{ $flow.state.checkOut }} | {{ $flow.state.habitacionTipo }} | Total {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}. Â¿AÃ±adimos traslado o spa?"
+                        }
+                    ],
+                    "llmModel": "chatOpenAI",
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    },
+                    "llmReturnResponseAs": "assistantMessage",
+                    "llmUpdateState": []
                 },
                 "outputAnchors": [
                     {
@@ -1465,7 +1616,9 @@
                     }
                 ],
                 "selected": false,
-                "hideInput": false
+                "hideInput": false,
+                "baseClasses": ["LLM"],
+                "description": "Large language models to analyze user-provided inputs and generate responses"
             }
         },
         {
@@ -1538,7 +1691,7 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -1549,7 +1702,26 @@
                             "content": "{{ $flow.input }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -1640,7 +1812,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_RESERVAS_ID}}"
+                            "documentStore": "16b1d71b-4c13-4989-b87e-5663922f6c56:hoteles-reservas-mock"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.reservaId }}",
@@ -1736,7 +1908,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_DISP_ID}}"
+                            "documentStore": "1d7c5e13-8915-41b4-85f3-c5c528c687c7:hoteles-disponibilidad"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.sede }} {{ $flow.state.checkIn }} {{ $flow.state.checkOut }} {{ $flow.state.habitacionTipo }} disponibilidad cupos",
@@ -1824,7 +1996,7 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -1835,111 +2007,32 @@
                             "content": "{{ b_ret_disp.output }} {{ b_ret_reserva.output }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
                         "id": "output",
                         "name": "output",
                         "label": "output"
-                    }
-                ],
-                "selected": false,
-                "hideInput": false
-            }
-        },
-        {
-            "id": "b_human",
-            "type": "agentFlow",
-            "position": {
-                "x": 1720,
-                "y": 120
-            },
-            "data": {
-                "id": "b_human",
-                "label": "B - Confirmar",
-                "version": 1.0,
-                "name": "humanInputAgentflow",
-                "type": "HumanInput",
-                "color": "#6E6EFD",
-                "inputParams": [
-                    {
-                        "label": "Description Type",
-                        "name": "humanInputDescriptionType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "Fixed",
-                                "name": "fixed"
-                            },
-                            {
-                                "label": "Dynamic",
-                                "name": "dynamic"
-                            }
-                        ]
-                    },
-                    {
-                        "label": "Description",
-                        "name": "humanInputDescription",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "fixed"
-                        }
-                    },
-                    {
-                        "label": "Model",
-                        "name": "humanInputModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "humanInputModelPrompt",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Enable Feedback",
-                        "name": "humanInputEnableFeedback",
-                        "type": "boolean",
-                        "default": true
-                    }
-                ],
-                "inputs": {
-                    "humanInputDescriptionType": "fixed",
-                    "humanInputDescription": "",
-                    "humanInputEnableFeedback": true
-                },
-                "outputAnchors": [
-                    {
-                        "id": "0",
-                        "name": "0",
-                        "label": "0"
-                    },
-                    {
-                        "id": "1",
-                        "name": "1",
-                        "label": "1"
-                    },
-                    {
-                        "id": "proceed",
-                        "name": "proceed",
-                        "label": "proceed"
-                    },
-                    {
-                        "id": "reject",
-                        "name": "reject",
-                        "label": "reject"
                     }
                 ],
                 "selected": false,
@@ -1956,43 +2049,6 @@
             "data": {
                 "id": "b_reply",
                 "label": "B - Reply",
-                "version": 1.0,
-                "name": "directReplyAgentflow",
-                "type": "DirectReply",
-                "color": "#4DDBBB",
-                "inputParams": [
-                    {
-                        "label": "Message",
-                        "name": "directReplyMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true
-                    }
-                ],
-                "inputs": {
-                    "directReplyMessage": "Cambio aplicado para {{ $flow.state.reservaId }}. Total: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}."
-                },
-                "outputAnchors": [
-                    {
-                        "id": "output",
-                        "name": "output",
-                        "label": "output"
-                    }
-                ],
-                "selected": false,
-                "hideInput": false
-            }
-        },
-        {
-            "id": "c_llm",
-            "type": "agentFlow",
-            "position": {
-                "x": 760,
-                "y": 340
-            },
-            "data": {
-                "id": "c_llm",
-                "label": "C - Cancelaci\u00c3\u00b3n",
                 "version": 1.0,
                 "name": "llmAgentflow",
                 "type": "LLM",
@@ -2053,7 +2109,124 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmEnableMemory": true,
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Redacta una respuesta breve y amable usando el contexto provisto y el estado. Devuelve solo texto."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Cambio aplicado para {{ $flow.state.reservaId }}. Total: {{ $flow.state.precio.precioTotal }} {{ $flow.state.moneda }}."
+                        }
+                    ],
+                    "llmModel": "chatOpenAI",
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    },
+                    "llmReturnResponseAs": "assistantMessage",
+                    "llmUpdateState": []
+                },
+                "outputAnchors": [
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "label": "output"
+                    }
+                ],
+                "selected": false,
+                "hideInput": false,
+                "baseClasses": ["LLM"],
+                "description": "Large language models to analyze user-provided inputs and generate responses"
+            }
+        },
+        {
+            "id": "c_llm",
+            "type": "agentFlow",
+            "position": {
+                "x": 760,
+                "y": 340
+            },
+            "data": {
+                "id": "c_llm",
+                "label": "C - CancelaciÃ³n",
+                "version": 1.0,
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true
+                    }
+                ],
+                "inputs": {
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -2064,7 +2237,26 @@
                             "content": "{{ $flow.input }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -2155,7 +2347,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_RESERVAS_ID}}"
+                            "documentStore": "16b1d71b-4c13-4989-b87e-5663922f6c56:hoteles-reservas-mock"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.reservaId }}",
@@ -2240,114 +2432,22 @@
                 "inputs": {
                     "customFunctionInputVariables": [],
                     "customFunctionJavascriptFunction": "const hoy=new Date();\nconst ci=new Date($flow.state.checkIn||Date.now());\nconst dias=Math.ceil((ci-hoy)/(1000*60*60*24));\nconst tarifa=$flow.state.tarifaTipo||'refundable';\nlet penalidad=0;let tipo='porcentaje';\nif(tarifa==='no_reembolsable'){penalidad=100;} else {penalidad = dias<=3 ? 50 : 0;}\nreturn JSON.stringify({penalidad,penalidadTipo:tipo,dias});",
-                    "customFunctionUpdateState": {
-                        "penalidad": "{{ functionOutput.penalidad }}",
-                        "penalidadTipo": "{{ functionOutput.penalidadTipo }}"
-                    }
+                    "customFunctionUpdateState": [
+                        {
+                            "key": "penalidad",
+                            "value": "{{ functionOutput.penalidad }}"
+                        },
+                        {
+                            "key": "penalidadTipo",
+                            "value": "{{ functionOutput.penalidadTipo }}"
+                        }
+                    ]
                 },
                 "outputAnchors": [
                     {
                         "id": "output",
                         "name": "output",
                         "label": "output"
-                    }
-                ],
-                "selected": false,
-                "hideInput": false
-            }
-        },
-        {
-            "id": "c_human",
-            "type": "agentFlow",
-            "position": {
-                "x": 1480,
-                "y": 340
-            },
-            "data": {
-                "id": "c_human",
-                "label": "C - Confirmar",
-                "version": 1.0,
-                "name": "humanInputAgentflow",
-                "type": "HumanInput",
-                "color": "#6E6EFD",
-                "inputParams": [
-                    {
-                        "label": "Description Type",
-                        "name": "humanInputDescriptionType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "Fixed",
-                                "name": "fixed"
-                            },
-                            {
-                                "label": "Dynamic",
-                                "name": "dynamic"
-                            }
-                        ]
-                    },
-                    {
-                        "label": "Description",
-                        "name": "humanInputDescription",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "fixed"
-                        }
-                    },
-                    {
-                        "label": "Model",
-                        "name": "humanInputModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "humanInputModelPrompt",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Enable Feedback",
-                        "name": "humanInputEnableFeedback",
-                        "type": "boolean",
-                        "default": true
-                    }
-                ],
-                "inputs": {
-                    "humanInputDescriptionType": "fixed",
-                    "humanInputDescription": "",
-                    "humanInputEnableFeedback": true
-                },
-                "outputAnchors": [
-                    {
-                        "id": "0",
-                        "name": "0",
-                        "label": "0"
-                    },
-                    {
-                        "id": "1",
-                        "name": "1",
-                        "label": "1"
-                    },
-                    {
-                        "id": "proceed",
-                        "name": "proceed",
-                        "label": "proceed"
-                    },
-                    {
-                        "id": "reject",
-                        "name": "reject",
-                        "label": "reject"
                     }
                 ],
                 "selected": false,
@@ -2365,20 +2465,98 @@
                 "id": "c_reply",
                 "label": "C - Reply",
                 "version": 1.0,
-                "name": "directReplyAgentflow",
-                "type": "DirectReply",
-                "color": "#4DDBBB",
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
                 "inputParams": [
                     {
-                        "label": "Message",
-                        "name": "directReplyMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true
                     }
                 ],
                 "inputs": {
-                    "directReplyMessage": "Reserva {{ $flow.state.reservaId }} cancelada. Penalidad: {{ $flow.state.penalidad }}. \u00c2\u00bfReprogramamos otra fecha?"
+                    "llmEnableMemory": true,
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Redacta una respuesta breve y amable usando el contexto provisto y el estado. Devuelve solo texto."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Reserva {{ $flow.state.reservaId }} cancelada. Penalidad: {{ $flow.state.penalidad }}. Â¿Reprogramamos otra fecha?"
+                        }
+                    ],
+                    "llmModel": "chatOpenAI",
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    },
+                    "llmReturnResponseAs": "assistantMessage",
+                    "llmUpdateState": []
                 },
                 "outputAnchors": [
                     {
@@ -2388,7 +2566,9 @@
                     }
                 ],
                 "selected": false,
-                "hideInput": false
+                "hideInput": false,
+                "baseClasses": ["LLM"],
+                "description": "Large language models to analyze user-provided inputs and generate responses"
             }
         },
         {
@@ -2461,7 +2641,7 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -2472,7 +2652,26 @@
                             "content": "{{ $flow.input }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -2563,7 +2762,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_REGLAS_ID}}"
+                            "documentStore": "d6e539a4-8f5c-4969-b6f6-f810f29ed706:hoteles-reglas"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.solicitudTipo }} early late {{ $flow.state.sede }}",
@@ -2659,7 +2858,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_FAQ_ID}}"
+                            "documentStore": "0111e58e-f256-4aa7-81e5-092f6b614b31:hoteles-faq"
                         }
                     ],
                     "retrieverQuery": "horarios {{ $flow.state.solicitudTipo }} {{ $flow.state.sede }}",
@@ -2678,104 +2877,6 @@
             }
         },
         {
-            "id": "d_human",
-            "type": "agentFlow",
-            "position": {
-                "x": 1240,
-                "y": 520
-            },
-            "data": {
-                "id": "d_human",
-                "label": "D - Confirmar",
-                "version": 1.0,
-                "name": "humanInputAgentflow",
-                "type": "HumanInput",
-                "color": "#6E6EFD",
-                "inputParams": [
-                    {
-                        "label": "Description Type",
-                        "name": "humanInputDescriptionType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "Fixed",
-                                "name": "fixed"
-                            },
-                            {
-                                "label": "Dynamic",
-                                "name": "dynamic"
-                            }
-                        ]
-                    },
-                    {
-                        "label": "Description",
-                        "name": "humanInputDescription",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "fixed"
-                        }
-                    },
-                    {
-                        "label": "Model",
-                        "name": "humanInputModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "humanInputModelPrompt",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Enable Feedback",
-                        "name": "humanInputEnableFeedback",
-                        "type": "boolean",
-                        "default": true
-                    }
-                ],
-                "inputs": {
-                    "humanInputDescriptionType": "fixed",
-                    "humanInputDescription": "",
-                    "humanInputEnableFeedback": true
-                },
-                "outputAnchors": [
-                    {
-                        "id": "0",
-                        "name": "0",
-                        "label": "0"
-                    },
-                    {
-                        "id": "1",
-                        "name": "1",
-                        "label": "1"
-                    },
-                    {
-                        "id": "proceed",
-                        "name": "proceed",
-                        "label": "proceed"
-                    },
-                    {
-                        "id": "reject",
-                        "name": "reject",
-                        "label": "reject"
-                    }
-                ],
-                "selected": false,
-                "hideInput": false
-            }
-        },
-        {
             "id": "d_reply",
             "type": "agentFlow",
             "position": {
@@ -2786,20 +2887,98 @@
                 "id": "d_reply",
                 "label": "D - Reply",
                 "version": 1.0,
-                "name": "directReplyAgentflow",
-                "type": "DirectReply",
-                "color": "#4DDBBB",
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
                 "inputParams": [
                     {
-                        "label": "Message",
-                        "name": "directReplyMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true
                     }
                 ],
                 "inputs": {
-                    "directReplyMessage": "Solicitud {{ $flow.state.solicitudTipo }} registrada. Te confirmaremos disponibilidad. \u00c2\u00bfAlgo m\u00c3\u00a1s antes de tu llegada?"
+                    "llmEnableMemory": true,
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Redacta una respuesta breve y amable usando el contexto provisto y el estado. Devuelve solo texto."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Solicitud {{ $flow.state.solicitudTipo }} registrada. Te confirmaremos disponibilidad. Â¿Algo mÃ¡s antes de tu llegada?"
+                        }
+                    ],
+                    "llmModel": "chatOpenAI",
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    },
+                    "llmReturnResponseAs": "assistantMessage",
+                    "llmUpdateState": []
                 },
                 "outputAnchors": [
                     {
@@ -2809,7 +2988,9 @@
                     }
                 ],
                 "selected": false,
-                "hideInput": false
+                "hideInput": false,
+                "baseClasses": ["LLM"],
+                "description": "Large language models to analyze user-provided inputs and generate responses"
             }
         },
         {
@@ -2882,7 +3063,7 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -2893,7 +3074,26 @@
                             "content": "{{ $flow.input }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -2984,7 +3184,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_FAQ_ID}}"
+                            "documentStore": "0111e58e-f256-4aa7-81e5-092f6b614b31:hoteles-faq"
                         }
                     ],
                     "retrieverQuery": "servicios horarios {{ $flow.state.solicitudTipo }}",
@@ -3011,7 +3211,7 @@
             },
             "data": {
                 "id": "e_ret_disp",
-                "label": "E - Disp extensi\u00c3\u00b3n",
+                "label": "E - Disp extensiÃ³n",
                 "version": 1.0,
                 "name": "retrieverAgentflow",
                 "type": "Retriever",
@@ -3080,7 +3280,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_DISP_ID}}"
+                            "documentStore": "1d7c5e13-8915-41b4-85f3-c5c528c687c7:hoteles-disponibilidad"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.sede }} {{ $flow.state.nuevaFechaCheckout }} disponibilidad",
@@ -3107,7 +3307,7 @@
             },
             "data": {
                 "id": "e_llm_tarifa",
-                "label": "E - Tarifa extensi\u00c3\u00b3n",
+                "label": "E - Tarifa extensiÃ³n",
                 "version": 1.0,
                 "name": "llmAgentflow",
                 "type": "LLM",
@@ -3168,7 +3368,7 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -3179,111 +3379,32 @@
                             "content": "{{ e_ret_disp.output }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
                         "id": "output",
                         "name": "output",
                         "label": "output"
-                    }
-                ],
-                "selected": false,
-                "hideInput": false
-            }
-        },
-        {
-            "id": "e_human",
-            "type": "agentFlow",
-            "position": {
-                "x": 1480,
-                "y": 700
-            },
-            "data": {
-                "id": "e_human",
-                "label": "E - Confirmar",
-                "version": 1.0,
-                "name": "humanInputAgentflow",
-                "type": "HumanInput",
-                "color": "#6E6EFD",
-                "inputParams": [
-                    {
-                        "label": "Description Type",
-                        "name": "humanInputDescriptionType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "Fixed",
-                                "name": "fixed"
-                            },
-                            {
-                                "label": "Dynamic",
-                                "name": "dynamic"
-                            }
-                        ]
-                    },
-                    {
-                        "label": "Description",
-                        "name": "humanInputDescription",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "fixed"
-                        }
-                    },
-                    {
-                        "label": "Model",
-                        "name": "humanInputModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "humanInputModelPrompt",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true,
-                        "show": {
-                            "humanInputDescriptionType": "dynamic"
-                        }
-                    },
-                    {
-                        "label": "Enable Feedback",
-                        "name": "humanInputEnableFeedback",
-                        "type": "boolean",
-                        "default": true
-                    }
-                ],
-                "inputs": {
-                    "humanInputDescriptionType": "fixed",
-                    "humanInputDescription": "",
-                    "humanInputEnableFeedback": true
-                },
-                "outputAnchors": [
-                    {
-                        "id": "0",
-                        "name": "0",
-                        "label": "0"
-                    },
-                    {
-                        "id": "1",
-                        "name": "1",
-                        "label": "1"
-                    },
-                    {
-                        "id": "proceed",
-                        "name": "proceed",
-                        "label": "proceed"
-                    },
-                    {
-                        "id": "reject",
-                        "name": "reject",
-                        "label": "reject"
                     }
                 ],
                 "selected": false,
@@ -3301,20 +3422,98 @@
                 "id": "e_reply",
                 "label": "E - Reply",
                 "version": 1.0,
-                "name": "directReplyAgentflow",
-                "type": "DirectReply",
-                "color": "#4DDBBB",
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
                 "inputParams": [
                     {
-                        "label": "Message",
-                        "name": "directReplyMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true
                     }
                 ],
                 "inputs": {
-                    "directReplyMessage": "Solicitud {{ $flow.state.solicitudTipo }} registrada. Prioridad: {{ $flow.state.prioridad }}. {{ $flow.state.precio ? `Tarifa extra: ${$flow.state.precio.precioTotal} ${$flow.state.precio.moneda}` : '' }}"
+                    "llmEnableMemory": true,
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Redacta una respuesta breve y amable usando el contexto provisto y el estado. Devuelve solo texto."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Solicitud {{ $flow.state.solicitudTipo }} registrada. Prioridad: {{ $flow.state.prioridad }}. {{ $flow.state.precio ? `Tarifa extra: ${$flow.state.precio.precioTotal} ${$flow.state.precio.moneda}` : '' }}"
+                        }
+                    ],
+                    "llmModel": "chatOpenAI",
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    },
+                    "llmReturnResponseAs": "assistantMessage",
+                    "llmUpdateState": []
                 },
                 "outputAnchors": [
                     {
@@ -3324,7 +3523,9 @@
                     }
                 ],
                 "selected": false,
-                "hideInput": false
+                "hideInput": false,
+                "baseClasses": ["LLM"],
+                "description": "Large language models to analyze user-provided inputs and generate responses"
             }
         },
         {
@@ -3397,18 +3598,37 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
-                            "content": "Clasifica intenci\u00c3\u00b3n: lead | notificar | reporte. Devuelve JSON {accion, nombre, contacto, interes, motivo, area, prioridad, reporteTipo}."
+                            "content": "Clasifica intenciÃ³n: lead | notificar | reporte. Devuelve JSON {accion, nombre, contacto, interes, motivo, area, prioridad, reporteTipo}."
                         },
                         {
                             "role": "user",
                             "content": "{{ $flow.input }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -3499,7 +3719,7 @@
                 "inputs": {
                     "retrieverKnowledgeDocumentStores": [
                         {
-                            "documentStore": "{{DOCSTORE_REPORTE_ID}}"
+                            "documentStore": "16b1d71b-4c13-4989-b87e-5663922f6c56:hoteles-reservas-mock"
                         }
                     ],
                     "retrieverQuery": "{{ $flow.state.reporteTipo }} ocupacion cancelaciones upsell",
@@ -3587,7 +3807,7 @@
                     }
                 ],
                 "inputs": {
-                    "llmModel": "gpt-4.1-mini",
+                    "llmModel": "chatOpenAI",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -3598,7 +3818,26 @@
                             "content": "{{ f_ret_reporte.output }}"
                         }
                     ],
-                    "llmEnableMemory": true
+                    "llmEnableMemory": true,
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -3622,20 +3861,98 @@
                 "id": "f_reply",
                 "label": "F - Reply",
                 "version": 1.0,
-                "name": "directReplyAgentflow",
-                "type": "DirectReply",
-                "color": "#4DDBBB",
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
                 "inputParams": [
                     {
-                        "label": "Message",
-                        "name": "directReplyMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "acceptVariable": true
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "rows": 4
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true
                     }
                 ],
                 "inputs": {
-                    "directReplyMessage": "Backoffice {{ $flow.state.accion }}: {{ f_llm_resumen.output || 'registrado' }}"
+                    "llmEnableMemory": true,
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "Redacta una respuesta breve y amable usando el contexto provisto y el estado. Devuelve solo texto."
+                        },
+                        {
+                            "role": "user",
+                            "content": "Backoffice {{ $flow.state.accion }}: {{ f_llm_resumen.output || 'registrado' }}"
+                        }
+                    ],
+                    "llmModel": "chatOpenAI",
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4.1-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "reasoning": "",
+                        "llmModel": "chatOpenAI"
+                    },
+                    "llmReturnResponseAs": "assistantMessage",
+                    "llmUpdateState": []
                 },
                 "outputAnchors": [
                     {
@@ -3645,7 +3962,9 @@
                     }
                 ],
                 "selected": false,
-                "hideInput": false
+                "hideInput": false,
+                "baseClasses": ["LLM"],
+                "description": "Large language models to analyze user-provided inputs and generate responses"
             }
         }
     ],
@@ -3768,24 +4087,6 @@
             "data": {}
         },
         {
-            "id": "a_llm_tarifa-output-a_human_confirm-input",
-            "source": "a_llm_tarifa",
-            "target": "a_human_confirm",
-            "sourceHandle": "output",
-            "targetHandle": "a_human_confirm",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "a_human_confirm-proceed-a_custom_reserva-input",
-            "source": "a_human_confirm",
-            "target": "a_custom_reserva",
-            "sourceHandle": "proceed",
-            "targetHandle": "a_custom_reserva",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
             "id": "a_custom_reserva-output-a_reply_final-input",
             "source": "a_custom_reserva",
             "target": "a_reply_final",
@@ -3831,24 +4132,6 @@
             "data": {}
         },
         {
-            "id": "b_llm_tarifa-output-b_human-input",
-            "source": "b_llm_tarifa",
-            "target": "b_human",
-            "sourceHandle": "output",
-            "targetHandle": "b_human",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "b_human-proceed-b_reply-input",
-            "source": "b_human",
-            "target": "b_reply",
-            "sourceHandle": "proceed",
-            "targetHandle": "b_reply",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
             "id": "switch-cancelaciones-c_llm-input",
             "source": "switch",
             "target": "c_llm",
@@ -3876,24 +4159,6 @@
             "data": {}
         },
         {
-            "id": "c_custom_penalidad-output-c_human-input",
-            "source": "c_custom_penalidad",
-            "target": "c_human",
-            "sourceHandle": "output",
-            "targetHandle": "c_human",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "c_human-proceed-c_reply-input",
-            "source": "c_human",
-            "target": "c_reply",
-            "sourceHandle": "proceed",
-            "targetHandle": "c_reply",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
             "id": "switch-pre-d_llm-input",
             "source": "switch",
             "target": "d_llm",
@@ -3917,33 +4182,6 @@
             "target": "d_ret_faq",
             "sourceHandle": "output",
             "targetHandle": "d_ret_faq",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "d_ret_reglas-output-d_human-input",
-            "source": "d_ret_reglas",
-            "target": "d_human",
-            "sourceHandle": "output",
-            "targetHandle": "d_human",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "d_ret_faq-output-d_human-input",
-            "source": "d_ret_faq",
-            "target": "d_human",
-            "sourceHandle": "output",
-            "targetHandle": "d_human",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "d_human-proceed-d_reply-input",
-            "source": "d_human",
-            "target": "d_reply",
-            "sourceHandle": "proceed",
-            "targetHandle": "d_reply",
             "type": "agentFlow",
             "data": {}
         },
@@ -3984,33 +4222,6 @@
             "data": {}
         },
         {
-            "id": "e_llm_tarifa-output-e_human-input",
-            "source": "e_llm_tarifa",
-            "target": "e_human",
-            "sourceHandle": "output",
-            "targetHandle": "e_human",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "e_ret_faq-output-e_human-input",
-            "source": "e_ret_faq",
-            "target": "e_human",
-            "sourceHandle": "output",
-            "targetHandle": "e_human",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
-            "id": "e_human-proceed-e_reply-input",
-            "source": "e_human",
-            "target": "e_reply",
-            "sourceHandle": "proceed",
-            "targetHandle": "e_reply",
-            "type": "agentFlow",
-            "data": {}
-        },
-        {
             "id": "switch-backoffice-f_llm-input",
             "source": "switch",
             "target": "f_llm",
@@ -4043,6 +4254,51 @@
             "target": "f_reply",
             "sourceHandle": "output",
             "targetHandle": "f_reply",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "a_llm_tarifa-output-a_custom_reserva-input",
+            "source": "a_llm_tarifa",
+            "target": "a_custom_reserva",
+            "sourceHandle": "output",
+            "targetHandle": "a_custom_reserva",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "b_llm_tarifa-output-b_reply-input",
+            "source": "b_llm_tarifa",
+            "target": "b_reply",
+            "sourceHandle": "output",
+            "targetHandle": "b_reply",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "c_custom_penalidad-output-c_reply-input",
+            "source": "c_custom_penalidad",
+            "target": "c_reply",
+            "sourceHandle": "output",
+            "targetHandle": "c_reply",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "d_llm-output-d_reply-input",
+            "source": "d_llm",
+            "target": "d_reply",
+            "sourceHandle": "output",
+            "targetHandle": "d_reply",
+            "type": "agentFlow",
+            "data": {}
+        },
+        {
+            "id": "e_llm-output-e_reply-input",
+            "source": "e_llm",
+            "target": "e_reply",
+            "sourceHandle": "output",
+            "targetHandle": "e_reply",
             "type": "agentFlow",
             "data": {}
         }

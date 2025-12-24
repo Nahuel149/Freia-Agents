@@ -26,8 +26,7 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const theme = useTheme()
     const selectedOption = findMatchingOptions(options, internalValue)
-    const resolvedValue =
-        selectedOption || (freeSolo && internalValue && internalValue !== 'choose an option' ? internalValue : null)
+    const resolvedValue = selectedOption || (freeSolo && internalValue && internalValue !== 'choose an option' ? internalValue : null)
 
     return (
         <FormControl sx={{ mt: 1, width: '100%' }} size='small'>

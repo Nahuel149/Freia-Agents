@@ -10,6 +10,7 @@
             "people": 20,
             "interest": "alquiler",
             "status": "open",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "pidio hold de 24h; volver a contactar con promocion si baja ocupacion"
         },
@@ -24,6 +25,7 @@
             "interest": "visita",
             "status": "scheduled",
             "visitDate": "2026-01-05",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "prefiere sabado 12:00"
         },
@@ -37,6 +39,7 @@
             "people": 25,
             "interest": "alquiler",
             "status": "lost",
+            "habitual": true,
             "reasonNotClosed": "precio",
             "notes": "cliente habitual, aplicar descuento si recontacta"
         },
@@ -50,6 +53,7 @@
             "people": 20,
             "interest": "alquiler",
             "status": "open",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "pidio hold de 24h; volver a contactar con promocion si baja ocupacion"
         },
@@ -64,6 +68,7 @@
             "interest": "visita",
             "status": "scheduled",
             "visitDate": "2026-01-05",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "prefiere sabado 12:00"
         },
@@ -77,6 +82,7 @@
             "people": 25,
             "interest": "alquiler",
             "status": "lost",
+            "habitual": true,
             "reasonNotClosed": "precio",
             "notes": "cliente habitual, aplicar descuento si recontacta"
         },
@@ -90,6 +96,7 @@
             "people": 20,
             "interest": "alquiler",
             "status": "open",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "pidio hold de 24h; volver a contactar con promocion si baja ocupacion"
         },
@@ -104,6 +111,7 @@
             "interest": "visita",
             "status": "scheduled",
             "visitDate": "2026-01-05",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "prefiere sabado 12:00"
         },
@@ -117,6 +125,7 @@
             "people": 25,
             "interest": "alquiler",
             "status": "lost",
+            "habitual": true,
             "reasonNotClosed": "precio",
             "notes": "cliente habitual, aplicar descuento si recontacta"
         },
@@ -130,6 +139,7 @@
             "people": 20,
             "interest": "alquiler",
             "status": "open",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "pidio hold de 24h; volver a contactar con promocion si baja ocupacion"
         },
@@ -144,6 +154,7 @@
             "interest": "visita",
             "status": "scheduled",
             "visitDate": "2026-01-05",
+            "habitual": false,
             "reasonNotClosed": null,
             "notes": "prefiere sabado 12:00"
         },
@@ -157,6 +168,7 @@
             "people": 25,
             "interest": "alquiler",
             "status": "lost",
+            "habitual": true,
             "reasonNotClosed": "precio",
             "notes": "cliente habitual, aplicar descuento si recontacta"
         }

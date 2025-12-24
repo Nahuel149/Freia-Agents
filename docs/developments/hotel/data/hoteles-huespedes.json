@@ -1,0 +1,64 @@
+{
+    "huespedes": [
+        {
+            "id": "guest-ana-perez",
+            "nombre": "Ana Perez",
+            "email": "ana@example.com",
+            "idioma": "es",
+            "preferencias": ["habitacion silenciosa", "almohadas extra"],
+            "historial": [
+                {
+                    "reservaId": "GRS-20240810-001",
+                    "sede": "Centro",
+                    "checkIn": "2025-12-25",
+                    "checkOut": "2025-12-27",
+                    "tipo": "estandar",
+                    "gasto": 240,
+                    "moneda": "USD",
+                    "notas": "prefiere pisos altos"
+                }
+            ],
+            "consumos": [{ "fecha": "2025-12-26", "concepto": "room service", "monto": 25, "moneda": "USD" }]
+        },
+        {
+            "id": "guest-carlos-diaz",
+            "nombre": "Carlos Diaz",
+            "email": "carlos@example.com",
+            "idioma": "es",
+            "preferencias": ["traslado aeropuerto", "habitacion premium"],
+            "historial": [
+                {
+                    "reservaId": "GRS-20240815-002",
+                    "sede": "Palermo",
+                    "checkIn": "2025-12-30",
+                    "checkOut": "2026-01-02",
+                    "tipo": "premium",
+                    "gasto": 600,
+                    "moneda": "USD",
+                    "notas": "incluye traslado"
+                }
+            ],
+            "consumos": [{ "fecha": "2025-12-31", "concepto": "spa", "monto": 45, "moneda": "USD" }]
+        },
+        {
+            "id": "guest-lucia-romero",
+            "nombre": "Lucia Romero",
+            "email": "lucia@example.com",
+            "idioma": "es",
+            "preferencias": ["cuna", "habitacion familiar"],
+            "historial": [
+                {
+                    "reservaId": "GRS-20240809-003",
+                    "sede": "Aeropuerto",
+                    "checkIn": "2025-12-24",
+                    "checkOut": "2025-12-26",
+                    "tipo": "familiar",
+                    "gasto": 380,
+                    "moneda": "USD",
+                    "notas": "llega vuelo nocturno"
+                }
+            ],
+            "consumos": [{ "fecha": "2025-12-25", "concepto": "lavanderia", "monto": 15, "moneda": "USD" }]
+        }
+    ]
+}

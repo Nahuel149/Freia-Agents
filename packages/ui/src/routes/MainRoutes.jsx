@@ -57,6 +57,7 @@ const EvalDatasets = Loadable(lazy(() => import('@/views/datasets')))
 const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
 const Payments = Loadable(lazy(() => import('@/views/payments')))
 const LandingTemplates = Loadable(lazy(() => import('@/views/templates')))
+const ManualAgents = Loadable(lazy(() => import('@/views/manual-agents')))
 
 // account routing
 const Account = Loadable(lazy(() => import('@/views/account')))
@@ -136,6 +137,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'chatflows:view'}>
                     <Payments />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/manual-agents',
+            element: (
+                <RequireAuth permission={'chatflows:view'}>
+                    <ManualAgents />
                 </RequireAuth>
             )
         },

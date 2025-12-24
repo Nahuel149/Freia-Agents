@@ -7,7 +7,14 @@
         },
         "rainInsurance": false,
         "airConditioning": false,
-        "mitigation": ["ofrecer carpa opcional en caso de lluvia", "ventiladores disponibles en quincho"]
+        "mitigation": ["ofrecer carpa opcional en caso de lluvia", "ventiladores disponibles en quincho"],
+        "petsAllowed": true,
+        "petsNotes": "no razas agresivas"
+    },
+    "checkInOut": {
+        "checkInTime": "",
+        "checkOutTime": "",
+        "notes": "coordinar con administrador"
     },
     "minStayRules": [
         {
@@ -30,6 +37,13 @@
         "depositDeadlineHours": 24,
         "fullPaymentDaysBefore": 7,
         "acceptedMethods": ["transferencia", "efectivo"],
+        "bankTransfer": {
+            "accountName": "Quinta El Rincón de Mi Mundo",
+            "bank": "Banco Nación",
+            "cbu": "1234567890123456789012",
+            "alias": "quinrinconmundo",
+            "concept": "Reserva"
+        },
         "penaltyLatePayment": "liberar fecha si no se paga dentro del plazo"
     },
     "discounts": {
@@ -52,7 +66,12 @@
         "requirements": ["coordinar con administrador", "limite 1 visita por dia"]
     },
     "catalog": {
-        "link": "https://example.com/catalogo-quintas",
+        "link": "https://quintaselrincondemimundo.com.ar/",
         "filters": ["fecha", "capacidad"]
-    }
+    },
+    "behaviorNotes": [
+        "responder preguntas basicas y registrar leads",
+        "solo autonomo hasta interes real en reserva",
+        "no tomar decisiones fuera de reglas definidas"
+    ]
 }

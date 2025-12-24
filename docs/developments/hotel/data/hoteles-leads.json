@@ -1,0 +1,24 @@
+{
+    "leads": [
+        {
+            "id": "lead-001",
+            "nombre": "Marcos Rios",
+            "email": "marcos@example.com",
+            "telefono": "+54 11 4444-1111",
+            "interes": "Reserva corporativa septiembre",
+            "origen": "web",
+            "estado": "open",
+            "notas": "Pide 3 habitaciones premium"
+        },
+        {
+            "id": "lead-002",
+            "nombre": "Julia Costa",
+            "email": "julia@example.com",
+            "telefono": "+54 11 4444-2222",
+            "interes": "Consulta tarifa familiar",
+            "origen": "whatsapp",
+            "estado": "open",
+            "notas": "Viaja con 2 ninos"
+        }
+    ]
+}

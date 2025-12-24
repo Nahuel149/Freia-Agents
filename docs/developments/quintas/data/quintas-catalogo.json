@@ -1,6 +1,54 @@
 {
-    "catalogLink": "https://example.com/catalogo-quintas",
-    "catalogText": "Catalogo actualizado: https://example.com/catalogo-quintas",
+    "catalogLink": "https://quintaselrincondemimundo.com.ar/",
+    "catalogText": "Catalogo actualizado: https://quintaselrincondemimundo.com.ar/",
+    "catalogSummary": "Quintas El Rincon de Mi Mundo en Francisco Alvarez, Moreno (La Providencia 1005). Alquiler temporal familiar.",
+    "contact": {
+        "email": "consultas@quintaselrincondemimundo.com.ar"
+    },
+    "address": "La Providencia 1005, Francisco Alvarez, Moreno",
+    "generalAmenities": [
+        "wifi",
+        "directv futbol",
+        "gas garrafa",
+        "agua caliente",
+        "ventiladores",
+        "vajilla para 10",
+        "mantenimiento piscina/parque",
+        "estacionamiento"
+    ],
+    "policies": {
+        "musicDay": "musica moderada hasta las 20:00",
+        "musicNight": "sin musica amplificada despues de las 22:00",
+        "rainInsurance": false,
+        "airConditioning": false,
+        "petsAllowed": true,
+        "petsNotes": "no razas agresivas"
+    },
+    "paymentSummary": {
+        "depositPct": 30,
+        "depositDeadlineHours": 24,
+        "fullPaymentDaysBefore": 7,
+        "acceptedMethods": ["transferencia", "efectivo"]
+    },
+    "discountPolicy": {
+        "enabled": true,
+        "habitualPct": 10,
+        "requiresFlag": true,
+        "notes": "solo aplicar a clientes habituales marcados en la conversacion"
+    },
+    "visitPolicy": {
+        "availableSlots": [
+            {
+                "day": "saturday",
+                "slots": ["10:00", "12:00", "15:00"]
+            },
+            {
+                "day": "wednesday",
+                "slots": ["17:00", "18:00"]
+            }
+        ],
+        "requirements": ["coordinar con administrador", "limite 1 visita por dia"]
+    },
     "properties": [
         {
             "id": "rincon-principal",
@@ -9,6 +57,9 @@
             "basePricePerNight": 280,
             "currency": "USD",
             "minNights": 2,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": ["pileta", "quincho cerrado", "parrilla", "habitaciones con bano", "estacionamiento"],
             "restrictions": {
                 "rainInsurance": false,
@@ -25,6 +76,9 @@
             "basePricePerNight": 220,
             "currency": "USD",
             "minNights": 2,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": ["pileta", "quincho abierto", "parrilla", "fogata", "cochera cubierta"],
             "restrictions": {
                 "rainInsurance": false,
@@ -41,6 +95,9 @@
             "basePricePerNight": 245,
             "currency": "USD",
             "minNights": 3,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": ["parrilla", "fogata", "cochera cubierta", "quincho abierto", "zona verde Zona Norte", "fogones 1", "pileta"],
             "restrictions": {
                 "rainInsurance": false,
@@ -58,6 +115,9 @@
             "basePricePerNight": 330,
             "currency": "USD",
             "minNights": 2,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": [
                 "fogones 2",
                 "parrilla",
@@ -83,6 +143,9 @@
             "basePricePerNight": 295,
             "currency": "USD",
             "minNights": 3,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": ["parrilla", "fogata", "cochera cubierta", "fogones 3", "zona verde Zona Sur", "quincho abierto", "pileta"],
             "restrictions": {
                 "rainInsurance": false,
@@ -100,6 +163,9 @@
             "basePricePerNight": 380,
             "currency": "USD",
             "minNights": 2,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": [
                 "parrilla",
                 "estacionamiento",
@@ -125,6 +191,9 @@
             "basePricePerNight": 345,
             "currency": "USD",
             "minNights": 3,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": ["parrilla", "fogata", "fogones 5", "cochera cubierta", "quincho abierto", "zona verde Zona Norte", "pileta"],
             "restrictions": {
                 "rainInsurance": false,
@@ -142,6 +211,9 @@
             "basePricePerNight": 430,
             "currency": "USD",
             "minNights": 2,
+            "checkInTime": "",
+            "checkOutTime": "",
+            "hasWifi": true,
             "amenities": [
                 "parrilla",
                 "estacionamiento",

@@ -1,12 +1,12 @@
 {
     "minimasNoches": [
         {
-            "rango": ["2024-08-09", "2024-08-12"],
+            "rango": ["2025-12-24", "2025-12-27"],
             "motivo": "Feriado largo",
             "minNoches": 3
         },
         {
-            "rango": ["2024-12-20", "2025-01-05"],
+            "rango": ["2025-12-31", "2026-01-16"],
             "motivo": "Temporada alta",
             "minNoches": 2
         }
@@ -68,7 +68,7 @@
     "bloqueos": [
         {
             "sede": "Centro",
-            "fecha": "2024-09-01",
+            "fecha": "2026-01-16",
             "motivo": "Evento turistico",
             "nota": "Capacidad reducida, no overbooking"
         }
@@ -87,5 +87,5 @@
             "politica": "Ahorro: no admite reembolso ni cambio, puede ofrecer credito si hotel lo aprueba"
         }
     ],
-    "rulesVersion": "2025-12-16"
+    "rulesVersion": "2026-02-15"
 }

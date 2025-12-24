@@ -1,0 +1,42 @@
+{
+    "protocolos": [
+        {
+            "tema": "aire acondicionado",
+            "pasos": ["verificar control remoto", "reiniciar disyuntor", "escalar a mantenimiento"],
+            "responsable": "mantenimiento",
+            "slaHoras": 2,
+            "canales": ["recepcion", "whatsapp interno"],
+            "notas": "prioridad alta en verano"
+        },
+        {
+            "tema": "perdida de objetos",
+            "pasos": ["registrar item", "notificar seguridad", "contactar huesped"],
+            "responsable": "seguridad",
+            "slaHoras": 4,
+            "canales": ["recepcion"],
+            "notas": "registrar en sistema"
+        },
+        {
+            "tema": "queja ruido",
+            "pasos": ["contactar habitacion", "ofrecer cambio", "registrar incidente"],
+            "responsable": "recepcion",
+            "slaHoras": 1,
+            "canales": ["recepcion"],
+            "notas": "mantener tono cordial"
+        }
+    ],
+    "manuales": [
+        {
+            "id": "man-1",
+            "titulo": "Procedimiento check-in",
+            "resumen": "Validar identidad, metodo de pago y entregar llave.",
+            "url": "https://docs.example.com/gran-sol/checkin"
+        },
+        {
+            "id": "man-2",
+            "titulo": "Politicas de convivencia",
+            "resumen": "No fumar, respeto horarios de descanso.",
+            "url": "https://docs.example.com/gran-sol/convivencia"
+        }
+    ]
+}

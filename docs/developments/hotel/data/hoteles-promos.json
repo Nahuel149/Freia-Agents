@@ -1,0 +1,44 @@
+{
+    "promociones": [
+        {
+            "id": "promo-feriado-agosto",
+            "nombre": "Promo feriado agosto",
+            "rango": ["2025-12-24", "2025-12-27"],
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "tiposHabitacion": ["estandar", "premium", "suite", "loft", "familiar", "executive"],
+            "descuentoPct": 10,
+            "aplicaTarifa": "refundable",
+            "nota": "Reserva anticipada"
+        },
+        {
+            "id": "promo-alta-demanda",
+            "nombre": "Alta demanda agosto",
+            "rango": ["2025-12-25", "2025-12-27"],
+            "sedes": ["Centro"],
+            "tiposHabitacion": ["suite"],
+            "ajustePct": 8,
+            "aplicaTarifa": "both",
+            "nota": "Ajuste por alta demanda"
+        },
+        {
+            "id": "promo-temporada-baja",
+            "nombre": "Temporada baja",
+            "rango": ["2026-01-30", "2025-12-28"],
+            "sedes": ["Centro", "Palermo"],
+            "tiposHabitacion": ["estandar", "premium"],
+            "descuentoPct": 15,
+            "aplicaTarifa": "both",
+            "nota": "Estadias de domingo a jueves"
+        },
+        {
+            "id": "promo-aeropuerto-business",
+            "nombre": "Business express",
+            "rango": ["2026-01-04", "2026-02-04"],
+            "sedes": ["Aeropuerto"],
+            "tiposHabitacion": ["executive"],
+            "descuentoPct": 5,
+            "aplicaTarifa": "refundable",
+            "nota": "Incluye early breakfast"
+        }
+    ]
+}

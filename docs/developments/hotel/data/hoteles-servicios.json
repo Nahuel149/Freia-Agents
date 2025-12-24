@@ -1,0 +1,117 @@
+{
+    "servicios": [
+        {
+            "id": "svc-shuttle-aeropuerto",
+            "nombre": "Shuttle aeropuerto",
+            "categoria": "traslado",
+            "sedes": ["Aeropuerto"],
+            "precio": 0,
+            "moneda": "USD",
+            "descripcion": "Shuttle cada 30 minutos",
+            "requiereReserva": false,
+            "horarios": "06:00-23:00"
+        },
+        {
+            "id": "svc-traslado-palermo",
+            "nombre": "Traslado aeropuerto",
+            "categoria": "traslado",
+            "sedes": ["Palermo"],
+            "precio": 35,
+            "moneda": "USD",
+            "descripcion": "Traslado con reserva previa",
+            "requiereReserva": true,
+            "horarios": "05:00-23:00"
+        },
+        {
+            "id": "svc-spa-centro",
+            "nombre": "Spa access",
+            "categoria": "spa",
+            "sedes": ["Centro"],
+            "precio": 45,
+            "moneda": "USD",
+            "descripcion": "Circuito termal 60 min",
+            "requiereReserva": true,
+            "horarios": "10:00-20:00"
+        },
+        {
+            "id": "svc-room-service",
+            "nombre": "Room service",
+            "categoria": "restaurante",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 0,
+            "moneda": "USD",
+            "descripcion": "Menu a la habitacion",
+            "requiereReserva": false,
+            "horarios": "11:00-23:00"
+        },
+        {
+            "id": "svc-late-checkout",
+            "nombre": "Late checkout",
+            "categoria": "late_checkout",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 25,
+            "moneda": "USD",
+            "descripcion": "Hasta 14:00 sujeto a disponibilidad",
+            "requiereReserva": true
+        },
+        {
+            "id": "svc-early-checkin",
+            "nombre": "Early check-in",
+            "categoria": "early_checkin",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 30,
+            "moneda": "USD",
+            "descripcion": "Desde 11:00 sujeto a disponibilidad",
+            "requiereReserva": true
+        },
+        {
+            "id": "svc-lavanderia",
+            "nombre": "Lavanderia",
+            "categoria": "lavanderia",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 15,
+            "moneda": "USD",
+            "descripcion": "Por bolsa",
+            "requiereReserva": false
+        },
+        {
+            "id": "svc-mantenimiento",
+            "nombre": "Mantenimiento urgente",
+            "categoria": "soporte",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 0,
+            "moneda": "USD",
+            "descripcion": "Reporte de inconvenientes",
+            "requiereReserva": false
+        }
+    ],
+    "amenities": [
+        {
+            "id": "amenity-cuna",
+            "nombre": "Cuna",
+            "categoria": "amenity",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 10,
+            "moneda": "USD",
+            "descripcion": "Cuna por noche"
+        },
+        {
+            "id": "amenity-toallas-extra",
+            "nombre": "Toallas extra",
+            "categoria": "amenity",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 0,
+            "moneda": "USD",
+            "descripcion": "Toallas adicionales"
+        },
+        {
+            "id": "amenity-almohada",
+            "nombre": "Almohada extra",
+            "categoria": "amenity",
+            "sedes": ["Centro", "Palermo", "Aeropuerto"],
+            "precio": 0,
+            "moneda": "USD",
+            "descripcion": "Almohadas adicionales"
+        }
+    ]
+}

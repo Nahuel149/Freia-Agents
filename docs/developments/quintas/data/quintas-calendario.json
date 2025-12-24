@@ -1,5 +1,8 @@
 {
     "lastUpdated": "2025-12-16",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "defaultCheckInTime": "12:00",
+    "defaultCheckOutTime": "10:00",
     "properties": [
         {
             "id": "rincon-principal",
@@ -7,6 +10,18 @@
             "location": "Zona Norte",
             "defaultMinNights": 2,
             "holdsHours": 24,
+            "checkInTime": "12:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "wednesday",
+                    "slots": ["17:00", "18:00"]
+                },
+                {
+                    "day": "saturday",
+                    "slots": ["10:00", "12:00", "15:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2025-12-07",
@@ -43,6 +58,14 @@
             "location": "Zona Oeste",
             "defaultMinNights": 2,
             "holdsHours": 12,
+            "checkInTime": "13:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "wednesday",
+                    "slots": ["17:00", "18:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2025-12-12",
@@ -69,6 +92,14 @@
             "location": "Zona Norte",
             "defaultMinNights": 3,
             "holdsHours": 12,
+            "checkInTime": "12:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "saturday",
+                    "slots": ["10:00", "12:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2026-01-07",
@@ -95,6 +126,18 @@
             "location": "Zona Oeste",
             "defaultMinNights": 2,
             "holdsHours": 24,
+            "checkInTime": "12:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "wednesday",
+                    "slots": ["17:00"]
+                },
+                {
+                    "day": "saturday",
+                    "slots": ["12:00", "15:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2026-01-08",
@@ -131,6 +174,14 @@
             "location": "Zona Sur",
             "defaultMinNights": 3,
             "holdsHours": 12,
+            "checkInTime": "12:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "wednesday",
+                    "slots": ["18:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2026-01-19",
@@ -157,6 +208,14 @@
             "location": "Zona Oeste",
             "defaultMinNights": 2,
             "holdsHours": 24,
+            "checkInTime": "13:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "saturday",
+                    "slots": ["10:00", "12:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2026-01-20",
@@ -193,6 +252,14 @@
             "location": "Zona Norte",
             "defaultMinNights": 3,
             "holdsHours": 12,
+            "checkInTime": "12:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "wednesday",
+                    "slots": ["17:00", "18:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2026-01-31",
@@ -219,6 +286,14 @@
             "location": "Zona Oeste",
             "defaultMinNights": 2,
             "holdsHours": 24,
+            "checkInTime": "12:00",
+            "checkOutTime": "10:00",
+            "visitSlots": [
+                {
+                    "day": "saturday",
+                    "slots": ["12:00", "15:00"]
+                }
+            ],
             "events": [
                 {
                     "start": "2026-02-01",

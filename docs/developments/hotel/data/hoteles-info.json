@@ -1,0 +1,43 @@
+{
+    "hoteles": [
+        {
+            "id": "gran-sol-centro",
+            "nombre": "Hotel Gran Sol - Centro",
+            "sede": "Centro",
+            "ubicacion": "Av. Central 123",
+            "mapaUrl": "https://maps.example.com/gran-sol-centro",
+            "serviciosIncluidos": ["wifi", "desayuno", "limpieza diaria"],
+            "reglasConvivencia": ["no fumar en habitaciones", "silencio 22:00-08:00", "mascotas solo Palermo"],
+            "horarios": { "checkin": "15:00", "checkout": "11:00", "desayuno": "07:00-10:30" },
+            "contacto": { "telefono": "+54 11 5555-1000", "email": "centro@gransol.example.com" },
+            "transporte": { "aeropuerto": "taxi bajo demanda", "estacionamiento": "tercerizado con costo" },
+            "descripcion": "Ubicacion centrica, ideal turismo y negocios."
+        },
+        {
+            "id": "gran-sol-palermo",
+            "nombre": "Hotel Gran Sol - Palermo",
+            "sede": "Palermo",
+            "ubicacion": "Calle Verde 456",
+            "mapaUrl": "https://maps.example.com/gran-sol-palermo",
+            "serviciosIncluidos": ["wifi", "desayuno", "limpieza diaria"],
+            "reglasConvivencia": ["no fumar en habitaciones", "silencio 22:00-08:00", "mascotas con cargo"],
+            "horarios": { "checkin": "15:00", "checkout": "11:00", "desayuno": "07:00-10:30" },
+            "contacto": { "telefono": "+54 11 5555-2000", "email": "palermo@gransol.example.com" },
+            "transporte": { "aeropuerto": "traslado con reserva", "estacionamiento": "cochera limitada" },
+            "descripcion": "Zona gastronomica, cerca de parques y tiendas."
+        },
+        {
+            "id": "gran-sol-aeropuerto",
+            "nombre": "Hotel Gran Sol - Aeropuerto",
+            "sede": "Aeropuerto",
+            "ubicacion": "Ruta 8 Km 1",
+            "mapaUrl": "https://maps.example.com/gran-sol-aeropuerto",
+            "serviciosIncluidos": ["wifi", "desayuno", "limpieza diaria", "shuttle"],
+            "reglasConvivencia": ["no fumar en habitaciones", "silencio 22:00-08:00"],
+            "horarios": { "checkin": "15:00", "checkout": "11:00", "desayuno": "06:30-10:00" },
+            "contacto": { "telefono": "+54 11 5555-3000", "email": "aeropuerto@gransol.example.com" },
+            "transporte": { "aeropuerto": "shuttle cada 30 minutos", "estacionamiento": "parking propio incluido" },
+            "descripcion": "Ideal para conexiones y viajes cortos."
+        }
+    ]
+}

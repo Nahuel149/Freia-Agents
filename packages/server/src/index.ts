@@ -31,6 +31,7 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
+import { startManualAgentsOutboundScheduler } from './manual-agents/outboundScheduler'
 import helmet from 'helmet'
 // Enforce OSS mode at startup regardless of environment variables
 process.env.OSS_MODE = 'true'
@@ -505,6 +506,7 @@ export async function start(): Promise<void> {
     await serverApp.initDatabase()
     console.log('[DEBUG] About to configure app')
     await serverApp.config()
+    startManualAgentsOutboundScheduler()
 
     console.log('[DEBUG] About to start listening on port', port)
     server.listen(port, host, () => {
