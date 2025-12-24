@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, Button, Card, CardContent, Divider, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import { IconPaperclip } from '@tabler/icons-react'
@@ -38,6 +38,42 @@ const defaultChatbotConfig = {
     }
 }
 
+const HoldStatusCard = ({ hold, onConfirm }) => {
+    if (!hold) return null
+
+    return (
+        <Card variant='outlined' sx={{ mt: 1, backgroundColor: 'action.hover' }}>
+            <CardContent>
+                <Stack spacing={1}>
+                    <Typography variant='subtitle2'>Reserva con deposito/anticipo creada</Typography>
+                    <Typography variant='body2'>Property: {hold.propertyId}</Typography>
+                    <Typography variant='body2'>
+                        Dates: {hold.start} to {hold.end}
+                    </Typography>
+                    {typeof hold.totalAmount === 'number' && (
+                        <Typography variant='body2'>
+                            Total: {hold.totalAmount} {hold.currency || 'USD'}
+                        </Typography>
+                    )}
+                    {typeof hold.depositAmount === 'number' && (
+                        <Typography variant='body2'>
+                            Deposito ({hold.depositPct || 0}%): {hold.depositAmount} {hold.currency || 'USD'}
+                        </Typography>
+                    )}
+                    {hold.holdExpires && (
+                        <Typography variant='caption' color='text.secondary'>
+                            Expires: {new Date(hold.holdExpires).toLocaleString()}
+                        </Typography>
+                    )}
+                    <Button variant='contained' size='small' onClick={onConfirm}>
+                        Adjuntar comprobante
+                    </Button>
+                </Stack>
+            </CardContent>
+        </Card>
+    )
+}
+
 const sanitizeHtml = (value) => {
     if (!value) return ''
     return String(value).replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
@@ -51,6 +87,7 @@ const PublicManualAgentChat = () => {
     const [sessionId, setSessionId] = useState('')
     const [input, setInput] = useState('')
     const [uploadingProof, setUploadingProof] = useState(false)
+    const fileInputRef = useRef(null)
 
     const publicChatApi = useApi(manualAgentsApi.publicChat)
     const publicConfirmPaymentApi = useApi(manualAgentsApi.publicConfirmPayment)
@@ -345,6 +382,12 @@ const PublicManualAgentChat = () => {
                                                     )}
                                                 </Stack>
                                             )}
+                                            {message.metadata?.type === 'holdCard' && (
+                                                <HoldStatusCard
+                                                    hold={message.metadata.hold}
+                                                    onConfirm={() => fileInputRef.current?.click()}
+                                                />
+                                            )}
                                         </Card>
                                         {isUser && showAvatar && (
                                             <Box
@@ -372,7 +415,7 @@ const PublicManualAgentChat = () => {
                             <Tooltip title='Adjuntar comprobante'>
                                 <IconButton component='label' disabled={uploadingProof}>
                                     <IconPaperclip size={18} />
-                                    <input type='file' hidden onChange={handleProofUpload} />
+                                    <input ref={fileInputRef} type='file' hidden onChange={handleProofUpload} />
                                 </IconButton>
                             </Tooltip>
                             <TextField

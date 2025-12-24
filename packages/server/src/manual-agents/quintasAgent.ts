@@ -1732,7 +1732,8 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         lastRangeEnd &&
         !hasLeadInfo(input.message || '') &&
         !hasDates &&
-        !mentionsMonthWithoutDay(input.message || '')
+        !mentionsMonthWithoutDay(input.message || '') &&
+        !visitIntent
     ) {
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
@@ -1760,6 +1761,22 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 lockedLocale,
                 `Perfecto, ${detectedProperty.name || detectedProperty.propertyId} esta disponible para esas fechas. Para continuar, compartime tu nombre completo y un email o telefono de contacto.`,
                 `Great, ${detectedProperty.name || detectedProperty.propertyId} is available for those dates. Please share your full name and an email or phone number to continue.`
+            )
+        }
+    }
+
+    if (visitIntent && detectedProperty && lastRangeStart && !hasDates && !hasLeadInfo(input.message || '')) {
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastVisitDate: lastRangeStart, lastVisitPropertyId: detectedProperty.propertyId, updatedAt: new Date() } }
+            )
+        }
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                `Podemos coordinar una visita a ${detectedProperty.name || detectedProperty.propertyId}. Decime que dia y horario te queda mejor.`,
+                `We can arrange a visit to ${detectedProperty.name || detectedProperty.propertyId}. Tell me the day and time that works best.`
             )
         }
     }
@@ -1795,7 +1812,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         return buildAvailabilityReply(start, end, property || undefined, lockedLocale)
     }
 
-    if (hasLeadInfo(input.message || '') && lastRangeStart && lastRangeEnd && lastPropertyId) {
+    if (hasLeadInfo(input.message || '') && lastRangeStart && lastRangeEnd && lastPropertyId && !visitIntent) {
         const property = catalogProperties.find((item) => item.propertyId === lastPropertyId)
         if (property) {
             ensureToolAccess('write', [collectionNames.quintasCalendar])
