@@ -45,33 +45,33 @@ import { baseURL, uiBaseURL } from '@/store/constant'
 
 const defaultShareConfig = {
     title: 'Freia Assistant',
-    titleAvatarSrc: 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png',
+    titleAvatarSrc: 'https://freia-agents.onrender.com/assets/Freia.png',
     titleBackgroundColor: '#3B81F6',
     titleTextColor: '#ffffff',
-    welcomeMessage: 'Hello! This is custom welcome message',
-    errorMessage: 'This is custom error message',
-    backgroundColor: '#ffffff',
+    welcomeMessage: 'Hola! Contame fechas y cantidad de personas para chequear disponibilidad.',
+    errorMessage: 'Hubo un problema, intentemos de nuevo en un minuto.',
+    backgroundColor: '#f7f3ec',
     fontSize: 16,
-    poweredByTextColor: '#ffffff',
+    poweredByTextColor: '#6f7b74',
     renderHTML: false,
     showAgentMessages: true,
     botMessage: {
-        backgroundColor: '#f7f8ff',
-        textColor: '#111827',
+        backgroundColor: '#e7efe8',
+        textColor: '#1b1d1f',
         avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png',
         showAvatar: true
     },
     userMessage: {
-        backgroundColor: '#3B81F6',
-        textColor: '#ffffff',
+        backgroundColor: '#1f4e3d',
+        textColor: '#f5f1e8',
         avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png',
         showAvatar: true
     },
     textInput: {
-        backgroundColor: '#ffffff',
-        textColor: '#111827',
-        placeholder: 'Type question..',
-        sendButtonColor: '#3B81F6'
+        backgroundColor: '#fffaf2',
+        textColor: '#1b1d1f',
+        placeholder: 'Escribi tu consulta...',
+        sendButtonColor: '#1f4e3d'
     }
 }
 
@@ -94,6 +94,33 @@ const HoldStatusCard = ({ hold, onConfirm, disabled }) => {
                     )}
                     <Button variant='contained' size='small' onClick={() => onConfirm(hold)} disabled={disabled}>
                         Confirmar deposito/anticipo
+                    </Button>
+                </Stack>
+            </CardContent>
+        </Card>
+    )
+}
+
+const ReservationStatusCard = ({ reservation, onConfirm, disabled }) => {
+    if (!reservation) return null
+
+    return (
+        <Card variant='outlined' sx={{ mt: 1, backgroundColor: 'action.hover' }}>
+            <CardContent>
+                <Stack spacing={1}>
+                    <Typography variant='subtitle2'>Reserva de hotel generada</Typography>
+                    <Typography variant='body2'>Reserva: {reservation.id}</Typography>
+                    <Typography variant='body2'>
+                        Hotel: {reservation.hotelName} ({reservation.sede})
+                    </Typography>
+                    <Typography variant='body2'>
+                        Fechas: {reservation.checkIn} a {reservation.checkOut}
+                    </Typography>
+                    <Typography variant='body2'>
+                        Total: {reservation.precioTotal} {reservation.moneda || 'USD'}
+                    </Typography>
+                    <Button variant='contained' size='small' onClick={onConfirm} disabled={disabled}>
+                        Confirmar pago
                     </Button>
                 </Stack>
             </CardContent>
@@ -254,12 +281,24 @@ const ManualAgents = () => {
         }
     }
 
-    const getLatestHoldFromMessages = (messageList) => {
+    const getLatestPaymentRequest = (messageList) => {
         if (!messageList?.length) return null
         for (let i = messageList.length - 1; i >= 0; i -= 1) {
-            const hold = messageList[i]?.metadata?.hold
-            if (messageList[i]?.metadata?.type === 'holdCard' && hold) {
-                return hold
+            const metadata = messageList[i]?.metadata
+            if (metadata?.type === 'holdCard' && metadata.hold) {
+                return { kind: 'quintas', ...metadata.hold }
+            }
+            if (metadata?.type === 'reservationCard' && metadata.reservation) {
+                const reservation = metadata.reservation
+                return {
+                    kind: 'hotel',
+                    reservationId: reservation.id,
+                    hotelName: reservation.hotelName,
+                    start: reservation.checkIn,
+                    end: reservation.checkOut,
+                    amount: reservation.precioTotal,
+                    currency: reservation.moneda || 'USD'
+                }
             }
         }
         return null
@@ -285,9 +324,10 @@ const ManualAgents = () => {
         loadKpi(selectedAgentId)
     }, [selectedAgentId, zoneFilter, kpiDate])
 
-    const handleSend = async () => {
-        if (!input.trim() || !selectedAgentId) return
-        const userMessage = { role: 'user', content: input, timestamp: new Date() }
+    const handleSend = async (messageOverride) => {
+        const content = (messageOverride || input).trim()
+        if (!content || !selectedAgentId) return
+        const userMessage = { role: 'user', content, timestamp: new Date() }
         setMessages((prev) => [...prev, userMessage])
         setInput('')
         setIsReplying(true)
@@ -387,10 +427,11 @@ const ManualAgents = () => {
     }
 
     const openPaymentDialog = (hold) => {
-        setPendingHold(hold)
+        const normalized = hold?.kind ? hold : { ...hold, kind: 'quintas' }
+        setPendingHold(normalized)
         setPaymentRef('')
-        const holdCurrency = hold?.currency || 'USD'
-        const depositAmount = hold?.depositAmount
+        const holdCurrency = normalized?.currency || 'USD'
+        const depositAmount = normalized?.depositAmount ?? normalized?.amount
         let baseUsd = null
         if (typeof depositAmount === 'number') {
             baseUsd = holdCurrency === 'ARS' ? depositAmount / USD_TO_ARS : depositAmount
@@ -421,17 +462,28 @@ const ManualAgents = () => {
         }
 
         try {
-            await confirmPaymentApi.request(selectedAgentId, {
-                propertyId: pendingHold.propertyId,
-                start: pendingHold.start,
-                end: pendingHold.end,
-                leadId: pendingHold.leadId,
-                paymentRef: paymentRef.trim(),
-                amount: numericAmount,
-                currency: currency || 'USD',
-                sessionId,
-                followUpMessage: followUpMessage.trim() || undefined
-            })
+            if (pendingHold.kind === 'hotel') {
+                await confirmPaymentApi.request(selectedAgentId, {
+                    reservationId: pendingHold.reservationId || pendingHold.propertyId,
+                    paymentRef: paymentRef.trim(),
+                    amount: numericAmount,
+                    currency: currency || 'USD',
+                    sessionId,
+                    followUpMessage: followUpMessage.trim() || undefined
+                })
+            } else {
+                await confirmPaymentApi.request(selectedAgentId, {
+                    propertyId: pendingHold.propertyId,
+                    start: pendingHold.start,
+                    end: pendingHold.end,
+                    leadId: pendingHold.leadId,
+                    paymentRef: paymentRef.trim(),
+                    amount: numericAmount,
+                    currency: currency || 'USD',
+                    sessionId,
+                    followUpMessage: followUpMessage.trim() || undefined
+                })
+            }
             enqueueSnackbar('Payment confirmed', 'success')
             setConfirmOpen(false)
         } catch (error) {
@@ -447,9 +499,9 @@ const ManualAgents = () => {
             enqueueSnackbar('Start a session before uploading a proof', 'warning')
             return
         }
-        const latestHold = getLatestHoldFromMessages(messages)
-        if (!latestHold) {
-            enqueueSnackbar('No reserva con deposito/anticipo found to confirm', 'warning')
+        const latestPayment = getLatestPaymentRequest(messages)
+        if (!latestPayment) {
+            enqueueSnackbar('No payment request found to confirm', 'warning')
             return
         }
         if (!canUpdate) {
@@ -464,19 +516,32 @@ const ManualAgents = () => {
         }
         setMessages((prev) => [...prev, userMessage])
         try {
-            await confirmPaymentApi.request(selectedAgentId, {
-                propertyId: latestHold.propertyId,
-                start: latestHold.start,
-                end: latestHold.end,
-                leadId: latestHold.leadId,
-                paymentRef: `archivo:${file.name}`,
-                amount: latestHold.depositAmount,
-                currency: latestHold.currency || 'USD',
-                sessionId,
-                followUpMessage:
-                    'Perfecto, recibimos tu comprobante. Ya dejamos confirmada la reserva. Si necesitas algo mas, avisame.',
-                followUpType: 'paymentConfirmed'
-            })
+            if (latestPayment.kind === 'hotel') {
+                await confirmPaymentApi.request(selectedAgentId, {
+                    reservationId: latestPayment.reservationId,
+                    paymentRef: `archivo:${file.name}`,
+                    amount: latestPayment.amount,
+                    currency: latestPayment.currency || 'USD',
+                    sessionId,
+                    followUpMessage:
+                        'Perfecto, recibimos tu comprobante. Ya dejamos confirmada la reserva. Si necesitas algo mas, avisame.',
+                    followUpType: 'paymentConfirmed'
+                })
+            } else {
+                await confirmPaymentApi.request(selectedAgentId, {
+                    propertyId: latestPayment.propertyId,
+                    start: latestPayment.start,
+                    end: latestPayment.end,
+                    leadId: latestPayment.leadId,
+                    paymentRef: `archivo:${file.name}`,
+                    amount: latestPayment.depositAmount,
+                    currency: latestPayment.currency || 'USD',
+                    sessionId,
+                    followUpMessage:
+                        'Perfecto, recibimos tu comprobante. Ya dejamos confirmada la reserva. Si necesitas algo mas, avisame.',
+                    followUpType: 'paymentConfirmed'
+                })
+            }
             const assistantMessage = {
                 role: 'assistant',
                 content: 'Perfecto, recibimos tu comprobante. Ya dejamos confirmada la reserva. Si necesitas algo mas, avisame.',
@@ -504,6 +569,10 @@ const ManualAgents = () => {
 
     const isLoading = getAllManualAgentsApi.loading || getManualAgentApi.loading
     const publicApiUrl = shareToken ? `${baseURL}/api/v1/manual-agents/public/${shareToken}/chat` : ''
+    const quickPrompts =
+        selectedAgentId === 'gran-sol'
+            ? ['Reservar nueva estadia', 'Modificar reserva', 'Cancelar', 'Servicios del hotel', 'Atencion al huesped']
+            : []
 
     return (
         <>
@@ -759,6 +828,21 @@ const ManualAgents = () => {
                                                             </Stack>
                                                         </Stack>
                                                         <Divider />
+                                                        {quickPrompts.length > 0 && (
+                                                            <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
+                                                                {quickPrompts.map((prompt) => (
+                                                                    <Button
+                                                                        key={prompt}
+                                                                        variant='outlined'
+                                                                        size='small'
+                                                                        onClick={() => handleSend(prompt)}
+                                                                        disabled={isReplying}
+                                                                    >
+                                                                        {prompt}
+                                                                    </Button>
+                                                                ))}
+                                                            </Stack>
+                                                        )}
                                                         <Stack spacing={1} sx={{ minHeight: 260 }}>
                                                             {messages.length === 0 && (
                                                                 <Typography variant='body2' color='text.secondary'>
@@ -797,6 +881,24 @@ const ManualAgents = () => {
                                                                                     disabled={!canUpdate}
                                                                                 />
                                                                             )}
+                                                                            {message.metadata?.type === 'reservationCard' && (
+                                                                                <ReservationStatusCard
+                                                                                    reservation={message.metadata.reservation}
+                                                                                    onConfirm={() =>
+                                                                                        openPaymentDialog(
+                                                                                            getLatestPaymentRequest([message]) || {
+                                                                                                kind: 'hotel',
+                                                                                                reservationId: message.metadata.reservation?.id,
+                                                                                                start: message.metadata.reservation?.checkIn,
+                                                                                                end: message.metadata.reservation?.checkOut,
+                                                                                                amount: message.metadata.reservation?.precioTotal,
+                                                                                                currency: message.metadata.reservation?.moneda || 'USD'
+                                                                                            }
+                                                                                        )
+                                                                                    }
+                                                                                    disabled={!canUpdate}
+                                                                                />
+                                                                            )}
                                                                         </Card>
                                                                     </Box>
                                                                 )
@@ -816,16 +918,12 @@ const ManualAgents = () => {
                                                         </Stack>
                                                         <Divider />
                                                         <Stack direction='row' spacing={1} alignItems='center'>
-                                                            <Button
-                                                                variant='outlined'
-                                                                size='small'
-                                                                startIcon={<IconPaperclip size={16} />}
-                                                                component='label'
-                                                                disabled={!canUpdate || uploadingProof}
-                                                            >
-                                                                Adjuntar comprobante
-                                                                <input type='file' hidden onChange={handleProofUpload} />
-                                                            </Button>
+                                                            <Tooltip title='Adjuntar comprobante'>
+                                                                <IconButton component='label' disabled={!canUpdate || uploadingProof}>
+                                                                    <IconPaperclip size={18} />
+                                                                    <input type='file' hidden onChange={handleProofUpload} />
+                                                                </IconButton>
+                                                            </Tooltip>
                                                             <TextField
                                                                 fullWidth
                                                                 placeholder='Escribi tu mensaje...'
@@ -1391,7 +1489,16 @@ const ManualAgents = () => {
                 <DialogTitle>Confirmar deposito/anticipo</DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} sx={{ mt: 1 }}>
-                        <TextField label='Property' value={pendingHold?.propertyId || ''} fullWidth InputProps={{ readOnly: true }} />
+                        <TextField
+                            label={pendingHold?.kind === 'hotel' ? 'Reservation' : 'Property'}
+                            value={
+                                pendingHold?.kind === 'hotel'
+                                    ? pendingHold?.reservationId || pendingHold?.propertyId || ''
+                                    : pendingHold?.propertyId || ''
+                            }
+                            fullWidth
+                            InputProps={{ readOnly: true }}
+                        />
                         <TextField
                             label='Dates'
                             value={pendingHold ? `${pendingHold.start} to ${pendingHold.end}` : ''}

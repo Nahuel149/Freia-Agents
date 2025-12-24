@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Button, Card, CardContent, Divider, Stack, TextField, Typography } from '@mui/material'
+import { Box, Button, Card, CardContent, Divider, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import { IconPaperclip } from '@tabler/icons-react'
 
 import useApi from '@/hooks/useApi'
 import manualAgentsApi from '@/api/manualAgents'
@@ -8,32 +9,32 @@ import manualAgentsApi from '@/api/manualAgents'
 const defaultChatbotConfig = {
     title: 'Freia Assistant',
     titleAvatarSrc: '',
-    titleBackgroundColor: '#3B81F6',
-    titleTextColor: '#ffffff',
-    welcomeMessage: 'Hello! This is custom welcome message',
-    errorMessage: 'This is custom error message',
-    backgroundColor: '#ffffff',
+    titleBackgroundColor: '#1f4e3d',
+    titleTextColor: '#f5f1e8',
+    welcomeMessage: 'Hola! Contame fechas y cantidad de personas para chequear disponibilidad.',
+    errorMessage: 'Hubo un problema, intentemos de nuevo en un minuto.',
+    backgroundColor: '#f7f3ec',
     fontSize: 16,
-    poweredByTextColor: '#ffffff',
+    poweredByTextColor: '#6f7b74',
     renderHTML: false,
     showAgentMessages: true,
     botMessage: {
-        backgroundColor: '#f7f8ff',
-        textColor: '#111827',
+        backgroundColor: '#e7efe8',
+        textColor: '#1b1d1f',
         avatarSrc: '',
         showAvatar: false
     },
     userMessage: {
-        backgroundColor: '#3B81F6',
-        textColor: '#ffffff',
+        backgroundColor: '#1f4e3d',
+        textColor: '#f5f1e8',
         avatarSrc: '',
         showAvatar: false
     },
     textInput: {
-        backgroundColor: '#ffffff',
-        textColor: '#111827',
-        placeholder: 'Type question..',
-        sendButtonColor: '#3B81F6'
+        backgroundColor: '#fffaf2',
+        textColor: '#1b1d1f',
+        placeholder: 'Escribi tu consulta...',
+        sendButtonColor: '#1f4e3d'
     }
 }
 
@@ -49,19 +50,45 @@ const PublicManualAgentChat = () => {
     const [messages, setMessages] = useState([])
     const [sessionId, setSessionId] = useState('')
     const [input, setInput] = useState('')
+    const [uploadingProof, setUploadingProof] = useState(false)
 
     const publicChatApi = useApi(manualAgentsApi.publicChat)
+    const publicConfirmPaymentApi = useApi(manualAgentsApi.publicConfirmPayment)
 
-    const handleSend = async () => {
-        if (!input.trim()) return
-        const userMessage = { role: 'user', content: input, timestamp: new Date() }
+    const getLatestPaymentRequest = (messageList) => {
+        if (!messageList?.length) return null
+        for (let i = messageList.length - 1; i >= 0; i -= 1) {
+            const metadata = messageList[i]?.metadata
+            if (metadata?.type === 'holdCard' && metadata.hold) {
+                return { kind: 'quintas', ...metadata.hold }
+            }
+            if (metadata?.type === 'reservationCard' && metadata.reservation) {
+                const reservation = metadata.reservation
+                return {
+                    kind: 'hotel',
+                    reservationId: reservation.id,
+                    hotelName: reservation.hotelName,
+                    start: reservation.checkIn,
+                    end: reservation.checkOut,
+                    amount: reservation.precioTotal,
+                    currency: reservation.moneda || 'USD'
+                }
+            }
+        }
+        return null
+    }
+
+    const handleSend = async (messageOverride) => {
+        const content = (messageOverride || input).trim()
+        if (!content) return
+        const userMessage = { role: 'user', content, timestamp: new Date() }
         setMessages((prev) => [...prev, userMessage])
         setInput('')
 
         try {
             const response = await publicChatApi.request(token, { message: userMessage.content, sessionId })
             const reply = response?.data?.answer || 'No pude procesar tu consulta.'
-            const assistantMessage = { role: 'assistant', content: reply, timestamp: new Date() }
+            const assistantMessage = { role: 'assistant', content: reply, timestamp: new Date(), metadata: response?.data?.metadata }
             setMessages((prev) => [...prev, assistantMessage])
             if (!sessionId && response?.data?.sessionId) {
                 setSessionId(response.data.sessionId)
@@ -69,6 +96,73 @@ const PublicManualAgentChat = () => {
         } catch (error) {
             const fallbackMessage = chatbotConfig.errorMessage || 'Hubo un error al enviar el mensaje. Probemos de nuevo.'
             setMessages((prev) => [...prev, { role: 'assistant', content: fallbackMessage, timestamp: new Date() }])
+        }
+    }
+
+    const handleProofUpload = async (event) => {
+        const file = event.target.files?.[0]
+        event.target.value = ''
+        if (!file) return
+        if (!sessionId) {
+            setMessages((prev) => [
+                ...prev,
+                { role: 'assistant', content: 'Primero iniciemos una charla para generar la reserva.', timestamp: new Date() }
+            ])
+            return
+        }
+        const latestPayment = getLatestPaymentRequest(messages)
+        if (!latestPayment) {
+            setMessages((prev) => [
+                ...prev,
+                { role: 'assistant', content: 'No encuentro una reserva pendiente de pago para confirmar.', timestamp: new Date() }
+            ])
+            return
+        }
+        setUploadingProof(true)
+        const userMessage = { role: 'user', content: `Comprobante enviado: ${file.name}`, timestamp: new Date() }
+        setMessages((prev) => [...prev, userMessage])
+        try {
+            if (latestPayment.kind === 'hotel') {
+                await publicConfirmPaymentApi.request(token, {
+                    reservationId: latestPayment.reservationId,
+                    paymentRef: `archivo:${file.name}`,
+                    amount: latestPayment.amount,
+                    currency: latestPayment.currency || 'USD',
+                    sessionId,
+                    followUpMessage:
+                        'Perfecto, recibimos tu comprobante. Ya dejamos confirmada la reserva. Si necesitas algo mas, avisame.',
+                    followUpType: 'paymentConfirmed'
+                })
+            } else {
+                await publicConfirmPaymentApi.request(token, {
+                    propertyId: latestPayment.propertyId,
+                    start: latestPayment.start,
+                    end: latestPayment.end,
+                    leadId: latestPayment.leadId,
+                    paymentRef: `archivo:${file.name}`,
+                    amount: latestPayment.depositAmount,
+                    currency: latestPayment.currency || 'USD',
+                    sessionId,
+                    followUpMessage:
+                        'Perfecto, recibimos tu comprobante. Ya dejamos confirmada la reserva. Si necesitas algo mas, avisame.',
+                    followUpType: 'paymentConfirmed'
+                })
+            }
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: 'assistant',
+                    content: 'Perfecto, recibimos tu comprobante. Ya dejamos confirmada la reserva. Si necesitas algo mas, avisame.',
+                    timestamp: new Date()
+                }
+            ])
+        } catch (error) {
+            setMessages((prev) => [
+                ...prev,
+                { role: 'assistant', content: 'No pude confirmar el comprobante. Probemos de nuevo.', timestamp: new Date() }
+            ])
+        } finally {
+            setUploadingProof(false)
         }
     }
 
@@ -132,10 +226,31 @@ const PublicManualAgentChat = () => {
     const title = chatbotConfig.title || agentInfo?.name || 'Chatbot'
     const placeholder = chatbotConfig.textInput?.placeholder || 'Escribi tu mensaje...'
     const welcomeMessage = chatbotConfig.welcomeMessage || 'Escribi tu consulta para comenzar.'
+    const quickPrompts =
+        agentInfo?.id === 'gran-sol'
+            ? ['Reservar nueva estadia', 'Modificar reserva', 'Cancelar', 'Servicios del hotel', 'Atencion al huesped']
+            : []
 
     return (
-        <Box sx={{ maxWidth: 980, margin: '0 auto', padding: 3 }}>
-            <Card variant='outlined' sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <Box
+            sx={{
+                minHeight: '100vh',
+                padding: { xs: 2, md: 4 },
+                background:
+                    'radial-gradient(1200px 700px at 20% -10%, rgba(31, 78, 61, 0.35), transparent), radial-gradient(900px 700px at 110% 10%, rgba(148, 94, 32, 0.25), transparent), #0b0f0e'
+            }}
+        >
+            <Card
+                variant='outlined'
+                sx={{
+                    maxWidth: 980,
+                    margin: '0 auto',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    borderColor: 'rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 30px 80px rgba(0,0,0,0.45)'
+                }}
+            >
                 <Box sx={{ backgroundColor: chatbotConfig.titleBackgroundColor, padding: 2 }}>
                     <Stack direction='row' spacing={1.5} alignItems='center'>
                         {chatbotConfig.titleAvatarSrc && (
@@ -220,7 +335,22 @@ const PublicManualAgentChat = () => {
                             })}
                         </Stack>
                         <Divider />
-                        <Stack direction='row' spacing={1}>
+                        {quickPrompts.length > 0 && (
+                            <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
+                                {quickPrompts.map((prompt) => (
+                                    <Button key={prompt} variant='outlined' size='small' onClick={() => handleSend(prompt)}>
+                                        {prompt}
+                                    </Button>
+                                ))}
+                            </Stack>
+                        )}
+                        <Stack direction='row' spacing={1} alignItems='center'>
+                            <Tooltip title='Adjuntar comprobante'>
+                                <IconButton component='label' disabled={uploadingProof}>
+                                    <IconPaperclip size={18} />
+                                    <input type='file' hidden onChange={handleProofUpload} />
+                                </IconButton>
+                            </Tooltip>
                             <TextField
                                 fullWidth
                                 placeholder={placeholder}

@@ -179,6 +179,10 @@
             "text": "Hola {{nombre}}, liberamos fechas y tenemos un beneficio para clientes habituales. Avisame si queres confirmar."
         },
         {
+            "id": "promo-10pct",
+            "text": "Hola {{nombre}}, esta semana tenemos un 10% de descuento en reservas nuevas. Si queres, te paso opciones disponibles."
+        },
+        {
             "id": "follow-up",
             "text": "Hola {{nombre}}, seguimos con disponibilidad para {{fecha}}. Confirmas si queres que sostengamos la fecha?"
         }

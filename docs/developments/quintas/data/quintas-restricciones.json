@@ -30,7 +30,7 @@
             "reason": "fin de semana largo"
         }
     ],
-    "blockedDatesText": "Fechas importantes alquiladas: 2025-12-20 a 2026-01-05 (fiestas), 2025-12-06 a 2025-12-09 (fin de semana largo).",
+    "blockedDatesText": "Fechas con minimo de noches por temporada alta: 2025-12-20 a 2026-01-05 (fiestas), 2025-12-06 a 2025-12-09 (fin de semana largo).",
     "payment": {
         "holdHours": 24,
         "depositPct": 30,

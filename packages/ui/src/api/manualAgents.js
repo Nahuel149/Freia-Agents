@@ -10,6 +10,7 @@ const confirmPayment = (id, body) => client.post(`/manual-agents/${id}/payments/
 const createShareToken = (id, body) => client.post(`/manual-agents/${id}/share`, body)
 const revokeShareToken = (id, tokenId) => client.delete(`/manual-agents/${id}/share/${tokenId}`)
 const publicChat = (token, body) => client.post(`/manual-agents/public/${token}/chat`, body)
+const publicConfirmPayment = (token, body) => client.post(`/manual-agents/public/${token}/payments/confirm`, body)
 const getPublicSession = (token, sessionId) => client.get(`/manual-agents/public/${token}/session/${sessionId}`)
 const getPublicAgentInfo = (token) => client.get(`/manual-agents/public/${token}`)
 const getKpi = (id, params) => client.get(`/manual-agents/${id}/kpi`, { params })
@@ -30,6 +31,7 @@ export default {
     createShareToken,
     revokeShareToken,
     publicChat,
+    publicConfirmPayment,
     getPublicSession,
     getPublicAgentInfo,
     getKpi,

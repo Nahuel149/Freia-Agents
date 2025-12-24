@@ -63,7 +63,7 @@
             "amenities": ["pileta", "quincho cerrado", "parrilla", "habitaciones con bano", "estacionamiento"],
             "restrictions": {
                 "rainInsurance": false,
-                "airConditioning": false,
+                "airConditioning": true,
                 "musicNight": "sin musica amplificada despues de las 22:00"
             },
             "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],
@@ -129,7 +129,7 @@
             ],
             "restrictions": {
                 "rainInsurance": false,
-                "airConditioning": false,
+                "airConditioning": true,
                 "musicNight": "sin musica amplificada despues de las 22:00"
             },
             "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],
@@ -177,7 +177,7 @@
             ],
             "restrictions": {
                 "rainInsurance": false,
-                "airConditioning": false,
+                "airConditioning": true,
                 "musicNight": "sin musica amplificada despues de las 22:00"
             },
             "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],
@@ -225,7 +225,7 @@
             ],
             "restrictions": {
                 "rainInsurance": false,
-                "airConditioning": false,
+                "airConditioning": true,
                 "musicNight": "sin musica amplificada despues de las 22:00"
             },
             "notes": ["musica moderada de dia", "ofrecer carpa opcional si llueve", "minimo 2 noches fuera de feriados"],

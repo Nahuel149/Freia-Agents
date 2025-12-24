@@ -17,6 +17,7 @@ router.get('/health', checkPermission('chatflows:view'), manualAgentsController.
 router.get('/public/:token', publicChatLimiter, manualAgentsController.getPublicAgentInfo)
 router.post('/public/:token/chat', publicChatLimiter, manualAgentsController.chatManualAgentPublic)
 router.get('/public/:token/session/:sessionId', publicChatLimiter, manualAgentsController.getPublicSession)
+router.post('/public/:token/payments/confirm', publicChatLimiter, manualAgentsController.confirmPaymentPublic)
 
 router.get('/', checkPermission('chatflows:view'), manualAgentsController.getAllManualAgents)
 router.get('/:id', checkPermission('chatflows:view'), manualAgentsController.getManualAgentById)

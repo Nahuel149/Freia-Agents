@@ -474,6 +474,59 @@ const createHoldHandler = async (req: Request, res: Response, next: NextFunction
 const confirmPaymentHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const collections = getManualAgentsCollections()
+        if (req.params.id === 'gran-sol') {
+            ensureAgentAccess(req.params.id, 'write', [collections.hotelReservations])
+            const { reservationId, paymentRef, amount, currency, sessionId, followUpMessage, followUpType } = req.body
+            const reservationKey = reservationId || req.body?.propertyId
+            if (!reservationKey) {
+                throw new InternalFlowiseError(StatusCodes.UNPROCESSABLE_ENTITY, 'reservationId is required')
+            }
+            const db = await getManualAgentsDb()
+            const reservations = db.collection(collections.hotelReservations)
+            const existing = await reservations.findOne({ agentId: req.params.id, id: reservationKey })
+            if (!existing) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Reservation not found')
+            }
+            await reservations.updateOne(
+                { agentId: req.params.id, id: reservationKey },
+                {
+                    $set: { status: 'paid', updatedAt: new Date() },
+                    $push: {
+                        pagos: {
+                            amount: amount ?? existing.precioTotal ?? 0,
+                            currency: currency || existing.moneda || 'USD',
+                            method: 'manual',
+                            paymentRef: paymentRef || '',
+                            createdAt: new Date()
+                        }
+                    }
+                }
+            )
+
+            if (sessionId && followUpMessage) {
+                const sessionsCollection = db.collection(collections.manualAgentSessions)
+                const existingSession = await sessionsCollection.findOne({ sessionId, agentId: req.params.id })
+                if (existingSession) {
+                    await appendSessionMessages({
+                        sessionId,
+                        agentId: req.params.id,
+                        userId: (req.user as any)?.id,
+                        shareTokenId: existingSession.shareTokenId,
+                        messages: [
+                            {
+                                role: 'assistant',
+                                content: String(followUpMessage),
+                                timestamp: new Date(),
+                                metadata: { type: followUpType || 'paymentConfirmed' }
+                            }
+                        ]
+                    })
+                }
+            }
+
+            return res.json({ status: 'paid' })
+        }
+
         ensureAgentAccess(req.params.id, 'write', [collections.quintasCalendar])
         const { propertyId, start, end, leadId, paymentRef, amount, currency, sessionId, followUpMessage, followUpType } = req.body
         if (!propertyId || !start || !end) {
@@ -487,7 +540,6 @@ const confirmPaymentHandler = async (req: Request, res: Response, next: NextFunc
 
         if (sessionId && followUpMessage) {
             const db = await getManualAgentsDb()
-            const collections = getManualAgentsCollections()
             const sessionsCollection = db.collection(collections.manualAgentSessions)
             const existingSession = await sessionsCollection.findOne({ sessionId, agentId: req.params.id })
             if (existingSession) {
@@ -514,6 +566,90 @@ const confirmPaymentHandler = async (req: Request, res: Response, next: NextFunc
     }
 }
 
+const confirmPaymentPublicHandler = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const token = req.params.token
+        const db = await getManualAgentsDb()
+        const collections = getManualAgentsCollections()
+        const shareCollection = db.collection(collections.manualAgentShareTokens)
+
+        const tokenHash = createHash('sha256').update(token).digest('hex')
+        const tokenDoc = await shareCollection.findOne({ tokenHash, status: 'active' })
+        if (!tokenDoc) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Invalid share token')
+        }
+
+        const agentId = tokenDoc.agentId
+        const { sessionId, followUpMessage, followUpType } = req.body
+        if (agentId === 'gran-sol') {
+            ensureAgentAccess(agentId, 'write', [collections.hotelReservations])
+            const { reservationId, paymentRef, amount, currency } = req.body
+            const reservationKey = reservationId || req.body?.propertyId
+            if (!reservationKey) {
+                throw new InternalFlowiseError(StatusCodes.UNPROCESSABLE_ENTITY, 'reservationId is required')
+            }
+            const reservations = db.collection(collections.hotelReservations)
+            const existing = await reservations.findOne({ agentId, id: reservationKey })
+            if (!existing) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Reservation not found')
+            }
+            await reservations.updateOne(
+                { agentId, id: reservationKey },
+                {
+                    $set: { status: 'paid', updatedAt: new Date() },
+                    $push: {
+                        pagos: {
+                            amount: amount ?? existing.precioTotal ?? 0,
+                            currency: currency || existing.moneda || 'USD',
+                            method: 'manual',
+                            paymentRef: paymentRef || '',
+                            createdAt: new Date()
+                        }
+                    }
+                }
+            )
+        } else {
+            ensureAgentAccess(agentId, 'write', [collections.quintasCalendar])
+            const { propertyId, start, end, leadId, paymentRef, amount, currency } = req.body
+            if (!propertyId || !start || !end) {
+                throw new InternalFlowiseError(StatusCodes.UNPROCESSABLE_ENTITY, 'propertyId, start, and end are required')
+            }
+
+            const result = await confirmPayment({ propertyId, start, end, leadId, paymentRef, amount, currency })
+            if (!result.ok) {
+                throw new InternalFlowiseError(StatusCodes.CONFLICT, 'Hold expired or not found')
+            }
+        }
+
+        if (sessionId && followUpMessage) {
+            const sessionsCollection = db.collection(collections.manualAgentSessions)
+            const existingSession = await sessionsCollection.findOne({
+                sessionId,
+                agentId,
+                shareTokenId: tokenDoc._id
+            })
+            if (existingSession) {
+                await appendSessionMessages({
+                    sessionId,
+                    agentId,
+                    shareTokenId: tokenDoc._id,
+                    messages: [
+                        {
+                            role: 'assistant',
+                            content: String(followUpMessage),
+                            timestamp: new Date(),
+                            metadata: { type: followUpType || 'paymentConfirmed' }
+                        }
+                    ]
+                })
+            }
+        }
+
+        return res.json({ status: 'booked' })
+    } catch (error) {
+        return next(error)
+    }
+}
 const createShareTokenHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const agentId = req.params.id
@@ -727,6 +863,7 @@ export default {
     getPublicSession: getPublicSessionHandler,
     createHold: createHoldHandler,
     confirmPayment: confirmPaymentHandler,
+    confirmPaymentPublic: confirmPaymentPublicHandler,
     createShareToken: createShareTokenHandler,
     revokeShareToken: revokeShareTokenHandler,
     getManualAgentKpi,

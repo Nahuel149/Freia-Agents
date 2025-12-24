@@ -38,6 +38,7 @@ type RestrictionsDoc = {
         airConditioning?: boolean
         mitigation?: string[]
     }
+    blockedDatesText?: string
     payment?: {
         holdHours?: number
         depositPct?: number
@@ -185,6 +186,68 @@ const responseForLocale = (locale: string, esText: string, enText: string) => {
     return locale === 'en-US' ? enText : esText
 }
 
+const extractNamesFromSummary = (summary: string) => {
+    if (!summary) return [] as string[]
+    const names: string[] = []
+    for (const line of summary.split('\n')) {
+        const trimmed = line.trim()
+        if (!trimmed.startsWith('- ')) continue
+        const withoutDash = trimmed.slice(2)
+        const cutAt = Math.min(
+            ...[' - ', ' ('].map((token) => {
+                const idx = withoutDash.indexOf(token)
+                return idx === -1 ? Number.POSITIVE_INFINITY : idx
+            })
+        )
+        const name = (cutAt === Number.POSITIVE_INFINITY ? withoutDash : withoutDash.slice(0, cutAt)).trim()
+        if (name) names.push(name)
+    }
+    return names
+}
+
+const summaryAlreadyCovered = (summary: string, answer: string) => {
+    if (!summary || !answer) return false
+    const names = extractNamesFromSummary(summary)
+    if (!names.length) return false
+    const lowerAnswer = normalizeText(answer)
+    let matches = 0
+    for (const name of names) {
+        if (lowerAnswer.includes(normalizeText(name))) {
+            matches += 1
+        }
+        if (matches >= 2) return true
+    }
+    return false
+}
+
+const isGreetingOnly = (message: string) => {
+    const lower = normalizeText(message || '').trim()
+    if (!lower) return false
+    const greetings = [
+        'hola',
+        'buenas',
+        'buen dia',
+        'buenas tardes',
+        'buenas noches',
+        'hello',
+        'hi'
+    ]
+    const hasGreeting = greetings.some((greet) => lower === greet || lower.startsWith(`${greet} `))
+    if (!hasGreeting) return false
+    const hasDates = extractDates(message).length > 0
+    const hasKeywords = [
+        'dispon',
+        'precio',
+        'reserv',
+        'pago',
+        'deposito',
+        'anticipo',
+        'visita',
+        'catalogo'
+    ].some((keyword) => lower.includes(keyword))
+    return !hasDates && !hasKeywords
+}
+
 const extractDates = (message: string): moment.Moment[] => {
     const matches: string[] = []
     const isoMatches = message.match(/\d{4}-\d{2}-\d{2}/g) || []
@@ -303,6 +366,68 @@ const formatAvailabilitySections = (available: Array<Record<string, any>>, unava
     const unavailableSection = `${unavailableLabel}:\n${unavailableLines.length ? unavailableLines.join('\n\n') : noneLabel}`
 
     return `${availableSection}\n\n${unavailableSection}`
+}
+
+const buildAvailabilityOverview = async (daysWindow = 30, locale = 'es-AR') => {
+    const properties = await getCatalogProperties()
+    if (!properties.length) {
+        return responseForLocale(
+            locale,
+            'No tengo quintas cargadas para mostrar disponibilidad.',
+            'No properties loaded to show availability.'
+        )
+    }
+
+    const timezone = 'America/Argentina/Buenos_Aires'
+    const startDate = moment.tz(timezone).startOf('day')
+    const endDate = startDate.clone().add(daysWindow, 'days')
+    const years = getAvailabilityYears(startDate, endDate)
+
+    const calendarsByProperty = new Map<string, CalendarDoc[]>()
+    for (const prop of properties) {
+        const docs = await getCalendarDocs(prop.propertyId, years)
+        calendarsByProperty.set(prop.propertyId, docs || [])
+    }
+
+    const availableDates: string[] = []
+    const fullDates: string[] = []
+
+    for (let day = startDate.clone(); day.isBefore(endDate); day.add(1, 'day')) {
+        let availableCount = 0
+        for (const prop of properties) {
+            const calendars = calendarsByProperty.get(prop.propertyId) || []
+            let blocked = false
+            let conflict = false
+            for (const calendar of calendars) {
+                if (isRangeBlocked(day, day, calendar)) {
+                    blocked = true
+                    break
+                }
+                if (hasRangeConflict(day, day, calendar)) {
+                    conflict = true
+                    break
+                }
+            }
+            if (!blocked && !conflict) {
+                availableCount += 1
+            }
+        }
+        const dateLabel = day.format('YYYY-MM-DD')
+        if (availableCount === 0) {
+            fullDates.push(dateLabel)
+        } else {
+            availableDates.push(dateLabel)
+        }
+    }
+
+    const availablePreview = availableDates.slice(0, 6).join(', ') || (locale === 'en-US' ? 'None' : 'Ninguna')
+    const fullPreview = fullDates.slice(0, 6).join(', ') || (locale === 'en-US' ? 'None' : 'Ninguna')
+
+    return responseForLocale(
+        locale,
+        `Resumen de disponibilidad (${daysWindow} dias):\nDisponibles: ${availablePreview}\nCompletas: ${fullPreview}`,
+        `Availability overview (${daysWindow} days):\nAvailable: ${availablePreview}\nFully booked: ${fullPreview}`
+    )
 }
 
 const getCatalogMeta = async (): Promise<CatalogMeta> => {
@@ -538,6 +663,7 @@ const buildSystemPrompt = (catalogMeta: CatalogMeta, restrictions: RestrictionsD
     const timezone = 'America/Argentina/Buenos_Aires'
     const today = moment.tz(timezone).format('YYYY-MM-DD')
     const contactEmail = catalogMeta.contact?.email || ''
+    const blockedDatesText = restrictions.blockedDatesText || ''
 
     return [
         'Sos el encargado de reservas de "Quintas El Rincon de Mi Mundo". Respondes en el idioma del cliente: espanol (Argentina) o ingles (US). Mantene tono amable, cercano y humano.',
@@ -545,7 +671,7 @@ const buildSystemPrompt = (catalogMeta: CatalogMeta, restrictions: RestrictionsD
         `Fecha actual (${timezone}): ${today}. Si el usuario da fechas sin ano, asumi la proxima ocurrencia futura (si ya paso este ano, usa el ano siguiente).`,
         'Reglas fijas:',
         '- No hay seguro de lluvia.',
-        '- Informar aire acondicionado segun cada quinta (por defecto no).',
+        '- Informar aire acondicionado segun cada quinta (algunas si, otras no).',
         `- Musica: ${musicDay}. De noche: ${musicNight}.`,
         '- Descuentos solo para clientes habituales (verificar con get_lead).',
         `- Pagos: deposito/anticipo ${depositPct}% en ${deadlineHours} horas. Pago total ${fullPaymentDays} dias antes.`,
@@ -561,6 +687,10 @@ const buildSystemPrompt = (catalogMeta: CatalogMeta, restrictions: RestrictionsD
         '- Cuando uses check_availability, pasa locale segun el idioma del cliente (es-AR o en-US).',
         '- Si listas opciones (numeradas o con guiones), separa cada opcion con una linea en blanco para que se lean como parrafos.',
         '- No respondas temas fuera de quintas (ej: deportes, medicina). Si preguntan algo fuera de tema, redirigi amablemente a disponibilidad, precios, reservas, pagos o visitas.',
+        blockedDatesText
+            ? `- Si es el primer mensaje o faltan fechas, menciona fechas con minimo de noches/temporada alta: ${blockedDatesText}`
+            : '',
+        '- Si no hay fechas, usa get_availability_overview para dar un resumen de disponibilidad y fechas completas.',
         'Si faltan datos, pregunta solo lo necesario. Si no hay disponibilidad, ofrece alternativas.',
         catalogLink ? `Catalogo: ${catalogLink}` : '',
         contactEmail ? `Contacto oficial: ${contactEmail}.` : '',
@@ -638,7 +768,8 @@ const runLlmFlow = async (
                 availabilitySummary &&
                 !answer.includes(availabilitySummary) &&
                 !answer.includes('Disponibles:') &&
-                !answer.includes('Available:')
+                !answer.includes('Available:') &&
+                !summaryAlreadyCovered(availabilitySummary, answer)
             ) {
                 answer = `${answer}\n\n${availabilitySummary}`
             }
@@ -759,6 +890,12 @@ const executeQuintasTool = async (name: string, args: Record<string, any>, restr
                 const rules = await getRestrictions()
                 return { output: rules }
             }
+            case 'get_availability_overview': {
+                const daysWindow = Number.isFinite(Number(args.days)) ? Number(args.days) : 30
+                const locale = typeof args.locale === 'string' ? args.locale : 'es-AR'
+                const summary = await buildAvailabilityOverview(daysWindow, locale)
+                return { output: { summary } }
+            }
             case 'record_lead': {
                 const lead = await upsertLead({
                     id: args.id || args.leadId,
@@ -840,6 +977,17 @@ export const QUINTAS_TOOL_SPECS: ManualAgentToolDefinition[] = [
         name: 'get_rules',
         description: 'Devuelve reglas, pagos, visitas, descuentos y restricciones.',
         parameters: { type: 'object', properties: {} }
+    },
+    {
+        name: 'get_availability_overview',
+        description: 'Devuelve resumen de fechas con disponibilidad y fechas completas.',
+        parameters: {
+            type: 'object',
+            properties: {
+                days: { type: 'number', description: 'Cantidad de dias a revisar' },
+                locale: { type: 'string', description: 'Idioma de respuesta: es-AR o en-US' }
+            }
+        }
     },
     {
         name: 'record_lead',
@@ -956,11 +1104,26 @@ const handleQuintasFallback = async (input: ManualAgentRequest): Promise<ManualA
     }
 
     if (lower.includes('aire') && lower.includes('acond')) {
+        const property = detectProperty(message, catalogProperties)
+        if (property) {
+            const hasAc = property.restrictions?.airConditioning ?? restrictions.general?.airConditioning ?? false
+            return {
+                answer: responseForLocale(
+                    locale,
+                    hasAc
+                        ? `${property.name || property.propertyId} si tiene aire acondicionado.`
+                        : `${property.name || property.propertyId} no tiene aire acondicionado.`,
+                    hasAc
+                        ? `${property.name || property.propertyId} has air conditioning.`
+                        : `${property.name || property.propertyId} does not have air conditioning.`
+                )
+            }
+        }
         return {
             answer: responseForLocale(
                 locale,
-                'No contamos con aire acondicionado en las quintas.',
-                'We do not have air conditioning in the quintas.'
+                'El aire acondicionado depende de la quinta. Decime cual te interesa y te confirmo.',
+                'Air conditioning depends on the specific quinta. Tell me which one and I will confirm.'
             )
         }
     }
@@ -1066,11 +1229,13 @@ const handleQuintasFallback = async (input: ManualAgentRequest): Promise<ManualA
     }
 
     const summary = catalogMeta.catalogSummary || 'Alquiler de quintas para eventos familiares en Francisco Alvarez.'
+    const blockedDatesText = restrictions.blockedDatesText ? ` ${restrictions.blockedDatesText}` : ''
+    const availabilityOverview = await buildAvailabilityOverview(30, locale)
     return {
         answer: responseForLocale(
             locale,
-            `Hola! Soy el asistente de ${summary}. Contame fecha, cantidad de personas y si tenes alguna quinta en mente.`,
-            `Hi! I'm the assistant for ${summary}. Share your dates, number of guests, and preferred quinta.`
+            `Hola! Soy el asistente de ${summary}.${blockedDatesText}\n\n${availabilityOverview}\n\nContame fecha, cantidad de personas y si tenes alguna quinta en mente.`,
+            `Hi! I'm the assistant for ${summary}.${blockedDatesText}\n\n${availabilityOverview}\n\nShare your dates, number of guests, and preferred quinta.`
         )
     }
 }
@@ -1080,6 +1245,20 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     const catalogMeta = await getCatalogMeta()
     const restrictions = await getRestrictions()
+    const locale = detectLocaleFromMessage(input.message || '')
+
+    if (isGreetingOnly(input.message || '')) {
+        const blockedDatesText = restrictions.blockedDatesText ? ` ${restrictions.blockedDatesText}` : ''
+        const availabilityOverview = await buildAvailabilityOverview(30, locale)
+        const summary = catalogMeta.catalogSummary || 'Alquiler de quintas para eventos familiares en Francisco Alvarez.'
+        return {
+            answer: responseForLocale(
+                locale,
+                `Hola! Soy el asistente de ${summary}.\n\n${availabilityOverview}\n\n${blockedDatesText ? `${blockedDatesText}\n\n` : ''}Contame fecha, cantidad de personas y si tenes alguna quinta en mente.`,
+                `Hi! I'm the assistant for ${summary}.\n\n${availabilityOverview}\n\n${blockedDatesText ? `${blockedDatesText}\n\n` : ''}Share your dates, number of guests, and preferred quinta.`
+            )
+        }
+    }
 
     try {
         return await runLlmFlow(input.message || '', input.sessionId, catalogMeta, restrictions)

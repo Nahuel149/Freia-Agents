@@ -8,7 +8,15 @@ export const computeOutbound = async () => {
     const collections = getManualAgentsCollections()
 
     const leadsDoc = await db.collection(collections.quintasLeads).findOne({ type: 'seed' })
-    const leads = (leadsDoc?.leads || []) as Array<{ status?: string; name?: string; phone?: string; notes?: string }>
+    const leads = (leadsDoc?.leads || []) as Array<{
+        status?: string
+        name?: string
+        phone?: string
+        notes?: string
+        lastOutboundAt?: string | Date
+        lastContactAt?: string | Date
+        dateRequested?: string
+    }>
     const templates = leadsDoc?.outreachTemplates || []
     const kpiConfig = leadsDoc?.kpiConfig || { occupancyTargetPct: 70 }
 
@@ -17,6 +25,7 @@ export const computeOutbound = async () => {
     const timezone = process.env.MANUAL_AGENT_OUTBOUND_TIMEZONE || 'America/Argentina/Buenos_Aires'
     const startDate = moment.tz(timezone).startOf('day')
     const endDate = moment.tz(timezone).add(daysWindow, 'days').startOf('day')
+    const outboundCooldownDays = 7
 
     let totalSlots = 0
     let occupiedSlots = 0
@@ -42,7 +51,16 @@ export const computeOutbound = async () => {
     const occupancyPct = totalSlots ? (occupiedSlots / totalSlots) * 100 : 0
     const shouldOutbound = occupancyPct < (kpiConfig.occupancyTargetPct || 70)
 
-    const leadsToContact = leads.filter((lead) => ['lost', 'open'].includes((lead.status || '').toLowerCase()))
+    const leadsToContact = leads.filter((lead) => {
+        const statusOk = ['lost', 'open'].includes((lead.status || '').toLowerCase())
+        if (!statusOk) return false
+        const lastContact =
+            lead.lastContactAt || lead.lastOutboundAt || (lead.dateRequested ? moment(lead.dateRequested, 'YYYY-MM-DD').toDate() : null)
+        if (!lastContact) return true
+        const lastMoment = moment(lastContact)
+        if (!lastMoment.isValid()) return true
+        return startDate.diff(lastMoment, 'days') >= outboundCooldownDays
+    })
 
     return {
         occupancyPct,
@@ -50,7 +68,8 @@ export const computeOutbound = async () => {
         leads: leadsToContact,
         templates,
         windowDays: daysWindow,
-        occupancyTargetPct: kpiConfig.occupancyTargetPct || 70
+        occupancyTargetPct: kpiConfig.occupancyTargetPct || 70,
+        outboundCooldownDays
     }
 }
 
