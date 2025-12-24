@@ -360,9 +360,9 @@ const detectRoomSelection = (message: string, hotel?: HotelInventoryDoc | null, 
 const extractDayRange = (message: string) => {
     const text = normalizeText(message)
     const match =
-        text.match(/\b(?:del?|el)\s*(\d{1,2})\s*(al|hasta|-)\s*(\d{1,2})\b/) ||
-        text.match(/\b(\d{1,2})\s*(al|hasta|-)\s*(\d{1,2})\b/) ||
-        text.match(/\bfrom\s*(\d{1,2})\s*(to|-)\s*(\d{1,2})\b/)
+        text.match(/\b(?:del?|el)\s*(\d{1,2})(?:\s*de\s*[a-z]+)?\s*(al|hasta|-)\s*(\d{1,2})(?:\s*de\s*[a-z]+)?\b/) ||
+        text.match(/\b(\d{1,2})(?:\s*de\s*[a-z]+)?\s*(al|hasta|-)\s*(\d{1,2})(?:\s*de\s*[a-z]+)?\b/) ||
+        text.match(/\bfrom\s*(\d{1,2})(?:\s*of\s*[a-z]+)?\s*(to|-)\s*(\d{1,2})(?:\s*of\s*[a-z]+)?\b/)
     if (!match) return null
     const startDay = Number(match[1])
     const endDay = Number(match[3])
@@ -2684,7 +2684,14 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 answer: language === 'en' ? 'I need exact dates in YYYY-MM-DD format.' : 'Necesito fechas exactas en formato YYYY-MM-DD.'
             }
         }
-        const availability = await checkAvailability({ start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
+        const availability = await checkAvailability({
+            start: start.format('YYYY-MM-DD'),
+            end: end.format('YYYY-MM-DD'),
+            sede: sessionContext?.sede as string | undefined,
+            hotelId: sessionContext?.hotelId as string | undefined,
+            roomType: sessionContext?.roomType as string | undefined,
+            guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+        })
         if (!availability.ok) {
             await updateSessionContext(input.sessionId, { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
             return {
@@ -2701,6 +2708,15 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         const options = (okAvailability.available || [])
             .slice(0, 4)
             .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+        if (!options.length) {
+            return {
+                answer:
+                    language === 'en'
+                        ? 'No availability for those dates. Want to try another location or nearby dates?'
+                        : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
+                metadata: { context: { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') } }
+            }
+        }
         await updateSessionContext(input.sessionId, { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
         return {
             answer:
@@ -2846,7 +2862,14 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             const start = explicitDates[0].format('YYYY-MM-DD')
             const end = explicitDates[1].format('YYYY-MM-DD')
             await updateSessionContext(input.sessionId, { start, end })
-            const availability = await checkAvailability({ start, end })
+            const availability = await checkAvailability({
+                start,
+                end,
+                sede: sessionContext?.sede as string | undefined,
+                hotelId: sessionContext?.hotelId as string | undefined,
+                roomType: sessionContext?.roomType as string | undefined,
+                guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+            })
             if (!availability.ok) {
                 return {
                     answer:

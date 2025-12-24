@@ -176,6 +176,7 @@ const ManualAgents = () => {
     const [shareTokens, setShareTokens] = useState([])
     const [shareUrl, setShareUrl] = useState('')
     const [shareToken, setShareToken] = useState('')
+    const shareConfigKey = useMemo(() => (selectedAgentId ? `manualAgents.shareConfig.${selectedAgentId}` : ''), [selectedAgentId])
     const [shareConfig, setShareConfig] = useState(defaultShareConfig)
     const [kpi, setKpi] = useState(null)
     const [outbound, setOutbound] = useState(null)
@@ -327,7 +328,31 @@ const ManualAgents = () => {
         setMessages([])
         setSessionId('')
         setSelectedSessionId('')
+        if (shareConfigKey) {
+            const savedConfig = localStorage.getItem(shareConfigKey)
+            if (savedConfig) {
+                try {
+                    const parsed = JSON.parse(savedConfig)
+                    setShareConfig({
+                        ...defaultShareConfig,
+                        ...parsed,
+                        botMessage: { ...defaultShareConfig.botMessage, ...(parsed.botMessage || {}) },
+                        userMessage: { ...defaultShareConfig.userMessage, ...(parsed.userMessage || {}) },
+                        textInput: { ...defaultShareConfig.textInput, ...(parsed.textInput || {}) }
+                    })
+                } catch (_error) {
+                    setShareConfig(defaultShareConfig)
+                }
+            } else {
+                setShareConfig(defaultShareConfig)
+            }
+        }
     }, [selectedAgentId])
+
+    useEffect(() => {
+        if (!shareConfigKey) return
+        localStorage.setItem(shareConfigKey, JSON.stringify(shareConfig))
+    }, [shareConfigKey, shareConfig])
 
     useEffect(() => {
         if (!selectedAgentId) return

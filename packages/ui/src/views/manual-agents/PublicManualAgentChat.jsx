@@ -116,7 +116,8 @@ const PublicManualAgentChat = () => {
     }
 
     const handleSend = async (messageOverride) => {
-        const content = (messageOverride || input).trim()
+        const rawContent = typeof messageOverride === 'string' ? messageOverride : input
+        const content = rawContent.trim()
         if (!content) return
         const userMessage = { role: 'user', content, timestamp: new Date() }
         setMessages((prev) => [...prev, userMessage])
