@@ -358,7 +358,11 @@ const ManualAgents = () => {
     const formatMessage = (content) => {
         if (!content) return []
         const normalized = content.replace(/\r\n/g, '\n').trim()
-        const spaced = normalized.replace(/\.\\s+/g, '.\n\n')
+        const spaced = normalized
+            .replace(/\.\s+-\s+/g, '.\n\n- ')
+            .replace(/:\s+-\s+/g, ':\n\n- ')
+            .replace(/([^\n])\s-\s(?=[A-ZÁÉÍÓÚÑ])/g, '$1\n\n- ')
+            .replace(/\.\s+/g, '.\n\n')
         return spaced
             .split(/\n{2,}/)
             .map((block) => block.trim())

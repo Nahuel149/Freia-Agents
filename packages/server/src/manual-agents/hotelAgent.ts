@@ -237,6 +237,57 @@ const normalizeText = (value: string) =>
 
 const parseDate = (value: string) => moment(value, 'YYYY-MM-DD', true)
 
+const findMonthInText = (message: string) => {
+    const text = normalizeText(message)
+    const monthMap: Record<string, number> = {
+        enero: 1,
+        febrero: 2,
+        marzo: 3,
+        abril: 4,
+        mayo: 5,
+        junio: 6,
+        julio: 7,
+        agosto: 8,
+        septiembre: 9,
+        setiembre: 9,
+        octubre: 10,
+        noviembre: 11,
+        diciembre: 12,
+        january: 1,
+        february: 2,
+        march: 3,
+        april: 4,
+        may: 5,
+        june: 6,
+        july: 7,
+        august: 8,
+        september: 9,
+        october: 10,
+        november: 11,
+        december: 12
+    }
+    for (const [name, month] of Object.entries(monthMap)) {
+        if (text.includes(name)) {
+            const today = moment()
+            const year = month < today.month() + 1 ? today.year() + 1 : today.year()
+            return { month, year }
+        }
+    }
+    return null
+}
+
+const extractDayRange = (message: string) => {
+    const text = normalizeText(message)
+    const match =
+        text.match(/\bdel?\s*(\d{1,2})\s*(al|hasta|-)\s*(\d{1,2})\b/) ||
+        text.match(/\bfrom\s*(\d{1,2})\s*(to|-)\s*(\d{1,2})\b/)
+    if (!match) return null
+    const startDay = Number(match[1])
+    const endDay = Number(match[3])
+    if (!Number.isFinite(startDay) || !Number.isFinite(endDay)) return null
+    return { startDay, endDay }
+}
+
 const extractDates = (message: string): moment.Moment[] => {
     const matches: string[] = []
     const isoMatches = message.match(/\d{4}-\d{2}-\d{2}/g) || []
@@ -271,6 +322,14 @@ const buildDateRange = (start: moment.Moment, end: moment.Moment) => {
 const formatMoney = (amount?: number, currency?: string) => {
     if (!amount) return 'Consultar'
     return `${amount.toFixed(0)} ${currency || 'USD'}`
+}
+
+const buildContextFromMessages = (messages: Array<{ metadata?: Record<string, any> }>) => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+        const context = messages[i]?.metadata?.context
+        if (context) return context
+    }
+    return {}
 }
 
 const findMinNightsRule = (rules: HotelRulesDoc, start: moment.Moment, end: moment.Moment) => {
@@ -1549,6 +1608,8 @@ const detectLanguage = (message: string) => {
     return 'es'
 }
 
+const formatBulletList = (items: string[]) => items.join('\n\n')
+
 const getSessionMessages = async (sessionId: string) => {
     const db = await getManualAgentsDb()
     const collections = collectionNames
@@ -1610,7 +1671,10 @@ const buildSystemPrompt = (rules: HotelRulesDoc, hotels: HotelInventoryDoc[], la
             : 'No te desvias del rol hotelero: rechaza temas fuera de hoteleria (deportes, medicina, finanzas, etc.) y redirigi a reservas o atencion al huesped.',
         language === 'en'
             ? 'Use tools for availability, rules, info, services, profiles, support, promos, and reservations. Do not invent data.'
-            : 'Usa herramientas para disponibilidad, reglas, info, servicios, perfiles, soporte, promos y reservas. No inventes datos.'
+            : 'Usa herramientas para disponibilidad, reglas, info, servicios, perfiles, soporte, promos y reservas. No inventes datos.',
+        language === 'en'
+            ? 'When listing items, put one bullet per paragraph (blank line between bullets).'
+            : 'Cuando listes items, pone un guion por parrafo (linea en blanco entre guiones).'
     ]
         .filter(Boolean)
         .join('\n')
@@ -1989,7 +2053,10 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         })
         if (lines.length) {
             return {
-                answer: language === 'en' ? `Available services:\n${lines.join('\n')}` : `Servicios disponibles:\n${lines.join('\n')}`
+                answer:
+                    language === 'en'
+                        ? `Available services:\n${formatBulletList(lines)}`
+                        : `Servicios disponibles:\n${formatBulletList(lines)}`
             }
         }
     }
@@ -2001,8 +2068,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
             return {
                 answer:
                     language === 'en'
-                        ? `Internal protocols available:\n${protocols.join('\n')}`
-                        : `Protocolos internos disponibles:\n${protocols.join('\n')}`
+                        ? `Internal protocols available:\n${formatBulletList(protocols)}`
+                        : `Protocolos internos disponibles:\n${formatBulletList(protocols)}`
             }
         }
     }
@@ -2010,16 +2077,16 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
     if (lower.includes('precio') || lower.includes('tarifa')) {
         const hotel = hotels[0]
         const rooms = (hotel?.habitaciones || []).slice(0, 3).map((room) => {
-            return `${room.tipo || 'habitacion'}: ${formatMoney(room.tarifaBase, room.moneda)}`
+            return `- ${room.tipo || 'habitacion'}: ${formatMoney(room.tarifaBase, room.moneda)}`
         })
         return {
             answer:
                 language === 'en'
                     ? rooms.length
-                        ? `Base nightly rates:\n${rooms.join('\n')}`
+                        ? `Base nightly rates:\n${formatBulletList(rooms)}`
                         : 'I can quote prices if you share dates and location.'
                     : rooms.length
-                    ? `Tarifas base por noche:\n${rooms.join('\n')}`
+                    ? `Tarifas base por noche:\n${formatBulletList(rooms)}`
                     : 'Puedo cotizar si me indicas fechas y sede.'
         }
     }
@@ -2065,8 +2132,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
                 return {
                     answer:
                         language === 'en'
-                            ? `No availability in that location. Options in other locations:\n${alternativeLines.join('\n')}`
-                            : `No hay disponibilidad en esa sede. Opciones en otras sedes:\n${alternativeLines.join('\n')}`
+                            ? `No availability in that location. Options in other locations:\n${formatBulletList(alternativeLines)}`
+                            : `No hay disponibilidad en esa sede. Opciones en otras sedes:\n${formatBulletList(alternativeLines)}`
                 }
             }
             return {
@@ -2082,8 +2149,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         return {
             answer:
                 language === 'en'
-                    ? `Availability for those dates:\n${options.join('\n')}`
-                    : `Hay disponibilidad para esas fechas:\n${options.join('\n')}`
+                    ? `Availability for those dates:\n${formatBulletList(options)}`
+                    : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`
         }
     }
 
@@ -2431,10 +2498,127 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     const rules = await getHotelRules()
     const hotels = await getHotelInventory()
     const sessionMessages = await getSessionMessages(input.sessionId)
+    const sessionContext = buildContextFromMessages(sessionMessages)
     const language = getSessionLanguage(sessionMessages, input.message || '')
+    const message = input.message || ''
+    const normalized = normalizeText(message)
+    const bookingIntent =
+        normalized.includes('reserv') || normalized.includes('book') || normalized.includes('reserve') || normalized.includes('booking')
+    const explicitDates = extractDates(message)
+    const inferredMonth = findMonthInText(message)
+    const dayRange = extractDayRange(message)
+
+    if (inferredMonth && explicitDates.length === 0 && !dayRange) {
+        return {
+            answer:
+                language === 'en'
+                    ? `Got it. For ${moment({ year: inferredMonth.year, month: inferredMonth.month - 1, day: 1 }).format('MMMM')} I need exact dates. For example: from 5 to 10.`
+                    : `Dale. Para ${moment({ year: inferredMonth.year, month: inferredMonth.month - 1, day: 1 }).format('MMMM')} necesito fechas exactas. Por ejemplo: del 5 al 10.`,
+            metadata: { context: { month: inferredMonth.month, year: inferredMonth.year } }
+        }
+    }
+
+    if (dayRange && explicitDates.length === 0) {
+        const month = inferredMonth?.month || sessionContext?.month
+        const year = inferredMonth?.year || sessionContext?.year
+        if (!month || !year) {
+            return {
+                answer: language === 'en' ? 'Which month is that for?' : 'De que mes hablamos?',
+                metadata: { context: sessionContext || {} }
+            }
+        }
+        const start = moment({ year, month: month - 1, day: dayRange.startDay })
+        const end = moment({ year, month: month - 1, day: dayRange.endDay })
+        if (!start.isValid() || !end.isValid()) {
+            return {
+                answer: language === 'en' ? 'I need exact dates in YYYY-MM-DD format.' : 'Necesito fechas exactas en formato YYYY-MM-DD.'
+            }
+        }
+        const availability = await checkAvailability({ start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') })
+        if (!availability.ok) {
+            return {
+                answer:
+                    language === 'en'
+                        ? 'No availability for those dates. Want to try another location or nearby dates?'
+                        : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
+                metadata: { context: { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') } }
+            }
+        }
+        const okAvailability = availability as {
+            available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
+        }
+        const options = (okAvailability.available || [])
+            .slice(0, 4)
+            .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+        return {
+            answer:
+                language === 'en'
+                    ? `Availability for those dates:\n${formatBulletList(options)}`
+                    : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`,
+            metadata: { context: { month, year, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') } }
+        }
+    }
+
+    if (!explicitDates.length && sessionContext?.start && sessionContext?.end) {
+        if (normalized.includes('otra') || normalized.includes('otras') || normalized.includes('alternativa') || normalized.includes('opcion')) {
+            const availability = await checkAvailability({ start: sessionContext.start, end: sessionContext.end })
+            if (availability.ok) {
+                const okAvailability = availability as {
+                    available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
+                }
+                const options = (okAvailability.available || [])
+                    .slice(0, 4)
+                    .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+                return {
+                    answer:
+                        language === 'en'
+                            ? `Other options for those dates:\n${formatBulletList(options)}`
+                            : `Otras opciones para esas fechas:\n${formatBulletList(options)}`,
+                    metadata: { context: sessionContext }
+                }
+            }
+        }
+    }
 
     try {
-        return await runLlmFlow(input.message || '', input.sessionId, rules, hotels, language, sessionMessages)
+        if (explicitDates.length >= 2 && !bookingIntent) {
+            const start = explicitDates[0].format('YYYY-MM-DD')
+            const end = explicitDates[1].format('YYYY-MM-DD')
+            const availability = await checkAvailability({ start, end })
+            if (!availability.ok) {
+                return {
+                    answer:
+                        language === 'en'
+                            ? 'No availability for those dates. Want to try another location or nearby dates?'
+                            : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
+                    metadata: { context: { start, end } }
+                }
+            }
+            const okAvailability = availability as {
+                available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
+            }
+            const options = (okAvailability.available || [])
+                .slice(0, 4)
+                .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+            return {
+                answer:
+                    language === 'en'
+                        ? `Availability for those dates:\n${formatBulletList(options)}`
+                        : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`,
+                metadata: { context: { start, end } }
+            }
+        }
+
+        const response = await runLlmFlow(message, input.sessionId, rules, hotels, language, sessionMessages)
+        const contextMetadata = inferredMonth
+            ? { month: inferredMonth.month, year: inferredMonth.year }
+            : explicitDates.length >= 2
+            ? { start: explicitDates[0].format('YYYY-MM-DD'), end: explicitDates[1].format('YYYY-MM-DD') }
+            : undefined
+        if (contextMetadata) {
+            return { ...response, metadata: { ...(response.metadata || {}), context: contextMetadata } }
+        }
+        return response
     } catch (_error) {
         return handleHotelFallback(input, language)
     }

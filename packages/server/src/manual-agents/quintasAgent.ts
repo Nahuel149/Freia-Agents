@@ -190,6 +190,100 @@ const isLikelyEnglish = (text: string) => {
     return detectLocaleFromMessage(text) === 'en-US'
 }
 
+const MONTHS: Record<string, number> = {
+    enero: 0,
+    febrero: 1,
+    marzo: 2,
+    abril: 3,
+    mayo: 4,
+    junio: 5,
+    julio: 6,
+    agosto: 7,
+    septiembre: 8,
+    setiembre: 8,
+    octubre: 9,
+    noviembre: 10,
+    diciembre: 11,
+    january: 0,
+    february: 1,
+    march: 2,
+    april: 3,
+    may: 4,
+    june: 5,
+    july: 6,
+    august: 7,
+    september: 8,
+    october: 9,
+    november: 10,
+    december: 11
+}
+
+const parseMonthRange = (message: string) => {
+    const lower = normalizeText(message || '')
+    const monthMatch = Object.keys(MONTHS).find((month) => lower.includes(month))
+    if (!monthMatch) return null
+
+    const rangeRegex = new RegExp(
+        `(\\d{1,2})\\s*(?:al|to|-)\\s*(\\d{1,2})\\s*(?:de\\s*)?${monthMatch}`
+    )
+    const singleRegex = new RegExp(`(\\d{1,2})\\s*(?:de\\s*)?${monthMatch}`)
+
+    const range = lower.match(rangeRegex)
+    const single = lower.match(singleRegex)
+    const startDay = range ? Number(range[1]) : single ? Number(single[1]) : null
+    const endDay = range ? Number(range[2]) : startDay
+    if (!startDay || !endDay) return null
+
+    const timezone = 'America/Argentina/Buenos_Aires'
+    const now = moment.tz(timezone)
+    const monthIndex = MONTHS[monthMatch]
+    let year = now.year()
+    if (monthIndex < now.month() || (monthIndex === now.month() && startDay < now.date())) {
+        year += 1
+    }
+
+    const start = moment.tz({ year, month: monthIndex, day: startDay }, timezone).format('YYYY-MM-DD')
+    const end = moment.tz({ year, month: monthIndex, day: endDay }, timezone).format('YYYY-MM-DD')
+    return { start, end }
+}
+
+const mentionsMonthWithoutDay = (message: string) => {
+    const lower = normalizeText(message || '')
+    const monthMatch = Object.keys(MONTHS).find((month) => lower.includes(month))
+    if (!monthMatch) return false
+    const dayMention = new RegExp(`\\d{1,2}\\s*(?:de\\s*)?${monthMatch}`).test(lower)
+    return !dayMention
+}
+
+const mentionsDayRangeWithoutMonth = (message: string) => {
+    const lower = normalizeText(message || '')
+    const hasMonth = Object.keys(MONTHS).some((month) => lower.includes(month))
+    if (hasMonth) return false
+    if (extractDates(message).length) return false
+    return /\b\d{1,2}\s*(?:al|to|-)\s*\d{1,2}\b/.test(lower)
+}
+
+const parseDayRange = (message: string) => {
+    const lower = normalizeText(message || '')
+    const match = lower.match(/\b(\d{1,2})\s*(?:al|to|-)\s*(\d{1,2})\b/)
+    if (!match) return null
+    const startDay = Number(match[1])
+    const endDay = Number(match[2])
+    if (!startDay || !endDay) return null
+    return { startDay, endDay }
+}
+
+const detectMonthInMessage = (message: string) => {
+    const lower = normalizeText(message || '')
+    for (const month of Object.keys(MONTHS)) {
+        const regex = new RegExp(`\\b${month}\\b`)
+        if (regex.test(lower)) {
+            return { monthIndex: MONTHS[month], month }
+        }
+    }
+    return null
+}
+
 const extractNamesFromSummary = (summary: string) => {
     if (!summary) return [] as string[]
     const names: string[] = []
@@ -347,6 +441,8 @@ const formatPrice = (price?: number, currency?: string) => {
     return `${price.toFixed(0)} ${currency || 'USD'}`
 }
 
+const formatBulletList = (items: string[]) => items.join('\n\n')
+
 const formatAvailabilitySections = (available: Array<Record<string, any>>, unavailable: Array<Record<string, any>>, locale = 'es-AR') => {
     const availableLabel = locale === 'en-US' ? 'Available' : 'Disponibles'
     const unavailableLabel = locale === 'en-US' ? 'Unavailable' : 'No disponibles'
@@ -378,8 +474,8 @@ const formatAvailabilitySections = (available: Array<Record<string, any>>, unava
         return `- ${name} - ${reason}`
     })
 
-    const availableSection = `${availableLabel}:\n${availableLines.length ? availableLines.join('\n\n') : noneLabel}`
-    const unavailableSection = `${unavailableLabel}:\n${unavailableLines.length ? unavailableLines.join('\n\n') : noneLabel}`
+    const availableSection = `${availableLabel}:\n${availableLines.length ? formatBulletList(availableLines) : noneLabel}`
+    const unavailableSection = `${unavailableLabel}:\n${unavailableLines.length ? formatBulletList(unavailableLines) : noneLabel}`
 
     return `${availableSection}\n\n${unavailableSection}`
 }
@@ -640,8 +736,8 @@ const buildPaymentReply = (restrictions: RestrictionsDoc, locale = 'es-AR') => {
     const transferText = transferParts.length
         ? responseForLocale(
               locale,
-              ` Datos para la transferencia bancaria: ${transferParts.map((part) => `- ${part}`).join(' ')}`,
-              ` Bank transfer details: ${transferParts.map((part) => `- ${part}`).join(' ')}`
+              `\n\nDatos para la transferencia bancaria:\n${formatBulletList(transferParts.map((part) => `- ${part}`))}`,
+              `\n\nBank transfer details:\n${formatBulletList(transferParts.map((part) => `- ${part}`))}`
           )
         : ''
 
@@ -1288,12 +1384,22 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     const collections = getManualAgentsCollections()
     const sessionId = input.sessionId || ''
     let lockedLocale = ''
+    let lastMonthIndex: number | undefined
+    let lastYear: number | undefined
+    let lastRangeStart: string | undefined
+    let lastRangeEnd: string | undefined
 
     if (sessionId) {
         const session = await db
-            .collection<{ locale?: string }>(collections.manualAgentSessions)
+            .collection<{ locale?: string; lastMonthIndex?: number; lastYear?: number; lastRangeStart?: string; lastRangeEnd?: string }>(
+                collections.manualAgentSessions
+            )
             .findOne({ sessionId, agentId: 'quintas' })
         lockedLocale = session?.locale || ''
+        lastMonthIndex = session?.lastMonthIndex
+        lastYear = session?.lastYear
+        lastRangeStart = session?.lastRangeStart
+        lastRangeEnd = session?.lastRangeEnd
     }
 
     if (!lockedLocale) {
@@ -1304,6 +1410,22 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 { $set: { locale: lockedLocale, updatedAt: new Date() } }
             )
         }
+    }
+
+    const detectedMonth = detectMonthInMessage(input.message || '')
+    if (detectedMonth && sessionId) {
+        const timezone = 'America/Argentina/Buenos_Aires'
+        const now = moment.tz(timezone)
+        let year = now.year()
+        if (detectedMonth.monthIndex < now.month()) {
+            year += 1
+        }
+        lastMonthIndex = detectedMonth.monthIndex
+        lastYear = year
+        await db.collection(collections.manualAgentSessions).updateOne(
+            { sessionId, agentId: 'quintas' },
+            { $set: { lastMonthIndex, lastYear, updatedAt: new Date() } }
+        )
     }
 
     if (isGreetingOnly(input.message || '')) {
@@ -1317,6 +1439,79 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 `Hi! I'm the manager for ${summary}.\n\n${availabilityOverview}\n\n${blockedDatesText ? `${blockedDatesText}\n\n` : ''}Share your dates, number of guests, and preferred quinta.`
             )
         }
+    }
+
+    const monthRange = parseMonthRange(input.message || '')
+    if (monthRange) {
+        const property = await detectProperty(input.message || '', await getCatalogProperties())
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastRangeStart: monthRange.start, lastRangeEnd: monthRange.end, updatedAt: new Date() } }
+            )
+        }
+        return buildAvailabilityReply(monthRange.start, monthRange.end, property || undefined, lockedLocale)
+    }
+
+    const dayRange = parseDayRange(input.message || '')
+    if (dayRange && typeof lastMonthIndex === 'number' && lastYear) {
+        const timezone = 'America/Argentina/Buenos_Aires'
+        const start = moment
+            .tz({ year: lastYear, month: lastMonthIndex, day: dayRange.startDay }, timezone)
+            .format('YYYY-MM-DD')
+        const end = moment
+            .tz({ year: lastYear, month: lastMonthIndex, day: dayRange.endDay }, timezone)
+            .format('YYYY-MM-DD')
+        const property = await detectProperty(input.message || '', await getCatalogProperties())
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastRangeStart: start, lastRangeEnd: end, updatedAt: new Date() } }
+            )
+        }
+        return buildAvailabilityReply(start, end, property || undefined, lockedLocale)
+    }
+
+    if (mentionsDayRangeWithoutMonth(input.message || '')) {
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                'Tengo el rango de dias, pero necesito el mes. Decime por ejemplo "del 5 al 10 de febrero" y te confirmo.',
+                'I have the day range, but need the month. For example: "from Feb 5 to Feb 10".'
+            )
+        }
+    }
+
+    if (mentionsMonthWithoutDay(input.message || '')) {
+        return {
+            answer: responseForLocale(
+                lockedLocale,
+                'Para revisar disponibilidad necesito fechas exactas (check-in y check-out). Decime del X al Y y te confirmo.',
+                'To check availability I need exact dates (check-in and check-out). Tell me from X to Y and I will confirm.'
+            )
+        }
+    }
+
+    const lower = normalizeText(input.message || '')
+    const wantsAlternatives = ['otra', 'otras', 'otras opciones', 'opciones', 'disponibles'].some((keyword) => lower.includes(keyword))
+    const hasDates = extractDates(input.message || '').length > 0
+    if (wantsAlternatives && lastRangeStart && lastRangeEnd && !hasDates && !mentionsMonthWithoutDay(input.message || '')) {
+        return buildAvailabilityReply(lastRangeStart, lastRangeEnd, undefined, lockedLocale)
+    }
+
+    const explicitDates = extractDates(input.message || '')
+    const hasReservationIntent = ['reserv', 'deposito', 'anticipo'].some((keyword) => lower.includes(keyword))
+    if (explicitDates.length && !hasReservationIntent) {
+        const start = explicitDates[0].format('YYYY-MM-DD')
+        const end = explicitDates[1]?.format('YYYY-MM-DD') || start
+        const property = await detectProperty(input.message || '', await getCatalogProperties())
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastRangeStart: start, lastRangeEnd: end, updatedAt: new Date() } }
+            )
+        }
+        return buildAvailabilityReply(start, end, property || undefined, lockedLocale)
     }
 
     try {

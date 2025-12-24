@@ -230,6 +230,19 @@ const PublicManualAgentChat = () => {
         agentInfo?.id === 'gran-sol'
             ? ['Reservar nueva estadia', 'Modificar reserva', 'Cancelar', 'Servicios del hotel', 'Atencion al huesped']
             : []
+    const formatMessage = (content) => {
+        if (!content) return []
+        const normalized = content.replace(/\r\n/g, '\n').trim()
+        const spaced = normalized
+            .replace(/\.\s+-\s+/g, '.\n\n- ')
+            .replace(/:\s+-\s+/g, ':\n\n- ')
+            .replace(/([^\n])\s-\s(?=[A-ZÁÉÍÓÚÑ])/g, '$1\n\n- ')
+            .replace(/\.\s+/g, '.\n\n')
+        return spaced
+            .split(/\n{2,}/)
+            .map((block) => block.trim())
+            .filter(Boolean)
+    }
 
     return (
         <Box
@@ -286,6 +299,7 @@ const PublicManualAgentChat = () => {
                                 const messageConfig = isUser ? chatbotConfig.userMessage : chatbotConfig.botMessage
                                 const showAvatar = messageConfig?.showAvatar && messageConfig?.avatarSrc
                                 const content = message.content || ''
+                                const paragraphs = formatMessage(content)
                                 return (
                                     <Stack
                                         key={`${message.role}-${idx}`}
@@ -317,9 +331,19 @@ const PublicManualAgentChat = () => {
                                                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
                                                 />
                                             ) : (
-                                                <Typography variant='body2' sx={{ fontSize: chatbotConfig.fontSize }}>
-                                                    {content}
-                                                </Typography>
+                                                <Stack spacing={1}>
+                                                    {paragraphs.length ? (
+                                                        paragraphs.map((paragraph, index) => (
+                                                            <Typography key={index} variant='body2' sx={{ fontSize: chatbotConfig.fontSize }}>
+                                                                {paragraph}
+                                                            </Typography>
+                                                        ))
+                                                    ) : (
+                                                        <Typography variant='body2' sx={{ fontSize: chatbotConfig.fontSize }}>
+                                                            {content}
+                                                        </Typography>
+                                                    )}
+                                                </Stack>
                                             )}
                                         </Card>
                                         {isUser && showAvatar && (
