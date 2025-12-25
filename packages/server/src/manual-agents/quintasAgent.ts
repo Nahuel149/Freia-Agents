@@ -593,6 +593,209 @@ const formatAvailabilitySections = (available: Array<Record<string, any>>, unava
     return `${availableSection}\n\n${unavailableSection}`
 }
 
+const formatRangeLabel = (start: moment.Moment, end: moment.Moment, locale = 'es-AR') => {
+    if (start.isSame(end, 'day')) {
+        return start.format('YYYY-MM-DD')
+    }
+    if (start.isSame(end, 'month')) {
+        const monthName = start.locale(locale === 'en-US' ? 'en' : 'es').format('MMMM')
+        return locale === 'en-US'
+            ? `from ${start.format('D')} to ${end.format('D')} ${monthName}`
+            : `del ${start.format('D')} al ${end.format('D')} de ${monthName}`
+    }
+    return locale === 'en-US'
+        ? `from ${start.format('YYYY-MM-DD')} to ${end.format('YYYY-MM-DD')}`
+        : `del ${start.format('YYYY-MM-DD')} al ${end.format('YYYY-MM-DD')}`
+}
+
+const getMonthWindowFromMessage = (message: string, monthIndex: number, year: number, locale = 'es-AR') => {
+    const lower = normalizeText(message || '')
+    const timezone = 'America/Argentina/Buenos_Aires'
+    const monthStart = moment.tz({ year, month: monthIndex, day: 1 }, timezone).startOf('day')
+    const daysInMonth = monthStart.daysInMonth()
+    let startDay = 1
+    let endDay = daysInMonth
+    let label: string | null = null
+
+    if (lower.includes('primera quincena') || lower.includes('primer quincena')) {
+        startDay = 1
+        endDay = Math.min(15, daysInMonth)
+        label = locale === 'en-US' ? 'first half' : 'primera quincena'
+    } else if (lower.includes('segunda quincena')) {
+        startDay = Math.min(16, daysInMonth)
+        endDay = daysInMonth
+        label = locale === 'en-US' ? 'second half' : 'segunda quincena'
+    } else if (lower.includes('primera semana') || lower.includes('primer semana')) {
+        startDay = 1
+        endDay = Math.min(7, daysInMonth)
+        label = locale === 'en-US' ? 'first week' : 'primera semana'
+    } else if (lower.includes('segunda semana')) {
+        startDay = Math.min(8, daysInMonth)
+        endDay = Math.min(14, daysInMonth)
+        label = locale === 'en-US' ? 'second week' : 'segunda semana'
+    } else if (lower.includes('tercera semana')) {
+        startDay = Math.min(15, daysInMonth)
+        endDay = Math.min(21, daysInMonth)
+        label = locale === 'en-US' ? 'third week' : 'tercera semana'
+    } else if (lower.includes('cuarta semana')) {
+        startDay = Math.min(22, daysInMonth)
+        endDay = Math.min(28, daysInMonth)
+        label = locale === 'en-US' ? 'fourth week' : 'cuarta semana'
+    } else if (lower.includes('ultima semana') || lower.includes('ultima')) {
+        startDay = Math.max(1, daysInMonth - 6)
+        endDay = daysInMonth
+        label = locale === 'en-US' ? 'last week' : 'ultima semana'
+    } else if (lower.includes('mediados') || lower.includes('mitad')) {
+        startDay = Math.min(10, daysInMonth)
+        endDay = Math.min(20, daysInMonth)
+        label = locale === 'en-US' ? 'mid month' : 'mediados'
+    } else if (lower.includes('principio') || lower.includes('inicio') || lower.includes('primeros dias')) {
+        startDay = 1
+        endDay = Math.min(10, daysInMonth)
+        label = locale === 'en-US' ? 'early month' : 'principios'
+    } else if (lower.includes('fin de mes') || lower.includes('fines') || lower.includes('finales')) {
+        startDay = Math.max(1, daysInMonth - 9)
+        endDay = daysInMonth
+        label = locale === 'en-US' ? 'end of month' : 'fines'
+    }
+
+    const start = monthStart.clone().date(startDay)
+    const end = monthStart.clone().date(endDay)
+    const monthName = monthStart.locale(locale === 'en-US' ? 'en' : 'es').format('MMMM')
+    const rangeLabel = formatRangeLabel(start, end, locale)
+    const windowLabel =
+        label && locale !== 'en-US'
+            ? `${label} de ${monthName}`
+            : label && locale === 'en-US'
+            ? `${label} of ${monthName}`
+            : rangeLabel
+
+    return {
+        start,
+        end,
+        monthStart,
+        monthEnd: monthStart.clone().endOf('month'),
+        monthName,
+        rangeLabel,
+        windowLabel,
+        isFullMonth: startDay === 1 && endDay === daysInMonth
+    }
+}
+
+const buildAvailabilitySuggestions = async (
+    start: moment.Moment,
+    end: moment.Moment,
+    locale = 'es-AR',
+    maxOptions = 4
+) => {
+    const properties = await getCatalogProperties()
+    if (!properties.length) return [] as string[]
+    const years = getAvailabilityYears(start, end)
+    const calendarsByProperty = new Map<string, CalendarDoc[]>()
+
+    for (const prop of properties) {
+        const docs = await getCalendarDocs(prop.propertyId, years)
+        calendarsByProperty.set(prop.propertyId, docs || [])
+    }
+
+    const suggestions: Array<{
+        property: CatalogProperty
+        start: moment.Moment
+        end: moment.Moment
+        minNights: number
+    }> = []
+
+    for (const prop of properties) {
+        const calendars = calendarsByProperty.get(prop.propertyId) || []
+        const minNights = prop.minNights || 1
+        const lastStart = end.clone().subtract(minNights - 1, 'day')
+        if (lastStart.isBefore(start, 'day')) continue
+        for (let cursor = start.clone(); cursor.isSameOrBefore(lastStart, 'day'); cursor.add(1, 'day')) {
+            const candidateEnd = cursor.clone().add(minNights - 1, 'day')
+            let blocked = false
+            for (const calendar of calendars) {
+                if (isRangeBlocked(cursor, candidateEnd, calendar) || hasRangeConflict(cursor, candidateEnd, calendar)) {
+                    blocked = true
+                    break
+                }
+            }
+            if (!blocked) {
+                suggestions.push({ property: prop, start: cursor.clone(), end: candidateEnd, minNights })
+                break
+            }
+        }
+    }
+
+    suggestions.sort((a, b) => a.start.valueOf() - b.start.valueOf())
+    const perNightLabel = locale === 'en-US' ? 'per night' : 'por noche'
+    const minNightsLabel = (minNights: number) =>
+        locale === 'en-US' ? `min ${minNights} nights` : `minimo ${minNights} noches`
+
+    return suggestions.slice(0, maxOptions).map((item) => {
+        const name = item.property.name || item.property.propertyId || 'Quinta'
+        const location = item.property.location ? ` (${item.property.location})` : ''
+        const rangeLabel = formatRangeLabel(item.start, item.end, locale)
+        const price = item.property.basePricePerNight
+            ? `${formatPrice(item.property.basePricePerNight, item.property.currency)} ${perNightLabel}`
+            : ''
+        const details = [rangeLabel, price, minNightsLabel(item.minNights)].filter(Boolean).join(' - ')
+        return `- ${name}${location} - ${details}`
+    })
+}
+
+const buildMonthAvailabilitySummary = async (input: {
+    message: string
+    monthIndex: number
+    year: number
+    locale: string
+}) => {
+    const window = getMonthWindowFromMessage(input.message, input.monthIndex, input.year, input.locale)
+    const suggestions = await buildAvailabilitySuggestions(window.start, window.end, input.locale, 4)
+    if (suggestions.length) {
+        return responseForLocale(
+            input.locale,
+            `Para ${window.windowLabel} tengo estas opciones aproximadas:\n${formatBulletList(suggestions)}\n\nSi queres, pasame fechas exactas y cantidad de personas para confirmar.`,
+            `For ${window.windowLabel} I have these options:\n${formatBulletList(suggestions)}\n\nShare exact dates and number of guests to confirm.`
+        )
+    }
+
+    if (!window.isFullMonth) {
+        const monthSuggestions = await buildAvailabilitySuggestions(window.monthStart, window.monthEnd, input.locale, 4)
+        if (monthSuggestions.length) {
+            return responseForLocale(
+                input.locale,
+                `No tengo disponibilidad justo en ${window.windowLabel}, pero en ${window.monthName} tengo:\n${formatBulletList(
+                    monthSuggestions
+                )}\n\nSi queres, pasame fechas exactas y cantidad de personas y lo confirmo.`,
+                `I don't have availability exactly in ${window.windowLabel}, but in ${window.monthName} I have:\n${formatBulletList(
+                    monthSuggestions
+                )}\n\nShare exact dates and number of guests and I will confirm.`
+            )
+        }
+    }
+
+    const fallbackStart = window.monthEnd.clone().add(1, 'day')
+    const fallbackEnd = fallbackStart.clone().add(30, 'days')
+    const fallbackSuggestions = await buildAvailabilitySuggestions(fallbackStart, fallbackEnd, input.locale, 3)
+    if (fallbackSuggestions.length) {
+        return responseForLocale(
+            input.locale,
+            `En ${window.monthName} no tengo fechas disponibles, pero lo mas cercano es:\n${formatBulletList(
+                fallbackSuggestions
+            )}\n\nSi queres, decime fechas exactas y cantidad de personas.`,
+            `In ${window.monthName} I don't have availability, but the closest options are:\n${formatBulletList(
+                fallbackSuggestions
+            )}\n\nShare exact dates and number of guests.`
+        )
+    }
+
+    return responseForLocale(
+        input.locale,
+        `En ${window.monthName} no tengo fechas disponibles. Querias que busque otro mes?`,
+        `I don't have availability in ${window.monthName}. Want me to check another month?`
+    )
+}
+
 const buildAvailabilityOverview = async (daysWindow = 30, locale = 'es-AR') => {
     const properties = await getCatalogProperties()
     if (!properties.length) {
@@ -1920,12 +2123,30 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     }
 
     if (mentionsMonthWithoutDay(input.message || '')) {
+        const monthMatch = detectMonthInMessage(input.message || '')
+        const timezone = 'America/Argentina/Buenos_Aires'
+        const now = moment.tz(timezone)
+        const monthIndex = typeof monthMatch?.monthIndex === 'number' ? monthMatch.monthIndex : lastMonthIndex
+        let year = lastYear
+        if (typeof monthIndex === 'number' && !year) {
+            year = monthIndex < now.month() ? now.year() + 1 : now.year()
+        }
+        if (typeof monthIndex !== 'number' || !year) {
+            return {
+                answer: responseForLocale(
+                    lockedLocale,
+                    'Decime el mes que tenes en mente y te paso opciones.',
+                    'Tell me which month you have in mind and I will share options.'
+                )
+            }
+        }
         return {
-            answer: responseForLocale(
-                lockedLocale,
-                'Para revisar disponibilidad necesito fechas exactas (check-in y check-out). Decime del X al Y y te confirmo.',
-                'To check availability I need exact dates (check-in and check-out). Tell me from X to Y and I will confirm.'
-            )
+            answer: await buildMonthAvailabilitySummary({
+                message: input.message || '',
+                monthIndex,
+                year,
+                locale: lockedLocale
+            })
         }
     }
 
