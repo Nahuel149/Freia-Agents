@@ -274,7 +274,9 @@ const PublicManualAgentChat = () => {
         const spaced = normalized
             .replace(/\.\s+-\s+/g, '.\n\n- ')
             .replace(/:\s+-\s+/g, ':\n\n- ')
-            .replace(/([^\n])\s-\s(?=[A-ZÁÉÍÓÚÑ])/g, '$1\n\n- ')
+            .replace(/\n-\s+/g, '\n\n- ')
+            .replace(/\n(\d+)\.\s+/g, '\n\n$1. ')
+            .replace(/([^\n])\s-\s(?=[A-Z])/g, '$1\n\n- ')
             .replace(/\.\s+/g, '.\n\n')
         return spaced
             .split(/\n{2,}/)

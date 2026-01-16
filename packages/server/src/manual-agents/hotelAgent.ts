@@ -219,6 +219,8 @@ export const HOTEL_ALLOWED_COLLECTIONS = [
 
 export const HOTEL_ALLOWED_OPS: Array<'read' | 'write'> = ['read', 'write']
 
+const HOTEL_FRICTION_THRESHOLD = 2
+
 const ensureToolAccess = (op: 'read' | 'write', collections: string[]) => {
     if (!HOTEL_ALLOWED_OPS.includes(op)) {
         throw new Error(`Operation not allowed: ${op}`)
@@ -235,7 +237,14 @@ const normalizeText = (value: string) =>
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
 
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 const parseDate = (value: string) => moment(value, 'YYYY-MM-DD', true)
+
+const parseShortDate = (day: number, month: number) => {
+    const year = moment().year()
+    return moment(`${day}/${month}/${year}`, 'DD/MM/YYYY', true)
+}
 
 const findMonthInText = (message: string) => {
     const text = normalizeText(message)
@@ -312,6 +321,14 @@ const extractGuests = (message: string) => {
     return Number.isFinite(value) ? value : undefined
 }
 
+const extractStayLength = (message: string) => {
+    const normalized = normalizeText(message || '')
+    const match = normalized.match(/\b(\d{1,2})\s*(dias|noches|days|nights)\b/)
+    if (!match) return undefined
+    const value = Number(match[1])
+    return Number.isFinite(value) ? value : undefined
+}
+
 const extractPaymentMethod = (message: string) => {
     const normalized = normalizeText(message || '')
     if (!normalized) return ''
@@ -371,22 +388,42 @@ const extractDayRange = (message: string) => {
 }
 
 const extractDates = (message: string): moment.Moment[] => {
-    const matches: string[] = []
-    const isoMatches = message.match(/\d{4}-\d{2}-\d{2}/g) || []
-    const slashMatches = message.match(/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/g) || []
-    matches.push(...isoMatches, ...slashMatches)
-
-    return matches
-        .map((raw) => {
-            if (raw.includes('-')) {
-                return moment(raw, 'YYYY-MM-DD', true)
+    const tokens: Array<{ raw: string; index: number; kind: 'iso' | 'slash' | 'hyphen' }> = []
+    for (const match of message.matchAll(/\d{4}-\d{2}-\d{2}/g)) {
+        if (match.index === undefined) continue
+        tokens.push({ raw: match[0], index: match.index, kind: 'iso' })
+    }
+    for (const match of message.matchAll(/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/g)) {
+        if (match.index === undefined) continue
+        tokens.push({ raw: match[0], index: match.index, kind: 'slash' })
+    }
+    for (const match of message.matchAll(/\b\d{1,2}-\d{1,2}\b/g)) {
+        if (match.index === undefined) continue
+        const index = match.index
+        const raw = match[0]
+        if (index >= 5 && /\d{4}-/.test(message.slice(index - 5, index))) continue
+        const afterIndex = index + raw.length
+        if (afterIndex < message.length && message[afterIndex] === '-') continue
+        tokens.push({ raw, index, kind: 'hyphen' })
+    }
+    return tokens
+        .sort((a, b) => a.index - b.index)
+        .map((token) => {
+            if (token.kind === 'iso') {
+                return moment(token.raw, 'YYYY-MM-DD', true)
             }
-            const parts = raw.split('/')
-            if (parts.length === 2) {
-                const year = moment().year()
-                return moment(`${parts[0]}/${parts[1]}/${year}`, 'DD/MM/YYYY', true)
+            if (token.kind === 'slash') {
+                const parts = token.raw.split('/')
+                if (parts.length === 2) {
+                    return parseShortDate(Number(parts[0]), Number(parts[1]))
+                }
+                return moment(token.raw, 'DD/MM/YYYY', true)
             }
-            return moment(raw, 'DD/MM/YYYY', true)
+            const [day, month] = token.raw.split('-').map((value) => Number(value))
+            if (!Number.isFinite(day) || !Number.isFinite(month)) {
+                return moment.invalid()
+            }
+            return parseShortDate(day, month)
         })
         .filter((parsed) => parsed.isValid())
 }
@@ -411,12 +448,263 @@ const formatMonthName = (month: number, year: number, language: 'es' | 'en') => 
     return moment({ year, month: month - 1, day: 1 }).locale(locale).format('MMMM')
 }
 
+const formatSuggestedRange = (start: moment.Moment, end: moment.Moment, language: 'es' | 'en') => {
+    const locale = language === 'en' ? 'en' : 'es'
+    if (start.isSame(end, 'month') && start.isSame(end, 'year')) {
+        const monthName = start.locale(locale).format('MMMM')
+        const year = start.format('YYYY')
+        return language === 'en'
+            ? `from ${start.format('D')} to ${end.format('D')} ${monthName} ${year}`
+            : `del ${start.format('D')} al ${end.format('D')} de ${monthName} de ${year}`
+    }
+    if (start.isSame(end, 'year')) {
+        const year = start.format('YYYY')
+        return language === 'en'
+            ? `from ${start.locale(locale).format('D MMM')} to ${end.locale(locale).format('D MMM')} ${year}`
+            : `del ${start.locale(locale).format('D [de] MMMM')} al ${end.locale(locale).format('D [de] MMMM')} de ${year}`
+    }
+    return language === 'en'
+        ? `from ${start.locale(locale).format('MMM D, YYYY')} to ${end.locale(locale).format('MMM D, YYYY')}`
+        : `del ${start.locale(locale).format('D [de] MMMM [de] YYYY')} al ${end.locale(locale).format('D [de] MMMM [de] YYYY')}`
+}
+
+const formatGuestName = (name: string) => {
+    const parts = String(name || '')
+        .trim()
+        .split(/\s+/g)
+        .filter(Boolean)
+    if (!parts.length) return ''
+    return parts.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
+}
+
+const getNextWeekday = (base: moment.Moment, targetDay: number, includeToday: boolean) => {
+    const currentDay = base.day()
+    let delta = (targetDay - currentDay + 7) % 7
+    if (delta === 0 && !includeToday) delta = 7
+    return base.clone().add(delta, 'day')
+}
+
+const parseRelativeDateRange = (message: string) => {
+    const text = normalizeText(message || '')
+    if (!text) return null
+    const today = moment().startOf('day')
+    const wantsNext = text.includes('proximo') || text.includes('proxima') || text.includes('next')
+    const includeToday = !wantsNext
+    const isWeekend = text.includes('fin de semana') || text.includes('finde') || text.includes('weekend')
+    const isEndOfMonth = text.includes('fin de mes') || text.includes('end of month')
+    const hasSaturday = text.includes('sabado') || text.includes('saturday')
+    const hasSunday = text.includes('domingo') || text.includes('sunday')
+
+    if (isEndOfMonth) {
+        const lastDay = today.clone().endOf('month').startOf('day')
+        const start = lastDay.clone().subtract(1, 'day')
+        const end = lastDay.clone().add(1, 'day')
+        return { start, end, kind: 'end_of_month' }
+    }
+
+    if (isWeekend) {
+        let saturday = getNextWeekday(today, 6, includeToday)
+        if (today.day() === 0 && includeToday) {
+            saturday = getNextWeekday(today.clone().add(1, 'day'), 6, true)
+        }
+        const start = saturday
+        const end = saturday.clone().add(2, 'day')
+        return { start, end, kind: 'weekend' }
+    }
+
+    if (hasSaturday || hasSunday) {
+        const targetDay = hasSaturday ? 6 : 0
+        const start = getNextWeekday(today, targetDay, includeToday)
+        const end = start.clone().add(1, 'day')
+        return { start, end, kind: hasSaturday ? 'saturday' : 'sunday' }
+    }
+
+    return null
+}
+
+const buildMinNightsAnswer = (availability: { nights?: number; minNights?: number; minRule?: MinNightsRule; suggestedRanges?: Array<{ start: string; end: string }> }, language: 'es' | 'en') => {
+    const minNights = Number(availability.minNights || 0)
+    const nights = Number(availability.nights || 0)
+    if (!minNights || nights >= minNights) return ''
+    const reason = availability.minRule?.motivo ? ` (${availability.minRule.motivo})` : ''
+    const ranges = (availability.suggestedRanges || [])
+        .map((range) => {
+            const start = parseDate(range.start)
+            const end = parseDate(range.end)
+            if (!start.isValid() || !end.isValid()) return ''
+            return formatSuggestedRange(start, end, language)
+        })
+        .filter(Boolean)
+    const optionsText = ranges.length
+        ? language === 'en'
+            ? `I can offer ${ranges.join(' or ')}.`
+            : `Puedo ofrecer ${ranges.join(' o ')}.`
+        : ''
+    const base = language === 'en' ? `The minimum stay is ${minNights} nights${reason}.` : `El minimo es ${minNights} noches${reason}.`
+    const question = language === 'en' ? 'Interested?' : 'Te sirve?'
+    return [base, optionsText, question].filter(Boolean).join(' ')
+}
+
+const buildAvailabilityOptionsAnswer = (options: string[], language: 'es' | 'en', repeat: boolean) => {
+    if (language === 'en') {
+        return repeat ? `Options:\n${formatBulletList(options)}` : `Here are some options:\n${formatBulletList(options)}`
+    }
+    return repeat ? `Opciones:\n${formatBulletList(options)}` : `Aca tenes opciones:\n${formatBulletList(options)}`
+}
+
+const appendEscalationPrompt = (answer: string, language: 'es' | 'en') => {
+    const prompt = language === 'en' ? 'Want me to connect you with a human?' : 'Queres que te pase con un humano?'
+    return `${answer}\n\n${prompt}`
+}
+
+const formatAvailabilityOption = (item: {
+    hotelName?: string
+    sede?: string
+    roomType?: string
+    baseRate?: number
+    currency?: string
+    capacity?: number
+    breakfastIncluded?: boolean
+}, language: 'es' | 'en') => {
+    const place = item.hotelName || item.sede || ''
+    const room = item.roomType || ''
+    const fromLabel = language === 'en' ? 'from' : 'desde'
+    const price = item.baseRate ? `${fromLabel} ${formatMoney(item.baseRate, item.currency)}` : ''
+    const details: string[] = []
+    if (item.capacity) {
+        details.push(language === 'en' ? `capacity ${item.capacity}` : `capacidad ${item.capacity}`)
+    }
+    if (item.breakfastIncluded) {
+        details.push(language === 'en' ? 'breakfast included' : 'con desayuno')
+    }
+    const detailText = details.length ? ` - ${details.join(', ')}` : ''
+    return `- ${place} ${room}: ${price}${detailText}`.replace(/\s+/g, ' ').trim()
+}
+
+const buildMissingDetailsQuestion = (params: {
+    language: 'es' | 'en'
+    needsLocation?: boolean
+    needsRoomType?: boolean
+    needsGuests?: boolean
+}) => {
+    const parts: string[] = []
+    if (params.needsLocation) {
+        parts.push(params.language === 'en' ? 'location' : 'sede')
+    }
+    if (params.needsRoomType) {
+        parts.push(params.language === 'en' ? 'room type' : 'tipo de habitacion')
+    }
+    if (params.needsGuests) {
+        parts.push(params.language === 'en' ? 'guest count' : 'cantidad de personas')
+    }
+    if (!parts.length) return ''
+    const list =
+        parts.length === 1
+            ? parts[0]
+            : `${parts.slice(0, -1).join(params.language === 'en' ? ', ' : ', ')}${params.language === 'en' ? ' and ' : ' y '}${
+                  parts[parts.length - 1]
+              }`
+    return params.language === 'en'
+        ? `For those dates I need ${list}. Share that and I will continue.`
+        : `Para esas fechas necesito ${list}. Decime eso y sigo.`
+}
+
+const buildReservationRecap = (draft: {
+    start: string
+    end: string
+    sede?: string
+    hotelId?: string
+    roomType?: string
+    guests?: number
+    paymentMethod?: string
+}, language: 'es' | 'en') => {
+    const parts: string[] = []
+    const place = draft.sede || draft.hotelId
+    if (place) {
+        parts.push(place)
+    }
+    if (draft.roomType) {
+        parts.push(draft.roomType)
+    }
+    parts.push(language === 'en' ? `from ${draft.start} to ${draft.end}` : `del ${draft.start} al ${draft.end}`)
+    if (draft.guests) {
+        parts.push(language === 'en' ? `${draft.guests} guests` : `${draft.guests} personas`)
+    }
+    if (draft.paymentMethod) {
+        parts.push(language === 'en' ? `payment ${draft.paymentMethod}` : `pago ${draft.paymentMethod}`)
+    }
+    const summary = parts.filter(Boolean).join(', ')
+    return language === 'en'
+        ? `Before I confirm: ${summary}. Should I confirm?`
+        : `Antes de confirmar: ${summary}. Confirmo?`
+}
+
+const buildFlexibleAvailabilityMessage = async (params: {
+    month: number
+    year: number
+    nights?: number
+    weekendOnly?: boolean
+    language: 'es' | 'en'
+    sede?: string
+    hotelId?: string
+    roomType?: string
+    guests?: number
+}) => {
+    const nights = Math.max(params.nights || (params.weekendOnly ? 2 : 2), 1)
+    const startOfMonth = moment({ year: params.year, month: params.month - 1, day: 1 }).startOf('day')
+    const endOfMonth = startOfMonth.clone().endOf('month')
+    const today = moment().startOf('day')
+    const options: string[] = []
+
+    for (let day = 1; day <= endOfMonth.date(); day += 1) {
+        const start = moment({ year: params.year, month: params.month - 1, day }).startOf('day')
+        if (start.isBefore(today, 'day')) continue
+        if (params.weekendOnly && start.day() !== 5) continue
+        const end = start.clone().add(nights, 'day')
+        if (end.isAfter(endOfMonth.clone().add(1, 'day'), 'day')) continue
+        const availability = await checkAvailability({
+            start: start.format('YYYY-MM-DD'),
+            end: end.format('YYYY-MM-DD'),
+            sede: params.sede,
+            hotelId: params.hotelId,
+            roomType: params.roomType,
+            guests: params.guests
+        })
+        const okAvailability = availability as { available?: Array<Record<string, unknown>> }
+        if (availability.ok && (okAvailability.available || []).length) {
+            options.push(formatSuggestedRange(start, end, params.language))
+        }
+        if (options.length >= 3) break
+    }
+
+    if (!options.length) return ''
+    const monthName = formatMonthName(params.month, params.year, params.language)
+    const header =
+        params.language === 'en'
+            ? `Here are some flexible options in ${monthName}:`
+            : `Opciones flexibles en ${monthName}:`
+    const question = params.language === 'en' ? 'Which one works best?' : 'Cual te sirve?'
+    const lines = options.map((option) => `- ${option}`)
+    return `${header}\n${formatBulletList(lines)}\n\n${question}`
+}
+
 const buildContextFromMessages = (messages: Array<{ metadata?: Record<string, any> }>) => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
         const context = messages[i]?.metadata?.context
         if (context) return context
     }
     return {}
+}
+
+const buildContextRestorePayload = (restored: Record<string, unknown>, current: Record<string, unknown>) => {
+    const payload: Record<string, unknown> = {}
+    const keys = ['start', 'end', 'month', 'year', 'hotelId', 'sede', 'roomType', 'guests']
+    for (const key of keys) {
+        if (current[key] == null && restored[key] != null) {
+            payload[key] = restored[key]
+        }
+    }
+    return payload
 }
 
 const getSessionContext = async (sessionId: string) => {
@@ -430,6 +718,35 @@ const getSessionContext = async (sessionId: string) => {
     return session?.context || {}
 }
 
+const findRecentSessionByIdentity = async (params: { sessionId: string; name?: string; email?: string }) => {
+    if (!params.name && !params.email) return null
+    const db = await getManualAgentsDb()
+    const collections = collectionNames
+    ensureToolAccess('read', [collections.manualAgentSessions])
+    const filters: Record<string, unknown>[] = []
+    if (params.email) {
+        filters.push({ 'context.email': { $regex: `^${escapeRegex(params.email)}$`, $options: 'i' } })
+    }
+    if (params.name) {
+        filters.push({ 'context.name': params.name })
+        filters.push({
+            messages: {
+                $elemMatch: { role: 'user', content: { $regex: new RegExp(`\\b${escapeRegex(params.name)}\\b`, 'i') } }
+            }
+        })
+    }
+    if (!filters.length) return null
+    const session = await db
+        .collection<{ context?: Record<string, any>; messages?: Array<{ role: string; content: string }> }>(
+            collections.manualAgentSessions
+        )
+        .find({ agentId: HOTEL_AGENT_ID, sessionId: { $ne: params.sessionId }, $or: filters })
+        .sort({ updatedAt: -1 })
+        .limit(1)
+        .toArray()
+    return session[0] || null
+}
+
 const updateSessionContext = async (sessionId: string, context: Record<string, unknown>) => {
     if (!sessionId || !Object.keys(context).length) return
     const db = await getManualAgentsDb()
@@ -440,6 +757,53 @@ const updateSessionContext = async (sessionId: string, context: Record<string, u
         { sessionId, agentId: HOTEL_AGENT_ID },
         { $set: { ...setPayload, updatedAt: new Date() } }
     )
+}
+
+const applyHotelReplySignals = async (params: {
+    answer: string
+    sessionId: string
+    context: Record<string, unknown>
+    language: 'es' | 'en'
+    replyKind?: string
+    intentSummary?: string
+    frictionAction?: 'increase' | 'reset'
+}) => {
+    let answer = params.answer || ''
+    const contextUpdate: Record<string, unknown> = {}
+
+    const name = String(params.context?.name || '')
+    if (name) {
+        const formatted = formatGuestName(name)
+        const currentCount = Number(params.context?.nameUseCount || 0)
+        const nextCount = currentCount + 1
+        contextUpdate.nameUseCount = nextCount
+        const shouldUse = nextCount % 3 === 1
+        if (formatted && shouldUse && !normalizeText(answer).startsWith(normalizeText(formatted))) {
+            answer = `${formatted}, ${answer}`
+        }
+    }
+
+    if (params.replyKind) {
+        contextUpdate.lastReplyKind = params.replyKind
+    }
+    if (params.intentSummary) {
+        contextUpdate.lastIntentSummary = params.intentSummary
+    }
+
+    if (params.frictionAction) {
+        const currentCount = Number(params.context?.frictionCount || 0)
+        const nextCount = params.frictionAction === 'reset' ? 0 : currentCount + 1
+        contextUpdate.frictionCount = nextCount
+        if (params.frictionAction === 'increase' && nextCount >= HOTEL_FRICTION_THRESHOLD) {
+            answer = appendEscalationPrompt(answer, params.language)
+        }
+    }
+
+    if (Object.keys(contextUpdate).length) {
+        await updateSessionContext(params.sessionId, contextUpdate)
+    }
+
+    return { answer, contextUpdate }
 }
 
 const findMinNightsRule = (rules: HotelRulesDoc, start: moment.Moment, end: moment.Moment) => {
@@ -1110,6 +1474,78 @@ const checkAvailability = async (input: {
     }
 }
 
+const findNearbyAvailability = async (params: {
+    start: string
+    nights: number
+    sede?: string
+    hotelId?: string
+    roomType?: string
+    guests?: number
+    maxOffsetDays?: number
+}) => {
+    const startDate = parseDate(params.start)
+    if (!startDate.isValid() || params.nights < 1) return null
+    const maxOffset = params.maxOffsetDays ?? 10
+    const today = moment().startOf('day')
+
+    for (let offset = 1; offset <= maxOffset; offset += 1) {
+        const candidates = [startDate.clone().subtract(offset, 'day'), startDate.clone().add(offset, 'day')]
+        for (const candidateStart of candidates) {
+            if (candidateStart.isBefore(today, 'day')) continue
+            const candidateEnd = candidateStart.clone().add(params.nights, 'day')
+            const availability = await checkAvailability({
+                start: candidateStart.format('YYYY-MM-DD'),
+                end: candidateEnd.format('YYYY-MM-DD'),
+                sede: params.sede,
+                hotelId: params.hotelId,
+                roomType: params.roomType,
+                guests: params.guests
+            })
+            const okAvailability = availability as { available?: Array<Record<string, unknown>> }
+            if (availability.ok && (okAvailability.available || []).length) {
+                return { start: candidateStart, end: candidateEnd, option: okAvailability.available?.[0] }
+            }
+        }
+    }
+    return null
+}
+
+const buildNearbyAvailabilitySuggestion = async (params: {
+    start: string
+    nights?: number
+    language: 'es' | 'en'
+    sede?: string
+    hotelId?: string
+    roomType?: string
+    guests?: number
+}) => {
+    if (!params.nights) return null
+    const suggestion = await findNearbyAvailability({
+        start: params.start,
+        nights: params.nights,
+        sede: params.sede,
+        hotelId: params.hotelId,
+        roomType: params.roomType,
+        guests: params.guests
+    })
+    if (!suggestion) return null
+
+    const rangeLabel = formatSuggestedRange(suggestion.start, suggestion.end, params.language)
+    const nightsLabel = params.language === 'en' ? `${params.nights} nights` : `${params.nights} noches`
+    const option = suggestion.option as { hotelName?: string; sede?: string; roomType?: string } | undefined
+    const place = option?.hotelName || option?.sede
+    const room = option?.roomType
+    const placeLabel = place
+        ? params.language === 'en'
+            ? ` at ${place}${room ? ` (${room})` : ''}`
+            : ` en ${place}${room ? ` (${room})` : ''}`
+        : ''
+
+    return params.language === 'en'
+        ? `For ${nightsLabel}, I have availability ${rangeLabel}${placeLabel}. Interested?`
+        : `Para ${nightsLabel}, tengo disponibilidad ${rangeLabel}${placeLabel}. Te interesa?`
+}
+
 const createReservation = async (input: {
     name?: string
     email?: string
@@ -1720,6 +2156,9 @@ const detectLanguage = (message: string) => {
 
 const formatBulletList = (items: string[]) => items.join('\n\n')
 
+const buildNoAvailabilityAnswer = (language: 'es' | 'en') =>
+    language === 'en' ? 'No availability for those dates.' : 'No hay disponibilidad para esas fechas.'
+
 const getSessionMessages = async (sessionId: string) => {
     const db = await getManualAgentsDb()
     const collections = collectionNames
@@ -1784,6 +2223,18 @@ const buildSystemPrompt = (rules: HotelRulesDoc, hotels: HotelInventoryDoc[], la
         language === 'en'
             ? 'Use tools for availability, rules, info, services, profiles, support, promos, and reservations. Do not invent data.'
             : 'Usa herramientas para disponibilidad, reglas, info, servicios, perfiles, soporte, promos y reservas. No inventes datos.',
+        language === 'en'
+            ? 'When answering availability, list only available options in bullets. If there is no availability, reply: "No availability for those dates."'
+            : 'Cuando respondas disponibilidad, lista solo opciones disponibles en vinetas. Si no hay disponibilidad, responde: "No hay disponibilidad para esas fechas."',
+        language === 'en'
+            ? 'If the guest asks for X nights and there is no availability on the requested date, suggest a nearby range with that length.'
+            : 'Si el huesped pide X noches/dias y no hay disponibilidad en esa fecha, sugiere un rango cercano con esa duracion.',
+        language === 'en'
+            ? 'Tone: short, natural, and human. Keep replies to 1-3 short sentences unless listing options.'
+            : 'Tono: cercano, natural y humano. Responde en 1-3 frases cortas salvo cuando listes opciones.',
+        language === 'en'
+            ? 'Use short acknowledgements like "ok" or "got it" when it fits.'
+            : 'Usa confirmaciones cortas tipo "dale" u "ok" cuando aplique.',
         language === 'en'
             ? 'When listing items, put one bullet per paragraph (blank line between bullets).'
             : 'Cuando listes items, pone un guion por parrafo (linea en blanco entre guiones).'
@@ -2012,6 +2463,8 @@ const runLlmFlow = async (
 
     const openai = new OpenAI({ apiKey })
     const systemPrompt = buildSystemPrompt(rules, hotels, language)
+    const fallbackAnswer =
+        language === 'en' ? 'Sorry, I could not process that.' : 'Perdon, no pude procesar eso.'
 
     let historySource = sessionMessages
     if (!historySource) {
@@ -2059,7 +2512,7 @@ const runLlmFlow = async (
 
         if (!toolCalls.length) {
             return {
-                answer: (assistant.content || '').trim() || 'No pude procesar tu consulta.',
+                answer: (assistant.content || '').trim() || fallbackAnswer,
                 metadata
             }
         }
@@ -2086,7 +2539,7 @@ const runLlmFlow = async (
         }
     }
 
-    return { answer: 'No pude procesar tu consulta.', metadata }
+    return { answer: fallbackAnswer, metadata }
 }
 
 const findFaqAnswer = (faq: HotelFaqItem[], message: string) => {
@@ -2114,6 +2567,7 @@ const findFaqAnswer = (faq: HotelFaqItem[], message: string) => {
 const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | 'en'): Promise<ManualAgentResponse> => {
     const message = input.message || ''
     const lower = normalizeText(message)
+    const requestedNights = extractStayLength(message)
 
     const [rules, faqDoc, hotels] = await Promise.all([getHotelRules(), getHotelFaq(), getHotelInventory()])
     const faqAnswer = findFaqAnswer(faqDoc.faq || [], message)
@@ -2129,8 +2583,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
             return {
                 answer:
                     language === 'en'
-                        ? `I have your profile. Preferences: ${prefs}. Want me to apply them to the booking?`
-                        : `Tengo tu perfil. Preferencias: ${prefs}. Queres que las aplique a la reserva?`
+                        ? `Got it, I have your profile. Preferences: ${prefs}. Want me to use them for this booking?`
+                        : `Listo, tengo tu perfil. Preferencias: ${prefs}. Queres que las use en la reserva?`
             }
         }
     }
@@ -2143,8 +2597,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
             return {
                 answer:
                     language === 'en'
-                        ? `${info.nombre || 'Hotel Gran Sol'}: ${info.ubicacion || ''}. Map: ${info.mapaUrl || ''}`.trim()
-                        : `${info.nombre || 'Hotel Gran Sol'}: ${info.ubicacion || ''}. Mapa: ${info.mapaUrl || ''}`.trim()
+                        ? `Here you go: ${info.nombre || 'Hotel Gran Sol'}: ${info.ubicacion || ''}. Map: ${info.mapaUrl || ''}`.trim()
+                        : `Aca va: ${info.nombre || 'Hotel Gran Sol'}: ${info.ubicacion || ''}. Mapa: ${info.mapaUrl || ''}`.trim()
             }
         }
     }
@@ -2167,8 +2621,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
             return {
                 answer:
                     language === 'en'
-                        ? `Available services:\n${formatBulletList(lines)}`
-                        : `Servicios disponibles:\n${formatBulletList(lines)}`
+                        ? `Here are the available services:\n${formatBulletList(lines)}`
+                        : `Aca tenes servicios disponibles:\n${formatBulletList(lines)}`
             }
         }
     }
@@ -2180,8 +2634,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
             return {
                 answer:
                     language === 'en'
-                        ? `Internal protocols available:\n${formatBulletList(protocols)}`
-                        : `Protocolos internos disponibles:\n${formatBulletList(protocols)}`
+                        ? `Internal protocols:\n${formatBulletList(protocols)}`
+                        : `Protocolos internos:\n${formatBulletList(protocols)}`
             }
         }
     }
@@ -2196,24 +2650,25 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
                 language === 'en'
                     ? rooms.length
                         ? `Base nightly rates:\n${formatBulletList(rooms)}`
-                        : 'I can quote prices if you share dates and location.'
+                        : 'I can quote if you share dates and location.'
                     : rooms.length
                     ? `Tarifas base por noche:\n${formatBulletList(rooms)}`
-                    : 'Puedo cotizar si me indicas fechas y sede.'
+                    : 'Puedo cotizar si me decis fechas y sede.'
         }
     }
 
     const dates = extractDates(message)
     if (dates.length) {
         const startStr = dates[0].format('YYYY-MM-DD')
-        const endStr = dates[1]?.format('YYYY-MM-DD')
+        const endStr = dates[1]
+            ? dates[1].format('YYYY-MM-DD')
+            : requestedNights
+            ? dates[0].clone().add(requestedNights, 'day').format('YYYY-MM-DD')
+            : dates[0].clone().add(1, 'day').format('YYYY-MM-DD')
         const availability = await checkAvailability({ start: startStr, end: endStr, sede: input.metadata?.sede as string | undefined })
         if (!availability.ok) {
             return {
-                answer:
-                    language === 'en'
-                        ? 'No availability for those dates. Want to try another location or nearby dates?'
-                        : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?'
+                answer: buildNoAvailabilityAnswer(language)
             }
         }
         const okAvailability = availability as {
@@ -2225,18 +2680,28 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         }
         if (okAvailability.nights < okAvailability.minNights) {
             const ranges = (okAvailability.suggestedRanges || []).map((range: any) => `${range.start} a ${range.end}`).filter(Boolean)
+            const rangeLines = ranges.map((range) => `- ${range}`)
             return {
                 answer:
                     language === 'en'
-                        ? `Those dates require at least ${okAvailability.minNights} nights. Options: ${
-                              ranges.join(' | ') || 'adjust dates'
-                          }.`
-                        : `Para esas fechas se requieren al menos ${okAvailability.minNights} noches. Opciones: ${
-                              ranges.join(' | ') || 'ajustar fechas'
-                          }.`
+                        ? `Minimum stay is ${okAvailability.minNights} nights for those dates.${
+                              rangeLines.length ? `\n\nOptions:\n${formatBulletList(rangeLines)}` : ' You can adjust the dates.'
+                          }`
+                        : `Para esas fechas el minimo es ${okAvailability.minNights} noches.${
+                              rangeLines.length ? `\n\nOpciones:\n${formatBulletList(rangeLines)}` : ' Podes ajustar las fechas.'
+                          }`
             }
         }
         if (!okAvailability.available?.length) {
+            const suggestion = await buildNearbyAvailabilitySuggestion({
+                start: startStr,
+                nights: requestedNights,
+                language,
+                sede: input.metadata?.sede as string | undefined
+            })
+            if (suggestion) {
+                return { answer: suggestion }
+            }
             const alternativeLines = (okAvailability.alternatives || []).map((alt: any) => {
                 return `- ${alt.hotelName || alt.sede} ${alt.roomType || ''}`.trim()
             })
@@ -2244,15 +2709,16 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
                 return {
                     answer:
                         language === 'en'
-                            ? `No availability in that location. Options in other locations:\n${formatBulletList(alternativeLines)}`
-                            : `No hay disponibilidad en esa sede. Opciones en otras sedes:\n${formatBulletList(alternativeLines)}`
+                            ? `${buildNoAvailabilityAnswer(language)}\n\nOptions in other locations:\n${formatBulletList(
+                                  alternativeLines
+                              )}`
+                            : `${buildNoAvailabilityAnswer(language)}\n\nOpciones en otras sedes:\n${formatBulletList(
+                                  alternativeLines
+                              )}`
                 }
             }
             return {
-                answer:
-                    language === 'en'
-                        ? 'No availability for those dates. I can suggest other options.'
-                        : 'No hay disponibilidad en esas fechas. Puedo sugerirte otras opciones.'
+                answer: buildNoAvailabilityAnswer(language)
             }
         }
         const options = okAvailability.available
@@ -2261,8 +2727,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         return {
             answer:
                 language === 'en'
-                    ? `Availability for those dates:\n${formatBulletList(options)}`
-                    : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`
+                    ? `Here are some options:\n${formatBulletList(options)}`
+                    : `Aca tenes opciones:\n${formatBulletList(options)}`
         }
     }
 
@@ -2270,7 +2736,7 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         return {
             answer:
                 language === 'en'
-                    ? 'To book I need dates, location, room type, and guest count.'
+                    ? 'To book, I need dates, location, room type, and guest count.'
                     : 'Para reservar necesito fechas, sede, tipo de habitacion y cantidad de huespedes.'
         }
     }
@@ -2292,7 +2758,7 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         return {
             answer:
                 language === 'en'
-                    ? 'To reissue a voucher I need the reservation ID.'
+                    ? 'To reissue a voucher, I need the reservation ID.'
                     : 'Para reemitir el voucher necesito el ID de la reserva.'
         }
     }
@@ -2301,8 +2767,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         return {
             answer:
                 language === 'en'
-                    ? 'I can help cancel. I need the reservation ID or email.'
-                    : 'Puedo ayudarte a cancelar. Necesito el ID de reserva o el email.'
+                    ? 'Sure, I can cancel it. Share the reservation ID or email.'
+                    : 'Dale, lo cancelo. Pasame el ID de reserva o el email.'
         }
     }
 
@@ -2310,8 +2776,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         return {
             answer:
                 language === 'en'
-                    ? 'I can modify your booking. I need the ID and the new dates or room type.'
-                    : 'Puedo modificar tu reserva. Necesito el ID y las nuevas fechas o habitacion.'
+                    ? 'Sure, I can modify it. Share the ID and the new dates or room type.'
+                    : 'Dale, lo modifico. Pasame el ID y las nuevas fechas o habitacion.'
         }
     }
 
@@ -2319,8 +2785,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
         return {
             answer:
                 language === 'en'
-                    ? 'Got it. I can register the request. Share the reservation ID and service details.'
-                    : 'Listo, puedo registrar el pedido. Decime el ID de reserva y el detalle del servicio.'
+                    ? 'Got it, I can log it. Share the reservation ID and the details.'
+                    : 'Listo, lo registro. Decime el ID de reserva y el detalle del servicio.'
         }
     }
 
@@ -2328,8 +2794,8 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
     const checkOut = rules.horarios?.checkout || '11:00'
     const summary =
         language === 'en'
-            ? `I'm Freia, Hotel Gran Sol assistant. I handle bookings, changes, cancellations, and services. Check-in ${checkIn}, check-out ${checkOut}.`
-            : `Soy Freia, asistente de Hotel Gran Sol. Gestiono reservas, cambios, cancelaciones y servicios. Check-in ${checkIn}, check-out ${checkOut}.`
+            ? `I'm Freia. I can help with bookings, changes, cancellations, and services. Check-in ${checkIn}, check-out ${checkOut}.`
+            : `Soy Freia. Te ayudo con reservas, cambios, cancelaciones y servicios. Check-in ${checkIn}, check-out ${checkOut}.`
     return { answer: summary }
 }
 
@@ -2609,28 +3075,59 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
 
     const rules = await getHotelRules()
     const hotels = await getHotelInventory()
-    const sessionMessages = await getSessionMessages(input.sessionId)
+    let sessionMessages = await getSessionMessages(input.sessionId)
     const storedContext = await getSessionContext(input.sessionId)
-    let sessionContext = { ...storedContext, ...buildContextFromMessages(sessionMessages) }
+    let sessionContext = { ...buildContextFromMessages(sessionMessages), ...storedContext }
     const language = getSessionLanguage(sessionMessages, input.message || '')
     const message = input.message || ''
     const normalized = normalizeText(message)
     const bookingIntent =
         normalized.includes('reserv') || normalized.includes('book') || normalized.includes('reserve') || normalized.includes('booking')
     const explicitDates = extractDates(message)
+    const requestedNights = extractStayLength(message)
+    const resolvedDates =
+        explicitDates.length === 1 && requestedNights
+            ? [explicitDates[0], explicitDates[0].clone().add(requestedNights, 'day')]
+            : explicitDates
     const inferredMonth = findMonthInText(message)
     const dayRange = extractDayRange(message)
+    const relativeRange = !explicitDates.length && !dayRange ? parseRelativeDateRange(message) : null
     const detectedHotel = detectHotelSelection(message, hotels)
     const detectedRoomType = detectRoomSelection(message, detectedHotel, hotels)
     const detectedGuests = extractGuests(message)
     const detectedPaymentMethod = extractPaymentMethod(message)
     const detectedEmail = extractEmail(message)
     const detectedName = extractName(message)
+    const hasDateSignal = resolvedDates.length > 0 || Boolean(dayRange) || Boolean(relativeRange)
+    const shortAckPhrases = ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale', 'ok dale']
+    const shortNoPhrases = ['no', 'no gracias', 'no, gracias', 'no por ahora', 'no, por ahora']
+    const isShortAck = shortAckPhrases.includes(normalized)
+    const isShortNo = shortNoPhrases.includes(normalized)
+
+    if (!hasDateSignal && (detectedEmail || detectedName) && (!sessionContext.start || !sessionContext.end)) {
+        const restoredSession = await findRecentSessionByIdentity({
+            sessionId: input.sessionId,
+            name: detectedName || undefined,
+            email: detectedEmail || undefined
+        })
+        if (restoredSession?.context) {
+            const restoredContext = restoredSession.context as Record<string, unknown>
+            sessionContext = { ...restoredContext, ...sessionContext }
+            const restorePayload = buildContextRestorePayload(restoredContext, storedContext as Record<string, unknown>)
+            if (Object.keys(restorePayload).length) {
+                await updateSessionContext(input.sessionId, restorePayload)
+                sessionContext = { ...sessionContext, ...restorePayload }
+            }
+        }
+        if (restoredSession?.messages?.length) {
+            sessionMessages = [...restoredSession.messages, ...sessionMessages]
+        }
+    }
     const contextUpdate: Record<string, unknown> = {}
 
-    if (explicitDates.length >= 2) {
-        contextUpdate.start = explicitDates[0].format('YYYY-MM-DD')
-        contextUpdate.end = explicitDates[1].format('YYYY-MM-DD')
+    if (resolvedDates.length >= 2) {
+        contextUpdate.start = resolvedDates[0].format('YYYY-MM-DD')
+        contextUpdate.end = resolvedDates[1].format('YYYY-MM-DD')
     }
     if (detectedHotel?.hotelId) {
         contextUpdate.hotelId = detectedHotel.hotelId
@@ -2656,33 +3153,155 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         sessionContext = { ...sessionContext, ...contextUpdate }
     }
 
+    if (sessionContext?.pendingDateConfirm && explicitDates.length) {
+        const clearPayload = { pendingDateConfirm: false }
+        await updateSessionContext(input.sessionId, clearPayload)
+        sessionContext = { ...sessionContext, ...clearPayload }
+    }
+
+    const respondWith = async (
+        response: ManualAgentResponse,
+        options?: { replyKind?: string; intentSummary?: string; frictionAction?: 'increase' | 'reset' }
+    ) => {
+        const result = await applyHotelReplySignals({
+            answer: response.answer || '',
+            sessionId: input.sessionId || '',
+            context: sessionContext,
+            language,
+            replyKind: options?.replyKind,
+            intentSummary: options?.intentSummary,
+            frictionAction: options?.frictionAction
+        })
+        if (Object.keys(result.contextUpdate).length) {
+            sessionContext = { ...sessionContext, ...result.contextUpdate }
+        }
+        return { ...response, answer: result.answer }
+    }
+
+    const respond = async (
+        answer: string,
+        metadata?: ManualAgentResponse['metadata'],
+        options?: { replyKind?: string; intentSummary?: string; frictionAction?: 'increase' | 'reset' }
+    ) => {
+        return respondWith({ answer, metadata }, options)
+    }
+
+    if (sessionContext?.pendingDateConfirm && isShortNo && !explicitDates.length) {
+        const clearPayload = { pendingDateConfirm: false }
+        await updateSessionContext(input.sessionId, clearPayload)
+        sessionContext = { ...sessionContext, ...clearPayload }
+        return respond(
+            language === 'en' ? 'Ok, share the exact dates you want.' : 'Dale, pasame las fechas exactas.',
+            { context: sessionContext },
+            { intentSummary: 'awaiting_dates', frictionAction: 'increase' }
+        )
+    }
+
+    if (sessionContext?.pendingDateConfirm && isShortAck && !explicitDates.length && sessionContext.start && sessionContext.end) {
+        const start = String(sessionContext.start)
+        const end = String(sessionContext.end)
+        const clearPayload = { pendingDateConfirm: false }
+        await updateSessionContext(input.sessionId, clearPayload)
+        sessionContext = { ...sessionContext, ...clearPayload }
+        const availabilityScope = sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
+        const availability = await checkAvailability({
+            start,
+            end,
+            sede: sessionContext?.sede as string | undefined,
+            hotelId: sessionContext?.hotelId as string | undefined,
+            roomType: sessionContext?.roomType as string | undefined,
+            guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+        })
+        if (!availability.ok) {
+            const contextUpdatePayload = { availabilityOk: false, availabilityScope }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
+            return respond(buildNoAvailabilityAnswer(language), { context: sessionContext }, { replyKind: 'availability', frictionAction: 'reset' })
+        }
+        const okAvailability = availability as {
+            available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
+        }
+        const options = (okAvailability.available || [])
+            .slice(0, 4)
+            .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+        if (!options.length) {
+            const minNightsAnswer = buildMinNightsAnswer(availability as { nights?: number; minNights?: number; minRule?: MinNightsRule; suggestedRanges?: Array<{ start: string; end: string }> }, language)
+            const contextUpdatePayload = { availabilityOk: false, availabilityScope }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
+            if (minNightsAnswer) {
+                return respond(minNightsAnswer, { context: sessionContext }, { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' })
+            }
+            const suggestion = await buildNearbyAvailabilitySuggestion({
+                start,
+                nights: requestedNights,
+                language,
+                sede: sessionContext?.sede as string | undefined,
+                hotelId: sessionContext?.hotelId as string | undefined,
+                roomType: sessionContext?.roomType as string | undefined,
+                guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+            })
+            if (suggestion) {
+                return respond(suggestion, { context: sessionContext }, { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' })
+            }
+            return respond(buildNoAvailabilityAnswer(language), { context: sessionContext }, { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' })
+        }
+        const contextUpdatePayload = { availabilityOk: true, availabilityScope }
+        await updateSessionContext(input.sessionId, contextUpdatePayload)
+        sessionContext = { ...sessionContext, ...contextUpdatePayload }
+        return respond(
+            buildAvailabilityOptionsAnswer(options, language, sessionContext?.lastReplyKind === 'availability'),
+            { context: sessionContext },
+            { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+        )
+    }
+
+    if (relativeRange && !inferredMonth && explicitDates.length === 0 && !dayRange) {
+        const startStr = relativeRange.start.format('YYYY-MM-DD')
+        const endStr = relativeRange.end.format('YYYY-MM-DD')
+        const contextUpdatePayload = { start: startStr, end: endStr, pendingDateConfirm: true }
+        await updateSessionContext(input.sessionId, contextUpdatePayload)
+        sessionContext = { ...sessionContext, ...contextUpdatePayload }
+        const rangeLabel = formatSuggestedRange(relativeRange.start, relativeRange.end, language)
+        const answer =
+            language === 'en'
+                ? `Did you mean ${rangeLabel}?`
+                : `Te referis a ${rangeLabel}?`
+        return respond(answer, { context: { start: startStr, end: endStr } }, { intentSummary: 'confirm_dates', frictionAction: 'increase' })
+    }
+
     if (inferredMonth && explicitDates.length === 0 && !dayRange) {
         const monthName = formatMonthName(inferredMonth.month, inferredMonth.year, language)
         await updateSessionContext(input.sessionId, { month: inferredMonth.month, year: inferredMonth.year })
-        return {
-            answer:
-                language === 'en'
-                    ? `Got it. For ${monthName} I need exact dates. For example: from 5 to 10.`
-                    : `Dale. Para ${monthName} necesito fechas exactas. Por ejemplo: del 5 al 10.`,
-            metadata: { context: { month: inferredMonth.month, year: inferredMonth.year } }
-        }
+        return respond(
+            language === 'en'
+                ? `Ok, for ${monthName} I need exact dates. For example: from 5 to 10.`
+                : `Dale, para ${monthName} necesito fechas exactas. Por ejemplo: del 5 al 10.`,
+            { context: { month: inferredMonth.month, year: inferredMonth.year } },
+            { intentSummary: 'awaiting_dates', frictionAction: 'increase' }
+        )
     }
 
     if (dayRange && explicitDates.length === 0) {
         const month = inferredMonth?.month || sessionContext?.month
         const year = inferredMonth?.year || sessionContext?.year
         if (!month || !year) {
-            return {
-                answer: language === 'en' ? 'Which month is that for?' : 'De que mes hablamos?',
-                metadata: { context: sessionContext || {} }
-            }
+            return respond(
+                language === 'en' ? 'Ok, which month is that for?' : 'Dale, de que mes hablamos?',
+                { context: sessionContext || {} },
+                { intentSummary: 'awaiting_month', frictionAction: 'increase' }
+            )
         }
         const start = moment({ year, month: month - 1, day: dayRange.startDay })
         const end = moment({ year, month: month - 1, day: dayRange.endDay })
         if (!start.isValid() || !end.isValid()) {
-            return {
-                answer: language === 'en' ? 'I need exact dates in YYYY-MM-DD format.' : 'Necesito fechas exactas en formato YYYY-MM-DD.'
-            }
+            return respond(
+                language === 'en'
+                    ? 'To check availability I need exact dates in YYYY-MM-DD format.'
+                    : 'Para chequear necesito fechas exactas en formato YYYY-MM-DD.',
+                undefined,
+                { intentSummary: 'awaiting_dates', frictionAction: 'increase' }
+            )
         }
         const startStr = start.format('YYYY-MM-DD')
         const endStr = end.format('YYYY-MM-DD')
@@ -2699,13 +3318,11 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             const contextUpdatePayload = { month, year, start: startStr, end: endStr, availabilityOk: false, availabilityScope }
             await updateSessionContext(input.sessionId, contextUpdatePayload)
             sessionContext = { ...sessionContext, ...contextUpdatePayload }
-            return {
-                answer:
-                    language === 'en'
-                        ? 'No availability for those dates. Want to try another location or nearby dates?'
-                        : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
-                metadata: { context: { month, year, start: startStr, end: endStr } }
-            }
+            return respond(
+                buildNoAvailabilityAnswer(language),
+                { context: { month, year, start: startStr, end: endStr } },
+                { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+            )
         }
         const okAvailability = availability as {
             available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
@@ -2717,24 +3334,47 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             const contextUpdatePayload = { month, year, start: startStr, end: endStr, availabilityOk: false, availabilityScope }
             await updateSessionContext(input.sessionId, contextUpdatePayload)
             sessionContext = { ...sessionContext, ...contextUpdatePayload }
-            return {
-                answer:
-                    language === 'en'
-                        ? 'No availability for those dates. Want to try another location or nearby dates?'
-                        : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
-                metadata: { context: { month, year, start: startStr, end: endStr } }
+            const minNightsAnswer = buildMinNightsAnswer(
+                availability as { nights?: number; minNights?: number; minRule?: MinNightsRule; suggestedRanges?: Array<{ start: string; end: string }> },
+                language
+            )
+            if (minNightsAnswer) {
+                return respond(
+                    minNightsAnswer,
+                    { context: { month, year, start: startStr, end: endStr } },
+                    { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                )
             }
+            const suggestion = await buildNearbyAvailabilitySuggestion({
+                start: startStr,
+                nights: requestedNights,
+                language,
+                sede: sessionContext?.sede as string | undefined,
+                hotelId: sessionContext?.hotelId as string | undefined,
+                roomType: sessionContext?.roomType as string | undefined,
+                guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+            })
+            if (suggestion) {
+                return respond(
+                    suggestion,
+                    { context: { month, year, start: startStr, end: endStr } },
+                    { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+                )
+            }
+            return respond(
+                buildNoAvailabilityAnswer(language),
+                { context: { month, year, start: startStr, end: endStr } },
+                { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+            )
         }
         const contextUpdatePayload = { month, year, start: startStr, end: endStr, availabilityOk: true, availabilityScope }
         await updateSessionContext(input.sessionId, contextUpdatePayload)
         sessionContext = { ...sessionContext, ...contextUpdatePayload }
-        return {
-            answer:
-                language === 'en'
-                    ? `Availability for those dates:\n${formatBulletList(options)}`
-                    : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`,
-            metadata: { context: { month, year, start: startStr, end: endStr } }
-        }
+        return respond(
+            buildAvailabilityOptionsAnswer(options, language, sessionContext?.lastReplyKind === 'availability'),
+            { context: { month, year, start: startStr, end: endStr } },
+            { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+        )
     }
 
     if (!explicitDates.length && sessionContext?.start && sessionContext?.end) {
@@ -2744,13 +3384,11 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 const contextUpdatePayload = { availabilityOk: false, availabilityScope: 'global' }
                 await updateSessionContext(input.sessionId, contextUpdatePayload)
                 sessionContext = { ...sessionContext, ...contextUpdatePayload }
-                return {
-                    answer:
-                        language === 'en'
-                            ? 'No availability for those dates. Want to try other dates?'
-                            : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
-                    metadata: { context: sessionContext }
-                }
+                return respond(
+                    buildNoAvailabilityAnswer(language),
+                    { context: sessionContext },
+                    { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                )
             }
             const okAvailability = availability as {
                 available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
@@ -2762,24 +3400,45 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 const contextUpdatePayload = { availabilityOk: false, availabilityScope: 'global' }
                 await updateSessionContext(input.sessionId, contextUpdatePayload)
                 sessionContext = { ...sessionContext, ...contextUpdatePayload }
-                return {
-                    answer:
-                        language === 'en'
-                            ? 'No availability for those dates. Want to try other dates?'
-                            : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
-                    metadata: { context: sessionContext }
+                const minNightsAnswer = buildMinNightsAnswer(
+                    availability as { nights?: number; minNights?: number; minRule?: MinNightsRule; suggestedRanges?: Array<{ start: string; end: string }> },
+                    language
+                )
+                if (minNightsAnswer) {
+                    return respond(
+                        minNightsAnswer,
+                        { context: sessionContext },
+                        { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                    )
                 }
+                const suggestion = await buildNearbyAvailabilitySuggestion({
+                    start: String(sessionContext.start),
+                    nights: requestedNights,
+                    language
+                })
+                if (suggestion) {
+                    return respond(
+                        suggestion,
+                        { context: sessionContext },
+                        { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+                    )
+                }
+                return respond(
+                    buildNoAvailabilityAnswer(language),
+                    { context: sessionContext },
+                    { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                )
             }
             const contextUpdatePayload = { availabilityOk: true, availabilityScope: 'global' }
             await updateSessionContext(input.sessionId, contextUpdatePayload)
             sessionContext = { ...sessionContext, ...contextUpdatePayload }
-            return {
-                answer:
-                    language === 'en'
-                        ? `Other options for those dates:\n${formatBulletList(options)}`
-                        : `Otras opciones para esas fechas:\n${formatBulletList(options)}`,
-                metadata: { context: sessionContext }
-            }
+            return respond(
+                language === 'en'
+                    ? `Other options:\n${formatBulletList(options)}`
+                    : `Otras opciones:\n${formatBulletList(options)}`,
+                { context: sessionContext },
+                { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+            )
         }
     }
 
@@ -2789,50 +3448,75 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         (sessionContext?.hotelId || sessionContext?.sede) &&
         sessionContext?.roomType
 
+    const buildAckReply = (intentSummary?: string) => {
+        if (!intentSummary) return ''
+        if (intentSummary === 'awaiting_dates') {
+            return language === 'en' ? 'Share the exact dates you want.' : 'Pasame las fechas exactas.'
+        }
+        if (intentSummary === 'awaiting_month') {
+            return language === 'en' ? 'Which month is it for?' : 'De que mes hablamos?'
+        }
+        if (intentSummary === 'awaiting_location') {
+            return language === 'en' ? 'Which location works best?' : 'Que sede te queda mejor?'
+        }
+        if (intentSummary === 'awaiting_room_type') {
+            return language === 'en' ? 'Which room type do you want?' : 'Que tipo de habitacion queres?'
+        }
+        if (intentSummary === 'availability_options') {
+            return language === 'en' ? 'Which option do you want to book?' : 'Decime cual opcion queres reservar.'
+        }
+        if (intentSummary === 'awaiting_contact') {
+            return language === 'en'
+                ? 'Share your full name, email, and payment method.'
+                : 'Pasame nombre completo, email y metodo de pago.'
+        }
+        return ''
+    }
+
+    const shortAckReply = isShortAck ? buildAckReply(String(sessionContext?.lastIntentSummary || '')) : ''
+    if (
+        shortAckReply &&
+        !explicitDates.length &&
+        !dayRange &&
+        !relativeRange &&
+        !detectedHotel &&
+        !detectedRoomType &&
+        !detectedEmail &&
+        !detectedName
+    ) {
+        return respond(shortAckReply, { context: sessionContext })
+    }
+
     if (
         sessionContext?.start &&
         sessionContext?.end &&
-        ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale'].some((phrase) => normalized === phrase)
+        isShortAck
     ) {
         if (sessionContext?.availabilityOk === false) {
-            return {
-                answer:
-                    language === 'en'
-                        ? 'No availability for those dates. Want to try other dates?'
-                        : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
-                metadata: { context: sessionContext }
-            }
+            return respond(buildNoAvailabilityAnswer(language), { context: sessionContext }, { replyKind: 'availability', intentSummary: 'availability_none' })
         }
         if (sessionContext?.availabilityScope === 'global' || (!sessionContext?.hotelId && !sessionContext?.sede)) {
             const sedes = Array.from(new Set(hotels.map((hotel) => hotel.sede).filter(Boolean)))
-            return {
-                answer:
-                    language === 'en'
-                        ? `Which location do you prefer? Options: ${sedes.join(', ')}.`
-                        : `Que sede preferis? Opciones: ${sedes.join(', ')}.`,
-                metadata: { context: sessionContext }
-            }
+            return respond(
+                language === 'en'
+                    ? `Which location do you prefer? Options: ${sedes.join(', ')}.`
+                    : `Que sede preferis? Opciones: ${sedes.join(', ')}.`,
+                { context: sessionContext },
+                { intentSummary: 'awaiting_location' }
+            )
         }
         if (!sessionContext?.roomType) {
-            return {
-                answer:
-                    language === 'en'
-                        ? 'Which room type do you prefer for those dates?'
-                        : 'Que tipo de habitacion preferis para esas fechas?',
-                metadata: { context: sessionContext }
-            }
+            return respond(
+                language === 'en' ? 'Which room type do you want for those dates?' : 'Que tipo de habitacion queres para esas fechas?',
+                { context: sessionContext },
+                { intentSummary: 'awaiting_room_type' }
+            )
         }
     }
 
     if (detectedRoomType && hasReservationContext && !detectedEmail && !detectedName) {
         if (sessionContext?.availabilityOk === false) {
-            return {
-                answer:
-                    language === 'en'
-                        ? 'No availability for those dates. Want to try other dates?'
-                        : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
-                metadata: { context: sessionContext }
-            }
+            return respond(buildNoAvailabilityAnswer(language), { context: sessionContext }, { replyKind: 'availability', intentSummary: 'availability_none' })
         }
         if (sessionContext?.availabilityOk !== true) {
             const availability = await checkAvailability({
@@ -2847,19 +3531,21 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
             }
             if (!availability.ok || !(okAvailability.available || []).length) {
+                const minNightsAnswer = buildMinNightsAnswer(
+                    availability as { nights?: number; minNights?: number; minRule?: MinNightsRule; suggestedRanges?: Array<{ start: string; end: string }> },
+                    language
+                )
                 const contextUpdatePayload = {
                     availabilityOk: false,
                     availabilityScope: sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
                 }
                 await updateSessionContext(input.sessionId, contextUpdatePayload)
                 sessionContext = { ...sessionContext, ...contextUpdatePayload }
-                return {
-                    answer:
-                        language === 'en'
-                            ? 'No availability for those dates. Want to try other dates?'
-                            : 'No hay disponibilidad para esas fechas. Queres probar otras fechas?',
-                    metadata: { context: sessionContext }
-                }
+                return respond(
+                    minNightsAnswer || buildNoAvailabilityAnswer(language),
+                    { context: sessionContext },
+                    { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                )
             }
             const contextUpdatePayload = {
                 availabilityOk: true,
@@ -2868,38 +3554,40 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             await updateSessionContext(input.sessionId, contextUpdatePayload)
             sessionContext = { ...sessionContext, ...contextUpdatePayload }
         }
-        return {
-            answer:
-                language === 'en'
-                    ? `Perfect, I have ${sessionContext.roomType} for ${sessionContext.start} to ${sessionContext.end}. Please share your full name, email, and payment method to confirm.`
-                    : `Perfecto, tomo ${sessionContext.roomType} del ${sessionContext.start} al ${sessionContext.end}. Compartime nombre completo, email y metodo de pago para confirmar.`,
-            metadata: { context: sessionContext }
-        }
+        return respond(
+            language === 'en'
+                ? `Great, I have ${sessionContext.roomType} for ${sessionContext.start} to ${sessionContext.end}. Share your full name, email, and payment method and I will confirm.`
+                : `Listo, tengo ${sessionContext.roomType} del ${sessionContext.start} al ${sessionContext.end}. Pasame nombre completo, email y metodo de pago y lo confirmo.`,
+            { context: sessionContext },
+            { intentSummary: 'awaiting_contact', frictionAction: 'reset' }
+        )
     }
 
     if (hasReservationContext && (detectedEmail || detectedName || sessionContext?.email || sessionContext?.name)) {
         const name = detectedName || String(sessionContext?.name || '')
         const email = detectedEmail || String(sessionContext?.email || '')
         if (!email) {
-            return {
-                answer: language === 'en' ? 'Thanks! What email should I use for the reservation?' : 'Gracias! Que email uso para la reserva?',
-                metadata: { context: sessionContext }
-            }
+            return respond(
+                language === 'en' ? 'Great, what email should I use for the reservation?' : 'Genial, pasame el email para la reserva.',
+                { context: sessionContext },
+                { intentSummary: 'awaiting_contact' }
+            )
         }
         if (!name) {
-            return {
-                answer: language === 'en' ? 'Great. What name should I put on the reservation?' : 'Buenisimo. A nombre de quien va la reserva?',
-                metadata: { context: sessionContext }
-            }
+            return respond(
+                language === 'en' ? 'Ok, what name should I put on the reservation?' : 'Dale, a nombre de quien va la reserva?',
+                { context: sessionContext },
+                { intentSummary: 'awaiting_contact' }
+            )
         }
         if (!detectedPaymentMethod && !sessionContext?.paymentMethod) {
-            return {
-                answer:
-                    language === 'en'
-                        ? 'Which payment method do you prefer? (card, transfer, cash)'
-                        : 'Que metodo de pago preferis? (tarjeta, transferencia, efectivo)',
-                metadata: { context: sessionContext }
-            }
+            return respond(
+                language === 'en'
+                    ? 'Which payment method do you prefer? (card, transfer, cash)'
+                    : 'Dale, que metodo de pago preferis? (tarjeta, transferencia, efectivo)',
+                { context: sessionContext },
+                { intentSummary: 'awaiting_contact' }
+            )
         }
 
         const paymentMethod = detectedPaymentMethod || String(sessionContext?.paymentMethod || '')
@@ -2916,39 +3604,102 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         })
 
         if (!result.ok) {
-            return {
+            return respond(
+                language === 'en'
+                    ? 'Those dates just became unavailable. Want me to check other options?'
+                    : 'Esas fechas se acaban de ocupar. Queres que busque otras opciones?',
+                { context: sessionContext },
+                { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+            )
+        }
+
+        return respondWith(
+            {
                 answer:
                     language === 'en'
-                        ? 'Those dates just became unavailable. Want me to check other options?'
-                        : 'Esas fechas se acaban de ocupar. Queres que busque otras opciones?',
-                metadata: { context: sessionContext }
+                        ? `All set, reservation confirmed. Your ID is ${result.reservation?.id}.`
+                        : `Listo, reserva confirmada. Tu ID es ${result.reservation?.id}.`,
+                metadata: {
+                    ...(result as { confirmation?: any; reservation?: any; fees?: any; promos?: any }).confirmation
+                        ? {
+                              type: 'reservationCard',
+                              reservation: result.reservation,
+                              confirmation: result.confirmation,
+                              fees: result.fees,
+                              promos: result.promos,
+                              context: sessionContext
+                          }
+                        : { context: sessionContext }
+                }
+            },
+            { intentSummary: 'reservation_confirmed', frictionAction: 'reset' }
+        )
+    }
+
+    if (!bookingIntent && !explicitDates.length) {
+        const wantsHotelCatalog =
+            normalized.includes('catalogo') ||
+            normalized.includes('lista') ||
+            normalized.includes('hoteles') ||
+            normalized.includes('sedes')
+        if (wantsHotelCatalog) {
+            const lines = hotels.map((hotel) => {
+                const name = hotel.nombre || 'Hotel Gran Sol'
+                const sede = hotel.sede ? ` (${hotel.sede})` : ''
+                const location = hotel.ubicacion ? ` - ${hotel.ubicacion}` : ''
+                return `- ${name}${sede}${location}`
+            })
+            if (lines.length) {
+                return respond(
+                    language === 'en' ? `Hotels:\n${formatBulletList(lines)}` : `Aca tenes hoteles:\n${formatBulletList(lines)}`,
+                    undefined,
+                    { intentSummary: 'awaiting_location', frictionAction: 'reset' }
+                )
             }
         }
 
-        return {
-            answer:
-                language === 'en'
-                    ? `Reservation confirmed. Your ID is ${result.reservation?.id}.`
-                    : `Reserva confirmada. Tu ID es ${result.reservation?.id}.`,
-            metadata: {
-                ...(result as { confirmation?: any; reservation?: any; fees?: any; promos?: any }).confirmation
-                    ? {
-                          type: 'reservationCard',
-                          reservation: result.reservation,
-                          confirmation: result.confirmation,
-                          fees: result.fees,
-                          promos: result.promos,
-                          context: sessionContext
-                      }
-                    : { context: sessionContext }
+        const wantsRoomCatalog =
+            normalized.includes('habitacion') ||
+            normalized.includes('habitaciones') ||
+            normalized.includes('tipo de habitacion') ||
+            normalized.includes('tipos de habitacion') ||
+            normalized.includes('room type') ||
+            normalized.includes('room types')
+        if (wantsRoomCatalog) {
+            const reference = detectedHotel?.hotelId || detectedHotel?.sede || sessionContext?.hotelId || sessionContext?.sede || ''
+            const targetHotel = reference ? findHotelByQuery(hotels, reference)[0] : hotels.length === 1 ? hotels[0] : null
+            if (!targetHotel) {
+                return respond(
+                    language === 'en' ? 'Which location do you want room types for?' : 'De que sede queres ver las habitaciones?',
+                    undefined,
+                    { intentSummary: 'awaiting_location' }
+                )
+            }
+            const perNightLabel = language === 'en' ? 'per night' : 'por noche'
+            const capacityLabel = language === 'en' ? 'capacity' : 'capacidad'
+            const rooms = (targetHotel.habitaciones || []).map((room) => {
+                const name = room.tipo || (language === 'en' ? 'room' : 'habitacion')
+                const capacity = room.capacidad ? `${capacityLabel} ${room.capacidad}` : ''
+                const price = room.tarifaBase ? `${formatMoney(room.tarifaBase, room.moneda)} ${perNightLabel}` : ''
+                const details = [capacity, price].filter(Boolean).join(' - ')
+                return `- ${name}${details ? ` - ${details}` : ''}`
+            })
+            if (rooms.length) {
+                return respond(
+                    language === 'en'
+                        ? `Room types at ${targetHotel.nombre || targetHotel.sede}:\n${formatBulletList(rooms)}`
+                        : `Aca tenes tipos de habitaciones en ${targetHotel.nombre || targetHotel.sede}:\n${formatBulletList(rooms)}`,
+                    undefined,
+                    { intentSummary: 'awaiting_room_type', frictionAction: 'reset' }
+                )
             }
         }
     }
 
     try {
-        if (explicitDates.length >= 2 && !bookingIntent) {
-            const start = explicitDates[0].format('YYYY-MM-DD')
-            const end = explicitDates[1].format('YYYY-MM-DD')
+        if (resolvedDates.length >= 2 && !bookingIntent) {
+            const start = resolvedDates[0].format('YYYY-MM-DD')
+            const end = resolvedDates[1].format('YYYY-MM-DD')
             const availabilityScope = sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
             const availability = await checkAvailability({
                 start,
@@ -2962,13 +3713,11 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 const contextUpdatePayload = { start, end, availabilityOk: false, availabilityScope }
                 await updateSessionContext(input.sessionId, contextUpdatePayload)
                 sessionContext = { ...sessionContext, ...contextUpdatePayload }
-                return {
-                    answer:
-                        language === 'en'
-                            ? 'No availability for those dates. Want to try another location or nearby dates?'
-                            : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
-                    metadata: { context: { start, end } }
-                }
+                return respond(
+                    buildNoAvailabilityAnswer(language),
+                    { context: { start, end } },
+                    { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                )
             }
             const okAvailability = availability as {
                 available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
@@ -2980,38 +3729,62 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 const contextUpdatePayload = { start, end, availabilityOk: false, availabilityScope }
                 await updateSessionContext(input.sessionId, contextUpdatePayload)
                 sessionContext = { ...sessionContext, ...contextUpdatePayload }
-                return {
-                    answer:
-                        language === 'en'
-                            ? 'No availability for those dates. Want to try another location or nearby dates?'
-                            : 'No tengo disponibilidad para esas fechas. Queres probar otra sede o fechas cercanas?',
-                    metadata: { context: { start, end } }
+                const minNightsAnswer = buildMinNightsAnswer(
+                    availability as { nights?: number; minNights?: number; minRule?: MinNightsRule; suggestedRanges?: Array<{ start: string; end: string }> },
+                    language
+                )
+                if (minNightsAnswer) {
+                    return respond(
+                        minNightsAnswer,
+                        { context: { start, end } },
+                        { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                    )
                 }
+                const suggestion = await buildNearbyAvailabilitySuggestion({
+                    start,
+                    nights: requestedNights,
+                    language,
+                    sede: sessionContext?.sede as string | undefined,
+                    hotelId: sessionContext?.hotelId as string | undefined,
+                    roomType: sessionContext?.roomType as string | undefined,
+                    guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+                })
+                if (suggestion) {
+                    return respond(
+                        suggestion,
+                        { context: { start, end } },
+                        { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+                    )
+                }
+                return respond(
+                    buildNoAvailabilityAnswer(language),
+                    { context: { start, end } },
+                    { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+                )
             }
             const contextUpdatePayload = { start, end, availabilityOk: true, availabilityScope }
             await updateSessionContext(input.sessionId, contextUpdatePayload)
             sessionContext = { ...sessionContext, ...contextUpdatePayload }
-            return {
-                answer:
-                    language === 'en'
-                        ? `Availability for those dates:\n${formatBulletList(options)}`
-                    : `Hay disponibilidad para esas fechas:\n${formatBulletList(options)}`,
-                metadata: { context: { start, end } }
-            }
+            return respond(
+                buildAvailabilityOptionsAnswer(options, language, sessionContext?.lastReplyKind === 'availability'),
+                { context: { start, end } },
+                { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+            )
         }
 
         const response = await runLlmFlow(message, input.sessionId, rules, hotels, language, sessionMessages)
         const contextMetadata = inferredMonth
             ? { month: inferredMonth.month, year: inferredMonth.year }
-            : explicitDates.length >= 2
-            ? { start: explicitDates[0].format('YYYY-MM-DD'), end: explicitDates[1].format('YYYY-MM-DD') }
+            : resolvedDates.length >= 2
+            ? { start: resolvedDates[0].format('YYYY-MM-DD'), end: resolvedDates[1].format('YYYY-MM-DD') }
             : undefined
         if (contextMetadata) {
             await updateSessionContext(input.sessionId, contextMetadata)
-            return { ...response, metadata: { ...(response.metadata || {}), context: contextMetadata } }
+            return respondWith({ ...response, metadata: { ...(response.metadata || {}), context: contextMetadata } })
         }
-        return response
+        return respondWith(response)
     } catch (_error) {
-        return handleHotelFallback(input, language)
+        const fallback = await handleHotelFallback(input, language)
+        return respondWith(fallback, { frictionAction: 'increase' })
     }
 }
