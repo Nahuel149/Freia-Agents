@@ -220,6 +220,7 @@ export const HOTEL_ALLOWED_COLLECTIONS = [
 export const HOTEL_ALLOWED_OPS: Array<'read' | 'write'> = ['read', 'write']
 
 const HOTEL_FRICTION_THRESHOLD = 2
+const HOTEL_DATE_CONTEXT_TTL_DAYS = 14
 
 const ensureToolAccess = (op: 'read' | 'write', collections: string[]) => {
     if (!HOTEL_ALLOWED_OPS.includes(op)) {
@@ -242,8 +243,16 @@ const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$
 const parseDate = (value: string) => moment(value, 'YYYY-MM-DD', true)
 
 const parseShortDate = (day: number, month: number) => {
-    const year = moment().year()
-    return moment(`${day}/${month}/${year}`, 'DD/MM/YYYY', true)
+    const today = moment().startOf('day')
+    const year = today.year()
+    const candidate = moment(`${day}/${month}/${year}`, 'DD/MM/YYYY', true)
+    if (!candidate.isValid()) return candidate
+    if (candidate.isBefore(today, 'day')) {
+        const nextYear = year + 1
+        const nextCandidate = moment(`${day}/${month}/${nextYear}`, 'DD/MM/YYYY', true)
+        return nextCandidate.isValid() ? nextCandidate : candidate
+    }
+    return candidate
 }
 
 const findMonthInText = (message: string) => {
@@ -321,12 +330,15 @@ const extractGuests = (message: string) => {
     return Number.isFinite(value) ? value : undefined
 }
 
-const extractStayLength = (message: string) => {
+const extractStayLengthDetails = (message: string) => {
     const normalized = normalizeText(message || '')
     const match = normalized.match(/\b(\d{1,2})\s*(dias|noches|days|nights)\b/)
     if (!match) return undefined
     const value = Number(match[1])
-    return Number.isFinite(value) ? value : undefined
+    if (!Number.isFinite(value)) return undefined
+    const unitRaw = match[2]
+    const unit = unitRaw.includes('noche') || unitRaw.includes('night') ? 'nights' : 'days'
+    return { value, unit } as { value: number; unit: 'days' | 'nights' }
 }
 
 const extractPaymentMethod = (message: string) => {
@@ -387,7 +399,24 @@ const extractDayRange = (message: string) => {
     return { startDay, endDay }
 }
 
-const extractDates = (message: string): moment.Moment[] => {
+const extractDates = (message: string, options?: { preferMonthFirst?: boolean }): moment.Moment[] => {
+    const preferMonthFirst = Boolean(options?.preferMonthFirst)
+    const parseShortDateParts = (first: number, second: number) => {
+        const direct = parseShortDate(first, second)
+        const flipped = parseShortDate(second, first)
+        if (direct.isValid() && flipped.isValid()) {
+            return preferMonthFirst ? flipped : direct
+        }
+        return direct.isValid() ? direct : flipped
+    }
+    const parseSlashWithYear = (raw: string) => {
+        const dayFirst = moment(raw, ['DD/MM/YYYY', 'DD/MM/YY'], true)
+        const monthFirst = moment(raw, ['MM/DD/YYYY', 'MM/DD/YY'], true)
+        if (dayFirst.isValid() && monthFirst.isValid()) {
+            return preferMonthFirst ? monthFirst : dayFirst
+        }
+        return dayFirst.isValid() ? dayFirst : monthFirst
+    }
     const tokens: Array<{ raw: string; index: number; kind: 'iso' | 'slash' | 'hyphen' }> = []
     for (const match of message.matchAll(/\d{4}-\d{2}-\d{2}/g)) {
         if (match.index === undefined) continue
@@ -415,17 +444,49 @@ const extractDates = (message: string): moment.Moment[] => {
             if (token.kind === 'slash') {
                 const parts = token.raw.split('/')
                 if (parts.length === 2) {
-                    return parseShortDate(Number(parts[0]), Number(parts[1]))
+                    return parseShortDateParts(Number(parts[0]), Number(parts[1]))
                 }
-                return moment(token.raw, 'DD/MM/YYYY', true)
+                return parseSlashWithYear(token.raw)
             }
             const [day, month] = token.raw.split('-').map((value) => Number(value))
             if (!Number.isFinite(day) || !Number.isFinite(month)) {
                 return moment.invalid()
             }
-            return parseShortDate(day, month)
+            return parseShortDateParts(day, month)
         })
         .filter((parsed) => parsed.isValid())
+}
+
+const findAmbiguousShortDate = (message: string) => {
+    const ranges: Array<{ start: number; end: number }> = []
+    for (const match of message.matchAll(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g)) {
+        if (match.index === undefined) continue
+        ranges.push({ start: match.index, end: match.index + match[0].length })
+    }
+    for (const match of message.matchAll(/\b\d{1,2}[/-]\d{1,2}\b/g)) {
+        if (match.index === undefined) continue
+        const start = match.index
+        const end = start + match[0].length
+        if (ranges.some((range) => start >= range.start && end <= range.end)) continue
+        const parts = match[0].split(/[/-]/).map((value) => Number(value))
+        if (parts.length !== 2) continue
+        const [first, second] = parts
+        if (!Number.isFinite(first) || !Number.isFinite(second)) continue
+        if (first <= 12 && second <= 12) {
+            return { raw: match[0], first, second }
+        }
+    }
+    return null
+}
+
+const buildAmbiguousDateQuestion = (input: { raw: string; first: number; second: number }, language: 'es' | 'en') => {
+    const left = String(input.first).padStart(2, '0')
+    const right = String(input.second).padStart(2, '0')
+    const optionA = `${left}/${right}`
+    const optionB = `${right}/${left}`
+    return language === 'en'
+        ? `Quick check: "${input.raw}" could be ${optionA} or ${optionB}. Can you confirm the dates in YYYY-MM-DD?`
+        : `Para evitar errores con "${input.raw}", puede ser ${optionA} o ${optionB}. Confirmame las fechas en formato YYYY-MM-DD.`
 }
 
 const buildDateRange = (start: moment.Moment, end: moment.Moment) => {
@@ -448,24 +509,29 @@ const formatMonthName = (month: number, year: number, language: 'es' | 'en') => 
     return moment({ year, month: month - 1, day: 1 }).locale(locale).format('MMMM')
 }
 
-const formatSuggestedRange = (start: moment.Moment, end: moment.Moment, language: 'es' | 'en') => {
+const formatDateLabel = (date: moment.Moment, language: 'es' | 'en') => {
     const locale = language === 'en' ? 'en' : 'es'
-    if (start.isSame(end, 'month') && start.isSame(end, 'year')) {
-        const monthName = start.locale(locale).format('MMMM')
-        const year = start.format('YYYY')
-        return language === 'en'
-            ? `from ${start.format('D')} to ${end.format('D')} ${monthName} ${year}`
-            : `del ${start.format('D')} al ${end.format('D')} de ${monthName} de ${year}`
-    }
-    if (start.isSame(end, 'year')) {
-        const year = start.format('YYYY')
-        return language === 'en'
-            ? `from ${start.locale(locale).format('D MMM')} to ${end.locale(locale).format('D MMM')} ${year}`
-            : `del ${start.locale(locale).format('D [de] MMMM')} al ${end.locale(locale).format('D [de] MMMM')} de ${year}`
-    }
     return language === 'en'
-        ? `from ${start.locale(locale).format('MMM D, YYYY')} to ${end.locale(locale).format('MMM D, YYYY')}`
-        : `del ${start.locale(locale).format('D [de] MMMM [de] YYYY')} al ${end.locale(locale).format('D [de] MMMM [de] YYYY')}`
+        ? date.locale(locale).format('MMM D, YYYY')
+        : date.locale(locale).format('D [de] MMMM [de] YYYY')
+}
+
+const formatDateLabelFromISO = (value: string, language: 'es' | 'en') => {
+    const parsed = parseDate(value)
+    if (!parsed.isValid()) return value
+    return formatDateLabel(parsed, language)
+}
+
+const formatSuggestedRange = (start: moment.Moment, end: moment.Moment, language: 'es' | 'en') => {
+    return formatStaySpan(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), language)
+}
+
+const formatStaySpan = (start: string, end: string, language: 'es' | 'en') => {
+    const startLabel = formatDateLabelFromISO(start, language)
+    const endLabel = formatDateLabelFromISO(end, language)
+    return language === 'en'
+        ? `check-in ${startLabel}, check-out ${endLabel}`
+        : `entrada ${startLabel}, salida ${endLabel}`
 }
 
 const formatGuestName = (name: string) => {
@@ -477,11 +543,42 @@ const formatGuestName = (name: string) => {
     return parts.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
 }
 
+const mergePreferences = (current: string | undefined, additions: string[]) => {
+    const existingRaw = (current || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    const existing = new Set(existingRaw.map((item) => normalizeText(item)))
+    const merged = [...existingRaw]
+    for (const addition of additions) {
+        const normalized = normalizeText(addition)
+        if (normalized && !existing.has(normalized)) {
+            merged.push(addition)
+            existing.add(normalized)
+        }
+    }
+    return merged.join(', ')
+}
+
 const getNextWeekday = (base: moment.Moment, targetDay: number, includeToday: boolean) => {
     const currentDay = base.day()
     let delta = (targetDay - currentDay + 7) % 7
     if (delta === 0 && !includeToday) delta = 7
     return base.clone().add(delta, 'day')
+}
+
+const getEasterSunday = (year: number) => {
+    const century = Math.floor(year / 100)
+    const remainder = year % 19
+    const correction =
+        (century - Math.floor(century / 4) - Math.floor((8 * century + 13) / 25) + 19 * remainder + 15) % 30
+    const adjustment =
+        correction - Math.floor(correction / 28) * (1 - Math.floor(29 / (correction + 1)) * Math.floor((21 - remainder) / 11))
+    const weekday = (year + Math.floor(year / 4) + adjustment + 2 - century + Math.floor(century / 4)) % 7
+    const offset = adjustment - weekday
+    const month = 3 + Math.floor((offset + 40) / 44)
+    const day = offset + 28 - 31 * Math.floor(month / 4)
+    return moment({ year, month: month - 1, day })
 }
 
 const parseRelativeDateRange = (message: string) => {
@@ -490,16 +587,53 @@ const parseRelativeDateRange = (message: string) => {
     const today = moment().startOf('day')
     const wantsNext = text.includes('proximo') || text.includes('proxima') || text.includes('next')
     const includeToday = !wantsNext
+    const isLongWeekend =
+        text.includes('fin de semana largo') || text.includes('finde largo') || text.includes('puente') || text.includes('long weekend')
     const isWeekend = text.includes('fin de semana') || text.includes('finde') || text.includes('weekend')
     const isEndOfMonth = text.includes('fin de mes') || text.includes('end of month')
+    const isSemanaSanta = text.includes('semana santa') || text.includes('easter week') || text.includes('easter')
+    const quincenaMentioned = text.includes('quincena')
+    const isFirstQuincena = text.includes('primera quincena') || text.includes('1ra quincena')
+    const isSecondQuincena = text.includes('segunda quincena') || text.includes('2da quincena')
     const hasSaturday = text.includes('sabado') || text.includes('saturday')
     const hasSunday = text.includes('domingo') || text.includes('sunday')
+
+    if (isSemanaSanta) {
+        let year = today.year()
+        let start = getEasterSunday(year).clone().subtract(3, 'day')
+        let end = getEasterSunday(year).clone().add(1, 'day')
+        if (end.isBefore(today, 'day')) {
+            year += 1
+            start = getEasterSunday(year).clone().subtract(3, 'day')
+            end = getEasterSunday(year).clone().add(1, 'day')
+        }
+        return { start, end, kind: 'semana_santa' }
+    }
+
+    if (quincenaMentioned) {
+        const monthInfo = findMonthInText(message || '')
+        if (monthInfo) {
+            const startDay = isSecondQuincena ? 16 : 1
+            const monthIndex = monthInfo.month - 1
+            const start = moment({ year: monthInfo.year, month: monthIndex, day: startDay })
+            const endDay = isSecondQuincena ? start.clone().endOf('month').date() : 15
+            const end = moment({ year: monthInfo.year, month: monthIndex, day: endDay })
+            return { start, end, kind: isSecondQuincena ? 'second_half' : 'first_half' }
+        }
+    }
 
     if (isEndOfMonth) {
         const lastDay = today.clone().endOf('month').startOf('day')
         const start = lastDay.clone().subtract(1, 'day')
         const end = lastDay.clone().add(1, 'day')
         return { start, end, kind: 'end_of_month' }
+    }
+
+    if (isLongWeekend) {
+        const friday = getNextWeekday(today, 5, includeToday)
+        const start = friday
+        const end = friday.clone().add(3, 'day')
+        return { start, end, kind: 'long_weekend' }
     }
 
     if (isWeekend) {
@@ -617,6 +751,9 @@ const buildReservationRecap = (draft: {
     roomType?: string
     guests?: number
     paymentMethod?: string
+    earlyCheckin?: boolean
+    lateCheckout?: boolean
+    preferences?: string
 }, language: 'es' | 'en') => {
     const parts: string[] = []
     const place = draft.sede || draft.hotelId
@@ -626,17 +763,58 @@ const buildReservationRecap = (draft: {
     if (draft.roomType) {
         parts.push(draft.roomType)
     }
-    parts.push(language === 'en' ? `from ${draft.start} to ${draft.end}` : `del ${draft.start} al ${draft.end}`)
+    parts.push(formatStaySpan(draft.start, draft.end, language))
     if (draft.guests) {
         parts.push(language === 'en' ? `${draft.guests} guests` : `${draft.guests} personas`)
     }
     if (draft.paymentMethod) {
         parts.push(language === 'en' ? `payment ${draft.paymentMethod}` : `pago ${draft.paymentMethod}`)
     }
+    if (draft.earlyCheckin) {
+        parts.push(language === 'en' ? 'early check-in' : 'ingreso temprano')
+    }
+    if (draft.lateCheckout) {
+        parts.push(language === 'en' ? 'late check-out' : 'salida tarde')
+    }
+    if (draft.preferences) {
+        parts.push(language === 'en' ? `prefs ${draft.preferences}` : `preferencias ${draft.preferences}`)
+    }
     const summary = parts.filter(Boolean).join(', ')
     return language === 'en'
         ? `Before I confirm: ${summary}. Should I confirm?`
         : `Antes de confirmar: ${summary}. Confirmo?`
+}
+
+const buildReservationSummaryLine = (
+    params: {
+        hotelName?: string
+        sede?: string
+        roomType?: string
+        checkIn?: string
+        checkOut?: string
+        guests?: number
+        earlyCheckin?: boolean
+        lateCheckout?: boolean
+    },
+    language: 'es' | 'en'
+) => {
+    const place = params.hotelName || params.sede || ''
+    const room = params.roomType || ''
+    const stay = params.checkIn && params.checkOut ? formatStaySpan(params.checkIn, params.checkOut, language) : ''
+    const guests =
+        typeof params.guests === 'number'
+            ? language === 'en'
+                ? `${params.guests} guests`
+                : `${params.guests} personas`
+            : ''
+    const extras = [
+        params.earlyCheckin ? (language === 'en' ? 'early check-in' : 'ingreso temprano') : '',
+        params.lateCheckout ? (language === 'en' ? 'late check-out' : 'salida tarde') : ''
+    ].filter(Boolean)
+    const parts = [place, room, stay, guests, ...extras].filter(Boolean)
+    if (!parts.length) return ''
+    const summary = parts.join(', ')
+    return language === 'en' ? `Summary: ${summary}.` : `Resumen: ${summary}.`
 }
 
 const buildFlexibleAvailabilityMessage = async (params: {
@@ -698,13 +876,21 @@ const buildContextFromMessages = (messages: Array<{ metadata?: Record<string, an
 
 const buildContextRestorePayload = (restored: Record<string, unknown>, current: Record<string, unknown>) => {
     const payload: Record<string, unknown> = {}
-    const keys = ['start', 'end', 'month', 'year', 'hotelId', 'sede', 'roomType', 'guests']
+    const keys = ['start', 'end', 'month', 'year', 'hotelId', 'sede', 'roomType', 'guests', 'earlyCheckin', 'lateCheckout', 'preferences', 'dateContextUpdatedAt']
     for (const key of keys) {
         if (current[key] == null && restored[key] != null) {
             payload[key] = restored[key]
         }
     }
     return payload
+}
+
+const isDateContextStale = (params: { start?: string; end?: string; dateContextUpdatedAt?: string | Date | null }) => {
+    if (!params.start || !params.end) return false
+    if (!params.dateContextUpdatedAt) return true
+    const last = moment(params.dateContextUpdatedAt)
+    if (!last.isValid()) return true
+    return moment().diff(last, 'days') >= HOTEL_DATE_CONTEXT_TTL_DAYS
 }
 
 const getSessionContext = async (sessionId: string) => {
@@ -749,6 +935,10 @@ const findRecentSessionByIdentity = async (params: { sessionId: string; name?: s
 
 const updateSessionContext = async (sessionId: string, context: Record<string, unknown>) => {
     if (!sessionId || !Object.keys(context).length) return
+    const touchesDateContext = ['start', 'end', 'month', 'year'].some((key) => context[key] !== undefined)
+    if (touchesDateContext && !context.dateContextUpdatedAt) {
+        context.dateContextUpdatedAt = new Date()
+    }
     const db = await getManualAgentsDb()
     const collections = collectionNames
     ensureToolAccess('write', [collections.manualAgentSessions])
@@ -767,6 +957,7 @@ const applyHotelReplySignals = async (params: {
     replyKind?: string
     intentSummary?: string
     frictionAction?: 'increase' | 'reset'
+    topic?: string
 }) => {
     let answer = params.answer || ''
     const contextUpdate: Record<string, unknown> = {}
@@ -788,6 +979,9 @@ const applyHotelReplySignals = async (params: {
     }
     if (params.intentSummary) {
         contextUpdate.lastIntentSummary = params.intentSummary
+    }
+    if (params.topic) {
+        contextUpdate.lastTopic = params.topic
     }
 
     if (params.frictionAction) {
@@ -1425,6 +1619,24 @@ const checkAvailability = async (input: {
                 }).total
             })
         }
+    }
+
+    if (!available.length) {
+        const reasonCounts = unavailable.reduce<Record<string, number>>((acc, item) => {
+            const reason = String(item.reason || 'unknown')
+            acc[reason] = (acc[reason] || 0) + 1
+            return acc
+        }, {})
+        console.info('[manual-agents] hotel availability empty', {
+            start: startDate.format('YYYY-MM-DD'),
+            end: endDate.format('YYYY-MM-DD'),
+            sede: input.sede,
+            hotelId: input.hotelId,
+            roomType: input.roomType,
+            guests: input.guests,
+            minNights,
+            reasons: reasonCounts
+        })
     }
 
     const alternatives =
@@ -2145,13 +2357,59 @@ const generateReport = async (params: { start: string; end: string; sede?: strin
 
 const detectLanguage = (message: string) => {
     const text = normalizeText(message)
-    const englishHits = ['hello', 'hi', 'please', 'book', 'reserve', 'reservation', 'room', 'price', 'cancel', 'change']
-    const spanishHits = ['hola', 'por favor', 'reserva', 'reservar', 'habitacion', 'precio', 'cancelar', 'cambiar', 'desayuno']
-    const hasEnglish = englishHits.some((word) => text.includes(word))
-    const hasSpanish = spanishHits.some((word) => text.includes(word))
-    if (hasEnglish && !hasSpanish) return 'en'
-    if (hasSpanish && !hasEnglish) return 'es'
-    return 'es'
+    const englishHits = [
+        'hello',
+        'hi',
+        'thanks',
+        'thank',
+        'please',
+        'pls',
+        'plz',
+        'book',
+        'booking',
+        'reserve',
+        'reservation',
+        'room',
+        'price',
+        'rate',
+        'quote',
+        'avail',
+        'availability',
+        'check-in',
+        'checkin',
+        'check-out',
+        'checkout',
+        'cancel',
+        'change',
+        'guest'
+    ]
+    const spanishHits = [
+        'hola',
+        'gracias',
+        'por favor',
+        'reserva',
+        'reservar',
+        'habitacion',
+        'precio',
+        'tarifa',
+        'cotizar',
+        'disponible',
+        'disponibilidad',
+        'check-in',
+        'check-out',
+        'cancelar',
+        'cambiar',
+        'desayuno',
+        'huesped'
+    ]
+    const enScore = englishHits.reduce((acc, word) => (text.includes(word) ? acc + 1 : acc), 0)
+    const esScore = spanishHits.reduce((acc, word) => (text.includes(word) ? acc + 1 : acc), 0)
+    if (enScore === 0 && esScore === 0) return 'es'
+    if (enScore === esScore) {
+        const strongEnglish = ['pls', 'plz', 'price', 'rate', 'quote', 'availability', 'booking', 'checkin', 'checkout']
+        if (strongEnglish.some((word) => text.includes(word))) return 'en'
+    }
+    return enScore > esScore ? 'en' : 'es'
 }
 
 const formatBulletList = (items: string[]) => items.join('\n\n')
@@ -2227,11 +2485,17 @@ const buildSystemPrompt = (rules: HotelRulesDoc, hotels: HotelInventoryDoc[], la
             ? 'When answering availability, list only available options in bullets. If there is no availability, reply: "No availability for those dates."'
             : 'Cuando respondas disponibilidad, lista solo opciones disponibles en vinetas. Si no hay disponibilidad, responde: "No hay disponibilidad para esas fechas."',
         language === 'en'
+            ? 'When you mention date ranges, use check-in/check-out with month names (e.g., check-in Jan 5, 2026, check-out Jan 10, 2026).'
+            : 'Cuando menciones rangos de fechas, usa formato check-in/check-out con meses en texto (ej: check-in 5 de enero de 2026, check-out 10 de enero de 2026).',
+        language === 'en'
             ? 'If the guest asks for X nights and there is no availability on the requested date, suggest a nearby range with that length.'
             : 'Si el huesped pide X noches/dias y no hay disponibilidad en esa fecha, sugiere un rango cercano con esa duracion.',
         language === 'en'
             ? 'Tone: short, natural, and human. Keep replies to 1-3 short sentences unless listing options.'
             : 'Tono: cercano, natural y humano. Responde en 1-3 frases cortas salvo cuando listes opciones.',
+        language === 'en'
+            ? 'For policies or payments, give a short summary and offer to share full details.'
+            : 'Para politicas o pagos, da un resumen corto y ofrece ampliar el detalle.',
         language === 'en'
             ? 'Use short acknowledgements like "ok" or "got it" when it fits.'
             : 'Usa confirmaciones cortas tipo "dale" u "ok" cuando aplique.',
@@ -2528,6 +2792,54 @@ const runLlmFlow = async (
                 args = {}
             }
             const toolResult = await executeHotelTool(name, args, rules)
+            if (sessionId && (name === 'check_availability' || name === 'create_reservation' || name === 'update_reservation')) {
+                const contextUpdate: Record<string, unknown> = {}
+                const start =
+                    typeof args.start === 'string'
+                        ? args.start
+                        : typeof args.checkIn === 'string'
+                        ? args.checkIn
+                        : ''
+                const end =
+                    typeof args.end === 'string'
+                        ? args.end
+                        : typeof args.checkOut === 'string'
+                        ? args.checkOut
+                        : ''
+                if (start) {
+                    contextUpdate.start = start
+                }
+                if (end || start) {
+                    contextUpdate.end = end || start
+                }
+                if (typeof args.sede === 'string' && args.sede) {
+                    contextUpdate.sede = args.sede
+                }
+                if (typeof args.hotelId === 'string' && args.hotelId) {
+                    contextUpdate.hotelId = args.hotelId
+                }
+                if (typeof args.roomType === 'string' && args.roomType) {
+                    contextUpdate.roomType = args.roomType
+                }
+                if (typeof args.guests === 'number') {
+                    contextUpdate.guests = args.guests
+                }
+                if (typeof args.paymentMethod === 'string' && args.paymentMethod) {
+                    contextUpdate.paymentMethod = args.paymentMethod
+                }
+                if (typeof args.preferences === 'string' && args.preferences) {
+                    contextUpdate.preferences = args.preferences
+                }
+                if (typeof args.earlyCheckin === 'boolean') {
+                    contextUpdate.earlyCheckin = args.earlyCheckin
+                }
+                if (typeof args.lateCheckout === 'boolean') {
+                    contextUpdate.lateCheckout = args.lateCheckout
+                }
+                if (Object.keys(contextUpdate).length) {
+                    await updateSessionContext(sessionId, contextUpdate)
+                }
+            }
             if (toolResult.metadata) {
                 metadata = toolResult.metadata
             }
@@ -2567,7 +2879,8 @@ const findFaqAnswer = (faq: HotelFaqItem[], message: string) => {
 const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | 'en'): Promise<ManualAgentResponse> => {
     const message = input.message || ''
     const lower = normalizeText(message)
-    const requestedNights = extractStayLength(message)
+    const stayLength = extractStayLengthDetails(message)
+    const requestedNights = stayLength?.value
 
     const [rules, faqDoc, hotels] = await Promise.all([getHotelRules(), getHotelFaq(), getHotelInventory()])
     const faqAnswer = findFaqAnswer(faqDoc.faq || [], message)
@@ -2642,22 +2955,32 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
 
     if (lower.includes('precio') || lower.includes('tarifa')) {
         const hotel = hotels[0]
+        const fromLabel = language === 'en' ? 'from' : 'desde'
+        const perNightLabel = language === 'en' ? 'per night' : 'por noche'
         const rooms = (hotel?.habitaciones || []).slice(0, 3).map((room) => {
-            return `- ${room.tipo || 'habitacion'}: ${formatMoney(room.tarifaBase, room.moneda)}`
+            const price = room.tarifaBase ? `${fromLabel} ${formatMoney(room.tarifaBase, room.moneda)} ${perNightLabel}` : ''
+            const capacity = room.capacidad ? (language === 'en' ? `capacity ${room.capacidad}` : `capacidad ${room.capacidad}`) : ''
+            const breakfast = room.incluyeDesayuno ? (language === 'en' ? 'breakfast included' : 'con desayuno') : ''
+            const details = [capacity, breakfast].filter(Boolean).join(', ')
+            return `- ${room.tipo || (language === 'en' ? 'room' : 'habitacion')}: ${price}${details ? ` - ${details}` : ''}`.trim()
         })
+        const budgetLine =
+            language === 'en'
+                ? 'If you share your per-night budget and guest count, I can narrow it down. Total can vary by dates, taxes, and promos.'
+                : 'Si me decis presupuesto por noche y cantidad de personas, lo ajusto. El total puede variar por fechas, impuestos y promos.'
         return {
             answer:
                 language === 'en'
                     ? rooms.length
-                        ? `Base nightly rates:\n${formatBulletList(rooms)}`
+                        ? `Base nightly rates:\n${formatBulletList(rooms)}\n\n${budgetLine}`
                         : 'I can quote if you share dates and location.'
                     : rooms.length
-                    ? `Tarifas base por noche:\n${formatBulletList(rooms)}`
+                    ? `Tarifas base por noche:\n${formatBulletList(rooms)}\n\n${budgetLine}`
                     : 'Puedo cotizar si me decis fechas y sede.'
         }
     }
 
-    const dates = extractDates(message)
+    const dates = extractDates(message, { preferMonthFirst: language === 'en' })
     if (dates.length) {
         const startStr = dates[0].format('YYYY-MM-DD')
         const endStr = dates[1]
@@ -2721,9 +3044,9 @@ const handleHotelFallback = async (input: ManualAgentRequest, language: 'es' | '
                 answer: buildNoAvailabilityAnswer(language)
             }
         }
-        const options = okAvailability.available
-            .slice(0, 4)
-            .map((item: any) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+    const options = okAvailability.available.slice(0, 4).map((item: any) =>
+        formatAvailabilityOption(item, language)
+    )
         return {
             answer:
                 language === 'en'
@@ -3078,18 +3401,18 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     let sessionMessages = await getSessionMessages(input.sessionId)
     const storedContext = await getSessionContext(input.sessionId)
     let sessionContext = { ...buildContextFromMessages(sessionMessages), ...storedContext }
-    const language = getSessionLanguage(sessionMessages, input.message || '')
+    let language = (sessionContext?.language as 'es' | 'en' | undefined) || getSessionLanguage(sessionMessages, input.message || '')
     const message = input.message || ''
     const normalized = normalizeText(message)
+    const explicitYearInMessage =
+        /\b\d{4}-\d{2}-\d{2}\b/.test(message) || /\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/.test(message)
+    const inferredMonth = findMonthInText(message)
     const bookingIntent =
         normalized.includes('reserv') || normalized.includes('book') || normalized.includes('reserve') || normalized.includes('booking')
-    const explicitDates = extractDates(message)
-    const requestedNights = extractStayLength(message)
-    const resolvedDates =
-        explicitDates.length === 1 && requestedNights
-            ? [explicitDates[0], explicitDates[0].clone().add(requestedNights, 'day')]
-            : explicitDates
-    const inferredMonth = findMonthInText(message)
+    const explicitDates = extractDates(message, { preferMonthFirst: language === 'en' })
+    const stayLength = extractStayLengthDetails(message)
+    const requestedNights = stayLength?.value
+    const resolvedDates = explicitDates
     const dayRange = extractDayRange(message)
     const relativeRange = !explicitDates.length && !dayRange ? parseRelativeDateRange(message) : null
     const detectedHotel = detectHotelSelection(message, hotels)
@@ -3099,12 +3422,303 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     const detectedEmail = extractEmail(message)
     const detectedName = extractName(message)
     const hasDateSignal = resolvedDates.length > 0 || Boolean(dayRange) || Boolean(relativeRange)
-    const shortAckPhrases = ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale', 'ok dale']
-    const shortNoPhrases = ['no', 'no gracias', 'no, gracias', 'no por ahora', 'no, por ahora']
+    const shortAckPhrases = [
+        'ok',
+        'dale',
+        'si',
+        'por favor',
+        'ok por favor',
+        'okey',
+        'okey dale',
+        'ok dale',
+        'confirmo',
+        'confirmar'
+    ]
+    const shortNoPhrases = ['no', 'no gracias', 'no, gracias', 'no por ahora', 'no, por ahora', 'no confirmo']
     const isShortAck = shortAckPhrases.includes(normalized)
     const isShortNo = shortNoPhrases.includes(normalized)
+    const wantsFlexibleDates =
+        normalized.includes('flexible') ||
+        normalized.includes('cualquier') ||
+        normalized.includes('cualquiera') ||
+        normalized.includes('cuando tengan') ||
+        normalized.includes('cualquier fecha')
+    const wantsWeekendOnly =
+        normalized.includes('fin de semana') ||
+        normalized.includes('finde') ||
+        normalized.includes('fines de semana') ||
+        normalized.includes('weekend')
+    const policySignal =
+        normalized.includes('cancel') ||
+        normalized.includes('cambiar') ||
+        normalized.includes('modificar') ||
+        normalized.includes('reembolso') ||
+        normalized.includes('politica') ||
+        normalized.includes('pago') ||
+        normalized.includes('deposito') ||
+        normalized.includes('tarjeta') ||
+        normalized.includes('transferencia')
+    const pricingSignal = normalized.includes('precio') || normalized.includes('tarifa') || normalized.includes('cost')
+    const earlyCheckinSignal =
+        normalized.includes('early check-in') ||
+        normalized.includes('early check in') ||
+        normalized.includes('early checkin') ||
+        normalized.includes('check-in temprano') ||
+        normalized.includes('ingreso temprano')
+    const lateCheckoutSignal =
+        normalized.includes('late check-out') ||
+        normalized.includes('late check out') ||
+        normalized.includes('late checkout') ||
+        normalized.includes('check-out tarde') ||
+        normalized.includes('salida tarde')
+    const lateCheckinSignal =
+        normalized.includes('late check-in') ||
+        normalized.includes('late check in') ||
+        normalized.includes('late checkin') ||
+        normalized.includes('check-in tarde') ||
+        normalized.includes('llego tarde') ||
+        normalized.includes('llegamos tarde') ||
+        normalized.includes('llegare tarde')
+    const earlyCheckoutSignal =
+        normalized.includes('early check-out') ||
+        normalized.includes('early check out') ||
+        normalized.includes('early checkout') ||
+        normalized.includes('check-out temprano') ||
+        normalized.includes('salida temprano')
+    const quincenaMentioned = normalized.includes('quincena')
+    const checkInOutSignal =
+        earlyCheckinSignal ||
+        lateCheckoutSignal ||
+        lateCheckinSignal ||
+        earlyCheckoutSignal ||
+        normalized.includes('check-in') ||
+        normalized.includes('check in') ||
+        normalized.includes('check-out') ||
+        normalized.includes('check out') ||
+        normalized.includes('checkin') ||
+        normalized.includes('checkout') ||
+        normalized.includes('ingreso') ||
+        normalized.includes('salida') ||
+        normalized.includes('horario')
+    const bookingSignal = bookingIntent || normalized.includes('confirmo') || normalized.includes('confirmar')
+    const availabilitySignal = hasDateSignal || normalized.includes('dispon') || normalized.includes('availability')
+    const preferenceNotes = [
+        lateCheckinSignal ? (language === 'en' ? 'late check-in' : 'check-in tarde') : '',
+        earlyCheckoutSignal ? (language === 'en' ? 'early check-out' : 'salida temprano') : ''
+    ].filter(Boolean)
+    const mergedPreferences = preferenceNotes.length ? mergePreferences(String(sessionContext?.preferences || ''), preferenceNotes) : ''
+    const currentTopic = policySignal
+        ? 'policy'
+        : pricingSignal
+        ? 'pricing'
+        : bookingSignal
+        ? 'booking'
+        : availabilitySignal
+        ? 'availability'
+        : ''
+    const previousTopic = String(sessionContext?.lastTopic || '')
+    const confusionSignal =
+        normalized.includes('no entiendo') ||
+        normalized.includes('no entendi') ||
+        normalized.includes('no me entendiste') ||
+        normalized.includes('no me entendes') ||
+        normalized.includes('no me entiendes') ||
+        normalized.includes('no se entiende') ||
+        normalized.includes('no comprendo') ||
+        normalized.includes("don't understand") ||
+        normalized.includes('dont understand') ||
+        normalized.includes('what do you mean') ||
+        normalized.includes("i'm confused") ||
+        normalized.includes('im confused') ||
+        normalized.includes('not clear')
 
-    if (!hasDateSignal && (detectedEmail || detectedName) && (!sessionContext.start || !sessionContext.end)) {
+    if (confusionSignal) {
+        const nextCount = Number(sessionContext?.confusionCount || 0) + 1
+        const contextUpdatePayload: Record<string, unknown> = { confusionCount: nextCount }
+        if (currentTopic) {
+            contextUpdatePayload.lastTopic = currentTopic
+        }
+        await updateSessionContext(input.sessionId, contextUpdatePayload)
+        sessionContext = { ...sessionContext, ...contextUpdatePayload }
+        const base =
+            language === 'en'
+                ? 'Sorry, what should I clarify?'
+                : 'Perdon, que parte queres que aclare?'
+        const answer = nextCount >= 2 ? appendEscalationPrompt(base, language) : base
+        return { answer, metadata: { context: sessionContext } }
+    }
+
+    if (
+        checkInOutSignal &&
+        !hasDateSignal &&
+        !bookingSignal &&
+        !availabilitySignal &&
+        !pricingSignal &&
+        !policySignal
+    ) {
+        const checkInTime = rules.horarios?.checkin || '15:00'
+        const checkOutTime = rules.horarios?.checkout || '11:00'
+        const base =
+            language === 'en'
+                ? `Check-in is ${checkInTime}, check-out is ${checkOutTime}.`
+                : `El check-in es a las ${checkInTime} y el check-out a las ${checkOutTime}.`
+        const earlyInfo = rules.earlyLate?.earlyCheckin
+            ? language === 'en'
+                ? `Early check-in from ${rules.earlyLate.earlyCheckin.desde || '11:00'} with fee ${
+                      rules.earlyLate.earlyCheckin.fee || 0
+                  } ${rules.earlyLate.earlyCheckin.moneda || 'USD'}.`
+                : `Ingreso temprano desde ${rules.earlyLate.earlyCheckin.desde || '11:00'} con fee ${
+                      rules.earlyLate.earlyCheckin.fee || 0
+                  } ${rules.earlyLate.earlyCheckin.moneda || 'USD'}.`
+            : language === 'en'
+            ? 'Early check-in is subject to availability.'
+            : 'El ingreso temprano es sujeto a disponibilidad.'
+        const lateInfo = rules.earlyLate?.lateCheckout
+            ? language === 'en'
+                ? `Late check-out until ${rules.earlyLate.lateCheckout.hasta || '14:00'} with fee ${
+                      rules.earlyLate.lateCheckout.fee || 0
+                  } ${rules.earlyLate.lateCheckout.moneda || 'USD'}.`
+                : `Salida tarde hasta ${rules.earlyLate.lateCheckout.hasta || '14:00'} con fee ${
+                      rules.earlyLate.lateCheckout.fee || 0
+                  } ${rules.earlyLate.lateCheckout.moneda || 'USD'}.`
+            : language === 'en'
+            ? 'Late check-out is subject to availability.'
+            : 'La salida tarde es sujeta a disponibilidad.'
+        const lateArrivalQuestion =
+            language === 'en'
+                ? 'Late check-in is fine. What time do you expect to arrive?'
+                : 'El check-in tarde esta bien. A que hora estimas llegar?'
+        const earlyDepartureQuestion =
+            language === 'en'
+                ? 'Early check-out is ok. What time would you leave?'
+                : 'La salida temprano esta ok. A que hora te irias?'
+        const lines = [base]
+        if (earlyCheckinSignal) lines.push(earlyInfo)
+        if (lateCheckoutSignal) lines.push(lateInfo)
+        if (lateCheckinSignal) lines.push(lateArrivalQuestion)
+        if (earlyCheckoutSignal) lines.push(earlyDepartureQuestion)
+        const answer = lines.join(' ')
+
+        const contextUpdatePayload: Record<string, unknown> = {}
+        if (earlyCheckinSignal) contextUpdatePayload.earlyCheckin = true
+        if (lateCheckoutSignal) contextUpdatePayload.lateCheckout = true
+        if (mergedPreferences) contextUpdatePayload.preferences = mergedPreferences
+        if (Object.keys(contextUpdatePayload).length) {
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
+        }
+
+        const result = await applyHotelReplySignals({
+            answer,
+            sessionId: input.sessionId || '',
+            context: sessionContext,
+            language,
+            topic: currentTopic
+        })
+        if (Object.keys(result.contextUpdate).length) {
+            sessionContext = { ...sessionContext, ...result.contextUpdate }
+        }
+        return { answer: result.answer, metadata: { context: sessionContext } }
+    }
+
+    const ambiguousShortDate = !explicitYearInMessage && !inferredMonth ? findAmbiguousShortDate(message) : null
+    if (ambiguousShortDate) {
+        const result = await applyHotelReplySignals({
+            answer: buildAmbiguousDateQuestion(ambiguousShortDate, language),
+            sessionId: input.sessionId || '',
+            context: sessionContext,
+            language,
+            intentSummary: 'awaiting_dates',
+            frictionAction: 'increase',
+            topic: currentTopic
+        })
+        if (Object.keys(result.contextUpdate).length) {
+            sessionContext = { ...sessionContext, ...result.contextUpdate }
+        }
+        return { answer: result.answer, metadata: { context: sessionContext } }
+    }
+
+    if (quincenaMentioned && !inferredMonth && !dayRange && explicitDates.length === 0 && !relativeRange) {
+        const answer =
+            language === 'en'
+                ? 'Which month is that for?'
+                : 'Dale, de que mes hablamos para esa quincena?'
+        const result = await applyHotelReplySignals({
+            answer,
+            sessionId: input.sessionId || '',
+            context: sessionContext,
+            language,
+            intentSummary: 'awaiting_month',
+            frictionAction: 'increase',
+            topic: currentTopic
+        })
+        if (Object.keys(result.contextUpdate).length) {
+            sessionContext = { ...sessionContext, ...result.contextUpdate }
+        }
+        return { answer: result.answer, metadata: { context: sessionContext } }
+    }
+
+    if (explicitYearInMessage && resolvedDates.length) {
+        const today = moment().startOf('day')
+        const hasPastDates = resolvedDates.some((date) => date.isBefore(today, 'day'))
+        if (hasPastDates) {
+            const answer =
+                language === 'en'
+                    ? 'Those dates are in the past. Can you share new dates?'
+                    : 'Esas fechas quedaron en el pasado. Me pasas nuevas fechas?'
+            const result = await applyHotelReplySignals({
+                answer,
+                sessionId: input.sessionId || '',
+                context: sessionContext,
+                language,
+                intentSummary: 'awaiting_dates',
+                frictionAction: 'increase',
+                topic: currentTopic
+            })
+            if (Object.keys(result.contextUpdate).length) {
+                sessionContext = { ...sessionContext, ...result.contextUpdate }
+            }
+            return { answer: result.answer, metadata: { context: sessionContext } }
+        }
+    }
+
+    if (explicitDates.length === 1 && stayLength) {
+        const start = explicitDates[0].clone().startOf('day')
+        const end = start.clone().add(stayLength.value, 'day')
+        const startStr = start.format('YYYY-MM-DD')
+        const endStr = end.format('YYYY-MM-DD')
+        const rangeLabel = formatStaySpan(startStr, endStr, language)
+        const unitLabel =
+            stayLength.unit === 'nights'
+                ? language === 'en'
+                    ? 'nights'
+                    : 'noches'
+                : language === 'en'
+                ? 'days'
+                : 'dias'
+        const answer =
+            language === 'en'
+                ? `Just to confirm ${stayLength.value} ${unitLabel}, do you mean ${rangeLabel}?`
+                : `Para confirmar ${stayLength.value} ${unitLabel}, te referis a ${rangeLabel}?`
+        const contextUpdatePayload = { start: startStr, end: endStr, pendingDateConfirm: true }
+        await updateSessionContext(input.sessionId, contextUpdatePayload)
+        sessionContext = { ...sessionContext, ...contextUpdatePayload }
+        const result = await applyHotelReplySignals({
+            answer,
+            sessionId: input.sessionId || '',
+            context: sessionContext,
+            language,
+            intentSummary: 'confirm_dates',
+            frictionAction: 'increase',
+            topic: currentTopic
+        })
+        if (Object.keys(result.contextUpdate).length) {
+            sessionContext = { ...sessionContext, ...result.contextUpdate }
+        }
+        return { answer: result.answer, metadata: { context: sessionContext } }
+    }
+
+    if (!hasDateSignal && detectedEmail && (!sessionContext.start || !sessionContext.end)) {
         const restoredSession = await findRecentSessionByIdentity({
             sessionId: input.sessionId,
             name: detectedName || undefined,
@@ -3148,15 +3762,116 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     if (detectedEmail) {
         contextUpdate.email = detectedEmail
     }
+    if (earlyCheckinSignal) {
+        contextUpdate.earlyCheckin = true
+    }
+    if (lateCheckoutSignal) {
+        contextUpdate.lateCheckout = true
+    }
+    if (mergedPreferences) {
+        contextUpdate.preferences = mergedPreferences
+    }
     if (Object.keys(contextUpdate).length) {
         await updateSessionContext(input.sessionId, contextUpdate)
         sessionContext = { ...sessionContext, ...contextUpdate }
+    }
+
+    if (!sessionContext?.language && language) {
+        await updateSessionContext(input.sessionId, { language })
+        sessionContext = { ...sessionContext, language }
+    }
+
+    const isNameOnlyMessage =
+        detectedName &&
+        !detectedEmail &&
+        !hasDateSignal &&
+        !detectedHotel &&
+        !detectedRoomType &&
+        !bookingIntent &&
+        !normalized.includes('precio') &&
+        !normalized.includes('tarifa') &&
+        !normalized.includes('habitacion') &&
+        !normalized.includes('sede')
+    if (isNameOnlyMessage) {
+        const formatted = formatGuestName(detectedName)
+        const answer =
+            language === 'en'
+                ? `Thanks ${formatted}. If you want me to pull a previous chat, share your email. Otherwise, share your dates.`
+                : `Gracias ${formatted}. Si queres retomar una charla anterior, pasame tu email. Si no, contame fechas.`
+        const result = await applyHotelReplySignals({
+            answer,
+            sessionId: input.sessionId || '',
+            context: sessionContext,
+            language,
+            intentSummary: 'awaiting_dates',
+            frictionAction: 'increase',
+            topic: currentTopic
+        })
+        if (Object.keys(result.contextUpdate).length) {
+            sessionContext = { ...sessionContext, ...result.contextUpdate }
+        }
+        return { answer: result.answer, metadata: { context: sessionContext } }
     }
 
     if (sessionContext?.pendingDateConfirm && explicitDates.length) {
         const clearPayload = { pendingDateConfirm: false }
         await updateSessionContext(input.sessionId, clearPayload)
         sessionContext = { ...sessionContext, ...clearPayload }
+    }
+
+    if (
+        sessionContext?.pendingReservationConfirm &&
+        (resolvedDates.length >= 2 || detectedHotel || detectedRoomType || typeof detectedGuests === 'number' || detectedPaymentMethod)
+    ) {
+        const clearPayload = { pendingReservationConfirm: false }
+        await updateSessionContext(input.sessionId, clearPayload)
+        sessionContext = { ...sessionContext, ...clearPayload }
+    }
+
+    const hasStoredDates = Boolean(sessionContext?.start && sessionContext?.end)
+    const staleDateContext = isDateContextStale({
+        start: sessionContext?.start as string | undefined,
+        end: sessionContext?.end as string | undefined,
+        dateContextUpdatedAt: sessionContext?.dateContextUpdatedAt as string | Date | null | undefined
+    })
+    if (
+        staleDateContext &&
+        hasStoredDates &&
+        !hasDateSignal &&
+        !sessionContext?.pendingDateConfirm &&
+        !sessionContext?.pendingReservationConfirm
+    ) {
+        const stayLabel = formatStaySpan(String(sessionContext.start), String(sessionContext.end), language)
+        const answer =
+            language === 'en'
+                ? `I have these dates on file (${stayLabel}). Want to keep them or change them?`
+                : `Tengo estas fechas guardadas (${stayLabel}). Te sirven o las cambiamos?`
+        const contextUpdatePayload = { pendingDateConfirm: true }
+        await updateSessionContext(input.sessionId, contextUpdatePayload)
+        sessionContext = { ...sessionContext, ...contextUpdatePayload }
+        return respond(answer, { context: sessionContext }, { intentSummary: 'confirm_dates', frictionAction: 'increase' })
+    }
+
+    const wantsMixedIntent = bookingSignal && (pricingSignal || policySignal)
+    if (
+        wantsMixedIntent &&
+        !hasDateSignal &&
+        !sessionContext?.pendingDateConfirm &&
+        !sessionContext?.pendingReservationConfirm
+    ) {
+        const answer =
+            language === 'en'
+                ? pricingSignal && policySignal
+                    ? 'Do you want a quote, policies, or to book?'
+                    : pricingSignal
+                    ? 'Do you want a quote first, or should I move forward with the booking?'
+                    : 'Do you want the policies, or should I move forward with the booking?'
+                : pricingSignal && policySignal
+                ? 'Queres cotizacion, politicas o avanzar con la reserva?'
+                : pricingSignal
+                ? 'Queres cotizar primero o avanzo con la reserva?'
+                : 'Queres ver politicas o avanzo con la reserva?'
+        return respond(answer, { context: sessionContext }, { intentSummary: 'awaiting_intent', frictionAction: 'increase' })
     }
 
     const respondWith = async (
@@ -3170,7 +3885,8 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             language,
             replyKind: options?.replyKind,
             intentSummary: options?.intentSummary,
-            frictionAction: options?.frictionAction
+            frictionAction: options?.frictionAction,
+            topic: currentTopic
         })
         if (Object.keys(result.contextUpdate).length) {
             sessionContext = { ...sessionContext, ...result.contextUpdate }
@@ -3200,7 +3916,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
     if (sessionContext?.pendingDateConfirm && isShortAck && !explicitDates.length && sessionContext.start && sessionContext.end) {
         const start = String(sessionContext.start)
         const end = String(sessionContext.end)
-        const clearPayload = { pendingDateConfirm: false }
+        const clearPayload = { pendingDateConfirm: false, dateContextUpdatedAt: new Date() }
         await updateSessionContext(input.sessionId, clearPayload)
         sessionContext = { ...sessionContext, ...clearPayload }
         const availabilityScope = sessionContext?.hotelId || sessionContext?.sede ? 'sede' : 'global'
@@ -3223,7 +3939,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         }
         const options = (okAvailability.available || [])
             .slice(0, 4)
-            .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+            .map((item) => formatAvailabilityOption(item, language))
         if (!options.length) {
             const minNightsAnswer = buildMinNightsAnswer(availability as { nights?: number; minNights?: number; minRule?: MinNightsRule; suggestedRanges?: Array<{ start: string; end: string }> }, language)
             const contextUpdatePayload = { availabilityOk: false, availabilityScope }
@@ -3256,6 +3972,30 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         )
     }
 
+    if (
+        bookingIntent &&
+        !hasDateSignal &&
+        !sessionContext?.pendingDateConfirm &&
+        !sessionContext?.pendingReservationConfirm &&
+        sessionContext?.start &&
+        sessionContext?.end &&
+        (previousTopic === 'policy' || previousTopic === 'pricing')
+    ) {
+        const startDate = parseDate(String(sessionContext.start))
+        const endDate = parseDate(String(sessionContext.end))
+        if (startDate.isValid() && endDate.isValid()) {
+            const rangeLabel = formatStaySpan(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), language)
+            const answer =
+                language === 'en'
+                    ? `Before booking, should I keep ${rangeLabel}?`
+                    : `Antes de reservar, seguimos con ${rangeLabel}?`
+            const contextUpdatePayload = { pendingDateConfirm: true }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
+            return respond(answer, { context: sessionContext }, { intentSummary: 'confirm_dates', frictionAction: 'increase' })
+        }
+    }
+
     if (relativeRange && !inferredMonth && explicitDates.length === 0 && !dayRange) {
         const startStr = relativeRange.start.format('YYYY-MM-DD')
         const endStr = relativeRange.end.format('YYYY-MM-DD')
@@ -3268,6 +4008,129 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 ? `Did you mean ${rangeLabel}?`
                 : `Te referis a ${rangeLabel}?`
         return respond(answer, { context: { start: startStr, end: endStr } }, { intentSummary: 'confirm_dates', frictionAction: 'increase' })
+    }
+
+    if (inferredMonth && explicitDates.length === 0 && !dayRange && (wantsFlexibleDates || wantsWeekendOnly)) {
+        const suggestion = await buildFlexibleAvailabilityMessage({
+            month: inferredMonth.month,
+            year: inferredMonth.year,
+            nights: requestedNights,
+            weekendOnly: wantsWeekendOnly,
+            language,
+            sede: sessionContext?.sede as string | undefined,
+            hotelId: sessionContext?.hotelId as string | undefined,
+            roomType: sessionContext?.roomType as string | undefined,
+            guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined
+        })
+        if (suggestion) {
+            return respond(
+                suggestion,
+                { context: { month: inferredMonth.month, year: inferredMonth.year } },
+                { intentSummary: 'availability_options', frictionAction: 'reset' }
+            )
+        }
+        const monthName = formatMonthName(inferredMonth.month, inferredMonth.year, language)
+        return respond(
+            language === 'en'
+                ? `I could not find options in ${monthName}. Want a different month?`
+                : `No encontre opciones en ${monthName}. Queres otro mes?`,
+            { context: { month: inferredMonth.month, year: inferredMonth.year } },
+            { intentSummary: 'awaiting_month', frictionAction: 'increase' }
+        )
+    }
+
+    if (sessionContext?.pendingReservationConfirm && isShortNo) {
+        const clearPayload = { pendingReservationConfirm: false }
+        await updateSessionContext(input.sessionId, clearPayload)
+        sessionContext = { ...sessionContext, ...clearPayload }
+        return respond(
+            language === 'en' ? 'Ok, what do you want to change?' : 'Dale, que queres cambiar?',
+            { context: sessionContext },
+            { intentSummary: 'awaiting_details' }
+        )
+    }
+
+    if (sessionContext?.pendingReservationConfirm && isShortAck && sessionContext?.start && sessionContext?.end) {
+        const name = String(sessionContext?.name || '')
+        const email = String(sessionContext?.email || '')
+        const paymentMethod = String(sessionContext?.paymentMethod || '')
+        if (!name || !email || !paymentMethod) {
+            const clearPayload = { pendingReservationConfirm: false }
+            await updateSessionContext(input.sessionId, clearPayload)
+            sessionContext = { ...sessionContext, ...clearPayload }
+            return respond(
+                language === 'en'
+                    ? 'Share your full name, email, and payment method.'
+                    : 'Pasame nombre completo, email y metodo de pago.',
+                { context: sessionContext },
+                { intentSummary: 'awaiting_contact' }
+            )
+        }
+
+        const result = await createReservation({
+            name,
+            email,
+            start: String(sessionContext.start),
+            end: String(sessionContext.end),
+            sede: String(sessionContext.sede || ''),
+            hotelId: String(sessionContext.hotelId || ''),
+            roomType: String(sessionContext.roomType || ''),
+            guests: typeof sessionContext?.guests === 'number' ? (sessionContext.guests as number) : undefined,
+            paymentMethod,
+            earlyCheckin: Boolean(sessionContext.earlyCheckin),
+            lateCheckout: Boolean(sessionContext.lateCheckout),
+            preferences: String(sessionContext.preferences || '')
+        })
+
+        const clearPayload = { pendingReservationConfirm: false }
+        await updateSessionContext(input.sessionId, clearPayload)
+        sessionContext = { ...sessionContext, ...clearPayload }
+
+        if (!result.ok) {
+            return respond(
+                language === 'en'
+                    ? 'Those dates just became unavailable. Want me to check other options?'
+                    : 'Esas fechas se acaban de ocupar. Queres que busque otras opciones?',
+                { context: sessionContext },
+                { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+            )
+        }
+
+        const summaryLine = buildReservationSummaryLine(
+            {
+                hotelName: result.reservation?.hotelName,
+                sede: result.reservation?.sede,
+                roomType: result.reservation?.habitacionTipo,
+                checkIn: result.reservation?.checkIn,
+                checkOut: result.reservation?.checkOut,
+                guests: result.reservation?.huespedes,
+                earlyCheckin: result.reservation?.earlyCheckin,
+                lateCheckout: result.reservation?.lateCheckout
+            },
+            language
+        )
+        const confirmationLine =
+            language === 'en'
+                ? `All set, reservation confirmed. Your ID is ${result.reservation?.id}.`
+                : `Listo, reserva confirmada. Tu ID es ${result.reservation?.id}.`
+        return respondWith(
+            {
+                answer: summaryLine ? `${confirmationLine}\n\n${summaryLine}` : confirmationLine,
+                metadata: {
+                    ...(result as { confirmation?: any; reservation?: any; fees?: any; promos?: any }).confirmation
+                        ? {
+                              type: 'reservationCard',
+                              reservation: result.reservation,
+                              confirmation: result.confirmation,
+                              fees: result.fees,
+                              promos: result.promos,
+                              context: sessionContext
+                          }
+                        : { context: sessionContext }
+                }
+            },
+            { intentSummary: 'reservation_confirmed', frictionAction: 'reset' }
+        )
     }
 
     if (inferredMonth && explicitDates.length === 0 && !dayRange) {
@@ -3293,7 +4156,14 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             )
         }
         const start = moment({ year, month: month - 1, day: dayRange.startDay })
-        const end = moment({ year, month: month - 1, day: dayRange.endDay })
+        let endMonth = month - 1
+        let endYear = year
+        if (dayRange.endDay < dayRange.startDay) {
+            const rollover = start.clone().add(1, 'month')
+            endMonth = rollover.month()
+            endYear = rollover.year()
+        }
+        const end = moment({ year: endYear, month: endMonth, day: dayRange.endDay })
         if (!start.isValid() || !end.isValid()) {
             return respond(
                 language === 'en'
@@ -3329,7 +4199,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         }
         const options = (okAvailability.available || [])
             .slice(0, 4)
-            .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+            .map((item) => formatAvailabilityOption(item, language))
         if (!options.length) {
             const contextUpdatePayload = { month, year, start: startStr, end: endStr, availabilityOk: false, availabilityScope }
             await updateSessionContext(input.sessionId, contextUpdatePayload)
@@ -3377,6 +4247,18 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         )
     }
 
+    if (resolvedDates.length >= 2 && bookingIntent) {
+        const needsLocation = !sessionContext?.hotelId && !sessionContext?.sede
+        const needsRoomType = !sessionContext?.roomType
+        const needsGuests = typeof sessionContext?.guests !== 'number'
+        if (needsLocation || needsRoomType || needsGuests) {
+            const question = buildMissingDetailsQuestion({ language, needsLocation, needsRoomType, needsGuests })
+            if (question) {
+                return respond(question, { context: sessionContext }, { intentSummary: 'awaiting_details', frictionAction: 'increase' })
+            }
+        }
+    }
+
     if (!explicitDates.length && sessionContext?.start && sessionContext?.end) {
         if (normalized.includes('otra') || normalized.includes('otras') || normalized.includes('alternativa') || normalized.includes('opcion')) {
             const availability = await checkAvailability({ start: sessionContext.start, end: sessionContext.end })
@@ -3393,9 +4275,9 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             const okAvailability = availability as {
                 available?: Array<{ hotelName?: string; sede?: string; roomType?: string; baseRate?: number; currency?: string }>
             }
-            const options = (okAvailability.available || [])
-                .slice(0, 4)
-                .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+        const options = (okAvailability.available || [])
+            .slice(0, 4)
+            .map((item) => formatAvailabilityOption(item, language))
             if (!options.length) {
                 const contextUpdatePayload = { availabilityOk: false, availabilityScope: 'global' }
                 await updateSessionContext(input.sessionId, contextUpdatePayload)
@@ -3470,6 +4352,19 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
                 ? 'Share your full name, email, and payment method.'
                 : 'Pasame nombre completo, email y metodo de pago.'
         }
+        if (intentSummary === 'awaiting_details') {
+            return language === 'en'
+                ? 'Share location, room type, and guest count.'
+                : 'Decime sede, tipo de habitacion y cantidad de personas.'
+        }
+        if (intentSummary === 'awaiting_intent') {
+            return language === 'en'
+                ? 'Do you want a quote, policies, or to book?'
+                : 'Queres cotizacion, politicas o reservar?'
+        }
+        if (intentSummary === 'awaiting_confirm') {
+            return language === 'en' ? 'Confirm it and I will book it.' : 'Confirmalo y lo reservo.'
+        }
         return ''
     }
 
@@ -3492,25 +4387,17 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         sessionContext?.end &&
         isShortAck
     ) {
+        const needsLocation = !sessionContext?.hotelId && !sessionContext?.sede
+        const needsRoomType = !sessionContext?.roomType
+        const needsGuests = typeof sessionContext?.guests !== 'number'
         if (sessionContext?.availabilityOk === false) {
             return respond(buildNoAvailabilityAnswer(language), { context: sessionContext }, { replyKind: 'availability', intentSummary: 'availability_none' })
         }
-        if (sessionContext?.availabilityScope === 'global' || (!sessionContext?.hotelId && !sessionContext?.sede)) {
+        if (needsLocation || needsRoomType || needsGuests) {
             const sedes = Array.from(new Set(hotels.map((hotel) => hotel.sede).filter(Boolean)))
-            return respond(
-                language === 'en'
-                    ? `Which location do you prefer? Options: ${sedes.join(', ')}.`
-                    : `Que sede preferis? Opciones: ${sedes.join(', ')}.`,
-                { context: sessionContext },
-                { intentSummary: 'awaiting_location' }
-            )
-        }
-        if (!sessionContext?.roomType) {
-            return respond(
-                language === 'en' ? 'Which room type do you want for those dates?' : 'Que tipo de habitacion queres para esas fechas?',
-                { context: sessionContext },
-                { intentSummary: 'awaiting_room_type' }
-            )
+            const question = buildMissingDetailsQuestion({ language, needsLocation, needsRoomType, needsGuests })
+            const suffix = needsLocation && sedes.length ? ` ${language === 'en' ? 'Options:' : 'Opciones:'} ${sedes.join(', ')}.` : ''
+            return respond(`${question}${suffix}`, { context: sessionContext }, { intentSummary: 'awaiting_details' })
         }
     }
 
@@ -3554,10 +4441,21 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             await updateSessionContext(input.sessionId, contextUpdatePayload)
             sessionContext = { ...sessionContext, ...contextUpdatePayload }
         }
+        if (!bookingIntent && !isShortAck) {
+            const stayLabel = formatStaySpan(String(sessionContext.start), String(sessionContext.end), language)
+            return respond(
+                language === 'en'
+                    ? `I can reserve ${sessionContext.roomType} with ${stayLabel}. Want me to book it?`
+                    : `Puedo reservar ${sessionContext.roomType} con ${stayLabel}. Queres que lo reserve?`,
+                { context: sessionContext },
+                { intentSummary: 'awaiting_confirm', frictionAction: 'increase' }
+            )
+        }
+        const stayLabel = formatStaySpan(String(sessionContext.start), String(sessionContext.end), language)
         return respond(
             language === 'en'
-                ? `Great, I have ${sessionContext.roomType} for ${sessionContext.start} to ${sessionContext.end}. Share your full name, email, and payment method and I will confirm.`
-                : `Listo, tengo ${sessionContext.roomType} del ${sessionContext.start} al ${sessionContext.end}. Pasame nombre completo, email y metodo de pago y lo confirmo.`,
+                ? `Great, I have ${sessionContext.roomType} with ${stayLabel}. Share your full name, email, and payment method and I will confirm.`
+                : `Listo, tengo ${sessionContext.roomType} con ${stayLabel}. Pasame nombre completo, email y metodo de pago y lo confirmo.`,
             { context: sessionContext },
             { intentSummary: 'awaiting_contact', frictionAction: 'reset' }
         )
@@ -3591,6 +4489,28 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         }
 
         const paymentMethod = detectedPaymentMethod || String(sessionContext?.paymentMethod || '')
+        if (!sessionContext?.pendingReservationConfirm) {
+            const recap = buildReservationRecap(
+                {
+                    start: String(sessionContext.start),
+                    end: String(sessionContext.end),
+                    sede: String(sessionContext.sede || ''),
+                    hotelId: String(sessionContext.hotelId || ''),
+                    roomType: String(sessionContext.roomType || ''),
+                    guests: typeof detectedGuests === 'number' ? detectedGuests : Number(sessionContext.guests || 0) || undefined,
+                    paymentMethod,
+                    earlyCheckin: Boolean(sessionContext.earlyCheckin),
+                    lateCheckout: Boolean(sessionContext.lateCheckout),
+                    preferences: String(sessionContext.preferences || '')
+                },
+                language
+            )
+            const contextUpdatePayload = { pendingReservationConfirm: true }
+            await updateSessionContext(input.sessionId, contextUpdatePayload)
+            sessionContext = { ...sessionContext, ...contextUpdatePayload }
+            return respond(recap, { context: sessionContext }, { intentSummary: 'awaiting_confirm' })
+        }
+
         const result = await createReservation({
             name,
             email,
@@ -3600,8 +4520,16 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             hotelId: String(sessionContext.hotelId || ''),
             roomType: String(sessionContext.roomType || ''),
             guests: typeof detectedGuests === 'number' ? detectedGuests : Number(sessionContext.guests || 0) || undefined,
-            paymentMethod
+            paymentMethod,
+            earlyCheckin: Boolean(sessionContext.earlyCheckin),
+            lateCheckout: Boolean(sessionContext.lateCheckout),
+            preferences: String(sessionContext.preferences || '')
         })
+        if (sessionContext?.pendingReservationConfirm) {
+            const clearPayload = { pendingReservationConfirm: false }
+            await updateSessionContext(input.sessionId, clearPayload)
+            sessionContext = { ...sessionContext, ...clearPayload }
+        }
 
         if (!result.ok) {
             return respond(
@@ -3613,12 +4541,26 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             )
         }
 
+        const summaryLine = buildReservationSummaryLine(
+            {
+                hotelName: result.reservation?.hotelName,
+                sede: result.reservation?.sede,
+                roomType: result.reservation?.habitacionTipo,
+                checkIn: result.reservation?.checkIn,
+                checkOut: result.reservation?.checkOut,
+                guests: result.reservation?.huespedes,
+                earlyCheckin: result.reservation?.earlyCheckin,
+                lateCheckout: result.reservation?.lateCheckout
+            },
+            language
+        )
+        const confirmationLine =
+            language === 'en'
+                ? `All set, reservation confirmed. Your ID is ${result.reservation?.id}.`
+                : `Listo, reserva confirmada. Tu ID es ${result.reservation?.id}.`
         return respondWith(
             {
-                answer:
-                    language === 'en'
-                        ? `All set, reservation confirmed. Your ID is ${result.reservation?.id}.`
-                        : `Listo, reserva confirmada. Tu ID es ${result.reservation?.id}.`,
+                answer: summaryLine ? `${confirmationLine}\n\n${summaryLine}` : confirmationLine,
                 metadata: {
                     ...(result as { confirmation?: any; reservation?: any; fees?: any; promos?: any }).confirmation
                         ? {
@@ -3724,7 +4666,7 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
             }
             const options = (okAvailability.available || [])
                 .slice(0, 4)
-                .map((item) => `- ${item.hotelName || item.sede} ${item.roomType}: desde ${formatMoney(item.baseRate, item.currency)}`)
+                .map((item) => formatAvailabilityOption(item, language))
             if (!options.length) {
                 const contextUpdatePayload = { start, end, availabilityOk: false, availabilityScope }
                 await updateSessionContext(input.sessionId, contextUpdatePayload)
@@ -3787,4 +4729,15 @@ export const handleHotelChat = async (input: ManualAgentRequest): Promise<Manual
         const fallback = await handleHotelFallback(input, language)
         return respondWith(fallback, { frictionAction: 'increase' })
     }
+}
+
+export const __test__ = {
+    parseShortDate,
+    findAmbiguousShortDate,
+    extractDates,
+    extractStayLengthDetails,
+    buildMinNightsAnswer,
+    buildNoAvailabilityAnswer,
+    formatStaySpan,
+    isDateContextStale
 }

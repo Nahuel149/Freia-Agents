@@ -112,6 +112,7 @@ export const QUINTAS_ALLOWED_COLLECTIONS = [
 export const QUINTAS_ALLOWED_OPS: Array<'read' | 'write'> = ['read', 'write']
 
 const QUINTAS_FRICTION_THRESHOLD = 2
+const QUINTAS_DATE_CONTEXT_TTL_DAYS = 14
 
 const ensureToolAccess = (op: 'read' | 'write', collections: string[]) => {
     if (!QUINTAS_ALLOWED_OPS.includes(op)) {
@@ -147,6 +148,20 @@ const getNextWeekday = (base: moment.Moment, targetDay: number, includeToday: bo
     return base.clone().add(delta, 'day')
 }
 
+const getEasterSunday = (year: number) => {
+    const century = Math.floor(year / 100)
+    const remainder = year % 19
+    const correction =
+        (century - Math.floor(century / 4) - Math.floor((8 * century + 13) / 25) + 19 * remainder + 15) % 30
+    const adjustment =
+        correction - Math.floor(correction / 28) * (1 - Math.floor(29 / (correction + 1)) * Math.floor((21 - remainder) / 11))
+    const weekday = (year + Math.floor(year / 4) + adjustment + 2 - century + Math.floor(century / 4)) % 7
+    const offset = adjustment - weekday
+    const month = 3 + Math.floor((offset + 40) / 44)
+    const day = offset + 28 - 31 * Math.floor(month / 4)
+    return moment({ year, month: month - 1, day })
+}
+
 const parseRelativeDateRange = (message: string) => {
     const text = normalizeText(message || '')
     if (!text) return null
@@ -154,16 +169,38 @@ const parseRelativeDateRange = (message: string) => {
     const today = moment.tz(timezone).startOf('day')
     const wantsNext = text.includes('proximo') || text.includes('proxima') || text.includes('next')
     const includeToday = !wantsNext
+    const isLongWeekend =
+        text.includes('fin de semana largo') || text.includes('finde largo') || text.includes('puente') || text.includes('long weekend')
     const isWeekend = text.includes('fin de semana') || text.includes('finde') || text.includes('weekend')
     const isEndOfMonth = text.includes('fin de mes') || text.includes('end of month')
+    const isSemanaSanta = text.includes('semana santa') || text.includes('easter week') || text.includes('easter')
     const hasSaturday = text.includes('sabado') || text.includes('saturday')
     const hasSunday = text.includes('domingo') || text.includes('sunday')
+
+    if (isSemanaSanta) {
+        let year = today.year()
+        let start = getEasterSunday(year).clone().subtract(3, 'day')
+        let end = getEasterSunday(year).clone()
+        if (end.isBefore(today, 'day')) {
+            year += 1
+            start = getEasterSunday(year).clone().subtract(3, 'day')
+            end = getEasterSunday(year).clone()
+        }
+        return { start, end, kind: 'semana_santa' }
+    }
 
     if (isEndOfMonth) {
         const lastDay = today.clone().endOf('month').startOf('day')
         const start = lastDay.clone().subtract(1, 'day')
         const end = lastDay.clone()
         return { start, end, kind: 'end_of_month' }
+    }
+
+    if (isLongWeekend) {
+        const friday = getNextWeekday(today, 5, includeToday)
+        const start = friday
+        const end = friday.clone().add(2, 'day')
+        return { start, end, kind: 'long_weekend' }
     }
 
     if (isWeekend) {
@@ -200,6 +237,9 @@ const detectLocaleFromMessage = (message: string) => {
         'thanks',
         'thank',
         'please',
+        'pls',
+        'plz',
+        'avail',
         'available',
         'availability',
         'book',
@@ -207,10 +247,13 @@ const detectLocaleFromMessage = (message: string) => {
         'reserve',
         'reservation',
         'price',
+        'rate',
+        'quote',
         'cost',
         'night',
         'nights',
         'people',
+        'guest',
         'from',
         'to',
         'date',
@@ -228,6 +271,8 @@ const detectLocaleFromMessage = (message: string) => {
         'disponibilidad',
         'reserv',
         'precio',
+        'tarifa',
+        'cotizar',
         'costo',
         'noche',
         'noches',
@@ -244,6 +289,11 @@ const detectLocaleFromMessage = (message: string) => {
     ]
     const enScore = englishHints.reduce((acc, hint) => (lower.includes(hint) ? acc + 1 : acc), 0)
     const esScore = spanishHints.reduce((acc, hint) => (lower.includes(hint) ? acc + 1 : acc), 0)
+    if (enScore === 0 && esScore === 0) return 'es-AR'
+    if (enScore === esScore) {
+        const strongEnglish = ['pls', 'plz', 'price', 'rate', 'quote', 'availability', 'booking']
+        if (strongEnglish.some((hint) => lower.includes(hint))) return 'en-US'
+    }
     return enScore > esScore ? 'en-US' : 'es-AR'
 }
 
@@ -284,14 +334,25 @@ const MONTHS: Record<string, number> = {
 }
 
 const parseShortDate = (day: number, month: number) => {
-    const year = moment().year()
-    return moment(`${day}/${month}/${year}`, 'DD/MM/YYYY', true)
+    const today = moment().startOf('day')
+    const year = today.year()
+    const candidate = moment(`${day}/${month}/${year}`, 'DD/MM/YYYY', true)
+    if (!candidate.isValid()) return candidate
+    if (candidate.isBefore(today, 'day')) {
+        const nextYear = year + 1
+        const nextCandidate = moment(`${day}/${month}/${nextYear}`, 'DD/MM/YYYY', true)
+        return nextCandidate.isValid() ? nextCandidate : candidate
+    }
+    return candidate
 }
 
 const parseMonthRange = (message: string) => {
     const lower = normalizeText(message || '')
     const monthMatch = Object.keys(MONTHS).find((month) => lower.includes(month))
     if (!monthMatch) return null
+
+    const wantsFirstHalf = lower.includes('primera quincena') || lower.includes('1ra quincena')
+    const wantsSecondHalf = lower.includes('segunda quincena') || lower.includes('2da quincena')
 
     const rangeRegex = new RegExp(
         `(\\d{1,2})\\s*(?:al|to|-)\\s*(\\d{1,2})\\s*(?:de\\s*)?${monthMatch}`
@@ -300,9 +361,8 @@ const parseMonthRange = (message: string) => {
 
     const range = lower.match(rangeRegex)
     const single = lower.match(singleRegex)
-    const startDay = range ? Number(range[1]) : single ? Number(single[1]) : null
-    const endDay = range ? Number(range[2]) : startDay
-    if (!startDay || !endDay) return null
+    const startDay = range ? Number(range[1]) : single ? Number(single[1]) : wantsFirstHalf || wantsSecondHalf ? 1 : null
+    if (!startDay) return null
 
     const timezone = 'America/Argentina/Buenos_Aires'
     const now = moment.tz(timezone)
@@ -311,9 +371,26 @@ const parseMonthRange = (message: string) => {
     if (monthIndex < now.month() || (monthIndex === now.month() && startDay < now.date())) {
         year += 1
     }
+    const monthStart = moment.tz({ year, month: monthIndex, day: 1 }, timezone)
+    const daysInMonth = monthStart.daysInMonth()
+    const endDay = range
+        ? Number(range[2])
+        : wantsSecondHalf
+        ? daysInMonth
+        : wantsFirstHalf
+        ? Math.min(15, daysInMonth)
+        : startDay
+    if (!endDay) return null
+
+    let endMonthIndex = monthIndex
+    let endYear = year
+    if (endDay < startDay) {
+        endMonthIndex = (monthIndex + 1) % 12
+        endYear = monthIndex === 11 ? year + 1 : year
+    }
 
     const start = moment.tz({ year, month: monthIndex, day: startDay }, timezone).format('YYYY-MM-DD')
-    const end = moment.tz({ year, month: monthIndex, day: endDay }, timezone).format('YYYY-MM-DD')
+    const end = moment.tz({ year: endYear, month: endMonthIndex, day: endDay }, timezone).format('YYYY-MM-DD')
     return { start, end }
 }
 
@@ -425,9 +502,14 @@ const hasLeadInfo = (message: string) => {
 
 const hasReservationIntent = (message: string) => {
     const lower = normalizeText(message || '')
-    return ['quiero', 'reserv', 'reserva', 'me interesa', 'me gustaria', 'confirmar', 'avanzar', 'elegi'].some((keyword) =>
-        lower.includes(keyword)
-    )
+    const strong = ['reserv', 'reserva', 'confirmar', 'confirmo', 'avanzar', 'elegi', 'quiero reservar', 'quiero alquilar']
+    const weak = ['quiero', 'me interesa', 'me gustaria', 'me gusta', 'interesado']
+    const infoOnly = ['precio', 'tarifa', 'costo', 'costos', 'comod', 'amenit', 'detalle', 'info', 'ubicacion', 'direccion']
+    if (strong.some((keyword) => lower.includes(keyword))) return true
+    if (weak.some((keyword) => lower.includes(keyword)) && !infoOnly.some((keyword) => lower.includes(keyword))) {
+        return true
+    }
+    return false
 }
 
 const extractNamesFromSummary = (summary: string) => {
@@ -571,7 +653,24 @@ const isDeclineOnly = (message: string) => {
     return !hasDateSignals && !hasKeywords
 }
 
-const extractDates = (message: string): moment.Moment[] => {
+const extractDates = (message: string, options?: { preferMonthFirst?: boolean }): moment.Moment[] => {
+    const preferMonthFirst = Boolean(options?.preferMonthFirst)
+    const parseShortDateParts = (first: number, second: number) => {
+        const direct = parseShortDate(first, second)
+        const flipped = parseShortDate(second, first)
+        if (direct.isValid() && flipped.isValid()) {
+            return preferMonthFirst ? flipped : direct
+        }
+        return direct.isValid() ? direct : flipped
+    }
+    const parseSlashWithYear = (raw: string) => {
+        const dayFirst = moment(raw, ['DD/MM/YYYY', 'DD/MM/YY'], true)
+        const monthFirst = moment(raw, ['MM/DD/YYYY', 'MM/DD/YY'], true)
+        if (dayFirst.isValid() && monthFirst.isValid()) {
+            return preferMonthFirst ? monthFirst : dayFirst
+        }
+        return dayFirst.isValid() ? dayFirst : monthFirst
+    }
     const tokens: Array<{ raw: string; index: number; kind: 'iso' | 'slash' | 'hyphen' }> = []
     for (const match of message.matchAll(/\d{4}-\d{2}-\d{2}/g)) {
         if (match.index === undefined) continue
@@ -599,17 +698,51 @@ const extractDates = (message: string): moment.Moment[] => {
             if (token.kind === 'slash') {
                 const parts = token.raw.split('/')
                 if (parts.length === 2) {
-                    return parseShortDate(Number(parts[0]), Number(parts[1]))
+                    return parseShortDateParts(Number(parts[0]), Number(parts[1]))
                 }
-                return moment(token.raw, 'DD/MM/YYYY', true)
+                return parseSlashWithYear(token.raw)
             }
             const [day, month] = token.raw.split('-').map((value) => Number(value))
             if (!Number.isFinite(day) || !Number.isFinite(month)) {
                 return moment.invalid()
             }
-            return parseShortDate(day, month)
+            return parseShortDateParts(day, month)
         })
         .filter((parsed) => parsed.isValid())
+}
+
+const findAmbiguousShortDate = (message: string) => {
+    const ranges: Array<{ start: number; end: number }> = []
+    for (const match of message.matchAll(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g)) {
+        if (match.index === undefined) continue
+        ranges.push({ start: match.index, end: match.index + match[0].length })
+    }
+    for (const match of message.matchAll(/\b\d{1,2}[/-]\d{1,2}\b/g)) {
+        if (match.index === undefined) continue
+        const start = match.index
+        const end = start + match[0].length
+        if (ranges.some((range) => start >= range.start && end <= range.end)) continue
+        const parts = match[0].split(/[/-]/).map((value) => Number(value))
+        if (parts.length !== 2) continue
+        const [first, second] = parts
+        if (!Number.isFinite(first) || !Number.isFinite(second)) continue
+        if (first <= 12 && second <= 12) {
+            return { raw: match[0], first, second }
+        }
+    }
+    return null
+}
+
+const buildAmbiguousDateQuestion = (input: { raw: string; first: number; second: number }, locale: string) => {
+    const left = String(input.first).padStart(2, '0')
+    const right = String(input.second).padStart(2, '0')
+    const optionA = `${left}/${right}`
+    const optionB = `${right}/${left}`
+    return responseForLocale(
+        locale,
+        `Para evitar errores con "${input.raw}", puede ser ${optionA} o ${optionB}. Confirmame las fechas en formato YYYY-MM-DD.`,
+        `Quick check: "${input.raw}" could be ${optionA} or ${optionB}. Can you confirm the dates in YYYY-MM-DD?`
+    )
 }
 
 const detectProperty = (message: string, properties: CatalogProperty[]) => {
@@ -634,12 +767,15 @@ const extractGuests = (message: string) => {
     return Number.isFinite(value) ? value : undefined
 }
 
-const extractStayLength = (message: string) => {
+const extractStayLengthDetails = (message: string) => {
     const normalized = normalizeText(message || '')
     const match = normalized.match(/\b(\d{1,2})\s*(dias|noches|days|nights)\b/)
     if (!match) return undefined
     const value = Number(match[1])
-    return Number.isFinite(value) ? value : undefined
+    if (!Number.isFinite(value)) return undefined
+    const unitRaw = match[2]
+    const unit = unitRaw.includes('noche') || unitRaw.includes('night') ? 'nights' : 'days'
+    return { value, unit } as { value: number; unit: 'days' | 'nights' }
 }
 
 const extractVisitTime = (message: string) => {
@@ -752,26 +888,57 @@ const formatAvailabilitySections = (
     return includeHeader ? `${availableLabel}:\n${formatBulletList(availableLines)}` : formatBulletList(availableLines)
 }
 
-const formatRangeLabel = (start: moment.Moment, end: moment.Moment, locale = 'es-AR') => {
-    if (start.isSame(end, 'day')) {
-        return start.format('YYYY-MM-DD')
-    }
-    if (start.isSame(end, 'month')) {
-        const monthName = start.locale(locale === 'en-US' ? 'en' : 'es').format('MMMM')
-        return locale === 'en-US'
-            ? `from ${start.format('D')} to ${end.format('D')} ${monthName}`
-            : `del ${start.format('D')} al ${end.format('D')} de ${monthName}`
-    }
+const formatDateLabel = (date: moment.Moment, locale = 'es-AR') => {
+    const localeKey = locale === 'en-US' ? 'en' : 'es'
     return locale === 'en-US'
-        ? `from ${start.format('YYYY-MM-DD')} to ${end.format('YYYY-MM-DD')}`
-        : `del ${start.format('YYYY-MM-DD')} al ${end.format('YYYY-MM-DD')}`
+        ? date.locale(localeKey).format('MMM D, YYYY')
+        : date.locale(localeKey).format('D [de] MMMM [de] YYYY')
+}
+
+const formatDateLabelFromISO = (value: string, locale = 'es-AR') => {
+    const parsed = moment(value, 'YYYY-MM-DD', true)
+    if (!parsed.isValid()) return value
+    return formatDateLabel(parsed, locale)
+}
+
+const formatStaySpan = (start: string, end: string, locale = 'es-AR') => {
+    const checkInLabel = locale === 'en-US' ? 'check-in' : 'ingreso'
+    const checkOutLabel = locale === 'en-US' ? 'check-out' : 'salida'
+    const startLabel = formatDateLabelFromISO(start, locale)
+    const endLabel = formatDateLabelFromISO(end, locale)
+    return `${checkInLabel} ${startLabel}, ${checkOutLabel} ${endLabel}`
+}
+
+const formatRangeLabel = (start: moment.Moment, end: moment.Moment, locale = 'es-AR') => {
+    return formatStaySpan(formatDateLabel(start, locale), formatDateLabel(end, locale), locale)
 }
 
 const formatRangeWithYear = (start: moment.Moment, end: moment.Moment, locale = 'es-AR') => {
-    const base = formatRangeLabel(start, end, locale)
-    const year = start.format('YYYY')
-    if (base.includes(year)) return base
-    return locale === 'en-US' ? `${base}, ${year}` : `${base} de ${year}`
+    return formatRangeLabel(start, end, locale)
+}
+
+const buildHoldSummaryLine = (params: {
+    start: string
+    end: string
+    propertyName?: string
+    guests?: number
+    locale: string
+}) => {
+    const stay = formatStaySpan(params.start, params.end, params.locale)
+    const guests =
+        typeof params.guests === 'number' ? (params.locale === 'en-US' ? `${params.guests} guests` : `${params.guests} personas`) : ''
+    const parts = [params.propertyName || '', stay, guests].filter(Boolean)
+    if (!parts.length) return ''
+    const summary = parts.join(' - ')
+    return params.locale === 'en-US' ? `Summary: ${summary}.` : `Resumen: ${summary}.`
+}
+
+const isDateContextStale = (params: { start?: string; end?: string; lastRangeUpdatedAt?: string | Date | null }) => {
+    if (!params.start || !params.end) return false
+    if (!params.lastRangeUpdatedAt) return true
+    const last = moment(params.lastRangeUpdatedAt)
+    if (!last.isValid()) return true
+    return moment().diff(last, 'days') >= QUINTAS_DATE_CONTEXT_TTL_DAYS
 }
 
 const getMonthWindowFromMessage = (message: string, monthIndex: number, year: number, locale = 'es-AR') => {
@@ -1005,7 +1172,7 @@ const buildAvailabilityOverview = async (daysWindow = 30, locale = 'es-AR') => {
                 availableCount += 1
             }
         }
-        const dateLabel = day.format('YYYY-MM-DD')
+        const dateLabel = formatDateLabel(day, locale)
         if (availableCount > 0) {
             availableDates.push(dateLabel)
         }
@@ -1164,6 +1331,20 @@ const checkAvailability = async (input: { start: string; end?: string; propertyI
         }
     }
 
+    if (!available.length) {
+        const reasonCounts = unavailable.reduce<Record<string, number>>((acc, item) => {
+            const reason = String(item.reason || 'unknown')
+            acc[reason] = (acc[reason] || 0) + 1
+            return acc
+        }, {})
+        console.info('[manual-agents] quintas availability empty', {
+            start: startDate.format('YYYY-MM-DD'),
+            end: endDate.format('YYYY-MM-DD'),
+            propertyId: input.propertyId,
+            reasons: reasonCounts
+        })
+    }
+
     return { ok: true, available, unavailable, summary: formatAvailabilitySections(available, unavailable, locale) }
 }
 
@@ -1230,6 +1411,94 @@ const buildNearbyAvailabilityMessage = async (params: { start: string; days?: nu
     )
 }
 
+const buildMissingDetailsQuestion = (params: { locale: string; needsProperty?: boolean; needsGuests?: boolean }) => {
+    const parts: string[] = []
+    if (params.needsProperty) {
+        parts.push(params.locale === 'en-US' ? 'property' : 'quinta')
+    }
+    if (params.needsGuests) {
+        parts.push(params.locale === 'en-US' ? 'guest count' : 'cantidad de personas')
+    }
+    if (!parts.length) return ''
+    const list =
+        parts.length === 1
+            ? parts[0]
+            : `${parts.slice(0, -1).join(params.locale === 'en-US' ? ', ' : ', ')}${params.locale === 'en-US' ? ' and ' : ' y '}${
+                  parts[parts.length - 1]
+              }`
+    return responseForLocale(
+        params.locale,
+        `Para esas fechas necesito ${list}. Decime eso y sigo.`,
+        `For those dates I need the ${list}. Share that and I will continue.`
+    )
+}
+
+const buildHoldRecap = (params: {
+    start: string
+    end: string
+    propertyName?: string
+    guests?: number
+    locale: string
+}) => {
+    const range = formatStaySpan(params.start, params.end, params.locale)
+    const parts = [
+        params.propertyName || '',
+        range,
+        typeof params.guests === 'number' ? (params.locale === 'en-US' ? `${params.guests} guests` : `${params.guests} personas`) : ''
+    ].filter(Boolean)
+    const summary = parts.join(', ')
+    return responseForLocale(
+        params.locale,
+        `Antes de reservar: ${summary}. Confirmo?`,
+        `Before I book: ${summary}. Should I confirm?`
+    )
+}
+
+const buildFlexibleAvailabilityMessage = async (params: {
+    monthIndex: number
+    year: number
+    days?: number
+    weekendOnly?: boolean
+    locale: string
+    propertyId?: string
+}) => {
+    const days = Math.max(params.days || (params.weekendOnly ? 2 : 2), 1)
+    const timezone = 'America/Argentina/Buenos_Aires'
+    const monthStart = moment.tz({ year: params.year, month: params.monthIndex, day: 1 }, timezone).startOf('day')
+    const monthEnd = monthStart.clone().endOf('month')
+    const today = moment.tz(timezone).startOf('day')
+    const options: string[] = []
+
+    for (let day = 1; day <= monthEnd.date(); day += 1) {
+        const start = moment.tz({ year: params.year, month: params.monthIndex, day }, timezone).startOf('day')
+        if (start.isBefore(today, 'day')) continue
+        if (params.weekendOnly && start.day() !== 6) continue
+        const end = start.clone().add(days - 1, 'day')
+        if (end.isAfter(monthEnd, 'day')) continue
+        const availability = await checkAvailability({
+            start: start.format('YYYY-MM-DD'),
+            end: end.format('YYYY-MM-DD'),
+            propertyId: params.propertyId,
+            locale: params.locale
+        })
+        const okAvailability = availability as { available?: Array<Record<string, unknown>> }
+        if (availability.ok && (okAvailability.available || []).length) {
+            options.push(formatRangeWithYear(start, end, params.locale))
+        }
+        if (options.length >= 3) break
+    }
+
+    if (!options.length) return ''
+    const monthName = monthStart.locale(params.locale === 'en-US' ? 'en' : 'es').format('MMMM')
+    const header = responseForLocale(
+        params.locale,
+        `Opciones flexibles en ${monthName}:`,
+        `Here are some flexible options in ${monthName}:`
+    )
+    const question = responseForLocale(params.locale, 'Cual te sirve?', 'Which one works best?')
+    return `${header}\n${formatBulletList(options.map((option) => `- ${option}`))}\n\n${question}`
+}
+
 const buildMinNightsReply = (params: { start: string; minNights: number; locale: string }) => {
     const startDate = moment(params.start, 'YYYY-MM-DD', true)
     if (!startDate.isValid() || params.minNights < 1) return ''
@@ -1250,7 +1519,10 @@ const buildAvailabilityReply = async (
     requestedDays?: number,
     options?: { includeHeader?: boolean }
 ) => {
-    const rangeLabel = startStr === endStr ? startStr : `${startStr} al ${endStr}`
+    const startDate = moment(startStr, 'YYYY-MM-DD', true)
+    const endDate = moment(endStr, 'YYYY-MM-DD', true)
+    const rangeLabel =
+        startDate.isValid() && endDate.isValid() ? formatRangeLabel(startDate, endDate, locale) : formatStaySpan(startStr, endStr, locale)
     const result = await checkAvailability({
         start: startStr,
         end: endStr,
@@ -1293,12 +1565,28 @@ const buildAvailabilityReply = async (
 
     const includeHeader = options?.includeHeader !== false
     const summary = formatAvailabilitySections(available, unavailable, locale, includeHeader)
+    const priced = available
+        .map((item) => ({
+            price: Number(item.basePricePerNight || 0),
+            currency: String(item.currency || '')
+        }))
+        .filter((item) => Number.isFinite(item.price) && item.price > 0)
+    const minPrice = priced.length ? priced.reduce((min, item) => (item.price < min.price ? item : min), priced[0]) : null
+    const perNightLabel = locale === 'en-US' ? 'per night' : 'por noche'
+    const priceLine = minPrice
+        ? responseForLocale(
+              locale,
+              `Precio desde ${formatPrice(minPrice.price, minPrice.currency)} ${perNightLabel}.`,
+              `From ${formatPrice(minPrice.price, minPrice.currency)} ${perNightLabel}.`
+          )
+        : ''
+    const availabilityLine = responseForLocale(
+        locale,
+        `Para ${rangeLabel} tengo:\n\n${summary}`,
+        `For ${rangeLabel}, I have:\n\n${summary}`
+    )
     return {
-        answer: responseForLocale(
-            locale,
-            `Para ${rangeLabel} tengo:\n\n${summary}`,
-            `For ${rangeLabel}, I have:\n\n${summary}`
-        )
+        answer: priceLine ? `${availabilityLine}\n\n${priceLine}` : availabilityLine
     }
 }
 
@@ -1377,8 +1665,8 @@ const buildPropertyInfoAnswer = async (params: {
     const priceText = property.basePricePerNight
         ? responseForLocale(
               locale,
-              `Costo base: ${formatPrice(property.basePricePerNight, property.currency)} ${perNightLabel}. El total depende de fechas y noches.`,
-              `Base cost: ${formatPrice(property.basePricePerNight, property.currency)} ${perNightLabel}. Total depends on dates and nights.`
+              `Costo base: ${formatPrice(property.basePricePerNight, property.currency)} ${perNightLabel}. El total depende de fechas, noches y cargos. Si queres, decime presupuesto por noche y cantidad de personas.`,
+              `Base cost: ${formatPrice(property.basePricePerNight, property.currency)} ${perNightLabel}. Total depends on dates, nights, and fees. If you share your per-night budget and guest count, I can narrow it down.`
           )
         : responseForLocale(
               locale,
@@ -1444,8 +1732,8 @@ const buildQuintasInfoSummary = (params: {
 
     const pricingLine = responseForLocale(
         locale,
-        'Costos: los precios base estan arriba. El total depende de fechas y noches.',
-        'Costs: base prices are above. The total depends on dates and nights.'
+        'Costos: los precios base estan arriba. El total depende de fechas, noches y cargos. Si queres, decime presupuesto por noche y cantidad de personas.',
+        'Costs: base prices are above. The total depends on dates, nights, and fees. If you share your per-night budget and guest count, I can narrow it down.'
     )
     const promptLine = responseForLocale(
         locale,
@@ -1461,8 +1749,8 @@ const buildRulesReply = (restrictions: RestrictionsDoc, locale = 'es-AR') => {
     const musicNight = restrictions.general?.music?.night || 'sin musica amplificada despues de las 22:00'
     return responseForLocale(
         locale,
-        `Reglas de musica: ${musicDay}. De noche: ${musicNight}.`,
-        `Music rules: ${musicDay}. At night: ${musicNight}.`
+        `Reglas de musica: ${musicDay}. De noche: ${musicNight}. Si queres, te paso el detalle completo.`,
+        `Music rules: ${musicDay}. At night: ${musicNight}. If you want, I can share the full details.`
     )
 }
 
@@ -1480,13 +1768,15 @@ const buildPaymentReply = (restrictions: RestrictionsDoc, locale = 'es-AR') => {
         transfer.alias ? `${locale === 'en-US' ? 'Alias' : 'Alias'}: ${transfer.alias}` : '',
         transfer.concept ? `${locale === 'en-US' ? 'Concept' : 'Concepto'}: ${transfer.concept}` : ''
     ].filter(Boolean)
-    const transferText = buildTransferText(transferParts, locale)
-
-    return responseForLocale(
+    const baseLine = responseForLocale(
         locale,
-        `El deposito/anticipo es del ${depositPct}% y debe acreditarse dentro de ${deadlineHours} horas. El pago total es ${fullPaymentDays} dias antes. Medios: ${methods}.${transferText}`,
-        `The deposit is ${depositPct}% and must be paid within ${deadlineHours} hours. Full payment is due ${fullPaymentDays} days before check-in. Methods: ${methods}.${transferText}`
+        `El deposito/anticipo es del ${depositPct}% y vence en ${deadlineHours} horas. El pago total es ${fullPaymentDays} dias antes. Medios: ${methods}.`,
+        `Deposit is ${depositPct}% due within ${deadlineHours} hours. Full payment is due ${fullPaymentDays} days before check-in. Methods: ${methods}.`
     )
+    const transferHint = transferParts.length
+        ? responseForLocale(locale, 'Si queres, te paso los datos de transferencia.', 'If you want, I can share bank transfer details.')
+        : responseForLocale(locale, 'Si queres, te paso los datos oficiales de transferencia.', 'If you want, I can share the official transfer details.')
+    return `${baseLine} ${transferHint}`.trim()
 }
 
 const buildTransferText = (transferParts: string[], locale = 'es-AR') => {
@@ -1547,9 +1837,11 @@ const buildSystemPrompt = (catalogMeta: CatalogMeta, restrictions: RestrictionsD
         '- Antes de afirmar disponibilidad, llama check_availability y usa sus resultados.',
         '- No contradigas disponibilidad ya informada en la misma conversacion, salvo que check_availability lo indique y lo aclares.',
         '- Cuando respondas disponibilidad, si no hay cupo deci "No hay disponibilidad para esas fechas". Si hay disponibilidad, lista solo las opciones disponibles.',
+        '- Cuando menciones rangos de fechas, usa formato ingreso/salida con meses en texto (ej: ingreso 5 de enero de 2026, salida 10 de enero de 2026).',
         '- Si consultan por quintas, comodidades o costos, inclui disponibilidad (o pedi fechas), comodidades y costo base o como cotizar.',
         '- Para catalogo o listas de quintas, usa vinetas y separa cada opcion con una linea en blanco.',
         '- Tono: cercano, natural y humano. Responde en 1-3 frases cortas salvo cuando listes opciones.',
+        '- Si preguntan por reglas o pagos, responde breve y ofrece ampliar el detalle.',
         '- Usa confirmaciones cortas tipo "dale" u "ok" cuando aplique.',
         '- Si piden X dias/noches y no hay disponibilidad exacta, ofrece un rango cercano con esa duracion.',
         '- Cuando uses check_availability, pasa locale segun el idioma del cliente (es-AR o en-US).',
@@ -1646,9 +1938,11 @@ const runLlmFlow = async (
             if (locale === 'es-AR' && isLikelyEnglish(answer)) {
                 if (availabilitySummary) {
                     const rangeLabel =
-                        availabilityRange?.start && availabilityRange?.end && availabilityRange.start !== availabilityRange.end
-                            ? `${availabilityRange.start} al ${availabilityRange.end}`
-                            : availabilityRange?.start || ''
+                        availabilityRange?.start && availabilityRange?.end
+                            ? formatStaySpan(availabilityRange.start, availabilityRange.end, locale)
+                            : availabilityRange?.start
+                            ? formatDateLabelFromISO(availabilityRange.start, locale)
+                            : ''
                     if (isNoAvailabilitySummary(availabilitySummary)) {
                         answer = availabilitySummary
                     } else {
@@ -1673,6 +1967,24 @@ const runLlmFlow = async (
             ) {
                 answer = `${answer}\n\n${availabilitySummary}`
             }
+            const holdMeta = metadata as { type?: string; hold?: { propertyId?: string; start?: string; end?: string } } | undefined
+            if (holdMeta?.type === 'holdCard' && holdMeta.hold?.start && holdMeta.hold?.end) {
+                let propertyName = holdMeta.hold.propertyId || ''
+                if (holdMeta.hold.propertyId) {
+                    const properties = await getCatalogProperties()
+                    const match = properties.find((item) => item.propertyId === holdMeta.hold?.propertyId)
+                    propertyName = match?.name || match?.propertyId || propertyName
+                }
+                const summaryLine = buildHoldSummaryLine({
+                    propertyName,
+                    start: holdMeta.hold.start,
+                    end: holdMeta.hold.end,
+                    locale
+                })
+                if (summaryLine && !answer.includes(summaryLine) && !answer.includes('Resumen:') && !answer.includes('Summary:')) {
+                    answer = `${answer}\n\n${summaryLine}`
+                }
+            }
             return { answer, metadata }
         }
 
@@ -1687,6 +1999,33 @@ const runLlmFlow = async (
                 args = {}
             }
             const toolResult = await executeQuintasTool(name, args, restrictions)
+            if (sessionId && (name === 'check_availability' || name === 'create_hold')) {
+                const start = typeof args.start === 'string' ? args.start : ''
+                const end = typeof args.end === 'string' ? args.end : ''
+                const updatePayload: Record<string, any> = {}
+                if (start) {
+                    updatePayload.lastRangeStart = start
+                }
+                if (end || start) {
+                    updatePayload.lastRangeEnd = end || start
+                }
+                if (typeof args.propertyId === 'string' && args.propertyId) {
+                    updatePayload.lastPropertyId = args.propertyId
+                }
+                if (Object.keys(updatePayload).length) {
+                    if (start || end) {
+                        updatePayload.lastRangeUpdatedAt = new Date()
+                    }
+                    updatePayload.updatedAt = new Date()
+                    const db = await getManualAgentsDb()
+                    const collections = collectionNames
+                    ensureToolAccess('write', [collections.manualAgentSessions])
+                    await db.collection(collections.manualAgentSessions).updateOne(
+                        { sessionId, agentId: 'quintas' },
+                        { $set: updatePayload }
+                    )
+                }
+            }
             if (toolResult.metadata) {
                 metadata = toolResult.metadata
             }
@@ -1930,9 +2269,77 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
     const message = input.message || ''
     const lower = normalizeText(message)
     const locale = forcedLocale || detectLocaleFromMessage(message)
-    const requestedDays = extractStayLength(message)
+    const stayLength = extractStayLengthDetails(message)
+    const requestedDays = stayLength?.value
+    const dateOptions = { preferMonthFirst: locale === 'en-US' }
 
     const [catalogMeta, catalogProperties, restrictions] = await Promise.all([getCatalogMeta(), getCatalogProperties(), getRestrictions()])
+
+    const earlyCheckinSignal =
+        lower.includes('ingreso temprano') || lower.includes('check-in temprano') || lower.includes('early check-in')
+    const lateCheckoutSignal =
+        lower.includes('salida tarde') || lower.includes('check-out tarde') || lower.includes('late check-out')
+    const lateCheckinSignal = lower.includes('llego tarde') || lower.includes('llegamos tarde') || lower.includes('late check-in')
+    const earlyCheckoutSignal =
+        lower.includes('salida temprano') || lower.includes('check-out temprano') || lower.includes('early check-out')
+    const checkInOutSignal =
+        earlyCheckinSignal ||
+        lateCheckoutSignal ||
+        lateCheckinSignal ||
+        earlyCheckoutSignal ||
+        lower.includes('check-in') ||
+        lower.includes('check out') ||
+        lower.includes('check-out') ||
+        lower.includes('checkin') ||
+        lower.includes('checkout') ||
+        lower.includes('ingreso') ||
+        lower.includes('salida') ||
+        lower.includes('horario')
+    const hasDateSignals =
+        extractDates(message, dateOptions).length > 0 ||
+        Boolean(parseMonthRange(message)) ||
+        Boolean(parseDayRange(message)) ||
+        Boolean(parseRelativeDateRange(message))
+
+    if (checkInOutSignal && !hasDateSignals) {
+        const checkInTime = restrictions.checkInOut?.checkInTime
+        const checkOutTime = restrictions.checkInOut?.checkOutTime
+        const base = checkInTime || checkOutTime
+            ? responseForLocale(
+                  locale,
+                  `Ingreso ${checkInTime || 'a coordinar'} y salida ${checkOutTime || 'a coordinar'}.`,
+                  `Check-in ${checkInTime || 'by arrangement'} and check-out ${checkOutTime || 'by arrangement'}.`
+              )
+            : responseForLocale(
+                  locale,
+                  'El horario depende de la quinta. Decime cual te interesa y te confirmo.',
+                  'Check-in/out times depend on the property. Tell me which one and I will confirm.'
+              )
+        const notes = restrictions.checkInOut?.notes || ''
+        const flexibilityLine =
+            earlyCheckinSignal || lateCheckoutSignal
+                ? responseForLocale(
+                      locale,
+                      'Ingreso temprano o salida tarde: sujeto a disponibilidad.',
+                      'Early check-in or late check-out: subject to availability.'
+                  )
+                : ''
+        const lateArrivalQuestion = lateCheckinSignal
+            ? responseForLocale(
+                  locale,
+                  'Si vas a llegar tarde, decime el horario aproximado.',
+                  'If you will arrive late, share the approximate time.'
+              )
+            : ''
+        const earlyDepartureQuestion = earlyCheckoutSignal
+            ? responseForLocale(
+                  locale,
+                  'Si necesitas salida temprano, decime el horario aproximado.',
+                  'If you need an early check-out, share the approximate time.'
+              )
+            : ''
+        return { answer: [base, notes, flexibilityLine, lateArrivalQuestion, earlyDepartureQuestion].filter(Boolean).join(' ') }
+    }
 
     const relevantKeywords = [
         'quinta',
@@ -2039,7 +2446,7 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
         generalQuintasQuery
     if (wantsPropertyInfo) {
         const property = detectProperty(message, catalogProperties)
-        const dates = extractDates(message)
+        const dates = extractDates(message, dateOptions)
         const monthRange = parseMonthRange(message)
         const start =
             dates[0]?.format('YYYY-MM-DD') ||
@@ -2142,7 +2549,7 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
         }
     }
 
-    const dates = extractDates(message)
+    const dates = extractDates(message, dateOptions)
     if (dates.length) {
         const dateStr = dates[0].format('YYYY-MM-DD')
         const endStr = dates[1]?.format('YYYY-MM-DD') || (requestedDays ? dates[0].clone().add(requestedDays - 1, 'day').format('YYYY-MM-DD') : dateStr)
@@ -2206,11 +2613,19 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                           '\n\nPara realizar la transferencia bancaria, un humano te enviara los datos oficiales.',
                           '\n\nFor bank transfer details, a human will send the official information.'
                       )
+                const summaryLine = buildHoldSummaryLine({
+                    propertyName: property.name || property.propertyId,
+                    start: dateStr,
+                    end: endDate,
+                    locale
+                })
+                const summaryBlock = summaryLine ? `${summaryLine}\n\n` : ''
 
                 return {
                     answer: responseForLocale(
                         locale,
                         `Listo, te reservo por 24h.\n` +
+                            summaryBlock +
                             `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'a confirmar'}.\n` +
                             `Deposito (${depositPct}%): ${
                                 typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
@@ -2218,6 +2633,7 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                             `Pago total ${fullPaymentDays} dias antes.${transferText}\n\n` +
                             'Cuando tengas el comprobante, adjuntalo por aca y confirmo la reserva.',
                         `Done, I reserved it for 24h.\n` +
+                            summaryBlock +
                             `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
                             `Deposit (${depositPct}%): ${
                                 typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
@@ -2262,11 +2678,15 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
             const price = `${formatPrice(prop.basePricePerNight, prop.currency)} ${perNightLabel}`
             return `- ${name}: ${price}`
         })
+        const budgetLine =
+            locale === 'en-US'
+                ? 'If you share your per-night budget and guest count, I can narrow it down.'
+                : 'Si me decis presupuesto por noche y cantidad de personas, lo ajusto.'
         return {
             answer: responseForLocale(
                 locale,
-                `Aca tenes precios base por noche:\n${formatBulletList(list)}`,
-                `Base nightly prices:\n${formatBulletList(list)}`
+                `Aca tenes precios base por noche:\n${formatBulletList(list)}\n\n${budgetLine}`,
+                `Base nightly prices:\n${formatBulletList(list)}\n\n${budgetLine}`
             )
         }
     }
@@ -2296,20 +2716,27 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     let lastYear: number | undefined
     let lastRangeStart: string | undefined
     let lastRangeEnd: string | undefined
+    let lastRangeUpdatedAt: string | Date | undefined
     let lastPropertyId: string | undefined
     let lastGuests: number | undefined
     let lastIntent: string | undefined
     let lastName: string | undefined
+    let lastEmail: string | undefined
+    let lastPhone: string | undefined
     let nameUseCount: number | undefined
     let frictionCount: number | undefined
+    let confusionCount: number | undefined
     let lastReplyKind: string | undefined
     let lastIntentSummary: string | undefined
+    let lastTopic: string | undefined
     let pendingDateConfirm: boolean | undefined
+    let pendingHoldConfirm: boolean | undefined
     let lastVisitDate: string | undefined
     let lastVisitPropertyId: string | undefined
     let lastVisitTime: string | undefined
     let lastVisitPending: boolean | undefined
     let sessionMessages: Array<{ role: string; content: string }> = []
+    let currentTopic = ''
 
     if (sessionId) {
         const session = await db
@@ -2319,15 +2746,21 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 lastYear?: number
                 lastRangeStart?: string
                 lastRangeEnd?: string
+                lastRangeUpdatedAt?: Date
                 lastPropertyId?: string
                 lastGuests?: number
                 lastIntent?: string
                 lastName?: string
+                lastEmail?: string
+                lastPhone?: string
                 nameUseCount?: number
                 frictionCount?: number
+                confusionCount?: number
                 lastReplyKind?: string
                 lastIntentSummary?: string
+                lastTopic?: string
                 pendingDateConfirm?: boolean
+                pendingHoldConfirm?: boolean
                 lastVisitDate?: string
                 lastVisitPropertyId?: string
                 lastVisitTime?: string
@@ -2340,15 +2773,21 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         lastYear = session?.lastYear
         lastRangeStart = session?.lastRangeStart
         lastRangeEnd = session?.lastRangeEnd
+        lastRangeUpdatedAt = session?.lastRangeUpdatedAt
         lastPropertyId = session?.lastPropertyId
         lastGuests = session?.lastGuests
         lastIntent = session?.lastIntent
         lastName = session?.lastName
+        lastEmail = session?.lastEmail
+        lastPhone = session?.lastPhone
         nameUseCount = session?.nameUseCount
         frictionCount = session?.frictionCount
+        confusionCount = session?.confusionCount
         lastReplyKind = session?.lastReplyKind
         lastIntentSummary = session?.lastIntentSummary
+        lastTopic = session?.lastTopic
         pendingDateConfirm = session?.pendingDateConfirm
+        pendingHoldConfirm = session?.pendingHoldConfirm
         lastVisitDate = session?.lastVisitDate
         lastVisitPropertyId = session?.lastVisitPropertyId
         lastVisitTime = session?.lastVisitTime
@@ -2383,6 +2822,12 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     if (detectedName) {
         lastName = detectedName
     }
+    if (detectedEmail) {
+        lastEmail = detectedEmail.toLowerCase()
+    }
+    if (detectedPhone) {
+        lastPhone = detectedPhone
+    }
 
     const detectedProperty = detectProperty(input.message || '', catalogProperties)
     if (detectedProperty) {
@@ -2408,7 +2853,13 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     const respondWith = async (
         response: ManualAgentResponse,
-        options?: { replyKind?: string; intentSummary?: string; frictionAction?: 'increase' | 'reset'; pendingDateConfirm?: boolean }
+        options?: {
+            replyKind?: string
+            intentSummary?: string
+            frictionAction?: 'increase' | 'reset'
+            pendingDateConfirm?: boolean
+            pendingHoldConfirm?: boolean
+        }
     ) => {
         let answer = response.answer || ''
         const updates: Record<string, any> = {}
@@ -2434,9 +2885,17 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             lastIntentSummary = options.intentSummary
             updates.lastIntentSummary = lastIntentSummary
         }
+        if (currentTopic && currentTopic !== lastTopic) {
+            lastTopic = currentTopic
+            updates.lastTopic = lastTopic
+        }
         if (options?.pendingDateConfirm !== undefined) {
             pendingDateConfirm = options.pendingDateConfirm
             updates.pendingDateConfirm = pendingDateConfirm
+        }
+        if (options?.pendingHoldConfirm !== undefined) {
+            pendingHoldConfirm = options.pendingHoldConfirm
+            updates.pendingHoldConfirm = pendingHoldConfirm
         }
 
         if (options?.frictionAction) {
@@ -2462,30 +2921,409 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     const respond = async (
         answer: string,
         metadata?: ManualAgentResponse['metadata'],
-        options?: { replyKind?: string; intentSummary?: string; frictionAction?: 'increase' | 'reset'; pendingDateConfirm?: boolean }
+        options?: {
+            replyKind?: string
+            intentSummary?: string
+            frictionAction?: 'increase' | 'reset'
+            pendingDateConfirm?: boolean
+            pendingHoldConfirm?: boolean
+        }
     ) => {
         return respondWith({ answer, metadata }, options)
     }
 
+    const finalizeHoldReservation = async () => {
+        if (!lastRangeStart || !lastRangeEnd || !lastPropertyId) {
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    'Para reservar necesito fechas y la quinta.',
+                    'To reserve I need the dates and the property.'
+                ),
+                undefined,
+                { intentSummary: 'awaiting_details', frictionAction: 'increase' }
+            )
+        }
+        const property = catalogProperties.find((item) => item.propertyId === lastPropertyId)
+        if (!property) {
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    'No encontre esa quinta. Decime cual te interesa.',
+                    'I could not find that property. Tell me which one you want.'
+                ),
+                undefined,
+                { intentSummary: 'awaiting_property', frictionAction: 'increase' }
+            )
+        }
+        ensureToolAccess('write', [collectionNames.quintasCalendar])
+        const hold = await createHold({
+            propertyId: property.propertyId,
+            start: lastRangeStart,
+            end: lastRangeEnd,
+            holdHours: restrictions.payment?.holdHours as number | undefined,
+            notes: 'reserva con deposito/anticipo desde chat'
+        })
+
+        if (!hold.ok) {
+            const suggestion = await buildNearbyAvailabilityMessage({
+                start: lastRangeStart,
+                days: requestedDays,
+                propertyId: property.propertyId,
+                locale: lockedLocale
+            })
+            if (suggestion) {
+                return respond(suggestion, undefined, { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' })
+            }
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    'Esas fechas ya no estan disponibles. Te puedo ofrecer alternativas.',
+                    'Those dates are no longer available. I can offer alternatives.'
+                ),
+                undefined,
+                { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+            )
+        }
+
+        await upsertLead({
+            name: lastName || undefined,
+            phone: lastPhone || undefined,
+            propertyId: property.propertyId,
+            dateRequested: lastRangeStart,
+            notes: lastEmail ? `email: ${lastEmail}` : undefined
+        })
+
+        const nights = Math.max(moment(lastRangeEnd).diff(moment(lastRangeStart), 'days'), 1)
+        const pricePerNight = property.basePricePerNight
+        const currency = property.currency || 'USD'
+        const totalAmount =
+            typeof pricePerNight === 'number' && Number.isFinite(pricePerNight)
+                ? Number((pricePerNight * nights).toFixed(2))
+                : undefined
+        const depositPct = restrictions.payment?.depositPct ?? 0
+        const depositAmount = typeof totalAmount === 'number' ? Number(((totalAmount * depositPct) / 100).toFixed(2)) : undefined
+        const deadlineHours = restrictions.payment?.depositDeadlineHours ?? 0
+        const fullPaymentDays = restrictions.payment?.fullPaymentDaysBefore ?? 0
+        const transfer = restrictions.payment?.bankTransfer || {}
+        const transferParts = [
+            transfer.accountName ? `${lockedLocale === 'en-US' ? 'Account name' : 'Titular'}: ${transfer.accountName}` : '',
+            transfer.bank ? `${lockedLocale === 'en-US' ? 'Bank' : 'Banco'}: ${transfer.bank}` : '',
+            transfer.cbu ? `CBU: ${transfer.cbu}` : '',
+            transfer.alias ? `${lockedLocale === 'en-US' ? 'Alias' : 'Alias'}: ${transfer.alias}` : '',
+            transfer.concept ? `${lockedLocale === 'en-US' ? 'Concept' : 'Concepto'}: ${transfer.concept}` : ''
+        ].filter(Boolean)
+        const transferText = transferParts.length
+            ? buildTransferText(transferParts, lockedLocale)
+            : responseForLocale(
+                  lockedLocale,
+                  '\n\nPara realizar la transferencia bancaria, un humano te enviara los datos oficiales.',
+                  '\n\nFor bank transfer details, a human will send the official information.'
+              )
+        const summaryLine = buildHoldSummaryLine({
+            propertyName: property.name || property.propertyId,
+            start: lastRangeStart,
+            end: lastRangeEnd,
+            guests: lastGuests,
+            locale: lockedLocale
+        })
+        const summaryBlock = summaryLine ? `\n${summaryLine}\n\n` : '\n\n'
+
+        return respondWith(
+            {
+                answer: responseForLocale(
+                    lockedLocale,
+                    `${lastName ? `Gracias ${lastName}, ` : ''}listo, genere la reserva a tu nombre.${summaryBlock}` +
+                        `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'a confirmar'}.\n` +
+                        `Deposito (${depositPct}%): ${
+                            typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
+                        } (dentro de ${deadlineHours} horas).\n` +
+                        `Pago total ${fullPaymentDays} dias antes de la llegada.${transferText}\n\n` +
+                        'Cuando hagas el deposito/anticipo, adjuntame el comprobante como imagen para confirmar la reserva.',
+                    `${lastName ? `Thanks ${lastName}, ` : ''}I created the reservation under your name.${summaryBlock}` +
+                        `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
+                        `Deposit (${depositPct}%): ${
+                            typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
+                        } (within ${deadlineHours} hours).\n` +
+                        `Full payment is due ${fullPaymentDays} days before arrival.${transferText}\n\n` +
+                        'Once you send the deposit, please attach the proof as an image so I can confirm the reservation.'
+                ),
+                metadata: {
+                    type: 'holdCard',
+                    hold: {
+                        propertyId: property.propertyId,
+                        start: lastRangeStart,
+                        end: lastRangeEnd,
+                        holdExpires: hold.holdExpires?.toISOString(),
+                        nights,
+                        pricePerNight,
+                        currency,
+                        totalAmount,
+                        depositPct,
+                        depositAmount
+                    }
+                }
+            },
+            { intentSummary: 'reservation_hold', frictionAction: 'reset', pendingHoldConfirm: false }
+        )
+    }
+
     const lower = normalizeText(message)
-    const requestedDays = extractStayLength(message)
+    const stayLength = extractStayLengthDetails(message)
+    const requestedDays = stayLength?.value
     const hasVisitKeyword = ['visita', 'ver la quinta', 'ver antes', 'conocer', 'recorrer', 'visitar'].some((keyword) =>
         lower.includes(normalizeText(keyword))
     )
     const rentIntent = ['alquilar', 'alquiler', 'reserv', 'disponibilidad', 'precio', 'tarifa'].some((keyword) => lower.includes(keyword))
+    const wantsMixedIntent = hasVisitKeyword && rentIntent
+    const earlyCheckinSignal =
+        lower.includes('ingreso temprano') || lower.includes('check-in temprano') || lower.includes('early check-in')
+    const lateCheckoutSignal =
+        lower.includes('salida tarde') || lower.includes('check-out tarde') || lower.includes('late check-out')
+    const lateCheckinSignal = lower.includes('llego tarde') || lower.includes('llegamos tarde') || lower.includes('late check-in')
+    const earlyCheckoutSignal =
+        lower.includes('salida temprano') || lower.includes('check-out temprano') || lower.includes('early check-out')
+    const checkInOutSignal =
+        earlyCheckinSignal ||
+        lateCheckoutSignal ||
+        lateCheckinSignal ||
+        earlyCheckoutSignal ||
+        lower.includes('check-in') ||
+        lower.includes('check out') ||
+        lower.includes('check-out') ||
+        lower.includes('checkin') ||
+        lower.includes('checkout') ||
+        lower.includes('ingreso') ||
+        lower.includes('salida') ||
+        lower.includes('horario')
+    const quincenaMentioned = lower.includes('quincena')
     const detectedVisitTime = extractVisitTime(input.message || '')
     const hasVisitTime = Boolean(detectedVisitTime)
-    const explicitDates = extractDates(input.message || '')
+    const explicitYearInMessage =
+        /\b\d{4}-\d{2}-\d{2}\b/.test(message) || /\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/.test(message)
+    const dateOptions = { preferMonthFirst: lockedLocale === 'en-US' }
+    const explicitDates = extractDates(input.message || '', dateOptions)
     const hasDates = explicitDates.length > 0
     const monthRange = parseMonthRange(input.message || '')
     const dayRange = parseDayRange(input.message || '')
     const relativeRange = !hasDates && !monthRange && !dayRange ? parseRelativeDateRange(input.message || '') : null
     const hasDateSignals = hasDates || Boolean(monthRange) || Boolean(dayRange) || Boolean(relativeRange)
     const hadVisitContext = Boolean(lastVisitPending || lastIntent === 'visit')
-    const shortAckPhrases = ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale', 'ok dale']
-    const shortNoPhrases = ['no', 'no gracias', 'no, gracias', 'no por ahora', 'no, por ahora']
+    const shortAckPhrases = ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale', 'ok dale', 'confirmo', 'confirmar']
+    const shortNoPhrases = ['no', 'no gracias', 'no, gracias', 'no por ahora', 'no, por ahora', 'no confirmo']
     const isShortAck = shortAckPhrases.includes(lower)
     const isShortNo = shortNoPhrases.includes(lower)
+    const wantsFlexibleDates =
+        lower.includes('flexible') ||
+        lower.includes('cualquier') ||
+        lower.includes('cualquiera') ||
+        lower.includes('cuando tengan') ||
+        lower.includes('cualquier fecha')
+    const wantsWeekendOnly =
+        lower.includes('fin de semana') ||
+        lower.includes('finde') ||
+        lower.includes('fines de semana') ||
+        lower.includes('weekend')
+    const reservationIntent = hasReservationIntent(message)
+    const needsProperty = !detectedProperty && !lastPropertyId
+    const needsGuests = typeof lastGuests !== 'number'
+    const policySignal =
+        lower.includes('musica') ||
+        lower.includes('regla') ||
+        lower.includes('pago') ||
+        lower.includes('deposito') ||
+        lower.includes('anticipo') ||
+        lower.includes('transferencia') ||
+        lower.includes('cbu') ||
+        lower.includes('alias') ||
+        lower.includes('banco') ||
+        lower.includes('descuento') ||
+        lower.includes('seguro') ||
+        lower.includes('lluvia')
+    const pricingSignal = lower.includes('precio') || lower.includes('tarifa') || lower.includes('costo')
+    const bookingSignal = reservationIntent || lower.includes('reserv')
+    const availabilitySignal = hasDateSignals || lower.includes('dispon')
+    currentTopic = policySignal
+        ? 'policy'
+        : pricingSignal
+        ? 'pricing'
+        : bookingSignal
+        ? 'booking'
+        : availabilitySignal
+        ? 'availability'
+        : ''
+    const previousTopic = String(lastTopic || '')
+    const confusionSignal =
+        lower.includes('no entiendo') ||
+        lower.includes('no entendi') ||
+        lower.includes('no me entendiste') ||
+        lower.includes('no me entendes') ||
+        lower.includes('no me entiendes') ||
+        lower.includes('no se entiende') ||
+        lower.includes('no comprendo') ||
+        lower.includes("don't understand") ||
+        lower.includes('dont understand') ||
+        lower.includes('what do you mean') ||
+        lower.includes("i'm confused") ||
+        lower.includes('im confused') ||
+        lower.includes('not clear')
+
+    if (confusionSignal) {
+        const nextCount = Number(confusionCount || 0) + 1
+        confusionCount = nextCount
+        if (sessionId) {
+            const updatePayload: Record<string, any> = { confusionCount: nextCount, updatedAt: new Date() }
+            if (currentTopic) updatePayload.lastTopic = currentTopic
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: updatePayload }
+            )
+        }
+        const base = responseForLocale(
+            lockedLocale,
+            'Perdon, que parte queres que aclare?',
+            'Sorry, what should I clarify?'
+        )
+        const answer = nextCount >= 2 ? appendEscalationPrompt(base, lockedLocale) : base
+        return respond(answer, undefined, { frictionAction: 'increase' })
+    }
+
+    if (checkInOutSignal && !hasDateSignals && !reservationIntent && !hasVisitKeyword && !rentIntent) {
+        const checkInTime = restrictions.checkInOut?.checkInTime
+        const checkOutTime = restrictions.checkInOut?.checkOutTime
+        const base = checkInTime || checkOutTime
+            ? responseForLocale(
+                  lockedLocale,
+                  `Ingreso ${checkInTime || 'a coordinar'} y salida ${checkOutTime || 'a coordinar'}.`,
+                  `Check-in ${checkInTime || 'by arrangement'} and check-out ${checkOutTime || 'by arrangement'}.`
+              )
+            : responseForLocale(
+                  lockedLocale,
+                  'El horario depende de la quinta. Decime cual te interesa y te confirmo.',
+                  'Check-in/out times depend on the property. Tell me which one and I will confirm.'
+              )
+        const notes = restrictions.checkInOut?.notes || ''
+        const flexibilityLine =
+            earlyCheckinSignal || lateCheckoutSignal
+                ? responseForLocale(
+                      lockedLocale,
+                      'Ingreso temprano o salida tarde: sujeto a disponibilidad.',
+                      'Early check-in or late check-out: subject to availability.'
+                  )
+                : ''
+        const lateArrivalQuestion = lateCheckinSignal
+            ? responseForLocale(
+                  lockedLocale,
+                  'Si vas a llegar tarde, decime el horario aproximado.',
+                  'If you will arrive late, share the approximate time.'
+              )
+            : ''
+        const earlyDepartureQuestion = earlyCheckoutSignal
+            ? responseForLocale(
+                  lockedLocale,
+                  'Si necesitas salida temprano, decime el horario aproximado.',
+                  'If you need an early check-out, share the approximate time.'
+              )
+            : ''
+        const answer = [base, notes, flexibilityLine, lateArrivalQuestion, earlyDepartureQuestion].filter(Boolean).join(' ')
+        return respond(answer, undefined, { frictionAction: 'reset' })
+    }
+
+    const ambiguousShortDate = !explicitYearInMessage && !detectMonthInMessage(message) ? findAmbiguousShortDate(message) : null
+    if (ambiguousShortDate) {
+        return respond(buildAmbiguousDateQuestion(ambiguousShortDate, lockedLocale), undefined, {
+            intentSummary: 'awaiting_dates',
+            frictionAction: 'increase'
+        })
+    }
+
+    if (quincenaMentioned && !detectMonthInMessage(message) && !hasDateSignals) {
+        return respond(
+            responseForLocale(lockedLocale, 'De que mes es la quincena?', 'Which month is that for?'),
+            undefined,
+            { intentSummary: 'awaiting_month', frictionAction: 'increase' }
+        )
+    }
+
+    if (explicitYearInMessage && explicitDates.length) {
+        const today = moment().startOf('day')
+        const hasPastDates = explicitDates.some((date) => date.isBefore(today, 'day'))
+        if (hasPastDates) {
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    'Esas fechas quedaron en el pasado. Me pasas nuevas fechas?',
+                    'Those dates are in the past. Can you share new dates?'
+                ),
+                undefined,
+                { intentSummary: 'awaiting_dates', frictionAction: 'increase' }
+            )
+        }
+    }
+
+    if (explicitDates.length === 1 && stayLength) {
+        const lengthValue = Math.max(stayLength.value, 1)
+        const start = explicitDates[0].clone().startOf('day')
+        const end = start.clone().add(lengthValue - 1, 'day')
+        const startStr = start.format('YYYY-MM-DD')
+        const endStr = end.format('YYYY-MM-DD')
+        const stayLabel = formatStaySpan(startStr, endStr, lockedLocale)
+        const unitLabel =
+            stayLength.unit === 'nights'
+                ? lockedLocale === 'en-US'
+                    ? 'nights'
+                    : 'noches'
+                : lockedLocale === 'en-US'
+                ? 'days'
+                : 'dias'
+        const answer = responseForLocale(
+            lockedLocale,
+            `Para confirmar ${lengthValue} ${unitLabel}, te referis a ${stayLabel}?`,
+            `Just to confirm ${lengthValue} ${unitLabel}, do you mean ${stayLabel}?`
+        )
+        lastRangeStart = startStr
+        lastRangeEnd = endStr
+        pendingDateConfirm = true
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                {
+                    $set: {
+                        lastRangeStart: startStr,
+                        lastRangeEnd: endStr,
+                        lastRangeUpdatedAt: new Date(),
+                        pendingDateConfirm: true,
+                        updatedAt: new Date()
+                    }
+                }
+            )
+        }
+        return respond(answer, undefined, { intentSummary: 'confirm_dates', frictionAction: 'increase', pendingDateConfirm: true })
+    }
+
+    const isNameOnlyMessage =
+        detectedName &&
+        !detectedEmail &&
+        !detectedPhone &&
+        !hasDateSignals &&
+        !detectedProperty &&
+        !rentIntent &&
+        !hasVisitKeyword &&
+        !lower.includes('precio') &&
+        !lower.includes('tarifa') &&
+        !lower.includes('costo')
+    if (isNameOnlyMessage) {
+        const formatted = formatGuestName(detectedName)
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                `Gracias ${formatted}. Si queres retomar una charla anterior, pasame tu email o telefono. Si no, contame fechas y cantidad de personas.`,
+                `Thanks ${formatted}. If you want me to pick up a previous chat, share your email or phone. Otherwise, share your dates and guest count.`
+            ),
+            undefined,
+            { intentSummary: 'awaiting_dates', frictionAction: 'increase' }
+        )
+    }
 
     if (pendingDateConfirm && hasDates) {
         pendingDateConfirm = false
@@ -2494,6 +3332,64 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 { sessionId, agentId: 'quintas' },
                 { $set: { pendingDateConfirm: false, updatedAt: new Date() } }
             )
+        }
+    }
+
+    if (pendingHoldConfirm && (hasDates || detectedProperty || typeof detectedGuests === 'number')) {
+        pendingHoldConfirm = false
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { pendingHoldConfirm: false, updatedAt: new Date() } }
+            )
+        }
+    }
+
+    if (pendingHoldConfirm && isShortNo) {
+        pendingHoldConfirm = false
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { pendingHoldConfirm: false, updatedAt: new Date() } }
+            )
+        }
+        return respond(
+            responseForLocale(lockedLocale, 'Dale, que queres cambiar?', 'Ok, what do you want to change?'),
+            undefined,
+            { intentSummary: 'awaiting_details' }
+        )
+    }
+
+    if (pendingHoldConfirm && isShortAck) {
+        return finalizeHoldReservation()
+    }
+
+    if (
+        bookingSignal &&
+        !hasDateSignals &&
+        !pendingDateConfirm &&
+        !pendingHoldConfirm &&
+        lastRangeStart &&
+        lastRangeEnd &&
+        (previousTopic === 'policy' || previousTopic === 'pricing')
+    ) {
+        const start = moment(lastRangeStart, 'YYYY-MM-DD', true)
+        const end = moment(lastRangeEnd, 'YYYY-MM-DD', true)
+        if (start.isValid() && end.isValid()) {
+            const stayLabel = formatStaySpan(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), lockedLocale)
+            const answer = responseForLocale(
+                lockedLocale,
+                `Antes de reservar, seguimos con ${stayLabel}?`,
+                `Before booking, should I keep ${stayLabel}?`
+            )
+            pendingDateConfirm = true
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { pendingDateConfirm: true, updatedAt: new Date() } }
+                )
+            }
+            return respond(answer, undefined, { intentSummary: 'confirm_dates', frictionAction: 'increase', pendingDateConfirm: true })
         }
     }
 
@@ -2513,6 +3409,13 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 lockedLocale,
                 'Pasame tu nombre y un telefono o email.',
                 'Share your name and a phone or email.'
+            )
+        }
+        if (intentSummary === 'awaiting_intent') {
+            return responseForLocale(
+                lockedLocale,
+                'Queres coordinar una visita o avanzar con la reserva?',
+                'Do you want to schedule a visit or move forward with the reservation?'
             )
         }
         if (intentSummary === 'awaiting_visit') {
@@ -2543,7 +3446,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
-                { $set: { pendingDateConfirm: false, updatedAt: new Date() } }
+                { $set: { pendingDateConfirm: false, lastRangeUpdatedAt: new Date(), updatedAt: new Date() } }
             )
         }
         const property = lastPropertyId ? catalogProperties.find((item) => item.propertyId === lastPropertyId) : undefined
@@ -2571,12 +3474,27 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
-                { $set: { lastRangeStart: start, lastRangeEnd: end, pendingDateConfirm: true, updatedAt: new Date() } }
+                {
+                    $set: {
+                        lastRangeStart: start,
+                        lastRangeEnd: end,
+                        lastRangeUpdatedAt: new Date(),
+                        pendingDateConfirm: true,
+                        updatedAt: new Date()
+                    }
+                }
             )
         }
-        const rangeLabel = formatRangeWithYear(relativeRange.start, relativeRange.end, lockedLocale)
-        const answer = responseForLocale(lockedLocale, `Te referis a ${rangeLabel}?`, `Did you mean ${rangeLabel}?`)
+        const stayLabel = formatStaySpan(start, end, lockedLocale)
+        const answer = responseForLocale(lockedLocale, `Te referis a ${stayLabel}?`, `Did you mean ${stayLabel}?`)
         return respond(answer, undefined, { intentSummary: 'confirm_dates', frictionAction: 'increase', pendingDateConfirm: true })
+    }
+
+    if (reservationIntent && hasDateSignals && (needsProperty || needsGuests) && !visitOnly) {
+        const question = buildMissingDetailsQuestion({ locale: lockedLocale, needsProperty, needsGuests })
+        if (question) {
+            return respond(question, undefined, { intentSummary: 'awaiting_details', frictionAction: 'increase' })
+        }
     }
 
     if (
@@ -2593,7 +3511,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     }
 
     let restoredMessages: Array<{ role: string; content: string }> | null = null
-    if (!hasDates && (detectedName || detectedEmail || detectedPhone) && (!lastRangeStart || !lastRangeEnd)) {
+    if (!hasDates && (detectedEmail || detectedPhone) && (!lastRangeStart || !lastRangeEnd)) {
         const restoredSession = await findRecentSessionByIdentity({
             sessionId,
             name: detectedName || undefined,
@@ -2609,6 +3527,10 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             if (!lastRangeEnd && restoredSession.lastRangeEnd) {
                 lastRangeEnd = restoredSession.lastRangeEnd
                 restorePayload.lastRangeEnd = lastRangeEnd
+            }
+            if (!lastRangeUpdatedAt && restoredSession.lastRangeUpdatedAt) {
+                lastRangeUpdatedAt = restoredSession.lastRangeUpdatedAt
+                restorePayload.lastRangeUpdatedAt = lastRangeUpdatedAt
             }
             if (typeof lastMonthIndex !== 'number' && typeof restoredSession.lastMonthIndex === 'number') {
                 lastMonthIndex = restoredSession.lastMonthIndex
@@ -2630,6 +3552,14 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 lastName = restoredSession.lastName
                 restorePayload.lastName = lastName
             }
+            if (!lastEmail && restoredSession.lastEmail) {
+                lastEmail = restoredSession.lastEmail
+                restorePayload.lastEmail = lastEmail
+            }
+            if (!lastPhone && restoredSession.lastPhone) {
+                lastPhone = restoredSession.lastPhone
+                restorePayload.lastPhone = lastPhone
+            }
             if (Object.keys(restorePayload).length && sessionId) {
                 await db.collection(collections.manualAgentSessions).updateOne(
                     { sessionId, agentId: 'quintas' },
@@ -2644,6 +3574,45 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     if (restoredMessages?.length) {
         sessionMessages = [...restoredMessages, ...sessionMessages]
+    }
+
+    const hasVisitDetails = Boolean(detectedVisitTime || lastVisitTime || lastVisitPropertyId || lastVisitDate)
+    const hasStoredRange = Boolean(lastRangeStart && lastRangeEnd)
+    if (!pendingDateConfirm && !pendingHoldConfirm && wantsMixedIntent && !hasDateSignals && !hasStoredRange && !hasVisitDetails) {
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                'Queres coordinar una visita o avanzar con la reserva? Decime una opcion y sigo.',
+                'Do you want to schedule a visit or move forward with the reservation? Tell me which one and I will continue.'
+            ),
+            undefined,
+            { intentSummary: 'awaiting_intent', frictionAction: 'reset' }
+        )
+    }
+
+    const staleDateContext = isDateContextStale({
+        start: lastRangeStart,
+        end: lastRangeEnd,
+        lastRangeUpdatedAt
+    })
+    if (staleDateContext && hasStoredRange && !hasDateSignals && !pendingDateConfirm && !pendingHoldConfirm) {
+        const stayLabel = formatStaySpan(String(lastRangeStart), String(lastRangeEnd), lockedLocale)
+        pendingDateConfirm = true
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { pendingDateConfirm: true, updatedAt: new Date() } }
+            )
+        }
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                `Tengo fechas guardadas (${stayLabel}). Te sirven o las cambiamos?`,
+                `I have dates saved (${stayLabel}). Want to keep them or change them?`
+            ),
+            undefined,
+            { intentSummary: 'confirm_dates', frictionAction: 'increase', pendingDateConfirm: true }
+        )
     }
 
     const shouldStoreVisitTime = Boolean(detectedVisitTime && (hadVisitContext || hasVisitKeyword))
@@ -2820,7 +3789,14 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
-                { $set: { lastRangeStart: monthRange.start, lastRangeEnd: monthRange.end, updatedAt: new Date() } }
+                {
+                    $set: {
+                        lastRangeStart: monthRange.start,
+                        lastRangeEnd: monthRange.end,
+                        lastRangeUpdatedAt: new Date(),
+                        updatedAt: new Date()
+                    }
+                }
             )
         }
         const reply = await buildAvailabilityReply(monthRange.start, monthRange.end, property || undefined, lockedLocale, requestedDays, {
@@ -2851,12 +3827,14 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
 
     if (dayRange && typeof lastMonthIndex === 'number' && lastYear) {
         const timezone = 'America/Argentina/Buenos_Aires'
-        const start = moment
-            .tz({ year: lastYear, month: lastMonthIndex, day: dayRange.startDay }, timezone)
-            .format('YYYY-MM-DD')
-        const end = moment
-            .tz({ year: lastYear, month: lastMonthIndex, day: dayRange.endDay }, timezone)
-            .format('YYYY-MM-DD')
+        let endMonthIndex = lastMonthIndex
+        let endYear = lastYear
+        if (dayRange.endDay < dayRange.startDay) {
+            endMonthIndex = (lastMonthIndex + 1) % 12
+            endYear = lastMonthIndex === 11 ? lastYear + 1 : lastYear
+        }
+        const start = moment.tz({ year: lastYear, month: lastMonthIndex, day: dayRange.startDay }, timezone).format('YYYY-MM-DD')
+        const end = moment.tz({ year: endYear, month: endMonthIndex, day: dayRange.endDay }, timezone).format('YYYY-MM-DD')
         const property = detectProperty(input.message || '', catalogProperties)
         if (visitOnly) {
             const visitProperty = property || catalogProperties.find((item) => item.propertyId === lastVisitPropertyId)
@@ -2929,7 +3907,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
-                { $set: { lastRangeStart: start, lastRangeEnd: end, updatedAt: new Date() } }
+                { $set: { lastRangeStart: start, lastRangeEnd: end, lastRangeUpdatedAt: new Date(), updatedAt: new Date() } }
             )
         }
         const reply = await buildAvailabilityReply(start, end, property || undefined, lockedLocale, requestedDays, {
@@ -2961,8 +3939,14 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     if (mentionsDayRangeWithoutMonth(input.message || '')) {
         if (dayRange && typeof lastMonthIndex === 'number' && typeof lastYear === 'number') {
             const timezone = 'America/Argentina/Buenos_Aires'
+            let endMonthIndex = lastMonthIndex
+            let endYear = lastYear
+            if (dayRange.endDay < dayRange.startDay) {
+                endMonthIndex = (lastMonthIndex + 1) % 12
+                endYear = lastMonthIndex === 11 ? lastYear + 1 : lastYear
+            }
             const start = moment.tz({ year: lastYear, month: lastMonthIndex, day: dayRange.startDay }, timezone)
-            const end = moment.tz({ year: lastYear, month: lastMonthIndex, day: dayRange.endDay }, timezone)
+            const end = moment.tz({ year: endYear, month: endMonthIndex, day: dayRange.endDay }, timezone)
             if (start.isValid() && end.isValid()) {
                 const startStr = start.format('YYYY-MM-DD')
                 const endStr = end.format('YYYY-MM-DD')
@@ -2971,7 +3955,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 if (sessionId) {
                     await db.collection(collections.manualAgentSessions).updateOne(
                         { sessionId, agentId: 'quintas' },
-                        { $set: { lastRangeStart, lastRangeEnd, updatedAt: new Date() } }
+                        { $set: { lastRangeStart, lastRangeEnd, lastRangeUpdatedAt: new Date(), updatedAt: new Date() } }
                     )
                 }
                 const rangeProperty =
@@ -3020,6 +4004,19 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 undefined,
                 { intentSummary: 'awaiting_month', frictionAction: 'increase' }
             )
+        }
+        if (wantsFlexibleDates || wantsWeekendOnly) {
+            const suggestion = await buildFlexibleAvailabilityMessage({
+                monthIndex,
+                year,
+                days: requestedDays,
+                weekendOnly: wantsWeekendOnly,
+                locale: lockedLocale,
+                propertyId: detectedProperty?.propertyId || lastPropertyId
+            })
+            if (suggestion) {
+                return respond(suggestion, undefined, { intentSummary: 'availability_options', frictionAction: 'reset' })
+            }
         }
         return respond(
             await buildMonthAvailabilitySummary({
@@ -3261,12 +4258,19 @@ Please share your name and phone number to coordinate the visit.`
         const start = startFromMessage || lastRangeStart
         const end = endFromMessage || lastRangeEnd || start
 
-        if (sessionId && startFromMessage && endFromMessage) {
-            await db.collection(collections.manualAgentSessions).updateOne(
-                { sessionId, agentId: 'quintas' },
-                { $set: { lastRangeStart: startFromMessage, lastRangeEnd: endFromMessage, updatedAt: new Date() } }
-            )
-        }
+            if (sessionId && startFromMessage && endFromMessage) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    {
+                        $set: {
+                            lastRangeStart: startFromMessage,
+                            lastRangeEnd: endFromMessage,
+                            lastRangeUpdatedAt: new Date(),
+                            updatedAt: new Date()
+                        }
+                    }
+                )
+            }
 
         if (property) {
             return respond(
@@ -3375,12 +4379,12 @@ Please share your name and phone number to coordinate the visit.`
             explicitDates[1]?.format('YYYY-MM-DD') ||
             (requestedDays ? explicitDates[0].clone().add(requestedDays - 1, 'day').format('YYYY-MM-DD') : start)
         const property = detectProperty(input.message || '', catalogProperties)
-        if (sessionId) {
-            await db.collection(collections.manualAgentSessions).updateOne(
-                { sessionId, agentId: 'quintas' },
-                { $set: { lastRangeStart: start, lastRangeEnd: end, updatedAt: new Date() } }
-            )
-        }
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastRangeStart: start, lastRangeEnd: end, lastRangeUpdatedAt: new Date(), updatedAt: new Date() } }
+                )
+            }
         const reply = await buildAvailabilityReply(start, end, property || undefined, lockedLocale, requestedDays, {
             includeHeader: lastReplyKind !== 'availability'
         })
@@ -3452,111 +4456,17 @@ Please share your name and phone number to coordinate the visit.`
                     { $set: { lastIntent, lastVisitPending: false, updatedAt: new Date() } }
                 )
             }
-            ensureToolAccess('write', [collectionNames.quintasCalendar])
-            const hold = await createHold({
-                propertyId: property.propertyId,
-                start: lastRangeStart,
-                end: lastRangeEnd,
-                holdHours: restrictions.payment?.holdHours as number | undefined,
-                notes: 'reserva con deposito/anticipo desde chat'
-            })
-
-            if (!hold.ok) {
-                const suggestion = await buildNearbyAvailabilityMessage({
+            if (!pendingHoldConfirm) {
+                const recap = buildHoldRecap({
                     start: lastRangeStart,
-                    days: requestedDays,
-                    propertyId: property.propertyId,
+                    end: lastRangeEnd,
+                    propertyName: property.name || property.propertyId,
+                    guests: lastGuests,
                     locale: lockedLocale
                 })
-                if (suggestion) {
-                    return respond(suggestion, undefined, { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' })
-                }
-                return respond(
-                    responseForLocale(
-                        lockedLocale,
-                        'Esas fechas ya no estan disponibles. Te puedo ofrecer alternativas.',
-                        'Those dates are no longer available. I can offer alternatives.'
-                    ),
-                    undefined,
-                    { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
-                )
+                return respond(recap, undefined, { intentSummary: 'awaiting_confirm', frictionAction: 'increase', pendingHoldConfirm: true })
             }
-
-            const name = extractName(input.message || '')
-            const email = extractEmail(input.message || '')
-            const phone = extractPhone(input.message || '')
-            await upsertLead({
-                name: name || undefined,
-                phone: phone || undefined,
-                propertyId: property.propertyId,
-                dateRequested: lastRangeStart,
-                notes: email ? `email: ${email}` : undefined
-            })
-
-            const nights = Math.max(moment(lastRangeEnd).diff(moment(lastRangeStart), 'days'), 1)
-            const pricePerNight = property.basePricePerNight
-            const currency = property.currency || 'USD'
-            const totalAmount =
-                typeof pricePerNight === 'number' && Number.isFinite(pricePerNight)
-                    ? Number((pricePerNight * nights).toFixed(2))
-                    : undefined
-            const depositPct = restrictions.payment?.depositPct ?? 0
-            const depositAmount = typeof totalAmount === 'number' ? Number(((totalAmount * depositPct) / 100).toFixed(2)) : undefined
-            const deadlineHours = restrictions.payment?.depositDeadlineHours ?? 0
-            const fullPaymentDays = restrictions.payment?.fullPaymentDaysBefore ?? 0
-            const transfer = restrictions.payment?.bankTransfer || {}
-            const transferParts = [
-                transfer.accountName ? `${lockedLocale === 'en-US' ? 'Account name' : 'Titular'}: ${transfer.accountName}` : '',
-                transfer.bank ? `${lockedLocale === 'en-US' ? 'Bank' : 'Banco'}: ${transfer.bank}` : '',
-                transfer.cbu ? `CBU: ${transfer.cbu}` : '',
-                transfer.alias ? `${lockedLocale === 'en-US' ? 'Alias' : 'Alias'}: ${transfer.alias}` : '',
-                transfer.concept ? `${lockedLocale === 'en-US' ? 'Concept' : 'Concepto'}: ${transfer.concept}` : ''
-            ].filter(Boolean)
-            const transferText = transferParts.length
-                ? buildTransferText(transferParts, lockedLocale)
-                : responseForLocale(
-                      lockedLocale,
-                      '\n\nPara realizar la transferencia bancaria, un humano te enviara los datos oficiales.',
-                      '\n\nFor bank transfer details, a human will send the official information.'
-                  )
-
-            return respondWith(
-                {
-                    answer: responseForLocale(
-                        lockedLocale,
-                        `${name ? `Gracias ${name}, ` : ''}listo, genere la reserva a tu nombre.\n\n` +
-                            `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'a confirmar'}.\n` +
-                            `Deposito (${depositPct}%): ${
-                                typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
-                            } (dentro de ${deadlineHours} horas).\n` +
-                            `Pago total ${fullPaymentDays} dias antes de la llegada.${transferText}\n\n` +
-                            'Cuando hagas el deposito/anticipo, adjuntame el comprobante como imagen para confirmar la reserva.',
-                        `${name ? `Thanks ${name}, ` : ''}I created the reservation under your name.\n\n` +
-                            `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
-                            `Deposit (${depositPct}%): ${
-                                typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
-                            } (within ${deadlineHours} hours).\n` +
-                            `Full payment is due ${fullPaymentDays} days before arrival.${transferText}\n\n` +
-                            'Once you send the deposit, please attach the proof as an image so I can confirm the reservation.'
-                    ),
-                    metadata: {
-                        type: 'holdCard',
-                        hold: {
-                            propertyId: property.propertyId,
-                            start: lastRangeStart,
-                            end: lastRangeEnd,
-                            holdExpires: hold.holdExpires?.toISOString(),
-                            nights,
-                            pricePerNight,
-                            currency,
-                            totalAmount,
-                            depositPct,
-                            depositAmount
-                        }
-                    }
-                },
-                { intentSummary: 'reservation_hold', frictionAction: 'reset' }
-            )
+            return finalizeHoldReservation()
         }
     }
 
@@ -3579,4 +4489,16 @@ Please share your name and phone number to coordinate the visit.`
         const fallback = await handleQuintasFallback(input, lockedLocale)
         return respondWith(fallback, { frictionAction: 'increase' })
     }
+}
+
+export const __test__ = {
+    parseShortDate,
+    findAmbiguousShortDate,
+    extractDates,
+    extractStayLengthDetails,
+    buildMinNightsReply,
+    formatAvailabilitySections,
+    buildHoldSummaryLine,
+    formatStaySpan,
+    isDateContextStale
 }
