@@ -7,6 +7,8 @@ const { Pool } = require('pg')
 
 class CodeAgentIntegrationLayer {
     constructor(config = {}) {
+        const parsedConnectTimeout = parseInt(process.env.CODEAGENT_DB_CONNECT_TIMEOUT_MS || process.env.DATABASE_CONNECT_TIMEOUT || '10000', 10)
+        const connectionTimeoutMillis = Number.isFinite(parsedConnectTimeout) ? parsedConnectTimeout : 10000
         this.config = {
             // Database configuration
             database: {
@@ -17,7 +19,7 @@ class CodeAgentIntegrationLayer {
                 password: process.env.POSTGRES_PASSWORD || process.env.DATABASE_PASSWORD || 'password',
                 max: 20,
                 idleTimeoutMillis: 30000,
-                connectionTimeoutMillis: 2000,
+                connectionTimeoutMillis,
                 ssl:
                     process.env.DATABASE_SSL === 'true'
                         ? {
@@ -59,7 +61,8 @@ class CodeAgentIntegrationLayer {
         console.log('CodeAgent Integration Layer initialized with config:', {
             orchestrationEnabled: this.config.features.enableOrchestration,
             followUpsEnabled: this.config.features.enableFollowUps,
-            maxConcurrentSessions: this.config.performance.maxConcurrentSessions
+            maxConcurrentSessions: this.config.performance.maxConcurrentSessions,
+            dbConnectTimeoutMs: this.config.database.connectionTimeoutMillis
         })
     }
 

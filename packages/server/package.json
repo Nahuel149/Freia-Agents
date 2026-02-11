@@ -32,7 +32,7 @@
         "user:windows": "cd bin && run user",
         "user:default": "cd bin && ./run user",
         "dev": "nodemon",
-        "oclif-dev": "run-script-os",
+        "oclif-dev": "node bin/dev start",
         "oclif-dev:windows": "cd bin && dev start",
         "oclif-dev:default": "cd bin && ./dev start",
         "postpack": "shx rm -f oclif.manifest.json",

@@ -13,6 +13,10 @@ let integrationLayer = null
  * Initialize the orchestration routes
  */
 async function initializeOrchestrationRoutes() {
+    if (process.env.ENABLE_CODE_ORCHESTRATION !== 'true') {
+        console.log('CodeAgent orchestration disabled (ENABLE_CODE_ORCHESTRATION!=true) - skipping initialization')
+        return
+    }
     try {
         integrationLayer = new CodeAgentIntegrationLayer()
         await integrationLayer.initialize()
@@ -530,16 +534,22 @@ router.get('/metrics', ensureInitialized, async (req, res) => {
  */
 router.get('/health', async (req, res) => {
     try {
-        console.log('=== CodeAgent Health Check Request ===')
-        console.log('Request headers:', JSON.stringify(req.headers, null, 2))
-        console.log('Request user:', req.user)
-        console.log('Request method:', req.method)
-        console.log('Request URL:', req.url)
-        console.log('Request IP:', req.ip)
+        const enabled = process.env.ENABLE_CODE_ORCHESTRATION === 'true'
+        if (!enabled) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    status: 'disabled',
+                    enabled: false,
+                    timestamp: new Date().toISOString()
+                }
+            })
+        }
 
         const health = {
             status: 'healthy',
             timestamp: new Date().toISOString(),
+            enabled: true,
             integrationLayer: {
                 initialized: integrationLayer?.isInitialized || false,
                 status: integrationLayer ? 'active' : 'inactive'
@@ -566,21 +576,12 @@ router.get('/health', async (req, res) => {
 
         const statusCode = health.status === 'healthy' ? 200 : 503
 
-        console.log('Health check response:', { statusCode, health })
-
         res.status(statusCode).json({
             success: health.status === 'healthy',
             data: health
         })
     } catch (error) {
-        console.error('=== CodeAgent Health Check Error ===')
-        console.error('Error in health check:', error)
-        console.error('Request details:', {
-            method: req.method,
-            url: req.url,
-            headers: req.headers,
-            user: req.user
-        })
+        console.error('Error in code orchestration health check:', error)
 
         res.status(503).json({
             success: false,

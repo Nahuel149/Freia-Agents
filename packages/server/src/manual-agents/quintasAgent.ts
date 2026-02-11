@@ -4,7 +4,8 @@ import { nanoid } from 'nanoid'
 import { ManualAgentRequest, ManualAgentResponse, ManualAgentToolDefinition } from './types'
 import { ensureQuintasSeed } from './quintasData'
 import { getManualAgentsCollections, getManualAgentsDb } from './mongo'
-import { createHold } from './quintasOps'
+import { createHold, confirmPayment } from './quintasOps'
+import { computeOutbound, runOutbound } from './outbound'
 import { getManualAgentModel, getManualAgentOpenAIKey } from './config'
 
 type CatalogMeta = {
@@ -74,7 +75,7 @@ type CalendarDoc = {
     propertyId: string
     propertyName?: string
     year?: number
-    events?: Array<{ start: string; end: string; status: string; holdExpires?: Date }>
+    events?: Array<{ start: string; end: string; status: string; holdExpires?: Date; notes?: string; paymentRef?: string }>
     blockedDates?: string[]
     globalBlackoutDates?: Array<{ start: string; end: string; reason?: string }>
 }
@@ -82,6 +83,7 @@ type CalendarDoc = {
 type LeadInput = {
     id?: string
     name?: string
+    email?: string
     phone?: string
     channel?: string
     dateRequested?: string
@@ -90,6 +92,7 @@ type LeadInput = {
     interest?: string
     status?: string
     habitual?: boolean
+    negotiatedDiscountPct?: number
     notes?: string
 }
 
@@ -131,6 +134,129 @@ const normalizeText = (value: string) =>
         .replace(/[\u0300-\u036f]/g, '')
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const normalizeIntentText = (value: string) =>
+    normalizeText(value || '')
+        .replace(/[^a-z0-9\s/-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+const hasPhrase = (text: string, phrase: string) => {
+    if (!text || !phrase) return false
+    const normalizedPhrase = normalizeIntentText(phrase)
+    if (!normalizedPhrase) return false
+    return (
+        text === normalizedPhrase ||
+        text.startsWith(`${normalizedPhrase} `) ||
+        text.endsWith(` ${normalizedPhrase}`) ||
+        text.includes(` ${normalizedPhrase} `)
+    )
+}
+
+const hasAnyPhrase = (text: string, phrases: string[]) => phrases.some((phrase) => hasPhrase(text, phrase))
+
+const collapseRepeatedLetters = (value: string) => value.replace(/([a-z])\1+/g, '$1')
+
+const getIntentTexts = (value: string) => {
+    const base = normalizeIntentText(value)
+    if (!base) return [] as string[]
+    const collapsed = collapseRepeatedLetters(base)
+    return collapsed && collapsed !== base ? [base, collapsed] : [base]
+}
+
+const hasAnyIntentPhrase = (message: string, phrases: string[]) => {
+    const texts = getIntentTexts(message)
+    if (!texts.length) return false
+    return texts.some((text) => hasAnyPhrase(text, phrases))
+}
+
+const hasAnyIntentKeyword = (message: string, keywords: string[]) => {
+    const texts = getIntentTexts(message)
+    if (!texts.length) return false
+    return keywords.some((keyword) => {
+        const normalizedKeyword = normalizeIntentText(keyword)
+        if (!normalizedKeyword) return false
+        return texts.some((text) => text.includes(normalizedKeyword))
+    })
+}
+
+const QUINTAS_DOMAIN_KEYWORDS = [
+    'quinta',
+    'quintas',
+    'reserva',
+    'reservar',
+    'alquiler',
+    'alquilar',
+    'dispon',
+    'precio',
+    'tarifa',
+    'costo',
+    'deposito',
+    'anticipo',
+    'pago',
+    'visita',
+    'catalogo',
+    'personas',
+    'check in',
+    'check out',
+    'ingreso',
+    'salida'
+]
+
+const QUINTAS_OFF_TOPIC_KEYWORDS = [
+    'futbol',
+    'football',
+    'nba',
+    'nfl',
+    'cript',
+    'crypto',
+    'bitcoin',
+    'acciones',
+    'stocks',
+    'medicina',
+    'medico',
+    'doctor',
+    'hospital',
+    'receta',
+    'diagnostico',
+    'politica',
+    'eleccion',
+    'presidente',
+    'programacion',
+    'javascript',
+    'python'
+]
+
+const isLikelyNameCandidate = (candidate: string) => {
+    const normalized = normalizeIntentText(candidate)
+    if (!normalized) return false
+    const words = normalized.split(' ').filter(Boolean)
+    if (!words.length || words.length > 4) return false
+    if (words.some((word) => word.length < 2 || /\d/.test(word))) return false
+    const blockedWords = new Set([
+        'quiero',
+        'necesito',
+        'busco',
+        'reserva',
+        'reservar',
+        'alquiler',
+        'alquilar',
+        'fecha',
+        'fechas',
+        'quinta',
+        'quintas',
+        'precio',
+        'tarifa',
+        'costo',
+        'disponibilidad',
+        'visita',
+        'gracias',
+        'hola',
+        'hello'
+    ])
+    if (words.some((word) => blockedWords.has(word))) return false
+    return true
+}
 
 const formatGuestName = (name: string) => {
     const parts = String(name || '')
@@ -336,11 +462,13 @@ const MONTHS: Record<string, number> = {
 const parseShortDate = (day: number, month: number) => {
     const today = moment().startOf('day')
     const year = today.year()
-    const candidate = moment(`${day}/${month}/${year}`, 'DD/MM/YYYY', true)
+    const dayLabel = String(day).padStart(2, '0')
+    const monthLabel = String(month).padStart(2, '0')
+    const candidate = moment(`${dayLabel}/${monthLabel}/${year}`, 'DD/MM/YYYY', true)
     if (!candidate.isValid()) return candidate
     if (candidate.isBefore(today, 'day')) {
         const nextYear = year + 1
-        const nextCandidate = moment(`${day}/${month}/${nextYear}`, 'DD/MM/YYYY', true)
+        const nextCandidate = moment(`${dayLabel}/${monthLabel}/${nextYear}`, 'DD/MM/YYYY', true)
         return nextCandidate.isValid() ? nextCandidate : candidate
     }
     return candidate
@@ -445,8 +573,28 @@ const extractPhone = (message: string) => {
 const extractName = (message: string) => {
     const lower = normalizeText(message || '')
     const match = lower.match(/(?:mi nombre es|soy|my name is)\s+([a-z\s]+)(?:,|$)/i)
-    if (!match) return ''
-    return match[1].trim().replace(/\s+/g, ' ')
+    if (match) {
+        const candidate = match[1].trim().replace(/\s+/g, ' ')
+        if (isLikelyNameCandidate(candidate)) {
+            return candidate
+        }
+    }
+
+    const emailMatch = String(message || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+    if (emailMatch && emailMatch.index !== undefined) {
+        const beforeEmail = String(message || '').slice(0, emailMatch.index)
+        const candidate = normalizeText(beforeEmail).replace(/(mail|email|correo)\s*/g, '').replace(/[:;,-]/g, ' ')
+        const cleaned = candidate.trim().replace(/\s+/g, ' ')
+        if (cleaned.length >= 3 && isLikelyNameCandidate(cleaned)) return cleaned
+    }
+
+    if (String(message || '').includes(',')) {
+        const firstPart = String(message || '').split(',')[0]
+        const cleaned = normalizeText(firstPart).trim().replace(/\s+/g, ' ')
+        if (cleaned.length >= 3 && isLikelyNameCandidate(cleaned)) return cleaned
+    }
+
+    return ''
 }
 
 const findRecentSessionByIdentity = async (params: { sessionId?: string; name?: string; email?: string; phone?: string }) => {
@@ -477,6 +625,7 @@ const findRecentSessionByIdentity = async (params: { sessionId?: string; name?: 
             lastYear?: number
             lastRangeStart?: string
             lastRangeEnd?: string
+            lastRangeUpdatedAt?: Date
             lastPropertyId?: string
             lastGuests?: number
             lastIntent?: string
@@ -494,6 +643,41 @@ const findRecentSessionByIdentity = async (params: { sessionId?: string; name?: 
         .limit(1)
         .toArray()
     return session[0] || null
+}
+
+const resetQuintasSessionFlow = async (sessionId: string) => {
+    if (!sessionId) return
+    const db = await getManualAgentsDb()
+    const collections = getManualAgentsCollections()
+    ensureToolAccess('write', [collections.manualAgentSessions])
+    const unsetFields = [
+        'lastMonthIndex',
+        'lastYear',
+        'lastRangeStart',
+        'lastRangeEnd',
+        'lastRangeUpdatedAt',
+        'lastPropertyId',
+        'lastGuests',
+        'lastIntent',
+        'lastHabitual',
+        'lastNegotiatedDiscountPct',
+        'lastReplyKind',
+        'lastIntentSummary',
+        'lastTopic',
+        'pendingDateConfirm',
+        'pendingHoldConfirm',
+        'lastVisitDate',
+        'lastVisitPropertyId',
+        'lastVisitTime',
+        'lastVisitPending',
+        'frictionCount',
+        'confusionCount'
+    ]
+    const unsetPayload = Object.fromEntries(unsetFields.map((field) => [field, '']))
+    await db.collection(collections.manualAgentSessions).updateOne(
+        { sessionId, agentId: 'quintas' },
+        { $unset: unsetPayload, $set: { updatedAt: new Date() } }
+    )
 }
 
 const hasLeadInfo = (message: string) => {
@@ -569,61 +753,47 @@ const isNoAvailabilitySummary = (summary: string) => {
 }
 
 const isGreetingOnly = (message: string) => {
-    const lower = normalizeText(message || '').trim()
-    if (!lower) return false
     const greetings = [
         'hola',
+        'holaa',
         'buenas',
+        'buenass',
         'buen dia',
         'buenas tardes',
         'buenas noches',
+        'que tal',
         'hello',
-        'hi'
+        'hi',
+        'hey',
+        'holi'
     ]
-    const hasGreeting = greetings.some((greet) => lower === greet || lower.startsWith(`${greet} `))
+    const hasGreeting = hasAnyIntentPhrase(message, greetings)
     if (!hasGreeting) return false
-    const hasDates = extractDates(message).length > 0
-    const hasKeywords = [
-        'dispon',
-        'precio',
-        'reserv',
-        'pago',
-        'deposito',
-        'anticipo',
-        'visita',
-        'catalogo'
-    ].some((keyword) => lower.includes(keyword))
-    return !hasDates && !hasKeywords
+    const hasDates = extractDates(message).length > 0 || Boolean(parseMonthRange(message)) || Boolean(parseDayRange(message)) || Boolean(parseRelativeDateRange(message))
+    const hasDomainKeywords = hasAnyIntentKeyword(message, QUINTAS_DOMAIN_KEYWORDS)
+    return !hasDates && !hasDomainKeywords
 }
 
 const isThanksOnly = (message: string) => {
-    const lower = normalizeText(message || '').trim()
-    if (!lower) return false
-    const thanks = [
-        'gracias',
-        'muchas gracias',
-        'mil gracias',
-        'gracias!',
-        'thanks',
-        'thank you',
-        'thx'
-    ]
-    const hasThanks = thanks.some((word) => lower === word || lower.startsWith(`${word} `))
+    const texts = getIntentTexts(message)
+    if (!texts.length) return false
+    if (isPoliteAckOnly(message)) return false
+    const thanks = ['gracias', 'muchas gracias', 'mil gracias', 'thanks', 'thank you', 'thx', 'ty', 'grax', 'grx']
+    const hasThanks = hasAnyIntentPhrase(message, thanks)
     if (!hasThanks) return false
-    const hasDates = extractDates(message).length > 0
-    const hasKeywords = ['dispon', 'precio', 'reserv', 'pago', 'deposito', 'anticipo', 'visita', 'catalogo'].some(
-        (keyword) => lower.includes(keyword)
-    )
-    return !hasDates && !hasKeywords
+    const hasDates = extractDates(message).length > 0 || Boolean(parseMonthRange(message)) || Boolean(parseDayRange(message)) || Boolean(parseRelativeDateRange(message))
+    const hasDomainKeywords = hasAnyIntentKeyword(message, QUINTAS_DOMAIN_KEYWORDS)
+    return !hasDates && !hasDomainKeywords
 }
 
 const isDeclineOnly = (message: string) => {
-    const lower = normalizeText(message || '').trim()
-    if (!lower) return false
     const declinePhrases = [
         'no gracias',
-        'no, gracias',
         'no por ahora',
+        'paso por ahora',
+        'paso',
+        'dejalo',
+        'dejalo asi',
         'no quiero',
         'no quiero reservar',
         'no quiero alquilar',
@@ -641,16 +811,383 @@ const isDeclineOnly = (message: string) => {
         'no, todo bien',
         'prefiero no',
         'no necesito',
-        'no busco'
+        'no busco',
+        'all good',
+        'im good',
+        'i am good'
     ]
-    const hasDecline = declinePhrases.some((phrase) => lower.includes(normalizeText(phrase)))
+    const hasDecline = hasAnyIntentPhrase(message, declinePhrases)
     if (!hasDecline) return false
-    const hasDates = extractDates(message).length > 0
-    const hasDateSignals = hasDates || Boolean(parseMonthRange(message)) || Boolean(parseDayRange(message))
-    const hasKeywords = ['dispon', 'precio', 'reserv', 'pago', 'deposito', 'anticipo', 'visita', 'catalogo', 'foto'].some(
-        (keyword) => lower.includes(keyword)
+    const hasDateSignals =
+        extractDates(message).length > 0 ||
+        Boolean(parseMonthRange(message)) ||
+        Boolean(parseDayRange(message)) ||
+        Boolean(parseRelativeDateRange(message))
+    const hasDomainKeywords = hasAnyIntentKeyword(message, QUINTAS_DOMAIN_KEYWORDS)
+    return !hasDateSignals && !hasDomainKeywords
+}
+
+const isShortAckOnly = (message: string) => {
+    const texts = getIntentTexts(message)
+    if (!texts.length) return false
+    if (texts.some((text) => /^(si+|yes+|yep+|ok+|okay+|dale+|oka+|oki+|okis+|joya+)$/.test(text))) return true
+    const phrases = [
+        'ok',
+        'okay',
+        'okey',
+        'oki',
+        'okis',
+        'ok dale',
+        'ok por favor',
+        'dale',
+        'de una',
+        'va',
+        'joya',
+        'genial',
+        'perfecto',
+        'perfect',
+        'great',
+        'buenisimo',
+        'buenisima',
+        'confirmo',
+        'confirmar',
+        'book it',
+        'reserve it',
+        'go ahead',
+        'sounds good'
+    ]
+    return hasAnyIntentPhrase(message, phrases)
+}
+
+const isPoliteAckOnly = (message: string) => {
+    const tokenVariants = getIntentTexts(message).map((text) => text.split(' ').filter(Boolean)).filter((tokens) => tokens.length && tokens.length <= 8)
+    if (!tokenVariants.length) return false
+    const ackTokens = new Set([
+        'si',
+        'yes',
+        'yep',
+        'ok',
+        'okay',
+        'okey',
+        'dale',
+        'de',
+        'una',
+        'va',
+        'genial',
+        'perfecto',
+        'confirmo',
+        'confirmar',
+        'listo',
+        'sure',
+        'book',
+        'reserve',
+        'go',
+        'ahead',
+        'sounds',
+        'good',
+        'oki',
+        'okis',
+        'joya',
+        'great',
+        'perfect'
+    ])
+    const politeTokens = new Set(['gracias', 'muchas', 'mil', 'thanks', 'thank', 'you', 'thx', 'ty', 'por', 'favor', 'please'])
+    const hasAckSignal =
+        tokenVariants.some((tokens) => tokens.some((token) => ackTokens.has(token))) ||
+        hasAnyIntentPhrase(message, ['de una', 'go ahead', 'sounds good', 'book it', 'reserve it'])
+    if (!hasAckSignal) return false
+    return tokenVariants.some((tokens) => tokens.every((token) => ackTokens.has(token) || politeTokens.has(token)))
+}
+
+const isShortNoOnly = (message: string) => {
+    const texts = getIntentTexts(message)
+    if (!texts.length) return false
+    if (texts.some((text) => /^(no+|nop+|nono+|nah+)$/.test(text))) return true
+    const phrases = [
+        'no',
+        'no gracias',
+        'no por ahora',
+        'paso por ahora',
+        'paso',
+        'dejalo',
+        'dejalo asi',
+        'no confirmo',
+        'nop',
+        'nah',
+        'not now',
+        'no thanks',
+        'cancel it',
+        'stop'
+    ]
+    return hasAnyIntentPhrase(message, phrases)
+}
+
+const isHelpOnly = (message: string) => {
+    const helpPhrases = [
+        'ayuda',
+        'help',
+        'menu',
+        'opciones',
+        'que podes hacer',
+        'que puedes hacer',
+        'como funciona',
+        'what can you do',
+        'how does it work'
+    ]
+    if (!hasAnyIntentPhrase(message, helpPhrases)) return false
+    return extractDates(message).length === 0
+}
+
+const isGoodbyeOnly = (message: string) => {
+    const phrases = ['chau', 'chao', 'adios', 'nos vemos', 'hasta luego', 'hasta la proxima', 'bye', 'goodbye', 'see you', 'see ya']
+    if (!hasAnyIntentPhrase(message, phrases)) return false
+    const hasDates = extractDates(message).length > 0 || Boolean(parseMonthRange(message)) || Boolean(parseDayRange(message)) || Boolean(parseRelativeDateRange(message))
+    const hasDomainKeywords = hasAnyIntentKeyword(message, QUINTAS_DOMAIN_KEYWORDS)
+    return !hasDates && !hasDomainKeywords
+}
+
+const isRestartRequest = (message: string) => {
+    const phrases = [
+        'empecemos de nuevo',
+        'empezar de nuevo',
+        'arranquemos de nuevo',
+        'arranquemos de cero',
+        'empecemos de cero',
+        'reiniciar',
+        'resetear',
+        'restart',
+        'start over',
+        'from scratch',
+        'reset chat',
+        'olvida lo anterior',
+        'ignore previous'
+    ]
+    if (!hasAnyIntentPhrase(message, phrases)) return false
+    const hasDates = extractDates(message).length > 0 || Boolean(parseMonthRange(message)) || Boolean(parseDayRange(message)) || Boolean(parseRelativeDateRange(message))
+    const hasContact = Boolean(extractEmail(message) || extractPhone(message))
+    return !hasDates && !hasContact
+}
+
+const isHumanHandoffRequest = (message: string) => {
+    const phrases = [
+        'humano',
+        'persona real',
+        'asesor',
+        'agente humano',
+        'representante',
+        'operador',
+        'speak to human',
+        'human agent',
+        'real person',
+        'support agent'
+    ]
+    return hasAnyIntentPhrase(message, phrases)
+}
+
+const isClearlyOffTopic = (message: string) => {
+    const texts = getIntentTexts(message)
+    if (!texts.length) return false
+    const hasRelevant = hasAnyIntentKeyword(message, QUINTAS_DOMAIN_KEYWORDS)
+    const hasOffTopic = hasAnyIntentKeyword(message, QUINTAS_OFF_TOPIC_KEYWORDS)
+    return hasOffTopic && !hasRelevant
+}
+
+const isSmallTalkOnly = (message: string) => {
+    const phrases = [
+        'como estas',
+        'como andas',
+        'todo bien?',
+        'todo bien',
+        'que tal',
+        'how are you',
+        'how is it going',
+        'how are things',
+        'who are you',
+        'quien sos',
+        'quien eres'
+    ]
+    if (!hasAnyIntentPhrase(message, phrases)) return false
+    const hasDates = extractDates(message).length > 0 || Boolean(parseMonthRange(message)) || Boolean(parseDayRange(message)) || Boolean(parseRelativeDateRange(message))
+    const hasDomainKeywords = hasAnyIntentKeyword(message, QUINTAS_DOMAIN_KEYWORDS)
+    return !hasDates && !hasDomainKeywords
+}
+
+const isDataScopeQuestion = (message: string) =>
+    hasAnyIntentPhrase(message, [
+        'que datos tenes',
+        'que data tenes',
+        'que info tenes',
+        'que informacion tenes',
+        'que bases consultas',
+        'que base consultas',
+        'con que base trabajas',
+        'que podes consultar',
+        'que podes ver',
+        'what data do you have',
+        'what information do you have',
+        'what info do you have',
+        'which data do you use',
+        'which database do you use',
+        'what can you check'
+    ])
+
+const isUnsupportedMockDataQuestion = (message: string) => {
+    const asksRealtime =
+        hasAnyIntentPhrase(message, [
+            'tiempo real',
+            'en vivo',
+            'actualizado al minuto',
+            'actualizado ahora',
+            'real time',
+            'real-time',
+            'live data',
+            'live update'
+        ]) ||
+        (hasAnyIntentKeyword(message, ['live', 'actualizado']) && hasAnyIntentKeyword(message, ['data', 'datos', 'update']))
+    const externalSignals = hasAnyIntentKeyword(message, [
+        'clima',
+        'weather',
+        'trafico',
+        'traffic',
+        'vuelo',
+        'flight',
+        'noticias',
+        'news',
+        'dolar',
+        'exchange rate'
+    ])
+    return asksRealtime && externalSignals
+}
+
+const buildMockScopeAnswer = (locale: string) =>
+    responseForLocale(
+        locale,
+        [
+            'En esta demo mock puedo consultar calendario de disponibilidad, bloqueos y reglas por quinta.',
+            'Tambien tengo catalogo, comodidades, politicas comerciales, pagos y leads/reservas creadas en el chat.',
+            'Si algo queda fuera de esos datos, te lo digo claro y te ofrezco pase a humano.'
+        ].join(' '),
+        [
+            'In this mock demo I can check availability calendars, blocked dates, and property rules.',
+            'I also use catalog data, amenities, payment/commercial policies, and leads/reservations created in chat.',
+            'If something is outside that data, I will say it clearly and offer human handoff.'
+        ].join(' ')
     )
-    return !hasDateSignals && !hasKeywords
+
+const buildUnsupportedMockDataAnswer = (locale: string) =>
+    responseForLocale(
+        locale,
+        'En este entorno mock no tengo ese dato en tiempo real. Te puedo ayudar con la informacion de quintas de la demo o dejar el pedido listo para un humano.',
+        "I don't have that real-time data in this mock environment. I can help with the quinta data in the demo or leave the request ready for a human agent."
+    )
+
+const isPaymentProofIntent = (message: string) => {
+    const texts = getIntentTexts(message)
+    if (!texts.length) return false
+    const normalizedMessage = normalizeIntentText(message)
+    if (!normalizedMessage) return false
+
+    const proofPhrases = [
+        'adjunto comprobante',
+        'te adjunto comprobante',
+        'te mando comprobante',
+        'te envie comprobante',
+        'ya envie comprobante',
+        'ya transferi',
+        'ya hice la transferencia',
+        'ya pague',
+        'pago realizado',
+        'comprobante enviado',
+        'sending proof',
+        'sent the receipt',
+        'payment done',
+        'i already paid',
+        'transfer completed',
+        'i attached the receipt'
+    ]
+    if (hasAnyIntentPhrase(message, proofPhrases)) return true
+
+    const strongReferencePattern =
+        /\b(?:trx|tx|op(?:eracion)?|operation|ref(?:erencia)?|comprobante|voucher)\s*[:#-]?\s*[a-z0-9-]{4,}\b/i
+    const hasStrongReference = strongReferencePattern.test(message || '')
+
+    const proofVerbs = [
+        'adjunt',
+        'envi',
+        'mande',
+        'subi',
+        'cargu',
+        'transferi',
+        'pague',
+        'pago realizado',
+        'realice',
+        'hice',
+        'sent',
+        'uploaded',
+        'attached',
+        'paid',
+        'transferred',
+        'completed'
+    ]
+    const proofNouns = [
+        'comprobante',
+        'receipt',
+        'proof',
+        'transferencia',
+        'transfer',
+        'deposito',
+        'anticipo',
+        'payment',
+        'pago',
+        'trx',
+        'tx',
+        'referencia',
+        'ref'
+    ]
+    const policyQuestionPhrases = [
+        'como pago',
+        'formas de pago',
+        'metodo de pago',
+        'medios de pago',
+        'datos de transferencia',
+        'pasame cbu',
+        'pasame alias',
+        'how do i pay',
+        'payment methods',
+        'bank details',
+        'where do i pay'
+    ]
+
+    const asksPolicy = texts.some((text) => policyQuestionPhrases.some((phrase) => text.includes(normalizeIntentText(phrase))))
+    if (asksPolicy && !hasStrongReference) return false
+
+    const hasVerb = texts.some((text) => proofVerbs.some((keyword) => text.includes(keyword)))
+    const hasNoun = texts.some((text) => proofNouns.some((keyword) => text.includes(keyword)))
+    const hasQuestionMark = /[?¿]/.test(message || '')
+
+    if (hasStrongReference && (hasVerb || hasNoun)) return true
+    if (hasVerb && hasNoun && !hasQuestionMark) return true
+    return false
+}
+
+const extractPaymentReference = (message: string) => {
+    const raw = String(message || '')
+    if (!raw) return ''
+
+    const capturePatterns = [
+        /\b(?:trx|tx|op(?:eracion)?|operation|ref(?:erencia)?|comprobante|voucher)\s*[:#-]?\s*([a-z0-9-]{4,})\b/i,
+        /\b([a-z]{2,6}-\d{4,})\b/i,
+        /\b(\d{8,})\b/
+    ]
+
+    for (const pattern of capturePatterns) {
+        const match = raw.match(pattern)
+        if (!match?.[1]) continue
+        const cleaned = match[1].replace(/[^a-z0-9-]/gi, '').slice(0, 64)
+        if (cleaned.length >= 4) return cleaned.toUpperCase()
+    }
+
+    return ''
 }
 
 const extractDates = (message: string, options?: { preferMonthFirst?: boolean }): moment.Moment[] => {
@@ -713,6 +1250,10 @@ const extractDates = (message: string, options?: { preferMonthFirst?: boolean })
 
 const findAmbiguousShortDate = (message: string) => {
     const ranges: Array<{ start: number; end: number }> = []
+    for (const match of message.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g)) {
+        if (match.index === undefined) continue
+        ranges.push({ start: match.index, end: match.index + match[0].length })
+    }
     for (const match of message.matchAll(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g)) {
         if (match.index === undefined) continue
         ranges.push({ start: match.index, end: match.index + match[0].length })
@@ -1021,7 +1562,7 @@ const buildAvailabilitySuggestions = async (
     locale = 'es-AR',
     maxOptions = 4
 ) => {
-    const properties = await getCatalogProperties()
+    const [properties, restrictions] = await Promise.all([getCatalogProperties(), getRestrictions()])
     if (!properties.length) return [] as string[]
     const years = getAvailabilityYears(start, end)
     const calendarsByProperty = new Map<string, CalendarDoc[]>()
@@ -1040,11 +1581,19 @@ const buildAvailabilitySuggestions = async (
 
     for (const prop of properties) {
         const calendars = calendarsByProperty.get(prop.propertyId) || []
-        const minNights = prop.minNights || 1
-        const lastStart = end.clone().subtract(minNights - 1, 'day')
+        const baseMinNights = Math.max(Number(prop.minNights || 1), 1)
+        const lastStart = end.clone().subtract(baseMinNights - 1, 'day')
         if (lastStart.isBefore(start, 'day')) continue
         for (let cursor = start.clone(); cursor.isSameOrBefore(lastStart, 'day'); cursor.add(1, 'day')) {
+            const minStay = resolveMinNightsForRange({
+                start: cursor,
+                end: cursor.clone().add(baseMinNights - 1, 'day'),
+                propertyMinNights: prop.minNights,
+                restrictions
+            })
+            const minNights = Math.max(Number(minStay.minNights || baseMinNights), baseMinNights)
             const candidateEnd = cursor.clone().add(minNights - 1, 'day')
+            if (candidateEnd.isAfter(end, 'day')) continue
             let blocked = false
             for (const calendar of calendars) {
                 if (isRangeBlocked(cursor, candidateEnd, calendar) || hasRangeConflict(cursor, candidateEnd, calendar)) {
@@ -1195,6 +1744,391 @@ const buildAvailabilityOverview = async (daysWindow = 30, locale = 'es-AR') => {
     )
 }
 
+const normalizePhoneForLookup = (value: string) => String(value || '').replace(/\D/g, '')
+
+const detectZoneFromMessage = (message: string) => {
+    const lower = normalizeText(message || '')
+    if (lower.includes('zona norte') || lower.includes('north zone')) return 'Zona Norte'
+    if (lower.includes('zona oeste') || lower.includes('west zone')) return 'Zona Oeste'
+    if (lower.includes('zona sur') || lower.includes('south zone')) return 'Zona Sur'
+    return ''
+}
+
+const isMarketKpiIntent = (message: string) => {
+    const kpiPhrases = [
+        'kpi',
+        'rendimiento',
+        'performance',
+        'ocupacion',
+        'occupancy',
+        'competencia',
+        'competidores',
+        'competitor',
+        'benchmark',
+        'comparativa',
+        'comparativo',
+        'precio promedio de mercado',
+        'precio competencia',
+        'outbound',
+        'recontactar',
+        'recontacto'
+    ]
+    return hasAnyIntentKeyword(message, kpiPhrases)
+}
+
+const isOutboundExecutionIntent = (message: string) => {
+    const triggerPhrases = [
+        'activar outbound',
+        'activa outbound',
+        'ejecutar outbound',
+        'ejecuta outbound',
+        'lanzar outbound',
+        'manda promociones',
+        'envia promociones',
+        'enviar promociones',
+        'recontactar ahora',
+        'recontacta ahora',
+        'run outbound',
+        'trigger outbound',
+        'send promotions'
+    ]
+    return hasAnyIntentPhrase(message, triggerPhrases)
+}
+
+const isDiscountNegotiationIntent = (message: string) => {
+    const phrases = [
+        'descuento',
+        'rebaja',
+        'regate',
+        'mejor precio',
+        'precio final',
+        'off',
+        'discount'
+    ]
+    return hasAnyIntentKeyword(message, phrases)
+}
+
+const clampDiscountPct = (value: unknown) => {
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed) || parsed <= 0) return 0
+    return Math.min(Math.max(parsed, 0), 50)
+}
+
+const extractNegotiatedDiscountPct = (message: string) => {
+    const hasNegotiationContext =
+        isDiscountNegotiationIntent(message) ||
+        hasAnyIntentPhrase(message, ['si nos dejas', 'si nos haces', 'cerramos hoy', 'podemos cerrar', 'te acepto'])
+    if (!hasNegotiationContext) return undefined
+    const normalized = normalizeText(message || '')
+    const pctMatch = normalized.match(/\b(\d{1,2}(?:[.,]\d{1,2})?)\s*%/)
+    if (pctMatch?.[1]) {
+        const parsed = clampDiscountPct(String(pctMatch[1]).replace(',', '.'))
+        return parsed > 0 ? parsed : undefined
+    }
+    const noSymbolMatch = normalized.match(/\b(?:descuento|rebaja|off)\s*(?:de\s*)?(\d{1,2}(?:[.,]\d{1,2})?)\b/)
+    if (noSymbolMatch?.[1]) {
+        const parsed = clampDiscountPct(String(noSymbolMatch[1]).replace(',', '.'))
+        return parsed > 0 ? parsed : undefined
+    }
+    return undefined
+}
+
+const pickNegotiatedDiscountPct = (params: { lead?: any; sessionPct?: number; requestedPct?: number }) => {
+    const requested = clampDiscountPct(params.requestedPct)
+    if (requested > 0) return requested
+    const leadPct = clampDiscountPct(params.lead?.negotiatedDiscountPct)
+    if (leadPct > 0) return leadPct
+    const sessionPct = clampDiscountPct(params.sessionPct)
+    return sessionPct > 0 ? sessionPct : 0
+}
+
+const isServiceRequestIntent = (message: string) => {
+    const requestPhrases = [
+        'pedido',
+        'solicitud',
+        'reclamo',
+        'inconveniente',
+        'problema',
+        'no funciona',
+        'mantenimiento',
+        'toalla',
+        'limpieza',
+        'amenities',
+        'amenity',
+        'comida',
+        'catering'
+    ]
+    if (!hasAnyIntentKeyword(message, requestPhrases)) return false
+    const bookingPhrases = ['reserv', 'dispon', 'precio', 'tarifa', 'alquilar', 'visita', 'deposito', 'anticipo', 'pago']
+    const explicitRequest = hasAnyIntentKeyword(message, ['pedido', 'solicitud', 'reclamo', 'inconveniente', 'problema']) || hasAnyIntentPhrase(message, ['no funciona'])
+    const hasBookingIntent = hasAnyIntentKeyword(message, bookingPhrases)
+    return explicitRequest || !hasBookingIntent
+}
+
+const detectServiceRequestType = (message: string) => {
+    if (hasAnyIntentKeyword(message, ['toalla', 'limpieza', 'amenit', 'saban', 'cuna'])) return 'amenities'
+    if (hasAnyIntentKeyword(message, ['comida', 'catering', 'bebida', 'menu', 'parrilla'])) return 'catering'
+    if (hasAnyIntentKeyword(message, ['mantenimiento', 'no funciona', 'aire', 'luz', 'agua', 'inconveniente', 'problema'])) {
+        return 'maintenance'
+    }
+    return 'general'
+}
+
+const resolveMinNightsForRange = (params: {
+    start: moment.Moment
+    end: moment.Moment
+    propertyMinNights?: number
+    restrictions?: RestrictionsDoc
+}) => {
+    const baseMinNights = Math.max(Number(params.propertyMinNights || 1), 1)
+    const rules = params.restrictions?.minStayRules || []
+    let ruleMinNights = 0
+    let ruleReason = ''
+    for (const rule of rules) {
+        const ruleStart = moment(rule.start, 'YYYY-MM-DD', true)
+        const ruleEnd = moment(rule.end, 'YYYY-MM-DD', true)
+        if (!ruleStart.isValid() || !ruleEnd.isValid()) continue
+        if (!rangesOverlap(params.start, params.end, ruleStart, ruleEnd)) continue
+        const candidateMin = Math.max(Number(rule.minNights || 0), 0)
+        if (candidateMin > ruleMinNights) {
+            ruleMinNights = candidateMin
+            ruleReason = String(rule.reason || '').trim()
+        }
+    }
+    const minNights = Math.max(baseMinNights, ruleMinNights)
+    return { minNights, minReason: ruleReason }
+}
+
+const calculateDiscountBreakdown = (params: {
+    pricePerNight?: number
+    nights: number
+    currency?: string
+    restrictions?: RestrictionsDoc
+    isHabitual?: boolean
+    customDiscountPct?: number
+}) => {
+    const currency = params.currency || 'USD'
+    const rawPricePerNight = Number(params.pricePerNight || 0)
+    const nights = Math.max(Number(params.nights || 1), 1)
+    const totalAmount =
+        Number.isFinite(rawPricePerNight) && rawPricePerNight > 0 ? Number((rawPricePerNight * nights).toFixed(2)) : undefined
+
+    const discountEnabled = Boolean(params.restrictions?.discounts?.enabled && params.isHabitual)
+    const configuredPct = Math.max(Number(params.restrictions?.discounts?.habitualPct || 0), 0)
+    const customPct = clampDiscountPct(params.customDiscountPct)
+    const discountPct = discountEnabled ? (customPct > 0 ? customPct : configuredPct) : 0
+    const discountAmount =
+        discountPct > 0 && typeof totalAmount === 'number' ? Number(((totalAmount * discountPct) / 100).toFixed(2)) : 0
+    const finalTotalAmount = typeof totalAmount === 'number' ? Number((totalAmount - discountAmount).toFixed(2)) : undefined
+    const finalPricePerNight =
+        Number.isFinite(rawPricePerNight) && rawPricePerNight > 0
+            ? Number((rawPricePerNight * (1 - discountPct / 100)).toFixed(2))
+            : undefined
+    return {
+        currency,
+        totalAmount,
+        discountPct,
+        discountAmount,
+        finalTotalAmount,
+        finalPricePerNight
+    }
+}
+
+const findHabitualLeadByIdentity = async (input: { id?: string; name?: string; email?: string; phone?: string }) => {
+    const doc = await getLeadDoc()
+    const leads = (doc?.leads || []) as Array<LeadInput & { habitual?: boolean; email?: string; property?: string }>
+    if (!leads.length) return null
+
+    const normalizedPhone = normalizePhoneForLookup(input.phone || '')
+    const normalizedEmail = normalizeIntentText(input.email || '')
+    const normalizedName = normalizeIntentText(input.name || '')
+
+    if (input.id) {
+        const byId = leads.find((lead) => String(lead.id || '') === String(input.id))
+        if (byId) return byId
+    }
+    if (normalizedPhone) {
+        const byPhone = leads.find((lead) => normalizePhoneForLookup(String(lead.phone || '')) === normalizedPhone)
+        if (byPhone) return byPhone
+    }
+    if (normalizedEmail) {
+        const byEmail = leads.find((lead) => normalizeIntentText(String((lead as any).email || '')) === normalizedEmail)
+        if (byEmail) return byEmail
+    }
+    if (normalizedName) {
+        const byName = leads.find((lead) => normalizeIntentText(String(lead.name || '')) === normalizedName)
+        if (byName) return byName
+    }
+    return null
+}
+
+const buildMarketKpiAnswer = async (locale: string, message: string) => {
+    const db = await getManualAgentsDb()
+    const collections = getManualAgentsCollections()
+    ensureToolAccess('read', [collections.quintasCatalog, collections.quintasCompetitors, collections.quintasLeads, collections.quintasCalendar])
+
+    const zone = detectZoneFromMessage(message)
+    const competitorDoc = await db.collection(collections.quintasCompetitors).findOne({})
+    const competitors = (competitorDoc?.competitors || []) as Array<{ pricePerNight?: number; location?: string; currency?: string }>
+    const filteredCompetitors = zone
+        ? competitors.filter((item) => normalizeText(String(item.location || '')).includes(normalizeText(zone)))
+        : competitors
+    const competitorPrices = filteredCompetitors.map((item) => Number(item.pricePerNight || 0)).filter((value) => value > 0)
+    const avgCompetitorPrice = competitorPrices.length
+        ? competitorPrices.reduce((sum, value) => sum + value, 0) / competitorPrices.length
+        : 0
+
+    const catalogProperties = await db.collection(collections.quintasCatalog).find({ type: 'property' }).toArray()
+    const filteredCatalog = zone
+        ? catalogProperties.filter((item) => normalizeText(String(item.location || '')).includes(normalizeText(zone)))
+        : catalogProperties
+    const ourPrices = filteredCatalog.map((item) => Number(item.basePricePerNight || 0)).filter((value) => value > 0)
+    const avgOurPrice = ourPrices.length ? ourPrices.reduce((sum, value) => sum + value, 0) / ourPrices.length : 0
+    const deltaPct = avgCompetitorPrice ? ((avgOurPrice - avgCompetitorPrice) / avgCompetitorPrice) * 100 : 0
+
+    const outbound = await computeOutbound()
+    const occupancyPct = Number(outbound.occupancyPct || 0)
+    const targetPct = Number(outbound.occupancyTargetPct || 0)
+    const leadCount = Number((outbound.leads || []).length || 0)
+    const shouldOutbound = Boolean(outbound.shouldOutbound)
+    const referenceDate = competitorDoc?.referenceDate || ''
+    const currency = competitorDoc?.competitors?.[0]?.currency || 'USD'
+
+    if (!avgOurPrice && !avgCompetitorPrice) {
+        return responseForLocale(
+            locale,
+            'No tengo suficientes datos de mercado para KPI ahora. Si queres, igual te comparto ocupacion y cantidad de leads a recontactar.',
+            'I do not have enough market data for KPI right now. I can still share occupancy and lead count for outbound.'
+        )
+    }
+
+    const marketDeltaLabel =
+        deltaPct > 0
+            ? responseForLocale(locale, `${deltaPct.toFixed(1)}% por encima`, `${deltaPct.toFixed(1)}% above`)
+            : deltaPct < 0
+            ? responseForLocale(locale, `${Math.abs(deltaPct).toFixed(1)}% por debajo`, `${Math.abs(deltaPct).toFixed(1)}% below`)
+            : responseForLocale(locale, 'alineado', 'aligned')
+
+    return responseForLocale(
+        locale,
+        [
+            `KPI${zone ? ` (${zone})` : ''}:`,
+            `- Precio promedio nuestro: ${formatPrice(avgOurPrice, currency)}.`,
+            `- Precio promedio competencia: ${formatPrice(avgCompetitorPrice, currency)}.`,
+            `- Diferencia: ${marketDeltaLabel}.`,
+            `- Ocupacion proxima ventana: ${occupancyPct.toFixed(1)}% (objetivo ${targetPct.toFixed(0)}%).`,
+            `- Leads para recontactar: ${leadCount}.`,
+            shouldOutbound ? '- Recomendacion: activar outbound con promociones hoy.' : '- Recomendacion: no hace falta outbound por ahora.',
+            referenceDate ? `- Referencia de mercado: ${referenceDate}.` : ''
+        ]
+            .filter(Boolean)
+            .join('\n'),
+        [
+            `KPI${zone ? ` (${zone})` : ''}:`,
+            `- Our average price: ${formatPrice(avgOurPrice, currency)}.`,
+            `- Competitor average price: ${formatPrice(avgCompetitorPrice, currency)}.`,
+            `- Gap: ${marketDeltaLabel}.`,
+            `- Occupancy in next window: ${occupancyPct.toFixed(1)}% (target ${targetPct.toFixed(0)}%).`,
+            `- Leads to recontact: ${leadCount}.`,
+            shouldOutbound ? '- Recommendation: trigger outbound promotions today.' : '- Recommendation: no outbound needed right now.',
+            referenceDate ? `- Market reference date: ${referenceDate}.` : ''
+        ]
+            .filter(Boolean)
+            .join('\n')
+    )
+}
+
+const renderOutboundTemplate = (templateText: string, lead: any, locale: string) => {
+    const fallbackDateLabel = responseForLocale(locale, 'la fecha que consultaste', 'your requested date')
+    const requestedMoment = moment(String(lead?.dateRequested || ''), 'YYYY-MM-DD', true)
+    const dateLabel = requestedMoment.isValid() ? formatDateLabel(requestedMoment, locale) : fallbackDateLabel
+    const name = String(lead?.name || responseForLocale(locale, 'cliente', 'customer')).trim()
+    return templateText
+        .replace(/\{\{\s*nombre\s*\}\}/gi, name || responseForLocale(locale, 'cliente', 'customer'))
+        .replace(/\{\{\s*fecha\s*\}\}/gi, dateLabel)
+}
+
+const runMockOutboundFromChat = async (locale: string) => {
+    const result = await runOutbound({ agentId: 'quintas', source: 'chat' })
+    const leads = ((result.leads || []) as any[]).slice(0, 5)
+    if (!result.shouldOutbound) {
+        return responseForLocale(
+            locale,
+            `No hace falta outbound ahora. Ocupacion estimada: ${Number(result.occupancyPct || 0).toFixed(1)}% (objetivo ${Number(
+                result.occupancyTargetPct || 0
+            ).toFixed(0)}%).`,
+            `No outbound needed now. Estimated occupancy: ${Number(result.occupancyPct || 0).toFixed(1)}% (target ${Number(
+                result.occupancyTargetPct || 0
+            ).toFixed(0)}%).`
+        )
+    }
+    if (!leads.length) {
+        return responseForLocale(
+            locale,
+            'No tengo leads elegibles para recontactar en este momento.',
+            'There are no eligible leads to recontact right now.'
+        )
+    }
+
+    const templates = (result.templates || []) as Array<{ id?: string; text?: string }>
+    const selectedTemplate = templates.find((item) => String(item.text || '').trim()) || { id: 'default', text: '' }
+    const templateText =
+        String(selectedTemplate.text || '').trim() ||
+        responseForLocale(
+            locale,
+            'Hola {{nombre}}, liberamos fechas para {{fecha}}. Si queres, te paso opciones y valor actualizado.',
+            'Hi {{nombre}}, we opened dates for {{fecha}}. If you want, I can share options and updated pricing.'
+        )
+
+    const previews = leads.map((lead) => ({
+        id: String(lead?.id || ''),
+        phone: String(lead?.phone || ''),
+        rendered: renderOutboundTemplate(templateText, lead, locale),
+        name: String(lead?.name || ''),
+        dateRequested: String(lead?.dateRequested || '')
+    }))
+
+    const db = await getManualAgentsDb()
+    ensureToolAccess('write', [collectionNames.quintasLeads])
+    const leadsCollection = db.collection(collectionNames.quintasLeads)
+    const leadDoc = await leadsCollection.findOne({ type: 'seed' })
+    if (Array.isArray(leadDoc?.leads) && leadDoc?.leads.length) {
+        const now = new Date()
+        const keyedPreviews = new Map<string, { rendered: string; name: string; phone: string }>()
+        for (const item of previews) {
+            const keys = [
+                item.id ? `id:${item.id}` : '',
+                item.phone ? `phone:${normalizePhoneForLookup(item.phone)}` : '',
+                item.name ? `name:${normalizeIntentText(item.name)}` : ''
+            ].filter(Boolean)
+            for (const key of keys) keyedPreviews.set(key, { rendered: item.rendered, name: item.name, phone: item.phone })
+        }
+        const updatedLeads = (leadDoc.leads as any[]).map((lead) => {
+            const keys = [
+                lead?.id ? `id:${String(lead.id)}` : '',
+                lead?.phone ? `phone:${normalizePhoneForLookup(String(lead.phone || ''))}` : '',
+                lead?.name ? `name:${normalizeIntentText(String(lead.name || ''))}` : ''
+            ].filter(Boolean)
+            const matched = keys.map((key) => keyedPreviews.get(key)).find(Boolean)
+            if (!matched) return lead
+            return {
+                ...lead,
+                lastOutboundAt: now,
+                lastOutboundSource: 'chat',
+                lastOutboundTemplateId: selectedTemplate.id || 'default'
+            }
+        })
+        await leadsCollection.updateOne({ type: 'seed' }, { $set: { type: 'seed', leads: updatedLeads, updatedAt: now } }, { upsert: true })
+    }
+
+    const lines = previews.map((item) => `- ${item.name || responseForLocale(locale, 'Cliente', 'Customer')}: ${item.rendered}`)
+    return responseForLocale(
+        locale,
+        `Outbound mock ejecutado. Mensajes sugeridos (${previews.length}):\n${formatBulletList(lines)}`,
+        `Mock outbound executed. Suggested messages (${previews.length}):\n${formatBulletList(lines)}`
+    )
+}
+
 const getCatalogMeta = async (): Promise<CatalogMeta> => {
     const db = await getManualAgentsDb()
     const { quintasCatalog } = collectionNames
@@ -1229,6 +2163,104 @@ const getCalendarDocs = async (propertyId: string, years: number[]): Promise<Cal
         .toArray()
 }
 
+const recordVisitEvent = async (input: {
+    propertyId: string
+    visitDate: string
+    visitTime?: string
+    guestName?: string
+    phone?: string
+    email?: string
+}) => {
+    const visitMoment = moment(input.visitDate, 'YYYY-MM-DD', true)
+    if (!visitMoment.isValid()) return { ok: false as const }
+    const year = visitMoment.year()
+    const db = await getManualAgentsDb()
+    const { quintasCalendar } = collectionNames
+    ensureToolAccess('write', [quintasCalendar])
+    const collection = db.collection(quintasCalendar)
+
+    const normalizedTime = String(input.visitTime || '').trim()
+    const duplicateFilter: Record<string, any> = {
+        propertyId: input.propertyId,
+        year,
+        events: {
+            $elemMatch: {
+                status: 'visit',
+                start: input.visitDate,
+                end: input.visitDate
+            }
+        }
+    }
+    if (normalizedTime) {
+        duplicateFilter.events.$elemMatch.notes = { $regex: new RegExp(escapeRegex(`hora:${normalizedTime}`), 'i') }
+    }
+    const duplicate = await collection.findOne(duplicateFilter)
+    if (duplicate) return { ok: true as const, duplicate: true as const }
+
+    const notes = [
+        'visita coordinada desde chat',
+        normalizedTime ? `hora:${normalizedTime}` : '',
+        input.guestName ? `nombre:${input.guestName}` : '',
+        input.phone ? `telefono:${input.phone}` : '',
+        input.email ? `email:${input.email}` : ''
+    ]
+        .filter(Boolean)
+        .join(' | ')
+
+    await collection.updateOne(
+        { propertyId: input.propertyId, year },
+        {
+            $push: {
+                events: {
+                    start: input.visitDate,
+                    end: input.visitDate,
+                    status: 'visit',
+                    notes
+                }
+            },
+            $set: { updatedAt: new Date() }
+        },
+        { upsert: true }
+    )
+    return { ok: true as const, duplicate: false as const }
+}
+
+const registerServiceRequest = async (input: {
+    sessionId?: string
+    propertyId?: string
+    propertyName?: string
+    requestedDate?: string
+    requestType?: string
+    message?: string
+    guestName?: string
+    phone?: string
+    email?: string
+}) => {
+    const requestDate = moment(input.requestedDate || '', 'YYYY-MM-DD', true)
+    const date = requestDate.isValid() ? requestDate.format('YYYY-MM-DD') : moment().format('YYYY-MM-DD')
+    const requestId = `QSR-${nanoid(7).toUpperCase()}`
+    const db = await getManualAgentsDb()
+    ensureToolAccess('write', [collectionNames.manualAgentCalendarLogs])
+    await db.collection(collectionNames.manualAgentCalendarLogs).insertOne({
+        type: 'service_request',
+        agentId: 'quintas',
+        requestId,
+        sessionId: input.sessionId || undefined,
+        propertyId: input.propertyId || 'sin-definir',
+        propertyName: input.propertyName || undefined,
+        start: date,
+        end: date,
+        requestType: input.requestType || 'general',
+        message: input.message || '',
+        guestName: input.guestName || undefined,
+        phone: input.phone || undefined,
+        email: input.email || undefined,
+        status: 'open',
+        createdAt: new Date()
+    })
+    return { ok: true as const, requestId, date }
+}
+
 const getLeadDoc = async () => {
     const db = await getManualAgentsDb()
     const { quintasLeads } = collectionNames
@@ -1250,15 +2282,20 @@ const upsertLead = async (input: LeadInput) => {
     const payload = {
         id: leadId,
         name: input.name,
+        email: input.email,
         phone: input.phone,
         channel: input.channel,
         dateRequested: input.dateRequested,
         property: input.propertyId,
+        propertyId: input.propertyId,
         people: input.people,
         interest: input.interest,
         status: input.status || 'open',
         habitual: input.habitual ?? false,
         notes: input.notes
+    } as Record<string, any>
+    if (typeof input.negotiatedDiscountPct === 'number' && Number.isFinite(input.negotiatedDiscountPct)) {
+        payload.negotiatedDiscountPct = clampDiscountPct(input.negotiatedDiscountPct)
     }
 
     if (existingIndex >= 0) {
@@ -1274,8 +2311,15 @@ const upsertLead = async (input: LeadInput) => {
 
 const getLead = async (input: { id?: string; phone?: string }) => {
     const doc = await getLeadDoc()
-    const leads = (doc?.leads || []) as LeadInput[]
-    return leads.find((lead) => (input.id && lead.id === input.id) || (input.phone && lead.phone === input.phone)) || null
+    const leads = (doc?.leads || []) as Array<LeadInput & { email?: string }>
+    const normalizedPhone = normalizePhoneForLookup(input.phone || '')
+    return (
+        leads.find(
+            (lead) =>
+                (input.id && String(lead.id || '') === String(input.id)) ||
+                (normalizedPhone && normalizePhoneForLookup(String(lead.phone || '')) === normalizedPhone)
+        ) || null
+    )
 }
 
 const checkAvailability = async (input: { start: string; end?: string; propertyId?: string; locale?: string }) => {
@@ -1286,7 +2330,7 @@ const checkAvailability = async (input: { start: string; end?: string; propertyI
     }
     const locale = input.locale || 'es-AR'
 
-    const properties = await getCatalogProperties()
+    const [properties, restrictions] = await Promise.all([getCatalogProperties(), getRestrictions()])
     const filtered = input.propertyId ? properties.filter((p) => p.propertyId === input.propertyId) : properties
     const years = getAvailabilityYears(startDate, endDate)
 
@@ -1295,7 +2339,13 @@ const checkAvailability = async (input: { start: string; end?: string; propertyI
 
     for (const prop of filtered) {
         const calendars = await getCalendarDocs(prop.propertyId, years)
-        const minNights = prop.minNights || 1
+        const minStay = resolveMinNightsForRange({
+            start: startDate,
+            end: endDate,
+            propertyMinNights: prop.minNights,
+            restrictions
+        })
+        const minNights = minStay.minNights
         const length = endDate.diff(startDate, 'days') + 1
         const minNightsOk = length >= minNights
 
@@ -1326,7 +2376,8 @@ const checkAvailability = async (input: { start: string; end?: string; propertyI
                 propertyId: prop.propertyId,
                 name: prop.name,
                 reason: blocked ? 'blocked' : conflict ? 'booked' : 'min_nights',
-                minNights
+                minNights,
+                minNightsReason: minStay.minReason || ''
             })
         }
     }
@@ -1352,7 +2403,7 @@ const findNearbyAvailabilityForLength = async (params: { start: string; days: nu
     const startDate = moment(params.start, 'YYYY-MM-DD', true)
     if (!startDate.isValid() || params.days < 1) return null
 
-    const properties = await getCatalogProperties()
+    const [properties, restrictions] = await Promise.all([getCatalogProperties(), getRestrictions()])
     const filtered = params.propertyId ? properties.filter((prop) => prop.propertyId === params.propertyId) : properties
     if (!filtered.length) return null
 
@@ -1373,7 +2424,13 @@ const findNearbyAvailabilityForLength = async (params: { start: string; days: nu
             if (candidateStart.isBefore(today, 'day')) continue
             const candidateEnd = candidateStart.clone().add(params.days - 1, 'day')
             for (const prop of filtered) {
-                const minNights = prop.minNights || 1
+                const minStay = resolveMinNightsForRange({
+                    start: candidateStart,
+                    end: candidateEnd,
+                    propertyMinNights: prop.minNights,
+                    restrictions
+                })
+                const minNights = minStay.minNights || 1
                 if (params.days < minNights) continue
                 const calendars = calendarsByProperty.get(prop.propertyId) || []
                 let blocked = false
@@ -1499,15 +2556,55 @@ const buildFlexibleAvailabilityMessage = async (params: {
     return `${header}\n${formatBulletList(options.map((option) => `- ${option}`))}\n\n${question}`
 }
 
-const buildMinNightsReply = (params: { start: string; minNights: number; locale: string }) => {
+const buildMinNightsReply = (params: { start: string; minNights: number; locale: string; minReason?: string }) => {
     const startDate = moment(params.start, 'YYYY-MM-DD', true)
     if (!startDate.isValid() || params.minNights < 1) return ''
     const endDate = startDate.clone().add(params.minNights - 1, 'day')
     const rangeLabel = formatRangeLabel(startDate, endDate, params.locale)
+    const reasonLabel = params.minReason
+        ? responseForLocale(params.locale, ` (${params.minReason})`, ` (${params.minReason})`)
+        : ''
     return responseForLocale(
         params.locale,
-        `Para esas fechas el minimo es ${params.minNights} noches. Si queres, puedo revisar ${rangeLabel}. Te sirve?`,
-        `The minimum stay is ${params.minNights} nights. I can check ${rangeLabel}. Interested?`
+        `Para esas fechas el minimo es ${params.minNights} noches${reasonLabel}. Si queres, puedo revisar ${rangeLabel}. Te sirve?`,
+        `The minimum stay is ${params.minNights} nights${reasonLabel}. I can check ${rangeLabel}. Interested?`
+    )
+}
+
+const buildHoldFailureAnswer = (params: { reason?: string; locale: string }) => {
+    const reason = String(params.reason || '')
+    if (reason === 'invalid_date') {
+        return responseForLocale(
+            params.locale,
+            'No pude validar esas fechas. Pasamelas en formato YYYY-MM-DD.',
+            "I couldn't validate those dates. Please share them in YYYY-MM-DD format."
+        )
+    }
+    if (reason === 'property_not_found') {
+        return responseForLocale(
+            params.locale,
+            'No encontre esa quinta en el catalogo. Decime cual te interesa y lo reviso.',
+            "I couldn't find that property in the catalog. Tell me which one you want and I will check."
+        )
+    }
+    if (reason === 'date_blocked') {
+        return responseForLocale(
+            params.locale,
+            'Esas fechas estan bloqueadas por reglas de temporada/evento.',
+            'Those dates are blocked by season/event rules.'
+        )
+    }
+    if (reason === 'date_unavailable') {
+        return responseForLocale(
+            params.locale,
+            'Esas fechas ya no estan disponibles.',
+            'Those dates are no longer available.'
+        )
+    }
+    return responseForLocale(
+        params.locale,
+        'No pude generar la reserva con los datos actuales.',
+        'I could not create the reservation with the current details.'
     )
 }
 
@@ -1545,8 +2642,16 @@ const buildAvailabilityReply = async (
     if (!available.length) {
         const minNightsBlocked = unavailable.filter((item) => item.reason === 'min_nights')
         if (minNightsBlocked.length && minNightsBlocked.length === unavailable.length) {
-            const minNights = Math.max(...minNightsBlocked.map((item) => Number(item.minNights || 0)))
-            const minNightsReply = minNights ? buildMinNightsReply({ start: startStr, minNights, locale }) : ''
+            const minRuleEntry = minNightsBlocked
+                .map((item) => ({
+                    minNights: Number(item.minNights || 0),
+                    minReason: String(item.minNightsReason || '')
+                }))
+                .sort((a, b) => b.minNights - a.minNights)[0]
+            const minNights = Number(minRuleEntry?.minNights || 0)
+            const minNightsReply = minNights
+                ? buildMinNightsReply({ start: startStr, minNights, locale, minReason: minRuleEntry?.minReason || '' })
+                : ''
             if (minNightsReply) {
                 return { answer: minNightsReply }
             }
@@ -1760,6 +2865,7 @@ const buildPaymentReply = (restrictions: RestrictionsDoc, locale = 'es-AR') => {
     const deadlineHours = payment.depositDeadlineHours ?? 0
     const fullPaymentDays = payment.fullPaymentDaysBefore ?? 0
     const methods = payment.acceptedMethods?.join(', ') || 'transferencia'
+    const habitualPct = restrictions.discounts?.enabled ? Number(restrictions.discounts?.habitualPct || 0) : 0
     const transfer = payment.bankTransfer || {}
     const transferParts = [
         transfer.accountName ? `${locale === 'en-US' ? 'Account name' : 'Titular'}: ${transfer.accountName}` : '',
@@ -1776,7 +2882,15 @@ const buildPaymentReply = (restrictions: RestrictionsDoc, locale = 'es-AR') => {
     const transferHint = transferParts.length
         ? responseForLocale(locale, 'Si queres, te paso los datos de transferencia.', 'If you want, I can share bank transfer details.')
         : responseForLocale(locale, 'Si queres, te paso los datos oficiales de transferencia.', 'If you want, I can share the official transfer details.')
-    return `${baseLine} ${transferHint}`.trim()
+    const discountLine =
+        habitualPct > 0
+            ? responseForLocale(
+                  locale,
+                  `Descuento habitual: hasta ${habitualPct}% para clientes recurrentes verificados.`,
+                  `Returning-customer discount: up to ${habitualPct}% for verified repeat clients.`
+              )
+            : ''
+    return [baseLine, discountLine, transferHint].filter(Boolean).join(' ').trim()
 }
 
 const buildTransferText = (transferParts: string[], locale = 'es-AR') => {
@@ -1855,7 +2969,8 @@ const buildSystemPrompt = (catalogMeta: CatalogMeta, restrictions: RestrictionsD
         'Si faltan datos, pregunta solo lo necesario. Si no hay disponibilidad, ofrece alternativas.',
         catalogLink ? `Catalogo: ${catalogLink}` : '',
         contactEmail ? `Contacto oficial: ${contactEmail}.` : '',
-        'Usa las herramientas para disponibilidad, reglas, catalogo, leads y reservas con deposito/anticipo. No inventes datos.'
+        'Usa las herramientas para disponibilidad, reglas, catalogo, leads y reservas con deposito/anticipo. No inventes datos.',
+        'Esta demo usa datos mock: si piden un dato fuera de herramientas, aclaralo y ofrece pase a humano.'
     ]
         .filter(Boolean)
         .join('\n')
@@ -2089,15 +3204,68 @@ const executeQuintasTool = async (name: string, args: Record<string, any>, restr
                 ensureToolAccess('write', [collections.quintasCalendar])
                 const properties = await getCatalogProperties()
                 const property = properties.find((item) => item.propertyId === args.propertyId)
+                const locale = typeof args.locale === 'string' ? args.locale : 'es-AR'
+                if (!property) {
+                    return {
+                        output: {
+                            ok: false,
+                            reason: 'property_not_found',
+                            message: buildHoldFailureAnswer({ reason: 'property_not_found', locale })
+                        }
+                    }
+                }
                 const startDate = moment(args.start, 'YYYY-MM-DD', true)
                 const endDate = moment(args.end, 'YYYY-MM-DD', true)
+                if (!startDate.isValid() || !endDate.isValid()) {
+                    return {
+                        output: {
+                            ok: false,
+                            reason: 'invalid_date',
+                            message: buildHoldFailureAnswer({ reason: 'invalid_date', locale })
+                        }
+                    }
+                }
+                const minStay = resolveMinNightsForRange({
+                    start: startDate,
+                    end: endDate,
+                    propertyMinNights: property.minNights,
+                    restrictions
+                })
+                const stayLength = endDate.diff(startDate, 'days') + 1
+                if (stayLength < minStay.minNights) {
+                    return {
+                        output: {
+                            ok: false,
+                            reason: 'min_nights',
+                            minNights: minStay.minNights,
+                            message: buildMinNightsReply({
+                                start: args.start,
+                                minNights: minStay.minNights,
+                                locale,
+                                minReason: minStay.minReason || ''
+                            })
+                        }
+                    }
+                }
                 const nights = startDate.isValid() && endDate.isValid() ? Math.max(endDate.diff(startDate, 'days'), 1) : 1
                 const pricePerNight = property?.basePricePerNight
                 const currency = property?.currency || 'USD'
-                const totalAmount =
-                    typeof pricePerNight === 'number' && Number.isFinite(pricePerNight)
-                        ? Number((pricePerNight * nights).toFixed(2))
-                        : undefined
+                const habitualLead = await findHabitualLeadByIdentity({
+                    id: args.leadId,
+                    name: args.name,
+                    email: args.email,
+                    phone: args.phone
+                })
+                const customDiscountPct = Boolean(habitualLead?.habitual) ? pickNegotiatedDiscountPct({ lead: habitualLead }) : 0
+                const pricing = calculateDiscountBreakdown({
+                    pricePerNight,
+                    nights,
+                    currency,
+                    restrictions,
+                    isHabitual: Boolean(habitualLead?.habitual),
+                    customDiscountPct
+                })
+                const totalAmount = pricing.finalTotalAmount ?? pricing.totalAmount
                 const depositPct = restrictions.payment?.depositPct ?? 0
                 const depositAmount = typeof totalAmount === 'number' ? Number(((totalAmount * depositPct) / 100).toFixed(2)) : undefined
                 const hold = await createHold({
@@ -2109,7 +3277,13 @@ const executeQuintasTool = async (name: string, args: Record<string, any>, restr
                     notes: args.notes
                 })
                 if (!hold.ok) {
-                    return { output: { ok: false, reason: hold.reason } }
+                    return {
+                        output: {
+                            ok: false,
+                            reason: hold.reason,
+                            message: buildHoldFailureAnswer({ reason: hold.reason, locale })
+                        }
+                    }
                 }
                 const holdPayload = {
                     propertyId: args.propertyId,
@@ -2118,11 +3292,13 @@ const executeQuintasTool = async (name: string, args: Record<string, any>, restr
                     holdExpires: hold.holdExpires?.toISOString(),
                     leadId: args.leadId,
                     nights,
-                    pricePerNight,
+                    pricePerNight: pricing.finalPricePerNight ?? pricePerNight,
                     currency,
                     totalAmount,
                     depositPct,
-                    depositAmount
+                    depositAmount,
+                    discountPct: pricing.discountPct,
+                    discountAmount: pricing.discountAmount
                 }
                 return {
                     output: { ok: true, hold: holdPayload },
@@ -2143,6 +3319,7 @@ const executeQuintasTool = async (name: string, args: Record<string, any>, restr
                 const lead = await upsertLead({
                     id: args.id || args.leadId,
                     name: args.name,
+                    email: args.email,
                     phone: args.phone,
                     channel: args.channel,
                     dateRequested: args.dateRequested,
@@ -2151,6 +3328,7 @@ const executeQuintasTool = async (name: string, args: Record<string, any>, restr
                     interest: args.interest,
                     status: args.status,
                     habitual: args.habitual,
+                    negotiatedDiscountPct: args.negotiatedDiscountPct,
                     notes: args.notes
                 })
                 return { output: { ok: true, lead } }
@@ -2240,6 +3418,7 @@ export const QUINTAS_TOOL_SPECS: ManualAgentToolDefinition[] = [
             properties: {
                 id: { type: 'string' },
                 name: { type: 'string' },
+                email: { type: 'string' },
                 phone: { type: 'string' },
                 channel: { type: 'string' },
                 dateRequested: { type: 'string' },
@@ -2248,6 +3427,7 @@ export const QUINTAS_TOOL_SPECS: ManualAgentToolDefinition[] = [
                 interest: { type: 'string' },
                 status: { type: 'string' },
                 habitual: { type: 'boolean' },
+                negotiatedDiscountPct: { type: 'number' },
                 notes: { type: 'string' }
             }
         }
@@ -2269,6 +3449,9 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
     const message = input.message || ''
     const lower = normalizeText(message)
     const locale = forcedLocale || detectLocaleFromMessage(message)
+    const fallbackName = extractName(message)
+    const fallbackEmail = extractEmail(message)
+    const fallbackPhone = extractPhone(message)
     const stayLength = extractStayLengthDetails(message)
     const requestedDays = stayLength?.value
     const dateOptions = { preferMonthFirst: locale === 'en-US' }
@@ -2300,6 +3483,81 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
         Boolean(parseMonthRange(message)) ||
         Boolean(parseDayRange(message)) ||
         Boolean(parseRelativeDateRange(message))
+    const outboundExecutionIntent = isOutboundExecutionIntent(message)
+    const discountNegotiationIntent = isDiscountNegotiationIntent(message)
+    const requestedDiscountPct = extractNegotiatedDiscountPct(message)
+    const serviceRequestIntent = isServiceRequestIntent(message)
+    const fallbackShouldCaptureLead =
+        Boolean(fallbackName || fallbackEmail || fallbackPhone) &&
+        Boolean(
+            hasDateSignals ||
+                lower.includes('visita') ||
+                lower.includes('reserv') ||
+                lower.includes('alquiler') ||
+                lower.includes('precio') ||
+                serviceRequestIntent
+        )
+    if (fallbackShouldCaptureLead) {
+        const matchedLead = await findHabitualLeadByIdentity({
+            name: fallbackName,
+            email: fallbackEmail,
+            phone: fallbackPhone
+        })
+        const firstDate = extractDates(message, dateOptions)[0]?.format('YYYY-MM-DD')
+        await upsertLead({
+            id: matchedLead?.id || (fallbackEmail ? `lead-${normalizeIntentText(fallbackEmail)}` : undefined),
+            name: fallbackName || matchedLead?.name || undefined,
+            email: fallbackEmail || (matchedLead as any)?.email || undefined,
+            phone: fallbackPhone || matchedLead?.phone || undefined,
+            dateRequested: firstDate,
+            propertyId: detectProperty(message, catalogProperties)?.propertyId || undefined,
+            interest: lower.includes('visita') ? 'visita' : lower.includes('reserv') || lower.includes('alquiler') ? 'alquiler' : 'consulta',
+            status: lower.includes('visita') ? 'scheduled' : 'open',
+            habitual: Boolean(matchedLead?.habitual),
+            negotiatedDiscountPct:
+                matchedLead?.habitual && discountNegotiationIntent
+                    ? pickNegotiatedDiscountPct({ lead: matchedLead, requestedPct: requestedDiscountPct })
+                    : undefined,
+            notes: input.sessionId ? `session:${input.sessionId}` : undefined
+        })
+    }
+
+    if (isRestartRequest(message)) {
+        await resetQuintasSessionFlow(input.sessionId || '')
+        return {
+            answer: responseForLocale(
+                locale,
+                'Listo, arrancamos de cero. Pasame fechas, cantidad de personas y si ya tenes una quinta en mente.',
+                'Done, we can start from scratch. Share dates, guest count, and if you already have a property in mind.'
+            )
+        }
+    }
+
+    if (isDataScopeQuestion(message)) {
+        return { answer: buildMockScopeAnswer(locale) }
+    }
+
+    if (isUnsupportedMockDataQuestion(message)) {
+        return { answer: buildUnsupportedMockDataAnswer(locale) }
+    }
+
+    if (isMarketKpiIntent(message)) {
+        return { answer: await buildMarketKpiAnswer(locale, message) }
+    }
+
+    if (outboundExecutionIntent) {
+        return { answer: await runMockOutboundFromChat(locale) }
+    }
+
+    if (isSmallTalkOnly(message)) {
+        return {
+            answer: responseForLocale(
+                locale,
+                'Todo bien, gracias. Si queres, seguimos con fechas y cantidad de personas.',
+                "I'm doing great, thanks. If you want, we can continue with dates and guest count."
+            )
+        }
+    }
 
     if (checkInOutSignal && !hasDateSignals) {
         const checkInTime = restrictions.checkInOut?.checkInTime
@@ -2341,66 +3599,79 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
         return { answer: [base, notes, flexibilityLine, lateArrivalQuestion, earlyDepartureQuestion].filter(Boolean).join(' ') }
     }
 
-    const relevantKeywords = [
-        'quinta',
-        'quintas',
-        'alquiler',
-        'reserv',
-        'deposito',
-        'anticipo',
-        'pago',
-        'precio',
-        'tarifa',
-        'disponibilidad',
-        'fecha',
-        'noches',
-        'personas',
-        'capacidad',
-        'visita',
-        'catalogo',
-        'ubicacion',
-        'direccion',
-        'amenities',
-        'servicios',
-        'pileta',
-        'parrilla',
-        'quincho',
-        'musica',
-        'mascota',
-        'descuento',
-        'transferencia',
-        'cbu',
-        'alias',
-        'banco',
-        'reserva con deposito',
-        'reserva con anticipo'
-    ]
-    const offTopicKeywords = [
-        'futbol',
-        'football',
-        'basket',
-        'basquet',
-        'medicina',
-        'medicamento',
-        'doctor',
-        'doctora',
-        'medico',
-        'hospital',
-        'receta',
-        'sintoma',
-        'enfermedad',
-        'clinica',
-        'farmacia'
-    ]
-    const isRelevant = relevantKeywords.some((keyword) => lower.includes(keyword))
-    const isOffTopic = offTopicKeywords.some((keyword) => lower.includes(keyword))
+    if (isHumanHandoffRequest(message)) {
+        return {
+            answer: responseForLocale(
+                locale,
+                'Claro, te puedo pasar con un humano. Si queres, compartime fechas y la quinta y dejo todo listo.',
+                'Sure, I can hand this over to a human. If you want, share dates and the property and I will leave everything ready.'
+            )
+        }
+    }
 
-    if (isOffTopic && !isRelevant) {
+    if (isHelpOnly(message)) {
+        return {
+            answer: responseForLocale(
+                locale,
+                'Te ayudo con disponibilidad, precios, reservas, pagos y visitas. Pasame fechas y cantidad de personas y te propongo opciones. Esta demo usa datos mock.',
+                'I can help with availability, prices, bookings, payments, and visits. Share your dates and guest count and I will propose options. This demo uses mock data.'
+            )
+        }
+    }
+
+    if (isGoodbyeOnly(message)) {
+        return {
+            answer: responseForLocale(
+                locale,
+                'Perfecto, lo dejamos aca. Cuando quieras seguir, pasame fechas y lo retomamos.',
+                'Perfect, we can pause here. When you want to continue, share dates and I will pick it up.'
+            )
+        }
+    }
+
+    if (isClearlyOffTopic(message)) {
         return {
             answer: responseForLocale(
                 locale,
                 'Perdon, solo puedo ayudar con quintas (disponibilidad, precios, reservas, pagos o visitas). Decime fechas y cantidad de personas y te ayudo.',
                 'Sorry, I can only help with quintas (availability, prices, reservations, payments or visits). Share your dates and number of guests and I will help.'
+            )
+        }
+    }
+
+    if (serviceRequestIntent && !lower.includes('reserv')) {
+        const property = detectProperty(message, catalogProperties)
+        const serviceType = detectServiceRequestType(message)
+        const requestDate = extractDates(message, dateOptions)[0]?.format('YYYY-MM-DD')
+        const result = await registerServiceRequest({
+            sessionId: input.sessionId,
+            propertyId: property?.propertyId,
+            propertyName: property?.name || property?.propertyId,
+            requestedDate: requestDate,
+            requestType: serviceType,
+            message,
+            guestName: fallbackName || undefined,
+            phone: fallbackPhone || undefined,
+            email: fallbackEmail || undefined
+        })
+        await upsertLead({
+            id: fallbackPhone ? undefined : fallbackEmail ? `lead-${normalizeIntentText(fallbackEmail)}` : undefined,
+            name: fallbackName || undefined,
+            email: fallbackEmail || undefined,
+            phone: fallbackPhone || undefined,
+            propertyId: property?.propertyId,
+            dateRequested: requestDate,
+            interest: 'pedido',
+            status: 'open',
+            notes: `pedido:${serviceType} #${result.requestId}`
+        })
+        return {
+            answer: responseForLocale(
+                locale,
+                `Listo, registre tu pedido (${result.requestId})${
+                    property?.name ? ` para ${property.name}` : ''
+                }. Te aviso por aca cuando haya actualizacion.`,
+                `Done, I logged your request (${result.requestId})${property?.name ? ` for ${property.name}` : ''}. I will update you here once there is progress.`
             )
         }
     }
@@ -2526,11 +3797,50 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
     }
 
     if (lower.includes('descuento') || lower.includes('regate')) {
+        const matchedLead = await findHabitualLeadByIdentity({
+            name: fallbackName,
+            email: fallbackEmail,
+            phone: fallbackPhone
+        })
+        const isHabitual = Boolean(matchedLead?.habitual)
+        if (!isHabitual) {
+            return {
+                answer: responseForLocale(
+                    locale,
+                    'Los descuentos son para clientes habituales. Si ya alquilaste antes, avisame y lo reviso.',
+                    'Discounts are for returning customers. If you have rented with us before, tell me and I will check.'
+                )
+            }
+        }
+
+        if (discountNegotiationIntent && typeof requestedDiscountPct === 'number') {
+            const negotiatedPct = pickNegotiatedDiscountPct({ lead: matchedLead, requestedPct: requestedDiscountPct })
+            await upsertLead({
+                id: matchedLead?.id || (fallbackEmail ? `lead-${normalizeIntentText(fallbackEmail)}` : undefined),
+                name: fallbackName || matchedLead?.name || undefined,
+                email: fallbackEmail || (matchedLead as any)?.email || undefined,
+                phone: fallbackPhone || matchedLead?.phone || undefined,
+                habitual: true,
+                negotiatedDiscountPct: negotiatedPct,
+                interest: matchedLead?.interest || 'alquiler',
+                status: matchedLead?.status || 'open',
+                notes: `descuento negociado ${negotiatedPct}%`
+            })
+            return {
+                answer: responseForLocale(
+                    locale,
+                    `Perfecto, deje registrado un descuento del ${negotiatedPct}% para tu perfil habitual.`,
+                    `Perfect, I recorded a ${negotiatedPct}% discount for your returning-customer profile.`
+                )
+            }
+        }
+
+        const configuredPct = Math.max(Number(restrictions.discounts?.habitualPct || 0), 0)
         return {
             answer: responseForLocale(
                 locale,
-                'Los descuentos son para clientes habituales. Si ya alquilaste antes, avisame y lo reviso.',
-                'Discounts are for returning customers. If you have rented with us before, tell me and I will check.'
+                `Podemos aplicar descuento por cliente habitual. Hoy tengo ${configuredPct}% cargado; si queres otro porcentaje, decime cual.`,
+                `We can apply a returning-customer discount. Right now I have ${configuredPct}% configured; if you want another percentage, tell me which one.`
             )
         }
     }
@@ -2557,8 +3867,31 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
 
         if (lower.includes('reserv') || lower.includes('deposit') || lower.includes('anticip')) {
             if (property) {
-                const minNights = property.minNights || 1
-                const endDate = dates[1]?.format('YYYY-MM-DD') || dates[0].clone().add(minNights, 'days').format('YYYY-MM-DD')
+                const startMoment = moment(dateStr, 'YYYY-MM-DD', true)
+                const provisionalEndMoment = dates[1]
+                    ? moment(dates[1].format('YYYY-MM-DD'), 'YYYY-MM-DD', true)
+                    : moment(dateStr, 'YYYY-MM-DD', true)
+                const minStay = resolveMinNightsForRange({
+                    start: startMoment,
+                    end: provisionalEndMoment,
+                    propertyMinNights: property.minNights,
+                    restrictions
+                })
+                const endDate =
+                    dates[1]?.format('YYYY-MM-DD') || dates[0].clone().add(Math.max(minStay.minNights, 1), 'days').format('YYYY-MM-DD')
+                const finalStartMoment = moment(dateStr, 'YYYY-MM-DD', true)
+                const finalEndMoment = moment(endDate, 'YYYY-MM-DD', true)
+                const stayLength = finalEndMoment.diff(finalStartMoment, 'days') + 1
+                if (stayLength < minStay.minNights) {
+                    return {
+                        answer: buildMinNightsReply({
+                            start: dateStr,
+                            minNights: minStay.minNights,
+                            locale,
+                            minReason: minStay.minReason || ''
+                        })
+                    }
+                }
                 ensureToolAccess('write', [collectionNames.quintasCalendar])
                 const hold = await createHold({
                     propertyId: property.propertyId,
@@ -2569,6 +3902,8 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                 })
 
                 if (!hold.ok) {
+                    const failure = hold as { reason?: string }
+                    const baseAnswer = buildHoldFailureAnswer({ reason: failure.reason, locale })
                     const suggestion = await buildNearbyAvailabilityMessage({
                         start: dateStr,
                         days: requestedDays,
@@ -2576,28 +3911,49 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                         locale
                     })
                     if (suggestion) {
-                        return { answer: suggestion }
+                        return { answer: `${baseAnswer} ${suggestion}`.trim() }
                     }
                     return {
-                        answer: responseForLocale(
+                        answer: `${baseAnswer} ${responseForLocale(
                             locale,
-                            'Esas fechas ya no estan disponibles. Te puedo ofrecer alternativas.',
-                            'Those dates are no longer available. I can offer alternatives.'
-                        )
+                            'Si queres, te ofrezco alternativas.',
+                            'If you want, I can offer alternatives.'
+                        )}`.trim()
                     }
                 }
 
                 const nights = Math.max(moment(endDate).diff(moment(dateStr), 'days'), 1)
                 const pricePerNight = property.basePricePerNight
                 const currency = property.currency || 'USD'
-                const totalAmount =
-                    typeof pricePerNight === 'number' && Number.isFinite(pricePerNight)
-                        ? Number((pricePerNight * nights).toFixed(2))
-                        : undefined
+                const habitualLead = await findHabitualLeadByIdentity({
+                    name: fallbackName,
+                    email: fallbackEmail,
+                    phone: fallbackPhone
+                })
+                const customDiscountPct = Boolean(habitualLead?.habitual)
+                    ? pickNegotiatedDiscountPct({ lead: habitualLead, requestedPct: requestedDiscountPct })
+                    : 0
+                const pricing = calculateDiscountBreakdown({
+                    pricePerNight,
+                    nights,
+                    currency,
+                    restrictions,
+                    isHabitual: Boolean(habitualLead?.habitual),
+                    customDiscountPct
+                })
+                const totalAmount = pricing.finalTotalAmount ?? pricing.totalAmount
                 const depositPct = restrictions.payment?.depositPct ?? 0
                 const depositAmount = typeof totalAmount === 'number' ? Number(((totalAmount * depositPct) / 100).toFixed(2)) : undefined
                 const deadlineHours = restrictions.payment?.depositDeadlineHours ?? 0
                 const fullPaymentDays = restrictions.payment?.fullPaymentDaysBefore ?? 0
+                const discountLine =
+                    pricing.discountPct > 0
+                        ? responseForLocale(
+                              locale,
+                              `Descuento cliente habitual (${pricing.discountPct}%): -${pricing.discountAmount.toFixed(0)} ${currency}.`,
+                              `Returning-customer discount (${pricing.discountPct}%): -${pricing.discountAmount.toFixed(0)} ${currency}.`
+                          )
+                        : ''
                 const transfer = restrictions.payment?.bankTransfer || {}
                 const transferParts = [
                     transfer.accountName ? `${locale === 'en-US' ? 'Account name' : 'Titular'}: ${transfer.accountName}` : '',
@@ -2627,6 +3983,7 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                         `Listo, te reservo por 24h.\n` +
                             summaryBlock +
                             `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'a confirmar'}.\n` +
+                            `${discountLine ? `${discountLine}\n` : ''}` +
                             `Deposito (${depositPct}%): ${
                                 typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
                             } (vence en ${deadlineHours}h).\n` +
@@ -2635,6 +3992,7 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                         `Done, I reserved it for 24h.\n` +
                             summaryBlock +
                             `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
+                            `${discountLine ? `${discountLine}\n` : ''}` +
                             `Deposit (${depositPct}%): ${
                                 typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
                             } (due in ${deadlineHours}h).\n` +
@@ -2649,11 +4007,13 @@ const handleQuintasFallback = async (input: ManualAgentRequest, forcedLocale?: s
                             end: endDate,
                             holdExpires: hold.holdExpires?.toISOString(),
                             nights,
-                            pricePerNight,
+                            pricePerNight: pricing.finalPricePerNight ?? pricePerNight,
                             currency,
                             totalAmount,
                             depositPct,
-                            depositAmount
+                            depositAmount,
+                            discountPct: pricing.discountPct,
+                            discountAmount: pricing.discountAmount
                         }
                     }
                 }
@@ -2723,6 +4083,8 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     let lastName: string | undefined
     let lastEmail: string | undefined
     let lastPhone: string | undefined
+    let lastHabitual: boolean | undefined
+    let lastNegotiatedDiscountPct: number | undefined
     let nameUseCount: number | undefined
     let frictionCount: number | undefined
     let confusionCount: number | undefined
@@ -2753,6 +4115,8 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 lastName?: string
                 lastEmail?: string
                 lastPhone?: string
+                lastHabitual?: boolean
+                lastNegotiatedDiscountPct?: number
                 nameUseCount?: number
                 frictionCount?: number
                 confusionCount?: number
@@ -2780,6 +4144,8 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         lastName = session?.lastName
         lastEmail = session?.lastEmail
         lastPhone = session?.lastPhone
+        lastHabitual = session?.lastHabitual
+        lastNegotiatedDiscountPct = session?.lastNegotiatedDiscountPct
         nameUseCount = session?.nameUseCount
         frictionCount = session?.frictionCount
         confusionCount = session?.confusionCount
@@ -2956,6 +4322,38 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 { intentSummary: 'awaiting_property', frictionAction: 'increase' }
             )
         }
+        const startMoment = moment(lastRangeStart, 'YYYY-MM-DD', true)
+        const endMoment = moment(lastRangeEnd, 'YYYY-MM-DD', true)
+        if (!startMoment.isValid() || !endMoment.isValid()) {
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    'No pude validar esas fechas. Pasamelas en formato YYYY-MM-DD.',
+                    "I couldn't validate those dates. Please share them in YYYY-MM-DD format."
+                ),
+                undefined,
+                { intentSummary: 'awaiting_dates', frictionAction: 'increase' }
+            )
+        }
+        const minStay = resolveMinNightsForRange({
+            start: startMoment,
+            end: endMoment,
+            propertyMinNights: property.minNights,
+            restrictions
+        })
+        const stayLength = endMoment.diff(startMoment, 'days') + 1
+        if (stayLength < minStay.minNights) {
+            return respond(
+                buildMinNightsReply({
+                    start: lastRangeStart,
+                    minNights: minStay.minNights,
+                    locale: lockedLocale,
+                    minReason: minStay.minReason || ''
+                }),
+                undefined,
+                { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
+            )
+        }
         ensureToolAccess('write', [collectionNames.quintasCalendar])
         const hold = await createHold({
             propertyId: property.propertyId,
@@ -2966,6 +4364,8 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         })
 
         if (!hold.ok) {
+            const failure = hold as { reason?: string }
+            const baseAnswer = buildHoldFailureAnswer({ reason: failure.reason, locale: lockedLocale })
             const suggestion = await buildNearbyAvailabilityMessage({
                 start: lastRangeStart,
                 days: requestedDays,
@@ -2973,38 +4373,80 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                 locale: lockedLocale
             })
             if (suggestion) {
-                return respond(suggestion, undefined, { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' })
+                return respond(`${baseAnswer} ${suggestion}`.trim(), undefined, {
+                    replyKind: 'availability',
+                    intentSummary: 'availability_options',
+                    frictionAction: 'reset'
+                })
             }
             return respond(
-                responseForLocale(
+                `${baseAnswer} ${responseForLocale(
                     lockedLocale,
-                    'Esas fechas ya no estan disponibles. Te puedo ofrecer alternativas.',
-                    'Those dates are no longer available. I can offer alternatives.'
-                ),
+                    'Si queres, te ofrezco alternativas.',
+                    'If you want, I can offer alternatives.'
+                )}`.trim(),
                 undefined,
                 { replyKind: 'availability', intentSummary: 'availability_none', frictionAction: 'reset' }
             )
         }
 
+        const matchedLead = await findHabitualLeadByIdentity({
+            name: lastName,
+            email: lastEmail,
+            phone: lastPhone
+        })
+        const effectiveHabitual = Boolean(matchedLead?.habitual || lastHabitual)
+        const customDiscountPct = effectiveHabitual
+            ? pickNegotiatedDiscountPct({ lead: matchedLead, sessionPct: lastNegotiatedDiscountPct })
+            : 0
         await upsertLead({
+            id: matchedLead?.id || (lastEmail ? `lead-${normalizeIntentText(lastEmail)}` : undefined),
             name: lastName || undefined,
+            email: lastEmail || undefined,
             phone: lastPhone || undefined,
             propertyId: property.propertyId,
             dateRequested: lastRangeStart,
+            people: lastGuests || matchedLead?.people,
+            interest: 'alquiler',
+            status: 'open',
+            habitual: effectiveHabitual,
+            negotiatedDiscountPct: customDiscountPct > 0 ? customDiscountPct : undefined,
             notes: lastEmail ? `email: ${lastEmail}` : undefined
         })
+        if (effectiveHabitual && !lastHabitual) {
+            lastHabitual = true
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastHabitual: true, updatedAt: new Date() } }
+                )
+            }
+        }
 
         const nights = Math.max(moment(lastRangeEnd).diff(moment(lastRangeStart), 'days'), 1)
         const pricePerNight = property.basePricePerNight
         const currency = property.currency || 'USD'
-        const totalAmount =
-            typeof pricePerNight === 'number' && Number.isFinite(pricePerNight)
-                ? Number((pricePerNight * nights).toFixed(2))
-                : undefined
+        const pricing = calculateDiscountBreakdown({
+            pricePerNight,
+            nights,
+            currency,
+            restrictions,
+            isHabitual: effectiveHabitual,
+            customDiscountPct
+        })
+        const totalAmount = pricing.finalTotalAmount ?? pricing.totalAmount
         const depositPct = restrictions.payment?.depositPct ?? 0
         const depositAmount = typeof totalAmount === 'number' ? Number(((totalAmount * depositPct) / 100).toFixed(2)) : undefined
         const deadlineHours = restrictions.payment?.depositDeadlineHours ?? 0
         const fullPaymentDays = restrictions.payment?.fullPaymentDaysBefore ?? 0
+        const discountLine =
+            pricing.discountPct > 0
+                ? responseForLocale(
+                      lockedLocale,
+                      `Descuento cliente habitual (${pricing.discountPct}%): -${pricing.discountAmount.toFixed(0)} ${currency}.`,
+                      `Returning-customer discount (${pricing.discountPct}%): -${pricing.discountAmount.toFixed(0)} ${currency}.`
+                  )
+                : ''
         const transfer = restrictions.payment?.bankTransfer || {}
         const transferParts = [
             transfer.accountName ? `${lockedLocale === 'en-US' ? 'Account name' : 'Titular'}: ${transfer.accountName}` : '',
@@ -3035,6 +4477,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                     lockedLocale,
                     `${lastName ? `Gracias ${lastName}, ` : ''}listo, genere la reserva a tu nombre.${summaryBlock}` +
                         `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'a confirmar'}.\n` +
+                        `${discountLine ? `${discountLine}\n` : ''}` +
                         `Deposito (${depositPct}%): ${
                             typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'a confirmar'
                         } (dentro de ${deadlineHours} horas).\n` +
@@ -3042,6 +4485,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                         'Cuando hagas el deposito/anticipo, adjuntame el comprobante como imagen para confirmar la reserva.',
                     `${lastName ? `Thanks ${lastName}, ` : ''}I created the reservation under your name.${summaryBlock}` +
                         `Total: ${totalAmount ? `${totalAmount.toFixed(0)} ${currency}` : 'to be confirmed'}.\n` +
+                        `${discountLine ? `${discountLine}\n` : ''}` +
                         `Deposit (${depositPct}%): ${
                             typeof depositAmount === 'number' ? `${depositAmount.toFixed(0)} ${currency}` : 'to be confirmed'
                         } (within ${deadlineHours} hours).\n` +
@@ -3056,11 +4500,13 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
                         end: lastRangeEnd,
                         holdExpires: hold.holdExpires?.toISOString(),
                         nights,
-                        pricePerNight,
+                        pricePerNight: pricing.finalPricePerNight ?? pricePerNight,
                         currency,
                         totalAmount,
                         depositPct,
-                        depositAmount
+                        depositAmount,
+                        discountPct: pricing.discountPct,
+                        discountAmount: pricing.discountAmount
                     }
                 }
             },
@@ -3109,10 +4555,10 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     const relativeRange = !hasDates && !monthRange && !dayRange ? parseRelativeDateRange(input.message || '') : null
     const hasDateSignals = hasDates || Boolean(monthRange) || Boolean(dayRange) || Boolean(relativeRange)
     const hadVisitContext = Boolean(lastVisitPending || lastIntent === 'visit')
-    const shortAckPhrases = ['ok', 'dale', 'si', 'por favor', 'ok por favor', 'okey', 'okey dale', 'ok dale', 'confirmo', 'confirmar']
-    const shortNoPhrases = ['no', 'no gracias', 'no, gracias', 'no por ahora', 'no, por ahora', 'no confirmo']
-    const isShortAck = shortAckPhrases.includes(lower)
-    const isShortNo = shortNoPhrases.includes(lower)
+    const isShortAck = isShortAckOnly(message) || isPoliteAckOnly(message)
+    const isShortNo = isShortNoOnly(message)
+    const paymentProofIntent = isPaymentProofIntent(message)
+    const paymentRefFromMessage = extractPaymentReference(message)
     const wantsFlexibleDates =
         lower.includes('flexible') ||
         lower.includes('cualquier') ||
@@ -3127,6 +4573,18 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
     const reservationIntent = hasReservationIntent(message)
     const needsProperty = !detectedProperty && !lastPropertyId
     const needsGuests = typeof lastGuests !== 'number'
+    const marketKpiIntent = isMarketKpiIntent(message)
+    const outboundExecutionIntent = isOutboundExecutionIntent(message)
+    const discountNegotiationIntent = isDiscountNegotiationIntent(message)
+    const requestedDiscountPct = extractNegotiatedDiscountPct(message)
+    const serviceRequestIntent = isServiceRequestIntent(message)
+    const habitualClaimSignal =
+        lower.includes('cliente habitual') ||
+        lower.includes('somos habituales') ||
+        lower.includes('ya alquile') ||
+        lower.includes('ya alquilamos') ||
+        lower.includes('returning customer') ||
+        lower.includes('repeat customer')
     const policySignal =
         lower.includes('musica') ||
         lower.includes('regla') ||
@@ -3168,6 +4626,85 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         lower.includes('im confused') ||
         lower.includes('not clear')
 
+    if (habitualClaimSignal && !lastHabitual) {
+        lastHabitual = true
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastHabitual: true, updatedAt: new Date() } }
+            )
+        }
+    }
+
+    if (discountNegotiationIntent && typeof requestedDiscountPct === 'number') {
+        lastNegotiatedDiscountPct = requestedDiscountPct
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                { $set: { lastNegotiatedDiscountPct: requestedDiscountPct, updatedAt: new Date() } }
+            )
+        }
+    }
+
+    const inferredRequestedDate =
+        explicitDates[0]?.format('YYYY-MM-DD') ||
+        monthRange?.start ||
+        (relativeRange ? relativeRange.start.format('YYYY-MM-DD') : undefined) ||
+        lastRangeStart
+    const shouldAutoLeadCapture =
+        Boolean(detectedName || detectedEmail || detectedPhone) &&
+        Boolean(hasDateSignals || detectedProperty || lastPropertyId || reservationIntent || hasVisitKeyword || pricingSignal)
+    if (shouldAutoLeadCapture) {
+        const matchedLead = await findHabitualLeadByIdentity({
+            name: detectedName || lastName,
+            email: detectedEmail || lastEmail,
+            phone: detectedPhone || lastPhone
+        })
+        const matchedNegotiatedPct = clampDiscountPct((matchedLead as any)?.negotiatedDiscountPct)
+        if (matchedNegotiatedPct > 0 && !lastNegotiatedDiscountPct) {
+            lastNegotiatedDiscountPct = matchedNegotiatedPct
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastNegotiatedDiscountPct: matchedNegotiatedPct, updatedAt: new Date() } }
+                )
+            }
+        }
+        const inferredInterest = hasVisitKeyword ? 'visita' : reservationIntent || rentIntent ? 'alquiler' : 'consulta'
+        const inferredStatus = hasVisitKeyword ? 'scheduled' : 'open'
+        const autoLead = await upsertLead({
+            id: matchedLead?.id || (detectedEmail ? `lead-${normalizeIntentText(detectedEmail)}` : undefined),
+            name: detectedName || lastName || matchedLead?.name || undefined,
+            email: detectedEmail || lastEmail || (matchedLead as any)?.email || undefined,
+            phone: detectedPhone || lastPhone || matchedLead?.phone || undefined,
+            dateRequested: inferredRequestedDate,
+            propertyId: detectedProperty?.propertyId || lastPropertyId || (matchedLead as any)?.property || undefined,
+            people: typeof detectedGuests === 'number' ? detectedGuests : lastGuests || matchedLead?.people,
+            interest: inferredInterest,
+            status: inferredStatus,
+            habitual: Boolean(matchedLead?.habitual || lastHabitual),
+            negotiatedDiscountPct:
+                Boolean(matchedLead?.habitual || lastHabitual) && discountNegotiationIntent
+                    ? pickNegotiatedDiscountPct({ lead: matchedLead, sessionPct: lastNegotiatedDiscountPct, requestedPct: requestedDiscountPct })
+                    : undefined,
+            notes: [
+                detectedEmail || lastEmail ? `email:${detectedEmail || lastEmail}` : '',
+                sessionId ? `session:${sessionId}` : ''
+            ]
+                .filter(Boolean)
+                .join(' | ')
+        })
+        if (autoLead?.habitual && !lastHabitual) {
+            lastHabitual = true
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastHabitual: true, updatedAt: new Date() } }
+                )
+            }
+        }
+    }
+
     if (confusionSignal) {
         const nextCount = Number(confusionCount || 0) + 1
         confusionCount = nextCount
@@ -3186,6 +4723,146 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         )
         const answer = nextCount >= 2 ? appendEscalationPrompt(base, lockedLocale) : base
         return respond(answer, undefined, { frictionAction: 'increase' })
+    }
+
+    if (isRestartRequest(message)) {
+        await resetQuintasSessionFlow(sessionId)
+        lastMonthIndex = undefined
+        lastYear = undefined
+        lastRangeStart = undefined
+        lastRangeEnd = undefined
+        lastRangeUpdatedAt = undefined
+        lastPropertyId = undefined
+        lastGuests = undefined
+        lastIntent = undefined
+        lastHabitual = undefined
+        lastNegotiatedDiscountPct = undefined
+        pendingDateConfirm = false
+        pendingHoldConfirm = false
+        lastVisitDate = undefined
+        lastVisitPropertyId = undefined
+        lastVisitTime = undefined
+        lastVisitPending = false
+        lastReplyKind = undefined
+        lastIntentSummary = undefined
+        frictionCount = 0
+        confusionCount = 0
+        lastTopic = undefined
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                'Listo, arrancamos de cero. Pasame fechas, cantidad de personas y si ya tenes una quinta en mente.',
+                'Done, we can start from scratch. Share dates, guest count, and if you already have a property in mind.'
+            ),
+            undefined,
+            { intentSummary: 'awaiting_dates', frictionAction: 'reset' }
+        )
+    }
+
+    if (isDataScopeQuestion(message) && !hasDateSignals && !detectedProperty && !detectedEmail && !detectedPhone) {
+        return respond(buildMockScopeAnswer(lockedLocale), undefined, {
+            intentSummary: 'awaiting_intent',
+            frictionAction: 'reset'
+        })
+    }
+
+    if (isUnsupportedMockDataQuestion(message) && !hasDateSignals && !detectedProperty && !detectedEmail && !detectedPhone) {
+        return respond(buildUnsupportedMockDataAnswer(lockedLocale), undefined, {
+            intentSummary: 'awaiting_intent',
+            frictionAction: 'reset'
+        })
+    }
+
+    if (outboundExecutionIntent && !hasDateSignals && !detectedProperty && !reservationIntent && !hasVisitKeyword) {
+        return respond(await runMockOutboundFromChat(lockedLocale), undefined, {
+            intentSummary: 'awaiting_intent',
+            frictionAction: 'reset'
+        })
+    }
+
+    if (marketKpiIntent && !hasDateSignals && !detectedProperty && !reservationIntent && !hasVisitKeyword) {
+        return respond(await buildMarketKpiAnswer(lockedLocale, message), undefined, {
+            intentSummary: 'awaiting_intent',
+            frictionAction: 'reset'
+        })
+    }
+
+    if (discountNegotiationIntent && !reservationIntent && !hasVisitKeyword && !hasDateSignals) {
+        const matchedLead = await findHabitualLeadByIdentity({
+            name: detectedName || lastName,
+            email: detectedEmail || lastEmail,
+            phone: detectedPhone || lastPhone
+        })
+        const effectiveHabitual = Boolean(matchedLead?.habitual || lastHabitual)
+        if (!effectiveHabitual) {
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    'Los descuentos son para clientes habituales. Si ya alquilaste antes, avisame y lo reviso.',
+                    'Discounts are for returning customers. If you have rented with us before, tell me and I will check.'
+                ),
+                undefined,
+                { intentSummary: 'awaiting_intent', frictionAction: 'reset' }
+            )
+        }
+        if (typeof requestedDiscountPct === 'number') {
+            lastNegotiatedDiscountPct = requestedDiscountPct
+            if (sessionId) {
+                await db.collection(collections.manualAgentSessions).updateOne(
+                    { sessionId, agentId: 'quintas' },
+                    { $set: { lastNegotiatedDiscountPct: requestedDiscountPct, updatedAt: new Date() } }
+                )
+            }
+            await upsertLead({
+                id: matchedLead?.id || (lastEmail ? `lead-${normalizeIntentText(lastEmail)}` : undefined),
+                name: detectedName || lastName || matchedLead?.name || undefined,
+                email: detectedEmail || lastEmail || (matchedLead as any)?.email || undefined,
+                phone: detectedPhone || lastPhone || matchedLead?.phone || undefined,
+                habitual: true,
+                negotiatedDiscountPct: requestedDiscountPct,
+                interest: matchedLead?.interest || 'alquiler',
+                status: matchedLead?.status || 'open',
+                notes: `descuento negociado ${requestedDiscountPct}%`
+            })
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    `Perfecto, dejo registrado un descuento del ${requestedDiscountPct}% para tu perfil habitual.`,
+                    `Perfect, I recorded a ${requestedDiscountPct}% discount for your returning-customer profile.`
+                ),
+                undefined,
+                { intentSummary: 'awaiting_intent', frictionAction: 'reset' }
+            )
+        }
+        const configuredPct = Math.max(Number(restrictions.discounts?.habitualPct || 0), 0)
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                `Podemos aplicar descuento por cliente habitual. Hoy tengo ${configuredPct}% cargado; si queres otro porcentaje, decime cual.`,
+                `We can apply a returning-customer discount. Right now I have ${configuredPct}% configured; if you want another percentage, tell me which one.`
+            ),
+            undefined,
+            { intentSummary: 'awaiting_intent', frictionAction: 'reset' }
+        )
+    }
+
+    if (isSmallTalkOnly(message) && !hasDateSignals && !detectedProperty && !detectedEmail && !detectedPhone) {
+        const stayLabel = lastRangeStart && lastRangeEnd ? formatStaySpan(String(lastRangeStart), String(lastRangeEnd), lockedLocale) : ''
+        const answer = stayLabel
+            ? responseForLocale(
+                  lockedLocale,
+                  `Todo bien por aca. Si queres, seguimos con ${stayLabel}.`,
+                  `All good on my side. If you want, we can continue with ${stayLabel}.`
+              )
+            : responseForLocale(
+                  lockedLocale,
+                  'Todo bien, gracias. Si queres, arrancamos con fechas y cantidad de personas.',
+                  "I'm doing great, thanks. If you want, we can start with dates and guest count."
+              )
+        return respond(answer, undefined, {
+            intentSummary: stayLabel ? 'awaiting_intent' : 'awaiting_dates',
+            frictionAction: 'reset'
+        })
     }
 
     if (checkInOutSignal && !hasDateSignals && !reservationIntent && !hasVisitKeyword && !rentIntent) {
@@ -3227,6 +4904,57 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             : ''
         const answer = [base, notes, flexibilityLine, lateArrivalQuestion, earlyDepartureQuestion].filter(Boolean).join(' ')
         return respond(answer, undefined, { frictionAction: 'reset' })
+    }
+
+    if (serviceRequestIntent && !reservationIntent && !paymentProofIntent && !hasVisitKeyword) {
+        const propertyForRequest =
+            detectedProperty || (lastPropertyId ? catalogProperties.find((item) => item.propertyId === lastPropertyId) : undefined)
+        const requestType = detectServiceRequestType(message)
+        const requestDate = explicitDates[0]?.format('YYYY-MM-DD') || lastRangeStart
+        const request = await registerServiceRequest({
+            sessionId,
+            propertyId: propertyForRequest?.propertyId || lastPropertyId,
+            propertyName: propertyForRequest?.name || propertyForRequest?.propertyId || lastPropertyId,
+            requestedDate: requestDate,
+            requestType,
+            message,
+            guestName: detectedName || lastName || undefined,
+            phone: detectedPhone || lastPhone || undefined,
+            email: detectedEmail || lastEmail || undefined
+        })
+        await upsertLead({
+            id: detectedPhone ? undefined : detectedEmail ? `lead-${normalizeIntentText(detectedEmail)}` : undefined,
+            name: detectedName || lastName || undefined,
+            email: detectedEmail || lastEmail || undefined,
+            phone: detectedPhone || lastPhone || undefined,
+            propertyId: propertyForRequest?.propertyId || lastPropertyId,
+            dateRequested: requestDate,
+            interest: 'pedido',
+            status: 'open',
+            habitual: Boolean(lastHabitual),
+            notes: `pedido:${requestType} #${request.requestId}`
+        })
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                `Listo, registre tu pedido (${request.requestId})${
+                    propertyForRequest?.name ? ` para ${propertyForRequest.name}` : ''
+                }. Te aviso por aca apenas haya novedad.`,
+                `Done, I logged your request (${request.requestId})${
+                    propertyForRequest?.name ? ` for ${propertyForRequest.name}` : ''
+                }. I will update you here as soon as there is progress.`
+            ),
+            {
+                type: 'serviceRequest',
+                request: {
+                    id: request.requestId,
+                    requestType,
+                    propertyId: propertyForRequest?.propertyId || lastPropertyId,
+                    date: request.date
+                }
+            },
+            { intentSummary: 'request_logged', frictionAction: 'reset' }
+        )
     }
 
     const ambiguousShortDate = !explicitYearInMessage && !detectMonthInMessage(message) ? findAmbiguousShortDate(message) : null
@@ -3364,6 +5092,127 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         return finalizeHoldReservation()
     }
 
+    if (paymentProofIntent && !pendingDateConfirm && !pendingHoldConfirm) {
+        const startFromMessage = explicitDates[0]?.format('YYYY-MM-DD')
+        const endFromMessage =
+            explicitDates[1]?.format('YYYY-MM-DD') ||
+            (explicitDates[0] && requestedDays ? explicitDates[0].clone().add(requestedDays - 1, 'day').format('YYYY-MM-DD') : undefined)
+        const paymentPropertyId = detectedProperty?.propertyId || lastPropertyId
+        const paymentStart = startFromMessage || lastRangeStart
+        const paymentEnd = endFromMessage || lastRangeEnd
+
+        if (!paymentPropertyId || !paymentStart || !paymentEnd) {
+            return respond(
+                responseForLocale(
+                    lockedLocale,
+                    'Gracias. Para confirmar el pago necesito ubicar la reserva: pasame la quinta y las fechas (YYYY-MM-DD a YYYY-MM-DD).',
+                    'Thanks. To confirm the payment I need to find your reservation: share property and dates (YYYY-MM-DD to YYYY-MM-DD).'
+                ),
+                undefined,
+                { intentSummary: 'awaiting_details', frictionAction: 'increase' }
+            )
+        }
+
+        ensureToolAccess('write', [collectionNames.quintasCalendar])
+        const paymentResult = await confirmPayment({
+            propertyId: paymentPropertyId,
+            start: paymentStart,
+            end: paymentEnd,
+            paymentRef: paymentRefFromMessage || undefined
+        })
+
+        if (!paymentResult.ok) {
+            const suggestion = await buildNearbyAvailabilityMessage({
+                start: paymentStart,
+                days: requestedDays,
+                propertyId: paymentPropertyId,
+                locale: lockedLocale
+            })
+            const base = responseForLocale(
+                lockedLocale,
+                'No pude confirmar el pago porque la seña/reserva en hold vencio o no aparece activa.',
+                'I could not confirm the payment because the hold expired or is no longer active.'
+            )
+            return respond(
+                suggestion
+                    ? `${base} ${suggestion}`
+                    : `${base} ${responseForLocale(
+                          lockedLocale,
+                          'Si queres, te ofrezco nuevas fechas ahora.',
+                          'If you want, I can offer new dates now.'
+                      )}`,
+                undefined,
+                { replyKind: 'availability', intentSummary: 'availability_options', frictionAction: 'reset' }
+            )
+        }
+
+        const property = catalogProperties.find((item) => item.propertyId === paymentPropertyId)
+        const summaryLine = buildHoldSummaryLine({
+            propertyName: property?.name || paymentPropertyId,
+            start: paymentStart,
+            end: paymentEnd,
+            guests: lastGuests,
+            locale: lockedLocale
+        })
+        const paymentRefLine = paymentRefFromMessage
+            ? responseForLocale(
+                  lockedLocale,
+                  `Referencia registrada: ${paymentRefFromMessage}.`,
+                  `Reference recorded: ${paymentRefFromMessage}.`
+              )
+            : ''
+
+        lastPropertyId = paymentPropertyId
+        lastRangeStart = paymentStart
+        lastRangeEnd = paymentEnd
+        if (sessionId) {
+            await db.collection(collections.manualAgentSessions).updateOne(
+                { sessionId, agentId: 'quintas' },
+                {
+                    $set: {
+                        lastPropertyId: paymentPropertyId,
+                        lastRangeStart: paymentStart,
+                        lastRangeEnd: paymentEnd,
+                        lastRangeUpdatedAt: new Date(),
+                        pendingHoldConfirm: false,
+                        updatedAt: new Date()
+                    }
+                }
+            )
+        }
+
+        const alreadyBooked = Boolean((paymentResult as { alreadyBooked?: boolean }).alreadyBooked)
+        const answer = alreadyBooked
+            ? responseForLocale(
+                  lockedLocale,
+                  'Gracias. Esa reserva ya estaba confirmada.',
+                  'Thanks. That reservation was already confirmed.'
+              )
+            : responseForLocale(
+                  lockedLocale,
+                  'Perfecto, comprobante recibido y pago confirmado. La reserva quedo cerrada.',
+                  'Perfect, proof received and payment confirmed. The reservation is now closed.'
+              )
+
+        return respond(
+            [answer, summaryLine, paymentRefLine]
+                .filter(Boolean)
+                .join('\n\n')
+                .trim(),
+            {
+                type: 'paymentConfirmed',
+                payment: {
+                    propertyId: paymentPropertyId,
+                    start: paymentStart,
+                    end: paymentEnd,
+                    paymentRef: paymentRefFromMessage || undefined,
+                    alreadyBooked
+                }
+            },
+            { intentSummary: 'reservation_confirmed', frictionAction: 'reset', pendingHoldConfirm: false }
+        )
+    }
+
     if (
         bookingSignal &&
         !hasDateSignals &&
@@ -3490,7 +5339,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         return respond(answer, undefined, { intentSummary: 'confirm_dates', frictionAction: 'increase', pendingDateConfirm: true })
     }
 
-    if (reservationIntent && hasDateSignals && (needsProperty || needsGuests) && !visitOnly) {
+    if (reservationIntent && hasDateSignals && (needsProperty || needsGuests) && !hasVisitKeyword) {
         const question = buildMissingDetailsQuestion({ locale: lockedLocale, needsProperty, needsGuests })
         if (question) {
             return respond(question, undefined, { intentSummary: 'awaiting_details', frictionAction: 'increase' })
@@ -3676,7 +5525,7 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         )
     }
 
-    if (isThanksOnly(input.message || '')) {
+    if (isThanksOnly(input.message || '') && !pendingDateConfirm && !pendingHoldConfirm) {
         return respond(
             responseForLocale(lockedLocale, 'De nada, cualquier cosa avisame.', "You're welcome. If you need anything else, I'm here."),
             undefined,
@@ -3702,6 +5551,18 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
         )
     }
 
+    if (isGoodbyeOnly(input.message || '') && !pendingDateConfirm && !pendingHoldConfirm) {
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                'Perfecto, lo dejamos aca. Cuando quieras seguir, pasame fechas y lo retomamos.',
+                'Perfect, we can pause here. When you want to continue, share dates and I will pick it up.'
+            ),
+            undefined,
+            { intentSummary: 'awaiting_intent', frictionAction: 'reset' }
+        )
+    }
+
     if (isGreetingOnly(input.message || '')) {
         const blockedDatesText = restrictions.blockedDatesText ? `Nota: ${restrictions.blockedDatesText}` : ''
         const summary = catalogMeta.catalogSummary || 'Alquiler de quintas para eventos familiares en Francisco Alvarez.'
@@ -3713,6 +5574,42 @@ export const handleQuintasChat = async (input: ManualAgentRequest): Promise<Manu
             ),
             undefined,
             { intentSummary: 'awaiting_dates', frictionAction: 'reset' }
+        )
+    }
+
+    if (isHumanHandoffRequest(message) && !hasDateSignals && !detectedProperty && !detectedEmail) {
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                'Claro, te puedo pasar con un humano. Si queres, pasame fechas y la quinta y dejo todo listo.',
+                'Sure, I can hand this over to a human. If you want, share dates and the property and I will leave everything ready.'
+            ),
+            undefined,
+            { intentSummary: 'awaiting_details', frictionAction: 'reset' }
+        )
+    }
+
+    if (isHelpOnly(message) && !hasDateSignals && !detectedProperty && !detectedEmail) {
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                'Te ayudo con disponibilidad, precios, reservas, pagos y visitas. Pasame fechas y cantidad de personas y te propongo opciones. Esta demo usa datos mock.',
+                'I can help with availability, prices, bookings, payments, and visits. Share your dates and guest count and I will propose options. This demo uses mock data.'
+            ),
+            undefined,
+            { intentSummary: 'awaiting_intent', frictionAction: 'reset' }
+        )
+    }
+
+    if (isClearlyOffTopic(message) && !hasDateSignals && !detectedProperty && !detectedEmail && !detectedPhone) {
+        return respond(
+            responseForLocale(
+                lockedLocale,
+                'Solo puedo ayudar con quintas (disponibilidad, precios, reservas, pagos o visitas). Pasame fechas y cantidad de personas y seguimos.',
+                'I can only help with quintas (availability, prices, reservations, payments, or visits). Share dates and guest count and we can continue.'
+            ),
+            undefined,
+            { intentSummary: 'awaiting_intent', frictionAction: 'reset' }
         )
     }
 
@@ -4206,7 +6103,7 @@ Please share your name and phone number to coordinate the visit.`
         )
     }
 
-    const hasReservationIntent = ['reserv', 'deposito', 'anticipo'].some((keyword) => lower.includes(keyword))
+    const hasReservationActionIntent = ['reserv', 'deposito', 'anticipo'].some((keyword) => lower.includes(keyword))
     const propertyInfoKeywords = [
         'comod',
         'amenit',
@@ -4244,17 +6141,14 @@ Please share your name and phone number to coordinate the visit.`
     const generalQuintasQuery = (lower.includes('quinta') || lower.includes('quintas')) && !hasOtherIntent
     const wantsPropertyInfo =
         propertyInfoKeywords.some((keyword) => lower.includes(keyword)) || mentionsAirConditioning || generalQuintasQuery
-    if (wantsPropertyInfo && !hasReservationIntent && !visitOnly && !hasVisitKeyword) {
+    if (wantsPropertyInfo && !hasReservationActionIntent && !visitOnly && !hasVisitKeyword) {
         const property = detectedProperty || (lastPropertyId ? catalogProperties.find((item) => item.propertyId === lastPropertyId) : undefined)
-        const startFromMessage =
-            explicitDates[0]?.format('YYYY-MM-DD') ||
-            (monthRange?.start ? String(monthRange.start) : undefined)
+        const startFromMessage = explicitDates[0]?.format('YYYY-MM-DD')
         const endFromMessage =
             explicitDates[1]?.format('YYYY-MM-DD') ||
             (explicitDates[0] && requestedDays
                 ? explicitDates[0].clone().add(requestedDays - 1, 'day').format('YYYY-MM-DD')
-                : startFromMessage) ||
-            (monthRange?.end ? String(monthRange.end) : undefined)
+                : startFromMessage)
         const start = startFromMessage || lastRangeStart
         const end = endFromMessage || lastRangeEnd || start
 
@@ -4325,6 +6219,47 @@ Please share your name and phone number to coordinate the visit.`
             await db.collection(collections.manualAgentSessions).updateOne({ sessionId, agentId: 'quintas' }, { $set: visitSet })
         }
         if (visitTime && visitPropertyName) {
+            if (hasLeadInfo(input.message || '') && visitProperty?.propertyId) {
+                const visitName = extractName(input.message || '') || lastName || ''
+                const visitEmail = extractEmail(input.message || '') || lastEmail || ''
+                const visitPhone = extractPhone(input.message || '') || lastPhone || ''
+                await recordVisitEvent({
+                    propertyId: visitProperty.propertyId,
+                    visitDate: start,
+                    visitTime,
+                    guestName: visitName,
+                    phone: visitPhone,
+                    email: visitEmail
+                })
+                await upsertLead({
+                    id: visitPhone ? undefined : visitEmail ? `lead-${normalizeIntentText(visitEmail)}` : undefined,
+                    name: visitName || undefined,
+                    email: visitEmail || undefined,
+                    phone: visitPhone || undefined,
+                    propertyId: visitProperty.propertyId,
+                    dateRequested: start,
+                    people: lastGuests,
+                    interest: 'visita',
+                    status: 'scheduled',
+                    habitual: Boolean(lastHabitual),
+                    notes: `visita ${start} ${visitTime}`
+                })
+                if (sessionId) {
+                    await db.collection(collections.manualAgentSessions).updateOne(
+                        { sessionId, agentId: 'quintas' },
+                        { $set: { lastVisitPending: false, updatedAt: new Date() } }
+                    )
+                }
+                return respond(
+                    responseForLocale(
+                        lockedLocale,
+                        `${visitName ? `Gracias ${visitName}. ` : 'Gracias. '}Queda coordinada la visita para el ${start} a las ${visitTime} en ${visitPropertyName}.`,
+                        `${visitName ? `Thanks ${visitName}. ` : 'Thanks. '}Your visit is confirmed for ${start} at ${visitTime} in ${visitPropertyName}.`
+                    ),
+                    undefined,
+                    { intentSummary: 'visit_confirmed', frictionAction: 'reset' }
+                )
+            }
             if (sessionId) {
                 await db.collection(collections.manualAgentSessions).updateOne(
                     { sessionId, agentId: 'quintas' },
@@ -4373,7 +6308,7 @@ Please share your name and phone number to coordinate the visit.`
             { intentSummary: 'awaiting_visit', frictionAction: 'reset' }
         )
     }
-    if (explicitDates.length && !hasReservationIntent) {
+    if (explicitDates.length && !hasReservationActionIntent) {
         const start = explicitDates[0].format('YYYY-MM-DD')
         const end =
             explicitDates[1]?.format('YYYY-MM-DD') ||
@@ -4428,6 +6363,29 @@ Please share your name and phone number to coordinate the visit.`
         const visitProperty = catalogProperties.find((item) => item.propertyId === lastVisitPropertyId)
         const visitPropertyName = visitProperty?.name || lastVisitPropertyId
         const name = extractName(input.message || '')
+        const email = extractEmail(input.message || '') || lastEmail || ''
+        const phone = extractPhone(input.message || '') || lastPhone || ''
+        await recordVisitEvent({
+            propertyId: lastVisitPropertyId,
+            visitDate: lastVisitDate,
+            visitTime: lastVisitTime,
+            guestName: name || lastName || '',
+            phone,
+            email
+        })
+        await upsertLead({
+            id: phone ? undefined : email ? `lead-${normalizeIntentText(email)}` : undefined,
+            name: name || lastName || undefined,
+            email: email || undefined,
+            phone: phone || undefined,
+            propertyId: lastVisitPropertyId,
+            dateRequested: lastVisitDate,
+            people: lastGuests,
+            interest: 'visita',
+            status: 'scheduled',
+            habitual: Boolean(lastHabitual),
+            notes: `visita ${lastVisitDate} ${lastVisitTime}`
+        })
         if (sessionId) {
             await db.collection(collections.manualAgentSessions).updateOne(
                 { sessionId, agentId: 'quintas' },
@@ -4496,9 +6454,34 @@ export const __test__ = {
     findAmbiguousShortDate,
     extractDates,
     extractStayLengthDetails,
+    resolveMinNightsForRange,
+    calculateDiscountBreakdown,
     buildMinNightsReply,
+    buildHoldFailureAnswer,
     formatAvailabilitySections,
     buildHoldSummaryLine,
     formatStaySpan,
-    isDateContextStale
+    isDateContextStale,
+    isShortAckOnly,
+    isPoliteAckOnly,
+    isShortNoOnly,
+    isGreetingOnly,
+    isThanksOnly,
+    isDeclineOnly,
+    isHelpOnly,
+    isGoodbyeOnly,
+    isRestartRequest,
+    isHumanHandoffRequest,
+    isClearlyOffTopic,
+    isSmallTalkOnly,
+    isDataScopeQuestion,
+    isUnsupportedMockDataQuestion,
+    isMarketKpiIntent,
+    isOutboundExecutionIntent,
+    isDiscountNegotiationIntent,
+    extractNegotiatedDiscountPct,
+    isServiceRequestIntent,
+    detectServiceRequestType,
+    isPaymentProofIntent,
+    extractPaymentReference
 }

@@ -38,6 +38,10 @@ const defaultChatbotConfig = {
     }
 }
 
+const demoSectors = ['Gastronomia', 'Retail', 'Hoteles', 'Salud', 'Educacion']
+const hotelIntroText =
+    'Soy Freia, tu asistente inteligente. Puedo gestionar reservas, cancelaciones, cambios y atender a los huespedes antes y durante su estadia.'
+
 const HoldStatusCard = ({ hold, onConfirm }) => {
     if (!hold) return null
 
@@ -264,8 +268,10 @@ const PublicManualAgentChat = () => {
     const title = chatbotConfig.title || agentInfo?.name || 'Chatbot'
     const placeholder = chatbotConfig.textInput?.placeholder || 'Escribi tu mensaje...'
     const welcomeMessage = chatbotConfig.welcomeMessage || 'Escribi tu consulta para comenzar.'
+    const isHotelDemo = agentInfo?.id === 'gran-sol'
+    const effectiveWelcomeMessage = isHotelDemo ? hotelIntroText : welcomeMessage
     const quickPrompts =
-        agentInfo?.id === 'gran-sol'
+        isHotelDemo
             ? ['Reservar nueva estadia', 'Modificar reserva', 'Cancelar', 'Servicios del hotel', 'Atencion al huesped']
             : []
     const formatMessage = (content) => {
@@ -328,10 +334,51 @@ const PublicManualAgentChat = () => {
                 </Box>
                 <CardContent sx={{ backgroundColor: chatbotConfig.backgroundColor }}>
                     <Stack spacing={2}>
+                        {isHotelDemo && (
+                            <Card variant='outlined' sx={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                                <CardContent>
+                                    <Stack spacing={2}>
+                                        <Stack spacing={1}>
+                                            <Typography variant='subtitle2'>Bloque 1 - Elegi un rubro</Typography>
+                                            <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
+                                                {demoSectors.map((sector) => (
+                                                    <Button
+                                                        key={sector}
+                                                        size='small'
+                                                        variant={sector === 'Hoteles' ? 'contained' : 'outlined'}
+                                                        disabled={sector !== 'Hoteles'}
+                                                        color={sector === 'Hoteles' ? 'success' : 'inherit'}
+                                                    >
+                                                        {sector}
+                                                    </Button>
+                                                ))}
+                                            </Stack>
+                                        </Stack>
+                                        <Stack spacing={1}>
+                                            <Typography variant='subtitle2'>Bloque 2 - Introduccion</Typography>
+                                            <Typography variant='body2'>{hotelIntroText}</Typography>
+                                        </Stack>
+                                        <Stack spacing={1}>
+                                            <Typography variant='subtitle2'>Bloque 4 - Explicacion tecnica</Typography>
+                                            <Typography variant='body2'>
+                                                Consulta inventario, disponibilidad, reglas comerciales, perfiles de huesped y servicios.
+                                            </Typography>
+                                            <Typography variant='body2'>
+                                                Aplica minimas noches, politicas de cancelacion, tarifas reembolsables/no reembolsables y cargos
+                                                de early/late check.
+                                            </Typography>
+                                            <Typography variant='body2'>
+                                                Integra con un motor mock de reservas y colecciones simuladas listas para conectar a PMS.
+                                            </Typography>
+                                        </Stack>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        )}
                         <Stack spacing={1} sx={{ minHeight: 360 }}>
                             {messages.length === 0 && (
                                 <Typography variant='body2' color='text.secondary'>
-                                    {welcomeMessage}
+                                    {effectiveWelcomeMessage}
                                 </Typography>
                             )}
                             {messages.map((message, idx) => {

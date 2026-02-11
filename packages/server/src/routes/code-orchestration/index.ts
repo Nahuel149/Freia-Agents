@@ -1,19 +1,31 @@
 import express from 'express'
 
-// Import the JavaScript orchestration routes
-const {
-    router: orchestrationRouter,
-    initializeOrchestrationRoutes
-} = require('../../../marketplaces/codeagentv2/code-orchestration-routes')
-
 const router = express.Router()
+const orchestrationEnabled = process.env.ENABLE_CODE_ORCHESTRATION === 'true'
 
-// Mount the orchestration routes
-router.use('/', orchestrationRouter)
+if (orchestrationEnabled) {
+    // Import lazily so disabled mode does not initialize orchestration internals.
+    const {
+        router: orchestrationRouter,
+        initializeOrchestrationRoutes
+    } = require('../../../marketplaces/codeagentv2/code-orchestration-routes')
 
-// Initialize orchestration routes on startup
-initializeOrchestrationRoutes().catch((error: Error) => {
-    console.error('Failed to initialize orchestration routes:', error)
-})
+    router.use('/', orchestrationRouter)
+
+    initializeOrchestrationRoutes().catch((error: Error) => {
+        console.error('Failed to initialize orchestration routes:', error)
+    })
+} else {
+    router.get('/health', (_req, res) => {
+        res.status(200).json({
+            success: true,
+            data: {
+                status: 'disabled',
+                enabled: false,
+                timestamp: new Date().toISOString()
+            }
+        })
+    })
+}
 
 export default router
